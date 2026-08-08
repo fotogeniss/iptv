@@ -32,6 +32,7 @@ import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.CatalogRailSection
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
+import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 import com.prelude.iptv.ui.mobile.search.MobileSearchResultCard
 
 @Composable
@@ -66,6 +67,7 @@ internal fun MobilePremiumSectionScreen(
                     Text(section.title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
                     Text("${section.allItems.size} τίτλοι", color = IptvColors.TextTertiary, fontSize = 11.sp)
                 }
+                MobileSettingsAction(onClick = onOpenSettings)
             }
             LazyVerticalGrid(
                 state = gridState,

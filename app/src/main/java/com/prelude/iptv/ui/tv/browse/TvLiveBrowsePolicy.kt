@@ -41,10 +41,7 @@ object TvLiveBrowsePolicy {
 
     /** Τι κάνει το OK πάνω σε κανάλι. */
     enum class ChannelAction {
-        /** Ξεκίνα προεπισκόπηση αυτού του καναλιού. */
-        PREVIEW,
-
-        /** Ήδη σε προεπισκόπηση: μεγάλωσε σε πλήρη οθόνη. */
+        /** Άνοιξε άμεσα το επιλεγμένο κανάλι στον player. */
         OPEN_PLAYER,
 
         /** Έχει οπλιστεί multiview: αυτό είναι το ΔΕΥΤΕΡΟ κανάλι. */
@@ -52,22 +49,17 @@ object TvLiveBrowsePolicy {
     }
 
     /**
-     * Πρώτο OK δείχνει το κανάλι στην προεπισκόπηση· δεύτερο OK στο ΙΔΙΟ κανάλι
-     * το ανοίγει σε πλήρη οθόνη. Αν όμως έχει οπλιστεί multiview (παρατεταμένο OK
-     * σε άλλο κανάλι), το OK εδώ ξεκινά διπλή προβολή.
-     *
-     * Η σύγκριση γίνεται με κλειδί, όχι με αντικείμενο: η λίστα ξαναχτίζεται σε
-     * κάθε ενημέρωση καταλόγου και τα instances αλλάζουν.
+     * Ένα OK ανοίγει τον player, όπως το εγκεκριμένο content-navigation flow.
+     * Αν έχει οπλιστεί multiview με παρατεταμένο OK, διαφορετικό δεύτερο κανάλι
+     * ξεκινά τη διπλή προβολή.
      */
     fun onChannelConfirm(
-        previewKey: String?,
         targetKey: String,
         multiviewPrimaryKey: String? = null,
     ): ChannelAction = when {
         // Το ίδιο κανάλι δεν μπορεί να παίξει δύο φορές δίπλα-δίπλα.
         multiviewPrimaryKey != null && multiviewPrimaryKey != targetKey -> ChannelAction.START_MULTIVIEW
-        previewKey != null && previewKey == targetKey -> ChannelAction.OPEN_PLAYER
-        else -> ChannelAction.PREVIEW
+        else -> ChannelAction.OPEN_PLAYER
     }
 
     /**

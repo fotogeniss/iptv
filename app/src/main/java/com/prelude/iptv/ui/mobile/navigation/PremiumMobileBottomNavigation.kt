@@ -22,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
@@ -33,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.navigation.PrimaryContentDestination
 
 internal val PremiumMobileBottomBarHeight: Dp = 68.dp
 internal val PremiumMobileMiniPlayerHeight: Dp = 68.dp
@@ -64,6 +64,7 @@ internal fun premiumMobileNavigationContentPadding(extra: Dp = 14.dp): Dp =
  * content or scroll position.
  */
 @Composable
+@Suppress("UNUSED_PARAMETER")
 internal fun PremiumMobileBottomNavigation(
     selected: String,
     onHome: () -> Unit,
@@ -74,19 +75,16 @@ internal fun PremiumMobileBottomNavigation(
     onMyList: () -> Unit,
     onSettings: () -> Unit,
     collapsed: Boolean = false,
+    showSettingsAction: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var manuallyExpanded by remember { mutableStateOf(false) }
-    var browseOpen by remember { mutableStateOf(false) }
 
     /**
-     * Every destination goes through the same exit path.  Previously the
-     * callback changed page while the locally expanded hamburger/menu state
-     * stayed alive.  That was especially visible when the selected
-     * destination did not change (Search -> Search, Settings -> Settings).
+     * Every destination goes through the same exit path so the compact menu
+     * cannot remain expanded over the next screen.
      */
     fun closeMenuAndNavigate(action: () -> Unit) {
-        browseOpen = false
         manuallyExpanded = false
         action()
     }
@@ -96,45 +94,16 @@ internal fun PremiumMobileBottomNavigation(
     }
     LaunchedEffect(selected) {
         // Also close transient UI when navigation is driven externally.
-        browseOpen = false
         manuallyExpanded = false
     }
     val playerDocked = MobilePlayerDockState.isDocked
     // The HTML-approved dock always shows the full menu below the mini player.
     val compact = collapsed && !manuallyExpanded && !playerDocked
-    LaunchedEffect(compact, selected) {
-        if (compact) browseOpen = false
-    }
-
-    BackHandler(enabled = browseOpen || manuallyExpanded) {
-        if (browseOpen) browseOpen = false else manuallyExpanded = false
+    BackHandler(enabled = manuallyExpanded) {
+        manuallyExpanded = false
     }
 
     Box(modifier.fillMaxWidth().zIndex(20f)) {
-        AnimatedVisibility(
-            visible = browseOpen && !compact,
-            enter = fadeIn() + scaleIn(initialScale = .94f),
-            exit = fadeOut() + scaleOut(targetScale = .94f),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                .padding(horizontal = 24.dp)
-                .padding(
-                    bottom = PremiumMobileBottomBarHeight +
-                        PremiumMobileBottomBarSafeGap +
-                        (if (playerDocked) PremiumMobileMiniPlayerHeight else 0.dp) +
-                        20.dp
-                )
-        ) {
-            MobileBrowsePanel(
-                selected = selected,
-                onLive = { closeMenuAndNavigate(onLive) },
-                onMovies = { closeMenuAndNavigate(onMovies) },
-                onSeries = { closeMenuAndNavigate(onSeries) },
-                onMyList = { closeMenuAndNavigate(onMyList) },
-            )
-        }
-
         AnimatedVisibility(
             visible = !compact,
             enter = fadeIn() + slideInVertically { it / 2 },
@@ -144,11 +113,30 @@ internal fun PremiumMobileBottomNavigation(
             FullNavigation(
                 selected = selected,
                 onHome = { closeMenuAndNavigate(onHome) },
+                onLive = { closeMenuAndNavigate(onLive) },
+                onMovies = { closeMenuAndNavigate(onMovies) },
+                onSeries = { closeMenuAndNavigate(onSeries) },
                 onSearch = { closeMenuAndNavigate(onSearch) },
-                onSettings = { closeMenuAndNavigate(onSettings) },
-                onBrowse = { browseOpen = !browseOpen },
                 dockedTop = playerDocked,
             )
+        }
+
+        AnimatedVisibility(
+            visible = showSettingsAction && !compact,
+            enter = fadeIn() + scaleIn(initialScale = .8f),
+            exit = fadeOut() + scaleOut(targetScale = .8f),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                .padding(
+                    end = 20.dp,
+                    bottom = PremiumMobileBottomBarHeight +
+                        PremiumMobileBottomBarSafeGap +
+                        (if (playerDocked) PremiumMobileMiniPlayerHeight else 0.dp) +
+                        12.dp,
+                ),
+        ) {
+            MobileSettingsAction(onClick = { closeMenuAndNavigate(onSettings) })
         }
 
         AnimatedVisibility(
@@ -184,20 +172,13 @@ internal fun PremiumMobileBottomNavigation(
 private fun FullNavigation(
     selected: String,
     onHome: () -> Unit,
+    onLive: () -> Unit,
+    onMovies: () -> Unit,
+    onSeries: () -> Unit,
     onSearch: () -> Unit,
-    onSettings: () -> Unit,
-    onBrowse: () -> Unit,
     dockedTop: Boolean,
 ) {
-    val browseSelected = selected == "live" || selected == "movies" ||
-        selected == "series" || selected == "library"
-    val browseSection = when (selected) {
-        "live" -> "Live TV"
-        "movies" -> "Movies"
-        "series" -> "Series"
-        "library" -> "Favorites"
-        else -> ""
-    }
+    val selectedPrimaryRoute = PrimaryContentDestination.selectionRoute(selected)
     Box(
         Modifier
             .fillMaxWidth()
@@ -230,17 +211,22 @@ private fun FullNavigation(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PremiumMobileNavItem("Home", Icons.Default.Home, selected == "home", onHome, Modifier.weight(1f))
-                PremiumMobileNavItem(
-                    label = "Browse",
-                    icon = Icons.Default.GridView,
-                    selected = browseSelected,
-                    onClick = onBrowse,
-                    modifier = Modifier.weight(1f),
-                    secondary = browseSection,
-                )
-                PremiumMobileNavItem("Search", Icons.Default.Search, selected == "search", onSearch, Modifier.weight(1f))
-                PremiumMobileNavItem("Settings", Icons.Default.Settings, selected == "settings", onSettings, Modifier.weight(1f))
+                PrimaryContentDestination.ordered.forEach { destination ->
+                    val (icon, action) = when (destination) {
+                        PrimaryContentDestination.HOME -> Icons.Default.Home to onHome
+                        PrimaryContentDestination.LIVE -> Icons.Default.LiveTv to onLive
+                        PrimaryContentDestination.MOVIES -> Icons.Default.Movie to onMovies
+                        PrimaryContentDestination.SERIES -> Icons.Default.Tv to onSeries
+                        PrimaryContentDestination.SEARCH -> Icons.Default.Search to onSearch
+                    }
+                    PremiumMobileNavItem(
+                        destination = destination,
+                        icon = icon,
+                        selectedRoute = selectedPrimaryRoute,
+                        onClick = action,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -248,13 +234,13 @@ private fun FullNavigation(
 
 @Composable
 private fun PremiumMobileNavItem(
-    label: String,
+    destination: PrimaryContentDestination,
     icon: ImageVector,
-    selected: Boolean,
+    selectedRoute: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    secondary: String = "",
 ) {
+    val selected = destination.route == selectedRoute
     Column(
         modifier
             .padding(horizontal = 2.dp)
@@ -269,120 +255,18 @@ private fun PremiumMobileNavItem(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = label,
+            contentDescription = destination.label,
             tint = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
             modifier = Modifier.size(22.dp)
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            text = label,
+            text = destination.label,
             color = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             fontWeight = if (selected) FontWeight.Black else FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Clip
         )
-        if (secondary.isNotBlank()) {
-            Text(
-                text = secondary,
-                color = IptvColors.Primary,
-                fontSize = 7.sp,
-                fontWeight = FontWeight.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Clip,
-            )
-        } else {
-            Spacer(Modifier.height(7.dp))
-        }
-    }
-}
-
-@Composable
-private fun MobileBrowsePanel(
-    selected: String,
-    onLive: () -> Unit,
-    onMovies: () -> Unit,
-    onSeries: () -> Unit,
-    onMyList: () -> Unit,
-) {
-    Surface(
-        color = IptvColors.Surface.copy(alpha = .98f),
-        contentColor = IptvColors.TextPrimary,
-        shape = RoundedCornerShape(22.dp),
-        tonalElevation = 0.dp,
-        shadowElevation = 22.dp,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.fillMaxWidth().padding(13.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                BrowseDestination(
-                    title = "Live TV",
-                    subtitle = "Ζωντανά κανάλια",
-                    icon = Icons.Default.LiveTv,
-                    selected = selected == "live",
-                    onClick = onLive,
-                    modifier = Modifier.weight(1f),
-                )
-                BrowseDestination(
-                    title = "Movies",
-                    subtitle = "Ταινίες",
-                    icon = Icons.Default.Movie,
-                    selected = selected == "movies",
-                    onClick = onMovies,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                BrowseDestination(
-                    title = "Series",
-                    subtitle = "Σειρές",
-                    icon = Icons.Default.Tv,
-                    selected = selected == "series",
-                    onClick = onSeries,
-                    modifier = Modifier.weight(1f),
-                )
-                BrowseDestination(
-                    title = "Favorites",
-                    subtitle = "Η λίστα μου",
-                    icon = Icons.Default.Bookmark,
-                    selected = selected == "library",
-                    onClick = onMyList,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BrowseDestination(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .clip(RoundedCornerShape(15.dp))
-            .background(if (selected) IptvColors.SurfaceSelected else IptvColors.SurfaceRaised)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 11.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(if (selected) IptvColors.Primary else IptvColors.Background),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, null, tint = IptvColors.TextPrimary, modifier = Modifier.size(21.dp))
-        }
-        Column(Modifier.weight(1f).padding(start = 10.dp)) {
-            Text(title, color = IptvColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1)
-            Text(subtitle, color = IptvColors.TextTertiary, fontSize = 8.sp, maxLines = 1)
-        }
     }
 }

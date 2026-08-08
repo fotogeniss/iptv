@@ -28,6 +28,7 @@ import com.prelude.iptv.billing.PremiumPolicy
 import com.prelude.iptv.billing.hasQaPremiumOverride
 import com.prelude.iptv.billing.rememberPremiumTier
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 
 /**
  * Η κεφαλίδα της αρχικής κινητού: σήμανση, λογότυπο, «Γρήγορα».
@@ -45,6 +46,7 @@ internal fun MobileHomeHeader(
     onEditHome: () -> Unit,
     onCategories: () -> Unit,
     onExport: () -> Unit,
+    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val background by animateColorAsState(
@@ -92,13 +94,19 @@ internal fun MobileHomeHeader(
                 letterSpacing = .5.sp
             )
         }
-        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+        Row(
+            Modifier.weight(1f),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             QuickMenu(
                 onUpdateContents = onUpdateContents,
                 onEditHome = onEditHome,
                 onCategories = onCategories,
                 onExport = onExport
             )
+            Spacer(Modifier.width(4.dp))
+            MobileSettingsAction(onClick = onSettings, modifier = Modifier.size(38.dp))
         }
     }
 }

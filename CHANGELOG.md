@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Implemented the approved unified content navigation on mobile and Android TV:
+  Home, Live, movies, series and automatic Search are now direct primary
+  destinations, secondary library/EPG/source tools remain inside their owning
+  screens, settings stay one action away, TV Back focus returns to the owning
+  destination, and a TV Live channel opens with one OK instead of two.
 - Added a functional premium mobile/TV content-navigation prototype that unifies
   Home, Live TV, movies, series and automatic search while preserving direct
   playback, detail hierarchy, DPAD focus and predictable Back behavior.

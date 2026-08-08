@@ -58,6 +58,7 @@ import com.prelude.iptv.ui.SearchUiPolicy
 import com.prelude.iptv.ui.components.search.PremiumSearchEmpty
 import com.prelude.iptv.ui.components.search.rememberSearchMeta
 import com.prelude.iptv.ui.mobile.navigation.PremiumMobileBottomNavigation
+import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import kotlinx.coroutines.launch
 
@@ -107,6 +108,7 @@ fun MobilePremiumSearchScreen(
             onQueryChange = onQueryChange,
             onBack = onBack,
             onVoiceSearch = onVoiceSearch,
+            onSettings = onOpenSettings,
             onCommit = {
                 query.trim().takeIf(String::isNotBlank)?.let {
                     recents.remove(it); recents.add(0, it)
@@ -220,6 +222,7 @@ private fun MobileSearchTopBar(
     onQueryChange: (String) -> Unit,
     onBack: () -> Unit,
     onVoiceSearch: () -> Unit,
+    onSettings: () -> Unit,
     onCommit: () -> Unit
 ) {
     Row(
@@ -260,6 +263,8 @@ private fun MobileSearchTopBar(
             ),
             modifier = Modifier.weight(1f)
         )
+        Spacer(Modifier.width(6.dp))
+        MobileSettingsAction(onClick = onSettings)
     }
 }
 

@@ -41,14 +41,8 @@ class TvLiveBrowsePolicyTest {
     /* ---------------- OK σε κανάλι ---------------- */
 
     @Test
-    fun firstConfirmStartsPreview() {
-        assertEquals(ChannelAction.PREVIEW, TvLiveBrowsePolicy.onChannelConfirm(previewKey = null, targetKey = "a"))
-    }
-
-    @Test
-    fun secondConfirmOnSameChannelOpensFullPlayer() {
-        // Ένας player στην εφαρμογή: η προεπισκόπηση δεν «μεγαλώνει», παραδίδει.
-        assertEquals(ChannelAction.OPEN_PLAYER, TvLiveBrowsePolicy.onChannelConfirm(previewKey = "a", targetKey = "a"))
+    fun firstConfirmOpensFullPlayer() {
+        assertEquals(ChannelAction.OPEN_PLAYER, TvLiveBrowsePolicy.onChannelConfirm(targetKey = "a"))
     }
 
     @Test
@@ -56,7 +50,7 @@ class TvLiveBrowsePolicyTest {
         assertEquals(
             ChannelAction.START_MULTIVIEW,
             TvLiveBrowsePolicy.onChannelConfirm(
-                previewKey = "a", targetKey = "b", multiviewPrimaryKey = "a"
+                targetKey = "b", multiviewPrimaryKey = "a"
             )
         )
     }
@@ -67,14 +61,14 @@ class TvLiveBrowsePolicyTest {
         assertEquals(
             ChannelAction.OPEN_PLAYER,
             TvLiveBrowsePolicy.onChannelConfirm(
-                previewKey = "a", targetKey = "a", multiviewPrimaryKey = "a"
+                targetKey = "a", multiviewPrimaryKey = "a"
             )
         )
     }
 
     @Test
-    fun confirmOnDifferentChannelSwitchesPreviewInsteadOfOpening() {
-        assertEquals(ChannelAction.PREVIEW, TvLiveBrowsePolicy.onChannelConfirm(previewKey = "a", targetKey = "b"))
+    fun confirmOnDifferentChannelAlsoOpensFullPlayer() {
+        assertEquals(ChannelAction.OPEN_PLAYER, TvLiveBrowsePolicy.onChannelConfirm(targetKey = "b"))
     }
 
     /* ---------------- EPG: μία πηγή αλήθειας ---------------- */

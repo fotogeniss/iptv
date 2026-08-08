@@ -488,6 +488,7 @@ internal fun BrowseScreen(
                     onSearch = { leaveEpg(); libraryDestination = LibraryDestination.SEARCH },
                     onMyList = { leaveEpg(); libraryDestination = LibraryDestination.MY_LIST },
                     onSettings = { leaveEpg(); onOpenSettings() },
+                    showSettingsAction = true,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
@@ -755,6 +756,7 @@ internal fun BrowseScreen(
                     },
                     categoryTitlesInOrder = categoryTitlesInOrder,
                     onOpenEpg = if (state.epgLoaded) ({ showGrid = true }) else null,
+                    onOpenSettings = onOpenSettings,
                     onNavigationCollapsedChange = { mobileNavCollapsed = it },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -1022,6 +1024,7 @@ internal fun BrowseScreen(
                     onMyList = { libraryDestination = LibraryDestination.MY_LIST },
                     onSettings = onOpenSettings,
                     collapsed = mobileNavCollapsed,
+                    showSettingsAction = isCatalogHome && channels.isEmpty(),
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
@@ -1222,6 +1225,7 @@ internal fun BrowseScreen(
                     onSettings = {
                         leaveDetails(); onOpenSettings()
                     },
+                    showSettingsAction = true,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }

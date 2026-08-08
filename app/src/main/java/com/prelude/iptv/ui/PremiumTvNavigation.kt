@@ -21,17 +21,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,18 +42,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import com.prelude.iptv.ui.navigation.PrimaryContentDestination
 
 private val NavRed = IptvColors.Primary
 private val NavMuted = Color(0xFF8E8E96)
 
 /**
- * TV icon rail — πιστό στο Figma «Premium Home Page desktop/TV»: στενή στήλη
- * ΜΟΝΟ με εικονίδια, χωρίς labels/expansion. Το ενεργό προορισμό τον δείχνει
- * λευκό εικονίδιο + κόκκινη υπογράμμιση· το focus, λευκός κύκλος 10%.
- * Το signature μένει ίδιο με πριν ώστε να μην αλλάξει κανένας caller.
+ * TV rail for the five primary content destinations. Favorites, Continue and
+ * History are owned by Home, EPG by Live, and Sources by Settings.
+ *
+ * The signature intentionally remains stable while callers migrate; focus and
+ * exact Back return continue to use [selectedFocus].
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun PremiumTvNavigationRail(
     profileName: String,
     currentContentType: String,
@@ -146,14 +144,13 @@ fun PremiumTvNavigationRail(
         //
         // Υπολογίζονται μία φορά, γιατί χρειάζονται ΔΥΟ φορές: για το χρώμα, και
         // για να ξέρουμε πού πρέπει να προσγειωθεί το focus όταν έρθει το BACK.
-        val searchSelected = libraryDestination == LibraryDestination.SEARCH
-        val myListSelected = libraryDestination == LibraryDestination.MY_LIST
-        val continueSelected = libraryDestination == LibraryDestination.CONTINUE_WATCHING
-        val historySelected = libraryDestination == LibraryDestination.HISTORY
-        val liveSelected = libraryDestination == null && currentContentType == "live" && !homeSelected
-        val moviesSelected = libraryDestination == null && currentContentType == "vod" && !homeSelected
-        val seriesSelected = libraryDestination == null && currentContentType == "series" && !homeSelected
-        val homeIsSelected = homeSelected && libraryDestination == null
+        val selectedDestination = PrimaryContentDestination.resolveTvSelection(
+            currentContentType = currentContentType,
+            homeSelected = homeSelected,
+            searchSelected = libraryDestination == LibraryDestination.SEARCH,
+            secondaryLibrarySelected = libraryDestination != null &&
+                libraryDestination != LibraryDestination.SEARCH,
+        )
 
         // Το BACK πρέπει να προσγειώνεται εκεί που ΕΙΣΑΙ, όχι στην κορυφή.
         //
@@ -162,29 +159,29 @@ fun PremiumTvNavigationRail(
         // κατέληγες στην «Αναζήτηση» και έπρεπε να κατέβεις έξι θέσεις για να δεις
         // πού βρισκόσουν.
         //
-        // Αν δεν είναι τίποτα ενεργό (π.χ. Οδηγός TV), πέφτει στην Αρχική: πάντα
-        // υπάρχει προορισμός, ποτέ αίτημα που αποτυγχάνει σιωπηλά.
-        val noneSelected = !searchSelected && !myListSelected && !continueSelected &&
-            !historySelected && !liveSelected && !moviesSelected && !seriesSelected &&
-            !homeIsSelected
-        // Απλή επιλογή, όχι Composable: δεν διαβάζει κατάσταση, μόνο αποφασίζει
-        // σε ποιο στοιχείο κρεμιέται ο ένας FocusRequester.
-        val focusFor: (Boolean) -> androidx.compose.ui.focus.FocusRequester? =
-            { isSelected -> selectedFocus?.takeIf { isSelected } }
+        val focusFor: (PrimaryContentDestination) -> androidx.compose.ui.focus.FocusRequester? =
+            { destination -> selectedFocus?.takeIf { selectedDestination == destination } }
 
-        TvNavIcon(Icons.Default.Search, "Αναζήτηση", searchSelected, onSearch, expanded, focusFor(searchSelected), interactive)
-        TvNavIcon(Icons.Default.Home, "Αρχική", homeIsSelected, onHome, expanded, focusFor(homeIsSelected || noneSelected), interactive)
-        TvNavIcon(Icons.Default.Bookmark, "Η λίστα μου", myListSelected, onMyList, expanded, focusFor(myListSelected), interactive)
-        TvNavIcon(Icons.Default.PlayCircle, "Συνέχισε", continueSelected, onContinueWatching, expanded, focusFor(continueSelected), interactive)
-        TvNavIcon(Icons.Default.History, "Ιστορικό", historySelected, onHistory, expanded, focusFor(historySelected), interactive)
-        TvNavIcon(Icons.Default.LiveTv, "Ζωντανά", liveSelected, onLive, expanded, focusFor(liveSelected), interactive)
-        TvNavIcon(Icons.Default.Movie, "Ταινίες", moviesSelected, onMovies, expanded, focusFor(moviesSelected), interactive)
-        TvNavIcon(Icons.Default.Tv, "Σειρές", seriesSelected, onSeries, expanded, focusFor(seriesSelected), interactive)
-        // Πάντα κλικαρίσιμος — χωρίς EPG δείχνει ενημερωτικό μήνυμα.
-        TvNavIcon(Icons.Default.CalendarMonth, "Οδηγός TV", false, onEpg, expanded, null, interactive)
+        PrimaryContentDestination.ordered.forEach { destination ->
+            val (icon, action) = when (destination) {
+                PrimaryContentDestination.HOME -> Icons.Default.Home to onHome
+                PrimaryContentDestination.LIVE -> Icons.Default.LiveTv to onLive
+                PrimaryContentDestination.MOVIES -> Icons.Default.Movie to onMovies
+                PrimaryContentDestination.SERIES -> Icons.Default.Tv to onSeries
+                PrimaryContentDestination.SEARCH -> Icons.Default.Search to onSearch
+            }
+            TvNavIcon(
+                icon = icon,
+                contentDescription = destination.label,
+                selected = selectedDestination == destination,
+                onClick = action,
+                expanded = expanded,
+                focusRequester = focusFor(destination),
+                enabled = interactive,
+            )
+        }
 
         Spacer(Modifier.weight(1f))
-        TvNavIcon(Icons.Default.VideoLibrary, "Πηγές", false, onSources, expanded, null, interactive)
         TvNavIcon(Icons.Default.Settings, "Ρυθμίσεις", false, onSettings, expanded, null, interactive)
         Spacer(Modifier.height(8.dp))
         // Προφίλ (μη-focusable ένδειξη).

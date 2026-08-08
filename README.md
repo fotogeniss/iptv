@@ -35,12 +35,16 @@ testing steps that cannot be completed from source code alone.
   a source can be saved.
 - Large-catalog normalization, session cache and progressive loading.
 - Search, favorites, watch history and continue watching.
+- Five direct mobile/TV content destinations: Home, Live, movies, series and
+  automatic Search; library, EPG and source management remain inside their
+  owning Home, Live and Settings screens.
 - User-controlled Home and category visibility/order on mobile.
 
 ### Live TV and EPG
 
 - Category-first mobile and Android TV browsing.
 - List/grid channel layouts with list as the mobile default.
+- One-action Live playback on mobile and one-OK playback on Android TV.
 - XMLTV/XMLTV.GZ, Xtream and Stalker/MAC EPG sources.
 - Now/next information under channels and full EPG views.
 - Catch-up URL support where the provider exposes it.

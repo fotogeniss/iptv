@@ -331,7 +331,6 @@ fun TvLiveBrowseScreen(
                                 onClick = {
                                     when (
                                         TvLiveBrowsePolicy.onChannelConfirm(
-                                            previewKey = preview?.let(keyOf),
                                             targetKey = keyOf(channel),
                                             multiviewPrimaryKey = multiviewPrimary?.let(keyOf)
                                         )
@@ -342,10 +341,12 @@ fun TvLiveBrowseScreen(
                                             }
                                             multiviewPrimary = null
                                         }
-                                        // Ίδια μηχανή, ίδια επιφάνεια: μεγαλώνει.
-                                        TvLiveBrowsePolicy.ChannelAction.OPEN_PLAYER ->
+                                        // Ένα OK: επιλέγει και ανοίγει την ίδια
+                                        // μηχανή/επιφάνεια σε πλήρη οθόνη.
+                                        TvLiveBrowsePolicy.ChannelAction.OPEN_PLAYER -> {
+                                            preview = channel
                                             fullscreen = true
-                                        TvLiveBrowsePolicy.ChannelAction.PREVIEW -> preview = channel
+                                        }
                                     }
                                 },
                                 // Παρατεταμένο OK: οπλίζει το multiview (διπλή

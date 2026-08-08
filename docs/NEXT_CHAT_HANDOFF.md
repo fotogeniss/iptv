@@ -1,6 +1,6 @@
 # Prelude+ next-chat handoff
 
-Last verified workspace date: **2026-08-08**  
+Last verified workspace date: **2026-08-09**
 Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
@@ -246,7 +246,9 @@ has now been implemented for Android TV.
   Android TV checks for CH+/CH-, rapid stepping, a failed provider URL, VLC
   fallback, Back, DPAD focus and VOD seeking.
 
-## 6. Current approved source-onboarding implementation
+## 6. Current approved navigation implementations
+
+### Source onboarding
 
 - The owner approved the functional mobile/TV direction in
   `prototypes/onboarding/SOURCE_ONBOARDING_FLOW_PREVIEW.html`.
@@ -266,14 +268,35 @@ has now been implemented for Android TV.
   cancels an in-flight submission and dialogs/file selection restore focus.
 - The QR phone-pairing concept remains prototype-only. It requires a separate
   transport/security decision and no fake production button was introduced.
-- A new unified content-navigation proposal is available at
-  `prototypes/home/CONTENT_NAVIGATION_FLOW_PREVIEW.html`. It demonstrates the
-  complete mobile/TV path across Home, direct-play Live TV, movies, series,
-  automatic search, details, episodes, player return, responsive navigation and
-  spatial DPAD focus. It is a prototype only and still needs owner approval
-  before any Android UI implementation.
 - Static contracts cover the new ownership and focus boundaries. A normal Android
   Studio build plus phone/TV device QA is still required; Codex did not run Gradle.
+
+### Unified content navigation
+
+- The owner approved
+  `prototypes/home/CONTENT_NAVIGATION_FLOW_PREVIEW.html`, and its navigation
+  hierarchy is now implemented in the existing Android screens rather than in a
+  parallel replacement flow.
+- Mobile and TV expose the same five primary destinations in the same order:
+  Home, Live, movies, series and Search. Mobile no longer requires opening a
+  second Browse panel; the TV rail no longer mixes primary content with library,
+  EPG and source-management actions.
+- Favorites, Continue and History remain Home-owned library views; EPG remains
+  available inside Live; Sources remain the first Settings page. Settings stays
+  directly available from mobile screen headers and the bottom of the TV rail.
+- `PrimaryContentDestination` is the Android-free ordering and selection
+  contract shared by both surfaces. Its policy tests protect route order,
+  secondary-view ownership and the selected TV item that receives Back focus.
+- Mobile Live cards already opened playback directly. Android TV Live now opens
+  the selected channel with one OK while preserving long-OK multiview and exact
+  focus restoration after leaving fullscreen playback.
+- Automatic Search, movie/series details, seasons/episodes and player return keep
+  their existing centralized `BrowseRoute` ownership; this change did not create
+  duplicate navigation or playback state.
+- Static verification reports architecture 60 pass / 1 known size warning,
+  compatibility 58/58, deep validation 67 pass / 1 documented cleartext warning,
+  zero critical production-risk findings and a clean diff check. Gradle was not
+  run; the owner still needs to compile and perform phone/TV device QA.
 
 ## 7. Architecture work to continue afterward
 

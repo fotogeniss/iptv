@@ -29,11 +29,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 
 internal enum class LiveChannelLayout { LIST, GRID }
 
 @Composable
-internal fun LiveHeader(title: String, onBack: () -> Unit, onOpenEpg: (() -> Unit)?) {
+internal fun LiveHeader(
+    title: String,
+    onBack: () -> Unit,
+    onOpenEpg: (() -> Unit)?,
+    onSettings: () -> Unit,
+) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -70,9 +76,9 @@ internal fun LiveHeader(title: String, onBack: () -> Unit, onOpenEpg: (() -> Uni
                 Spacer(Modifier.width(6.dp))
                 Text("EPG", color = IptvColors.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black)
             }
-        } else {
-            Spacer(Modifier.width(30.dp))
         }
+        Spacer(Modifier.width(6.dp))
+        MobileSettingsAction(onClick = onSettings, modifier = Modifier.size(38.dp))
     }
 }
 

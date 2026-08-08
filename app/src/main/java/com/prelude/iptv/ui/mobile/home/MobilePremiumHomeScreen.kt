@@ -387,6 +387,7 @@ fun MobilePremiumHomeScreen(
             },
             onCategories = onOpenCategories,
             onExport = onExport,
+            onSettings = onOpenSettings,
             modifier = Modifier.align(Alignment.TopCenter)
         )
 
