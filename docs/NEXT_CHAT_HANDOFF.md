@@ -326,9 +326,17 @@ has now been implemented for Android TV.
   classified once through `CatalogStatusPolicy`. Migrated Home/Live surfaces do
   not render that legacy Greek transport text. Full producer-side typed catalog
   status should replace the transitional classifier in a later focused change.
-- The next cohesive localization slice is movies and series browsing. The full
-  EPG UI remains with the later EPG/settings slice; only programme labels shown
-  directly inside Live were included here.
+- Movie and series browsing is now localized across the active phone and TV
+  routes: app-owned section/synthetic-category labels, search, sorting, counts,
+  loading and empty states, refresh/load dialogs, voice-search language and
+  accessibility copy. Provider titles, category names and metadata remain raw
+  provider data. `CatalogLocalizationResources.kt` owns the synthetic-group and
+  locale-aware progress boundaries; the shared locale-aware uppercase helper is
+  intentionally no longer Live-owned.
+- The next cohesive localization slice is Search, followed by movie/series
+  details and seasons/episodes. The full EPG UI remains with the later
+  EPG/settings slice; only programme labels shown directly inside Live were
+  included there.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.

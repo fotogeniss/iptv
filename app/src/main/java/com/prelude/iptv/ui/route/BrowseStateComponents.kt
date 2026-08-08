@@ -209,27 +209,27 @@ internal fun RefreshModeDialog(
 ) {
     val first = rememberInitialFocus(key = contentType)
     val section = when (contentType) {
-        "vod" -> "Ταινίες"
-        "series" -> "Σειρές"
-        else -> "Live TV"
+        "vod" -> stringResource(R.string.catalog_movies)
+        "series" -> stringResource(R.string.catalog_series)
+        else -> stringResource(R.string.live_title)
     }
 
     AlertDialog(
         onDismissRequest = onCancel,
         containerColor = BgElev2,
-        title = { Text("Ανανέωση · $section", color = TextHi) },
+        title = { Text(stringResource(R.string.catalog_refresh_section, section), color = TextHi) },
         text = {
             Column {
                 Text(
-                    "Διάλεξε αν θα κρατηθούν τα groups που έχεις ήδη επιλέξει ή αν θέλεις να κατέβει ξανά η διαθέσιμη λίστα groups.",
+                    stringResource(R.string.catalog_refresh_mode_body),
                     color = TextMid,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
                 )
                 Spacer(Modifier.height(16.dp))
                 LoadModeOption(
-                    title = "Ανανέωση τρέχουσας επιλογής",
-                    subtitle = "Κρατά ακριβώς τα groups που χρησιμοποιείς τώρα",
+                    title = stringResource(R.string.catalog_refresh_current),
+                    subtitle = stringResource(R.string.catalog_refresh_current_body),
                     icon = Icons.Default.Refresh,
                     modifier = Modifier.focusRequester(first),
                     testTag = "refresh-mode-existing",
@@ -237,8 +237,8 @@ internal fun RefreshModeDialog(
                 )
                 Spacer(Modifier.height(10.dp))
                 LoadModeOption(
-                    title = "Ανανέωση + επιλογή νέων groups",
-                    subtitle = "Φέρνει φρέσκια λίστα για Live TV, Ταινίες ή Σειρές",
+                    title = stringResource(R.string.catalog_refresh_available),
+                    subtitle = stringResource(R.string.catalog_refresh_available_body),
                     icon = Icons.Default.PlaylistAdd,
                     testTag = "refresh-mode-new-groups",
                     onClick = onChooseGroups
@@ -246,7 +246,7 @@ internal fun RefreshModeDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TvDialogTextButton(label = "Άκυρο", color = TextMid, onClick = onCancel) }
+        dismissButton = { TvDialogTextButton(label = stringResource(R.string.catalog_cancel), color = TextMid, onClick = onCancel) }
     )
 }
 
@@ -262,18 +262,18 @@ internal fun LoadModeDialog(
     AlertDialog(
         onDismissRequest = onCancel,
         containerColor = BgElev2,
-        title = { Text("Τι να φορτώσω;", color = TextHi) },
+        title = { Text(stringResource(R.string.catalog_load_what), color = TextHi) },
         text = {
             Column {
                 Text(
-                    "Βρέθηκαν $count κατηγορίες. Τα δεδομένα της ενότητας κατεβαίνουν φρέσκα κάθε φορά.",
+                    stringResource(R.string.catalog_load_categories_body, count),
                     color = TextMid, fontSize = 13.sp, lineHeight = 18.sp
                 )
                 Spacer(Modifier.height(16.dp))
 
                 LoadModeOption(
-                    title = "Όλες οι κατηγορίες",
-                    subtitle = "Μόνο για την τρέχουσα ενότητα",
+                    title = stringResource(R.string.catalog_all_categories),
+                    subtitle = stringResource(R.string.catalog_current_section_only),
                     icon = Icons.Default.SelectAll,
                     modifier = Modifier.focusRequester(focusAll),
                     testTag = "load-mode-all",
@@ -281,8 +281,8 @@ internal fun LoadModeDialog(
                 )
                 Spacer(Modifier.height(10.dp))
                 LoadModeOption(
-                    title = "Θέλω να επιλέξω",
-                    subtitle = "Διάλεξε κατηγορίες για την τρέχουσα ενότητα",
+                    title = stringResource(R.string.catalog_choose_categories),
+                    subtitle = stringResource(R.string.catalog_choose_categories_body),
                     icon = Icons.Default.Checklist,
                     testTag = "load-mode-choose",
                     onClick = onChoose
@@ -290,7 +290,7 @@ internal fun LoadModeDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TvDialogTextButton(label = "Άκυρο", color = TextMid, onClick = onCancel) }
+        dismissButton = { TvDialogTextButton(label = stringResource(R.string.catalog_cancel), color = TextMid, onClick = onCancel) }
     )
 }
 

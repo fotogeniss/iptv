@@ -183,6 +183,38 @@ for ui_path in migrated_live_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Live UI: {ui_path}")
 
+catalog_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/CatalogLocalizationResources.kt"
+)
+for synthetic_group in ("UiState.ALL_GROUP", "UiState.FAV_GROUP"):
+    if synthetic_group not in catalog_mapping:
+        failures.append(f"catalog synthetic-group resource mapping missing: {synthetic_group}")
+
+migrated_catalog_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/route/BrowseFilterComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/BrowseStateComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/BrowseTopBar.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/browse/TvCategoryBrowseScreen.kt",
+]
+for ui_path in migrated_catalog_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated catalog UI: {ui_path}")
+
+tv_catalog = read(
+    "app/src/main/java/com/prelude/iptv/ui/tv/browse/TvCategoryBrowseScreen.kt"
+)
+if "fun allGroupLabel" in tv_catalog:
+    failures.append("TV catalog still owns localized synthetic-group display copy")
+if 'state.contentType == "vod"' not in browse_route or 'state.contentType == "series"' not in browse_route:
+    failures.append("Movies/Series still expose legacy catalog status transport copy")
+loading_progress = browse_route[browse_route.index("private fun CatalogLoadingProgress"):]
+if "progress.stage" in loading_progress or greek_string_literals(loading_progress):
+    failures.append("catalog loading UI bypasses the localized progress boundary")
+for legacy_copy in ("Τι θέλεις να δεις;", "Η φωνητική αναζήτηση δεν είναι διαθέσιμη"):
+    if f'"{legacy_copy}"' in uncomment_kotlin(browse_route):
+        failures.append("voice-search catalog copy bypasses resources")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

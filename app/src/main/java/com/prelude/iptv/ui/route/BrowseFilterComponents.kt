@@ -26,17 +26,20 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.compose.*
 import androidx.lifecycle.viewmodel.compose.*
 import coil.compose.*
+import com.prelude.iptv.R
 import com.prelude.iptv.*
 import com.prelude.iptv.data.*
 import com.prelude.iptv.ui.*
 import com.prelude.iptv.ui.components.library.*
 import com.prelude.iptv.ui.design.*
+import com.prelude.iptv.ui.localization.localizedCatalogGroupLabel
 import kotlinx.coroutines.*
 
 @Composable
@@ -44,9 +47,9 @@ internal fun ContentTypeRow(current: String, onSelect: (String) -> Unit) {
     val tv = isTvDevice()
     StreamingSegmentedControl(
         items = listOf(
-            StreamingSegment("live", "Ζωντανά"),
-            StreamingSegment("vod", "Ταινίες"),
-            StreamingSegment("series", "Σειρές")
+            StreamingSegment("live", stringResource(R.string.catalog_live)),
+            StreamingSegment("vod", stringResource(R.string.catalog_movies)),
+            StreamingSegment("series", stringResource(R.string.catalog_series))
         ),
         selected = current,
         onSelect = onSelect,
@@ -70,12 +73,12 @@ internal fun InlineSearchField(
     val focus = rememberInitialFocus()
     OutlinedTextField(
         value = value, onValueChange = onChange,
-        placeholder = { Text("Αναζήτηση…", color = TextLo) },
+        placeholder = { Text(stringResource(R.string.catalog_search_hint), color = TextLo) },
         singleLine = true, shape = RoundedCornerShape(14.dp),
         trailingIcon = {
             if (value.isNotEmpty()) IconButton(onClick = onClear,
                 modifier = Modifier.tvFocus(CircleShape)) {
-                Icon(Icons.Default.Close, "Καθαρισμός", tint = TextMid, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Close, stringResource(R.string.catalog_clear_search), tint = TextMid, modifier = Modifier.size(18.dp))
             }
         },
         colors = OutlinedTextFieldDefaults.colors(
@@ -92,6 +95,7 @@ internal fun InlineSearchField(
 @Composable
 internal fun GroupChips(
     groups: List<String>, selected: String,
+    contentType: String,
     lockedGroups: Set<String> = emptySet(),
     onLongPress: (String) -> Unit = {},
     onSelect: (String) -> Unit
@@ -109,6 +113,7 @@ internal fun GroupChips(
         contentPadding = PaddingValues(horizontal = 12.dp)
     ) {
         items(groups) { g ->
+            val label = localizedCatalogGroupLabel(g, contentType)
             val sel = g == selected
             val locked = g in lockedGroups
             Box(
@@ -121,7 +126,7 @@ internal fun GroupChips(
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             ) {
                 Text(
-                    if (locked) "🔒 $g" else g,
+                    if (locked) "🔒 $label" else label,
                     color = if (sel) Color.White else TextMid, fontSize = 13.sp,
                     fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
                     maxLines = 1
@@ -192,7 +197,7 @@ internal fun ChannelCard(
         IconButton(onClick = onFav, modifier = Modifier.size(42.dp)) {
             Icon(
                 if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                "Αγαπημένο",
+                stringResource(R.string.catalog_favorite),
                 tint = if (isFav) Color.White else Color(0xFF85858B),
                 modifier = Modifier.size(22.dp)
             )

@@ -65,6 +65,7 @@ import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
 import com.prelude.iptv.ui.localization.catalogRailLabels
+import com.prelude.iptv.ui.localization.localizedCatalogProgress
 import com.prelude.iptv.ui.status.CatalogStatusKind
 import com.prelude.iptv.ui.status.CatalogStatusPolicy
 import com.prelude.iptv.ui.design.Motion
@@ -134,13 +135,14 @@ internal fun BrowseScreen(
         }
     }
     val launchVoiceSearch: () -> Unit = {
+        val activeLocale = ctx.resources.configuration.locales[0]
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "el-GR")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Τι θέλεις να δεις;")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, activeLocale.toLanguageTag())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, ctx.getString(R.string.catalog_voice_prompt))
         }
         runCatching { voiceSearchLauncher.launch(intent) }
-            .onFailure { toast(ctx, "Η φωνητική αναζήτηση δεν είναι διαθέσιμη") }
+            .onFailure { toast(ctx, ctx.getString(R.string.catalog_voice_unavailable)) }
     }
     val isTv = isTvDevice()
     // ΤΗΛΕΟΡΑΣΗ: το BACK μέσα από κάρτα (ταινία/σειρά/live) πηγαίνει στο ΑΡΙΣΤΕΡΟ
@@ -401,7 +403,8 @@ internal fun BrowseScreen(
     var lastFlashed by remember { mutableStateOf<String?>(null) }
     // Χωρίς το epgStatus στα κλειδιά: δεν το δείχνουμε πια, οπότε δεν υπάρχει
     // λόγος να ξανατρέχει το effect κάθε φορά που αλλάζει.
-    val localizedStatusSurface = isCatalogHome || state.contentType == "live"
+    val localizedStatusSurface = isCatalogHome ||
+        state.contentType == "live" || state.contentType == "vod" || state.contentType == "series"
     val catalogStatusKind = CatalogStatusPolicy.kindOf(state.status)
     LaunchedEffect(state.status, state.loading, localizedStatusSurface) {
         val msg = when {
@@ -665,6 +668,7 @@ internal fun BrowseScreen(
             GroupChips(
                 state.groups,
                 state.selectedGroup,
+                contentType = state.contentType,
                 lockedGroups = state.lockedGroups,
                 onLongPress = { group ->
                     when {
@@ -806,6 +810,7 @@ internal fun BrowseScreen(
                 androidx.compose.animation.AnimatedVisibility(visible = (isTv && !isCatalogHome) || (!isTv && chromeVisible)) {
                 GroupChips(
                     state.groups, state.selectedGroup,
+                    contentType = state.contentType,
                     lockedGroups = state.lockedGroups,
                     onLongPress = { g ->
                         when {
@@ -1311,10 +1316,7 @@ private fun CatalogLoadingProgress(vm: MainViewModel) {
     val progressState by vm.catalogProgressState.collectAsStateWithLifecycle()
     val active = progressState.sourceProgress[vm.currentSourceId()]?.takeIf { it.active }
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-        val label = active?.let { progress ->
-            progress.percent?.let { "$it% · ${progress.stage}" }
-                ?: progress.stage.ifBlank { "Λήψη από την πηγή…" }
-        } ?: "Λήψη από την πηγή…"
+        val label = localizedCatalogProgress(active?.percent)
         Text(label, color = TextMid, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(6.dp))
         val percent = active?.percent

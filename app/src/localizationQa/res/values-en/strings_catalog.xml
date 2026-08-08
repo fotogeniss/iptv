@@ -1,0 +1,56 @@
+<resources>
+    <string name="catalog_live">Live</string>
+    <string name="catalog_movies">Movies</string>
+    <string name="catalog_series">Series</string>
+    <string name="catalog_all_movies">All movies</string>
+    <string name="catalog_all_series">All series</string>
+    <string name="catalog_favorites">Favorites</string>
+    <string name="catalog_empty_category">There is no content in this category</string>
+    <string name="catalog_in_my_list">In my list</string>
+
+    <string name="catalog_close">Close</string>
+    <string name="catalog_back">Back</string>
+    <string name="catalog_filtered_count">%1$d of %2$d</string>
+    <string name="catalog_sort">Sort</string>
+    <string name="catalog_programme_grid">Programme grid</string>
+    <string name="catalog_search">Search</string>
+    <string name="catalog_search_hint">Search…</string>
+    <string name="catalog_clear_search">Clear</string>
+    <string name="catalog_more">More</string>
+    <string name="catalog_content_sections">Sections (Live / Movies / Series)</string>
+    <string name="catalog_categories_groups">Categories / Groups…</string>
+    <string name="catalog_refresh">Refresh</string>
+    <string name="catalog_my_list">My list</string>
+    <string name="catalog_continue_watching">Continue watching</string>
+    <string name="catalog_history">History</string>
+    <string name="catalog_export">Export</string>
+    <string name="catalog_sort_provider">Provider order</string>
+    <string name="catalog_sort_ascending">A → Z</string>
+    <string name="catalog_sort_descending">Z → A</string>
+    <string name="catalog_sort_year_desc">Year (newest first)</string>
+    <string name="catalog_favorite">Favorite</string>
+
+    <string name="catalog_refresh_section">Refresh · %1$s</string>
+    <string name="catalog_refresh_mode_body">Choose whether to keep the groups you already selected or download the available group list again.</string>
+    <string name="catalog_refresh_current">Refresh current selection</string>
+    <string name="catalog_refresh_current_body">Keeps exactly the groups you use now</string>
+    <string name="catalog_refresh_available">Refresh + choose new groups</string>
+    <string name="catalog_refresh_available_body">Fetches a fresh list for Live TV, Movies, or Series</string>
+    <string name="catalog_cancel">Cancel</string>
+    <string name="catalog_load_what">What should be loaded?</string>
+    <string name="catalog_load_categories_body">%1$d categories found. Section data is downloaded fresh each time.</string>
+    <string name="catalog_all_categories">All categories</string>
+    <string name="catalog_current_section_only">Only for the current section</string>
+    <string name="catalog_choose_categories">Choose categories</string>
+    <string name="catalog_choose_categories_body">Choose categories for the current section</string>
+
+    <string name="catalog_loading">Downloading from source…</string>
+    <string name="catalog_loading_with_progress">%1$s · Downloading from source…</string>
+    <string name="catalog_voice_prompt">What do you want to watch?</string>
+    <string name="catalog_voice_unavailable">Voice search is unavailable</string>
+
+    <plurals name="catalog_item_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+</resources>

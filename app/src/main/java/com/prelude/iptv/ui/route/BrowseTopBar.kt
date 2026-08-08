@@ -11,6 +11,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
@@ -21,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.LibraryDestination
 import com.prelude.iptv.ui.TvIconButton
 import com.prelude.iptv.ui.rememberInitialFocus
@@ -76,7 +79,7 @@ internal fun BrowseLegacyTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (searchOpen) {
-            TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Κλείσιμο", onClick = onSearchClose)
+            TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.catalog_close), onClick = onSearchClose)
             InlineSearchField(
                 value = searchText,
                 onChange = onSearchChange,
@@ -86,7 +89,7 @@ internal fun BrowseLegacyTopBar(
             return@Row
         }
 
-        TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", onClick = onBack)
+        TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.catalog_back), onClick = onBack)
         Column(Modifier.weight(1f).padding(end = 4.dp)) {
             Text(
                 playlistName, color = TextHi, fontWeight = FontWeight.Bold, fontSize = 16.sp,
@@ -96,8 +99,8 @@ internal fun BrowseLegacyTopBar(
                 // «132 από 4.500» όταν φιλτράρεις — όχι το σύνολο σκέτο, που
                 // έδειχνε λάθος νούμερο σε group/αναζήτηση.
                 Text(
-                    if (visibleCount != totalCount) "$visibleCount από $totalCount"
-                    else "$totalCount στοιχεία",
+                    if (visibleCount != totalCount) stringResource(R.string.catalog_filtered_count, visibleCount, totalCount)
+                    else pluralStringResource(R.plurals.catalog_item_count, totalCount, totalCount),
                     color = TextLo, fontSize = 11.sp, maxLines = 1
                 )
             }
@@ -106,17 +109,17 @@ internal fun BrowseLegacyTopBar(
         // Ταξινόμηση: σειρά παρόχου / Α-Ω / έτος — δίπλα στην αναζήτηση
         var sortOpen by remember { mutableStateOf(false) }
         Box {
-            TvIconButton(Icons.Default.SwapVert, "Ταξινόμηση") { sortOpen = true }
+            TvIconButton(Icons.Default.SwapVert, stringResource(R.string.catalog_sort)) { sortOpen = true }
             DropdownMenu(
                 expanded = sortOpen, onDismissRequest = { sortOpen = false },
                 containerColor = BgElev2
             ) {
                 val mf = rememberInitialFocus()
-                SORT_MODES.forEachIndexed { i, (key, label) ->
+                SORT_MODES.forEachIndexed { i, (key, labelRes) ->
                     DropdownMenuItem(
                         text = {
                             Text(
-                                label,
+                                stringResource(labelRes),
                                 color = if (sortMode == key) AccentSoft else TextHi,
                                 fontWeight = if (sortMode == key) FontWeight.Bold else FontWeight.Normal
                             )
@@ -130,37 +133,37 @@ internal fun BrowseLegacyTopBar(
         }
 
         if (showEpgGrid)
-            TvIconButton(Icons.Default.CalendarMonth, "Πρόγραμμα (Grid)", onClick = onOpenEpgGrid)
-        TvIconButton(Icons.Default.Search, "Αναζήτηση", onClick = onSearchOpen)
+            TvIconButton(Icons.Default.CalendarMonth, stringResource(R.string.catalog_programme_grid), onClick = onOpenEpgGrid)
+        TvIconButton(Icons.Default.Search, stringResource(R.string.catalog_search), onClick = onSearchOpen)
 
         var menuOpen by remember { mutableStateOf(false) }
         Box {
-            TvIconButton(Icons.Default.MoreVert, "Περισσότερα", tint = TextMid) { menuOpen = true }
+            TvIconButton(Icons.Default.MoreVert, stringResource(R.string.catalog_more), tint = TextMid) { menuOpen = true }
             DropdownMenu(
                 expanded = menuOpen, onDismissRequest = { menuOpen = false },
                 containerColor = BgElev2
             ) {
                 val first = rememberInitialFocus()
                 MoreItem(
-                    "Ενότητες (Live / Ταινίες / Σειρές)", Icons.Default.Category, AccentSoft,
+                    stringResource(R.string.catalog_content_sections), Icons.Default.Category, AccentSoft,
                     Modifier.focusRequester(first)
                 ) { menuOpen = false; onChooseContent() }
-                MoreItem("Κατηγορίες / Ομάδες…", Icons.Default.Tune, AccentSoft) {
+                MoreItem(stringResource(R.string.catalog_categories_groups), Icons.Default.Tune, AccentSoft) {
                     menuOpen = false; onChangeCategories()
                 }
-                MoreItem("Ανανέωση", Icons.Default.Refresh, TextMid) {
+                MoreItem(stringResource(R.string.catalog_refresh), Icons.Default.Refresh, TextMid) {
                     menuOpen = false; onRefresh()
                 }
-                MoreItem("Η λίστα μου", Icons.Default.Bookmark, TextMid) {
+                MoreItem(stringResource(R.string.catalog_my_list), Icons.Default.Bookmark, TextMid) {
                     menuOpen = false; onOpenLibrary(LibraryDestination.MY_LIST)
                 }
-                MoreItem("Συνέχισε να βλέπεις", Icons.Default.PlayCircle, TextMid) {
+                MoreItem(stringResource(R.string.catalog_continue_watching), Icons.Default.PlayCircle, TextMid) {
                     menuOpen = false; onOpenLibrary(LibraryDestination.CONTINUE_WATCHING)
                 }
-                MoreItem("Ιστορικό", Icons.Default.History, TextMid) {
+                MoreItem(stringResource(R.string.catalog_history), Icons.Default.History, TextMid) {
                     menuOpen = false; onOpenLibrary(LibraryDestination.HISTORY)
                 }
-                MoreItem("Εξαγωγή", Icons.Default.IosShare, TextMid) {
+                MoreItem(stringResource(R.string.catalog_export), Icons.Default.IosShare, TextMid) {
                     menuOpen = false; onExport()
                 }
             }
@@ -170,10 +173,10 @@ internal fun BrowseLegacyTopBar(
 
 /** key -> ετικέτα. Η σειρά είναι και η σειρά εμφάνισης. */
 private val SORT_MODES = listOf(
-    "default" to "Σειρά παρόχου",
-    "az" to "Α → Ω",
-    "za" to "Ω → Α",
-    "year" to "Έτος (νεότερα πρώτα)",
+    "default" to R.string.catalog_sort_provider,
+    "az" to R.string.catalog_sort_ascending,
+    "za" to R.string.catalog_sort_descending,
+    "year" to R.string.catalog_sort_year_desc,
 )
 
 /**

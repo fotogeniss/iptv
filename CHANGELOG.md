@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized movie and series browsing across the active mobile and Android TV
+  routes, including app-owned section/category labels, search and sorting,
+  counts, loading/empty states, refresh dialogs, voice-search language,
+  accessibility copy and locale-aware uppercase/progress formatting. Provider
+  titles, category names and metadata remain unchanged.
 - Localized Live TV across the active mobile and Android TV flows, including
   categories, search, list/grid views, channel preview, programme labels,
   Multiview guidance and typed failures, parental-category actions, empty

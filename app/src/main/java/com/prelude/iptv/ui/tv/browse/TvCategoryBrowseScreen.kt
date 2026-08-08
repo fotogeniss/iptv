@@ -54,21 +54,23 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.UiState
-import com.prelude.iptv.ui.greekUppercase
 import com.prelude.iptv.ui.components.rememberPosterArtwork
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.localizedCatalogGroupLabel
+import com.prelude.iptv.ui.localization.localizedUppercase
 import com.prelude.iptv.ui.requestFocusWithRetry
 import com.prelude.iptv.ui.tvConfirm
 import java.text.SimpleDateFormat
@@ -158,7 +160,7 @@ fun TvCategoryBrowseScreen(
                         TvGroupRow(
                             // «Όλα τα κανάλια» έχει νόημα μόνο στα ζωντανά. Στις
                             // ταινίες/σειρές λέμε αυτό που πραγματικά δείχνει.
-                            label = allGroupLabel(group, contentType),
+                            label = localizedCatalogGroupLabel(group, contentType),
                             selected = group == selectedGroup,
                             modifier = if (index == 0) Modifier.focusRequester(firstGroupFocus) else Modifier,
                             onClick = { onSelectGroup(group) }
@@ -170,7 +172,7 @@ fun TvCategoryBrowseScreen(
                 if (channels.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            "Δεν υπάρχει περιεχόμενο σε αυτή την κατηγορία",
+                            stringResource(R.string.catalog_empty_category),
                             color = IptvColors.TextSecondary,
                             fontSize = 15.sp
                         )
@@ -207,21 +209,6 @@ fun TvCategoryBrowseScreen(
         }
     }
 }
-
-/**
- * Η ετικέτα της κατηγορίας «όλα», προσαρμοσμένη στην ενότητα.
- *
- * Η σταθερά είναι «Όλα τα κανάλια» (φτιάχτηκε για τα ζωντανά) και φαινόταν
- * λάθος στις ταινίες και τις σειρές. Αλλάζουμε μόνο την ΕΜΦΑΝΙΣΗ — η τιμή που
- * ταξιδεύει στο state μένει η ίδια, ώστε να μη σπάσει το φιλτράρισμα.
- */
-internal fun allGroupLabel(group: String, contentType: String): String =
-    if (group != UiState.ALL_GROUP) group
-    else when (contentType) {
-        "vod" -> "Όλες οι ταινίες"
-        "series" -> "Όλες οι σειρές"
-        else -> group
-    }
 
 /** Κοινή κεφαλίδα ενοτήτων (χρησιμοποιείται και από την οθόνη Live). */
 @Composable
@@ -273,8 +260,7 @@ private fun TvGroupRow(
         else -> IptvColors.TextSecondary
     }
     Text(
-        // greekUppercase: τα ελληνικά κεφαλαία δεν παίρνουν τόνους.
-        label.greekUppercase(),
+        localizedUppercase(label),
         color = foreground,
         fontSize = 11.sp,
         letterSpacing = 0.6.sp,
@@ -360,7 +346,7 @@ private fun TvPosterTile(
                         .clip(RoundedCornerShape(99.dp)).background(Color.Black.copy(alpha = 0.72f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Check, "Στη λίστα μου", tint = Color.White, modifier = Modifier.size(13.dp))
+                    Icon(Icons.Default.Check, stringResource(R.string.catalog_in_my_list), tint = Color.White, modifier = Modifier.size(13.dp))
                 }
             }
             if (dim > 0f) {

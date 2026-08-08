@@ -8,7 +8,6 @@ import com.prelude.iptv.R
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.components.live.LiveFilterOption
 import com.prelude.iptv.ui.components.live.LiveRemaining
-import com.prelude.iptv.ui.greekUppercase
 import java.text.NumberFormat
 
 /** Reserved filter IDs are app copy; provider group labels pass through unchanged. */
@@ -50,9 +49,3 @@ fun localizedLiveRemaining(remaining: LiveRemaining?): String {
 @Composable
 fun localizedLiveProgress(progress: Float): String =
     NumberFormat.getPercentInstance(LocalConfiguration.current.locales[0]).format(progress)
-
-@Composable
-fun localizedUppercase(value: String): String {
-    val locale = LocalConfiguration.current.locales[0]
-    return if (locale.language == "el") value.greekUppercase() else value.uppercase(locale)
-}
