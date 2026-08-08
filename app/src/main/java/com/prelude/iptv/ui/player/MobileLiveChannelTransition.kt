@@ -24,7 +24,7 @@ internal data class LiveChannelTransitionRequest(
 
 /** Android-free motion math kept deterministic for tests and reduced surprises. */
 internal object LiveChannelTransitionMotion {
-    const val DURATION_MS = 640
+    const val DURATION_MS = 720
 
     fun direction(step: Int): Int = if (step >= 0) 1 else -1
 
@@ -69,18 +69,18 @@ internal fun MobileLiveChannelTransition(
             progress = phase,
             direction = request.direction,
         )
-        val bandWidth = size.width.coerceAtLeast(1f) * .18f
+        val bandWidth = size.width.coerceAtLeast(1f) * .25f
 
         // The short dark dip hides the provider's decode gap without flashing
         // or covering the controls with an opaque transition card.
-        drawRect(Color.Black.copy(alpha = .20f * intensity))
+        drawRect(Color.Black.copy(alpha = .32f * intensity))
         drawRect(
             brush = Brush.horizontalGradient(
                 colors = listOf(
                     Color.Transparent,
-                    Color(0xFF79D8FF).copy(alpha = .08f * intensity),
-                    Color.White.copy(alpha = .20f * intensity),
-                    Color(0xFFBDEFFF).copy(alpha = .13f * intensity),
+                    Color(0xFF79D8FF).copy(alpha = .14f * intensity),
+                    Color.White.copy(alpha = .38f * intensity),
+                    Color(0xFFBDEFFF).copy(alpha = .22f * intensity),
                     Color.Transparent,
                 ),
                 startX = edgeX - bandWidth,
@@ -110,12 +110,12 @@ internal fun MobileLiveChannelTransition(
                 startX = edgeX - 22f,
                 endX = edgeX + 22f,
             ),
-            style = Stroke(width = 22f),
+            style = Stroke(width = 36f),
         )
         drawPath(
             path = wave,
-            color = Color.White.copy(alpha = .24f * intensity),
-            style = Stroke(width = 1.5f),
+            color = Color.White.copy(alpha = .36f * intensity),
+            style = Stroke(width = 2.2f),
         )
     }
 }

@@ -147,6 +147,8 @@ fun MobilePlaybackOverlay(
 
     var channelTransitionSequence by remember { mutableIntStateOf(0) }
     var channelTransition by remember { mutableStateOf<LiveChannelTransitionRequest?>(null) }
+    var pendingChannelTransitionDirection by remember { mutableStateOf<Int?>(null) }
+    var pendingChannelTransitionVersion by remember { mutableIntStateOf(0) }
     // Όνομα του νέου καναλιού σε συννεφάκι πάνω-πάνω. null = κρυμμένο.
     var channelToast by remember { mutableStateOf<String?>(null) }
     // Το πρώτο κανάλι δεν πρέπει να δείξει συννεφάκι «άλλαξε» — μόνο αυτά που
@@ -249,15 +251,33 @@ fun MobilePlaybackOverlay(
         )
     }
 
-    // Συννεφάκι με το όνομα, μόνο όταν το κανάλι άλλαξε ΑΠΟ σύρσιμο — όχι στο
-    // πρώτο άνοιγμα του player, που έχει ήδη τον τίτλο από κάτω.
+    // Start the transition only after the requested live channel is actually
+    // published by the parent. Starting it inside onDragEnd races the channel
+    // recomposition and can make the complete animation disappear.
     LaunchedEffect(channel) {
         if (isFirstChannel) {
             isFirstChannel = false
         } else if (isLive) {
+            channelTransition = LiveChannelTransitionRequest(
+                sequence = ++channelTransitionSequence,
+                direction = pendingChannelTransitionDirection
+                    ?: LiveChannelTransitionMotion.direction(1),
+            )
+            pendingChannelTransitionDirection = null
             channelToast = title
             delay(900)
             channelToast = null
+        }
+    }
+
+    // A boundary swipe may not have a next/previous item. Do not let that stale
+    // direction leak into a later channel selected from the context list.
+    LaunchedEffect(pendingChannelTransitionVersion) {
+        if (pendingChannelTransitionVersion == 0) return@LaunchedEffect
+        val version = pendingChannelTransitionVersion
+        delay(1_200)
+        if (pendingChannelTransitionVersion == version) {
+            pendingChannelTransitionDirection = null
         }
     }
 
@@ -553,16 +573,14 @@ fun MobilePlaybackOverlay(
                                     // όχι σταθερά pixel.
                                     val threshold = widthPx / 5f
                                     if (dragX <= -threshold) {
-                                        channelTransition = LiveChannelTransitionRequest(
-                                            sequence = ++channelTransitionSequence,
-                                            direction = LiveChannelTransitionMotion.direction(1),
-                                        )
+                                        pendingChannelTransitionDirection =
+                                            LiveChannelTransitionMotion.direction(1)
+                                        pendingChannelTransitionVersion++
                                         onChannelStep(1)
                                     } else if (dragX >= threshold) {
-                                        channelTransition = LiveChannelTransitionRequest(
-                                            sequence = ++channelTransitionSequence,
-                                            direction = LiveChannelTransitionMotion.direction(-1),
-                                        )
+                                        pendingChannelTransitionDirection =
+                                            LiveChannelTransitionMotion.direction(-1)
+                                        pendingChannelTransitionVersion++
                                         onChannelStep(-1)
                                     }
                                     dragX = 0f

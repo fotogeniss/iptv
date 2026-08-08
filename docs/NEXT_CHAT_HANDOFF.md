@@ -4,7 +4,8 @@ Last verified workspace date: **2026-08-08**
 Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
-Last repository commit: `1a7b4f4 feat: add premium live channel transition`
+Baseline app commit when this handoff was created:
+`1a7b4f4 feat: add premium live channel transition`
 
 This document is the operational source of truth for continuing the current
 Codex collaboration in a fresh chat. Read it together with `README.md`,
@@ -94,6 +95,11 @@ The current project-local history begins with the following controlled sequence:
   interaction target remains 26 dp.
 - Motion policy tests:
   `app/src/test/java/com/prelude/iptv/ui/player/LiveChannelTransitionMotionTest.kt`.
+- A later wiring fix moved the animation trigger from the swipe-end callback to
+  the confirmed `channel` publication. This prevents channel recomposition from
+  swallowing the animation, preserves swipe direction and makes the refraction
+  clearly visible on real video. This fix has static validation but still needs
+  the owner's normal Android Studio build and device confirmation.
 
 ## 4. Delivered product capabilities
 
@@ -318,4 +324,3 @@ The owner can paste the following after attaching or referencing this file:
 > cohesive completed change. The immediate task is the Android TV HTML preview for
 > the premium directional live-channel transition and slim but DPAD-safe progress
 > bar described in the handoff.
-

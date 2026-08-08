@@ -21,6 +21,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 - Replaced the mobile live-channel swipe arrow with a subtle directional
   refraction transition, and slimmed the visible player scrubber while retaining
   its larger touch target.
+- Fixed the mobile live-channel transition so it begins after the requested
+  channel is published, remains directional and is clearly visible on real video.
 
 ## 1.46.0 - versionCode 115
 
