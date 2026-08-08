@@ -5,6 +5,9 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Added a maintained next-chat engineering handoff covering the verified project
+  state, working constraints, delivered capabilities, release gates and the next
+  approved design task.
 - Made the owner QA build separately installable as `com.prelude.iptv.qa`, with
   isolated app data and the existing visible `Prelude+ QA` label.
 - Replaced the provider download retry `Thread.sleep` with a bounded,
