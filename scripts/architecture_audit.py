@@ -81,6 +81,7 @@ chrome = text("app/src/main/java/com/prelude/iptv/player/PlayerChromeController.
 player_host = text("app/src/main/java/com/prelude/iptv/ui/player/PlayerHost.kt")
 tv_overlay = text("app/src/main/java/com/prelude/iptv/ui/player/TvPlaybackOverlay.kt")
 mobile_overlay = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt")
+live_transition_coordinator = text("app/src/main/java/com/prelude/iptv/ui/player/MobileLiveChannelTransitionCoordinator.kt")
 playback_engine = text("app/src/main/java/com/prelude/iptv/player/PlaybackEngine.kt")
 require("TvPlaybackOverlay(" in player and "PlayerHost(" in tv_overlay,
         "External PlayerActivity delegates visibility, timers and focus to the shared overlay/host")
@@ -95,10 +96,12 @@ require(".onPreviewKeyEvent" in player_host and
 require("loadToken" not in player and "PlayerLaunchRequest.fromIntent" in player,
         "PlayerActivity delegates typed launch/session state to the shared overlay")
 require(all(marker in tv_overlay for marker in ["loadResumeMs(channel)", "saveResumeMs", "DisposableEffect(channel)"]) and
-        all(marker in mobile_overlay for marker in ["loadResumeMs(channel)", "saveResumeMs", "DisposableEffect(channel)"]),
+        all(marker in mobile_overlay for marker in ["saveResumeMs", "DisposableEffect(channel)"]) and
+        "loadResumeMs(channel)" in live_transition_coordinator,
         "Shared mobile/TV overlays own resume load, periodic save and final save")
 require("handler.removeCallbacksAndMessages(null)" in playback_engine and
-        "engine.release()" in tv_overlay and "engine.release()" in mobile_overlay,
+        "engine.release()" in tv_overlay and "DisposableEffect(engine)" in mobile_overlay and
+        "onDispose { engine.release() }" in mobile_overlay,
         "Shared playback teardown clears engine callbacks and releases both overlays")
 
 launchers = text("app/src/main/java/com/prelude/iptv/ui/route/PlaybackLaunchers.kt")
@@ -209,6 +212,7 @@ require(all(marker in catalog_presentation for marker in [
 
 mobile_playback = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt")
 live_transition = text("app/src/main/java/com/prelude/iptv/ui/player/MobileLiveChannelTransition.kt")
+video_frame_capture = text("app/src/main/java/com/prelude/iptv/ui/player/PlayerVideoFrameCapture.kt")
 require("MobileLiveChannelTransition(" in mobile_playback and
         "channelFlash" not in mobile_playback and "ChevronRight" not in mobile_playback,
         "Mobile live zapping uses directional refraction without arrow feedback")
@@ -216,6 +220,15 @@ require(all(marker in live_transition for marker in [
             "LiveChannelTransitionMotion", "fun edgeFraction", "fun intensity", "Canvas(modifier)"
         ]),
         "Live channel transition keeps deterministic motion separate from playback")
+require(all(marker in live_transition_coordinator for marker in [
+            "frameCapture.capture()", "framesBeforeOpen", "engine.state.first",
+            "hasCommittedFrame", "LiveChannelOpenResult.Failed"
+        ]) and "MobileLiveChannelTransitionCoordinator" in mobile_playback,
+        "Mobile live transition waits for a committed first frame through its coordinator")
+require(all(marker in video_frame_capture for marker in [
+            "TextureView", "CapturedVideoFrame", "bitmap.recycle()"
+        ]) and "outgoingFrame" in live_transition,
+        "Mobile live transition captures and releases one outgoing TextureView frame")
 
 mobile_controls = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlayerControls.kt")
 scrubber_start = mobile_controls.find("private fun Scrubber(")

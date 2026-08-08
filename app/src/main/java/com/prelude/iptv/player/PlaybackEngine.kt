@@ -533,6 +533,7 @@ class PlaybackEngine(private val appContext: Context) {
      * πηγαινοερχόταν για πάντα, με τον χρήστη να βλέπει μαύρη οθόνη που «σκέφτεται».
      */
     private var vlcFallbackUrl: String = ""
+    private var vlcFrameWasRendered: Boolean = false
 
     /**
      * Ανοίγει ρητά με LibVLC, χωρίς να ξαναρωτηθεί η πολιτική.
@@ -583,11 +584,14 @@ class PlaybackEngine(private val appContext: Context) {
         // από το Compose, οπότε η μετάβαση στο κύριο νήμα γίνεται ΕΔΩ, μία φορά.
         handler.post {
             val engine = vlc ?: return@post
+            val renderedFrameAdvanced = snapshot.renderedFrame && !vlcFrameWasRendered
+            vlcFrameWasRendered = snapshot.renderedFrame
             _state.value = VlcStateMapper.merge(
                 previous = _state.value,
                 snapshot = snapshot,
                 audioTracks = engine.audioTracks(),
                 subtitleTracks = engine.subtitleTracks(),
+                renderedFrameAdvanced = renderedFrameAdvanced,
             )
         }
     }.also { vlc = it }

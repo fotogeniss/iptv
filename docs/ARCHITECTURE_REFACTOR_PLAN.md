@@ -143,3 +143,15 @@ The codebase now has explicit seams, but the two legacy files are still large. F
   source/series generation change.
 - Added focused policy tests and architecture contracts for delegation and
   cancellation ownership.
+
+## Completed mobile live-transition correction - Unreleased
+
+- Added `MobileLiveChannelTransitionCoordinator` as the ordered boundary for
+  outgoing-frame capture, provider URL resolution, engine opening and confirmed
+  first-frame handoff.
+- Kept `MobilePlaybackOverlay` responsible for UI state while the focused
+  transition renderer owns the directional reveal and snapshot disposal.
+- Preserved one playback engine and one video surface; the engine now lives for
+  the complete mobile overlay instead of being released on every channel key.
+- Unified ExoPlayer and LibVLC first-frame counter semantics so stale, failed and
+  cancelled channel requests cannot visually commit a transition.

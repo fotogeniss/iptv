@@ -33,6 +33,7 @@ fun PlayerVideoSurface(
     keepScreenOn: Boolean,
     modifier: Modifier = Modifier,
     preferSmoothResize: Boolean = false,
+    frameCapture: PlayerVideoFrameCapture? = null,
     /**
      * Το τελευταίο καρέ της επιφάνειας τη στιγμή που φεύγει από τη σύνθεση.
      *
@@ -68,7 +69,10 @@ fun PlayerVideoSurface(
                 currentOnLastFrame.value?.invoke(
                     runCatching { view?.takeIf { it.isAvailable }?.bitmap }.getOrNull()
                 )
-                view?.let(engine::detachSurface)
+                view?.let { current ->
+                    frameCapture?.detach(current)
+                    engine.detachSurface(current)
+                }
                 textureRef[0] = null
             }
         }
@@ -80,6 +84,7 @@ fun PlayerVideoSurface(
                     // with UnsupportedOperationException on affected devices. The
                     // Compose parent already paints the required black background.
                     textureRef[0] = it
+                    frameCapture?.attach(it)
                 }
             },
             update = { view ->

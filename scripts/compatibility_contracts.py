@@ -123,8 +123,8 @@ source_contracts = {
         re.DOTALL,
     ),
     "Player surfaces detach with their AndroidView lifecycle": (
-        "engine::detachSurface" in player_video_surface
-        and player_video_surface.count("engine::detachSurface") >= 2
+        player_video_surface.count("engine::detachSurface")
+        + player_video_surface.count("engine.detachSurface(") >= 2
     ),
     "TV VOD seeks only while the progress bar owns focus": (
         "focusTarget = PlayerFocusTarget.PROGRESS" in player_host

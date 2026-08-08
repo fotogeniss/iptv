@@ -21,8 +21,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 - Replaced the mobile live-channel swipe arrow with a subtle directional
   refraction transition, and slimmed the visible player scrubber while retaining
   its larger touch target.
-- Fixed the mobile live-channel transition so it begins after the requested
-  channel is published, remains directional and is clearly visible on real video.
+- Reworked the mobile live-channel transition to wait for the new stream's first
+  rendered frame, then directionally reveal it beneath a captured outgoing frame;
+  failed or stale channel loads no longer trigger a false visual commit.
+- Kept the mobile playback engine alive across channel changes instead of
+  releasing it while the next stream and first-frame transition were starting.
 
 ## 1.46.0 - versionCode 115
 

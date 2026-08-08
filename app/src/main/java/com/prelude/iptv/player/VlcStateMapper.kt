@@ -22,6 +22,7 @@ internal object VlcStateMapper {
         snapshot: VlcBackend.Snapshot,
         audioTracks: List<PlaybackEngine.TrackOption>,
         subtitleTracks: List<PlaybackEngine.TrackOption>,
+        renderedFrameAdvanced: Boolean,
     ): PlaybackEngine.State = previous.copy(
         playing = snapshot.playing,
         buffering = snapshot.buffering,
@@ -42,8 +43,8 @@ internal object VlcStateMapper {
         } else previous.quality,
         // Μετρητής, όχι σημαία: η διεπαφή περιμένει αύξηση για να πάψει να δείχνει
         // το παγωμένο καρέ. Δες [PlaybackEngine.State.renderedFrames].
-        renderedFrames = if (snapshot.renderedFrame && previous.renderedFrames == 0) {
-            1
+        renderedFrames = if (renderedFrameAdvanced) {
+            previous.renderedFrames + 1
         } else previous.renderedFrames,
         audioTracks = audioTracks,
         subtitleTracks = subtitleTracks,

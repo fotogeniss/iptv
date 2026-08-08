@@ -43,7 +43,6 @@ import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.navigation.MobilePlayerDockState
 import com.prelude.iptv.ui.mobile.navigation.PremiumMobileBottomDockFallback
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -93,6 +92,10 @@ fun MobilePlaybackOverlay(
 ) {
     val context = LocalContext.current
     val engine = remember { PlaybackEngine(context.applicationContext) }
+    val videoFrameCapture = remember { PlayerVideoFrameCapture() }
+    val liveTransitionCoordinator = remember(engine, videoFrameCapture) {
+        MobileLiveChannelTransitionCoordinator(engine, videoFrameCapture)
+    }
     val state by engine.state.collectAsState()
     var failed by remember(channel) { mutableStateOf(false) }
     var controlsVisible by remember { mutableStateOf(true) }
@@ -222,51 +225,50 @@ fun MobilePlaybackOverlay(
         // μαζεμένη τη λωρίδα και να πάτησε άλλη ταινία από τη λίστα: το να άρχιζε
         // να παίζει κρυμμένη μέσα σε 58 pixel δεν είναι αυτό που ζήτησε.
         collapsed = false
-        val url = try {
-            resolveUrl(channel)
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (error: Exception) {
-            android.util.Log.w(
-                "PreludePlayback",
-                "Η επίλυση διεύθυνσης απέτυχε για «${channel.name}» (${channel.kind})",
-                error
-            )
-            ""
-        }
-        if (url.isBlank()) {
-            // Δες [TvPlaybackOverlay]: εδώ δεν έχει τρέξει καμία μηχανή. Το
-            // πρόβλημα είναι ο κατάλογος, όχι η αναπαραγωγή.
-            android.util.Log.w(
-                "PreludePlayback",
-                "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
-                    "url='${channel.url}' cmd='${channel.cmd}'"
-            )
-            failed = true
-        }
-        else engine.open(
-            url,
-            resumeMs = if (isLive) 0L else loadResumeMs(channel),
-            live = isLive,
-        )
-    }
+        channelTransition = null
+        channelToast = null
+        val initialChannel = isFirstChannel
+        if (initialChannel) isFirstChannel = false
+        val transitionDirection = pendingChannelTransitionDirection
+            .takeIf { !initialChannel && isLive }
+        pendingChannelTransitionDirection = null
 
-    // Start the transition only after the requested live channel is actually
-    // published by the parent. Starting it inside onDragEnd races the channel
-    // recomposition and can make the complete animation disappear.
-    LaunchedEffect(channel) {
-        if (isFirstChannel) {
-            isFirstChannel = false
-        } else if (isLive) {
-            channelTransition = LiveChannelTransitionRequest(
-                sequence = ++channelTransitionSequence,
-                direction = pendingChannelTransitionDirection
-                    ?: LiveChannelTransitionMotion.direction(1),
-            )
-            pendingChannelTransitionDirection = null
-            channelToast = title
-            delay(900)
-            channelToast = null
+        when (val result = liveTransitionCoordinator.open(
+            channel = channel,
+            isLive = isLive,
+            transitionDirection = transitionDirection,
+            resolveUrl = resolveUrl,
+            loadResumeMs = loadResumeMs,
+        )) {
+            is LiveChannelOpenResult.Failed -> {
+                result.cause?.let { error ->
+                    android.util.Log.w(
+                        "PreludePlayback",
+                        "Η επίλυση διεύθυνσης απέτυχε για «${channel.name}» (${channel.kind})",
+                        error
+                    )
+                }
+                // Δες [TvPlaybackOverlay]: εδώ δεν έχει τρέξει καμία μηχανή. Το
+                // πρόβλημα είναι ο κατάλογος, όχι η αναπαραγωγή.
+                android.util.Log.w(
+                    "PreludePlayback",
+                    "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
+                        "url='${channel.url}' cmd='${channel.cmd}'"
+                )
+                failed = true
+            }
+            is LiveChannelOpenResult.Opened -> {
+                result.transition?.let { prepared ->
+                    channelTransition = LiveChannelTransitionRequest(
+                        sequence = ++channelTransitionSequence,
+                        direction = prepared.direction,
+                        outgoingFrame = prepared.outgoingFrame,
+                    )
+                    channelToast = title
+                    delay(900)
+                    channelToast = null
+                }
+            }
         }
     }
 
@@ -297,8 +299,14 @@ fun MobilePlaybackOverlay(
                 val position = engine.currentPositionMs()
                 if (position > 0) save(channel, position, engine.durationMs())
             }
-            engine.release()
         }
+    }
+
+    // The engine belongs to the complete overlay, not to one channel. Releasing
+    // it from DisposableEffect(channel) tears down the same engine during every
+    // zap and races the next open/first-frame signal.
+    DisposableEffect(engine) {
+        onDispose { engine.release() }
     }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -462,6 +470,7 @@ fun MobilePlaybackOverlay(
                     // ίδιο layer με το Compose UI και ακολουθεί σωστά resize,
                     // clipping και z-order.
                     preferSmoothResize = true,
+                    frameCapture = videoFrameCapture,
                     modifier = when (aspectMode) {
                         // Γεμίζει χωρίς να παραμορφώνει: η μεγαλύτερη διάσταση
                         // περισσεύει και κόβεται από το clipToBounds του container.
@@ -482,6 +491,9 @@ fun MobilePlaybackOverlay(
             if (isLive) {
                 MobileLiveChannelTransition(
                     request = channelTransition,
+                    onFinished = { sequence ->
+                        if (channelTransition?.sequence == sequence) channelTransition = null
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
             }

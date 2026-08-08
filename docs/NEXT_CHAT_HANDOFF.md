@@ -79,6 +79,7 @@ The current project-local history begins with the following controlled sequence:
 | `85d8a37` | Extracted category-editor loading, draft state and persistence into a focused coordinator with tests. |
 | `aab96af` | Extracted catalog grouping, visibility, favorites, search and sorting into a pure tested presentation policy. |
 | `1a7b4f4` | Added the approved premium mobile live-channel transition and slimmed the mobile player scrubber without shrinking its touch target. |
+| `2a050af` | Attempted to move the mobile transition trigger from swipe-end to channel publication; later device feedback proved that publication was still too early. |
 
 ### Latest mobile live-channel change
 
@@ -95,11 +96,20 @@ The current project-local history begins with the following controlled sequence:
   interaction target remains 26 dp.
 - Motion policy tests:
   `app/src/test/java/com/prelude/iptv/ui/player/LiveChannelTransitionMotionTest.kt`.
-- A later wiring fix moved the animation trigger from the swipe-end callback to
-  the confirmed `channel` publication. This prevents channel recomposition from
-  swallowing the animation, preserves swipe direction and makes the refraction
-  clearly visible on real video. This fix has static validation but still needs
-  the owner's normal Android Studio build and device confirmation.
+- Device feedback proved that starting at `channel` publication was still too
+  early: provider URL resolution and decoding could outlast the complete effect.
+- The corrected flow captures the outgoing mobile `TextureView` frame, resolves
+  and opens the requested stream, waits for the engine's actual first-rendered-
+  frame counter, then reveals the new video under a directional wavy boundary.
+- The capture/open/first-frame ordering now lives in the focused
+  `MobileLiveChannelTransitionCoordinator`; the overlay keeps only UI state.
+- Failed, timed-out and cancelled requests release their snapshot and do not
+  visually commit a transition. Rapid channel changes cancel stale preparation.
+- The mobile `PlaybackEngine` is now released only when the complete overlay
+  leaves composition, not whenever its `channel` key changes.
+- ExoPlayer and LibVLC now both advance the shared rendered-frame signal for each
+  new surface frame. This work has static validation but still needs the owner's
+  normal Android Studio build and device confirmation.
 
 ## 4. Delivered product capabilities
 

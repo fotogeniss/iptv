@@ -27,4 +27,34 @@ class LiveChannelTransitionMotionTest {
         assertEquals(1, LiveChannelTransitionMotion.direction(0))
         assertEquals(-1, LiveChannelTransitionMotion.direction(-3))
     }
+
+    @Test fun `transition waits for a newly rendered frame`() {
+        assertEquals(
+            false,
+            LiveChannelTransitionMotion.hasCommittedFrame(
+                framesBeforeOpen = 4,
+                renderedFrames = 4,
+                hasPlaybackError = false,
+            ),
+        )
+        assertEquals(
+            true,
+            LiveChannelTransitionMotion.hasCommittedFrame(
+                framesBeforeOpen = 4,
+                renderedFrames = 5,
+                hasPlaybackError = false,
+            ),
+        )
+    }
+
+    @Test fun `failed playback never commits a visual transition`() {
+        assertEquals(
+            false,
+            LiveChannelTransitionMotion.hasCommittedFrame(
+                framesBeforeOpen = 4,
+                renderedFrames = 5,
+                hasPlaybackError = true,
+            ),
+        )
+    }
 }
