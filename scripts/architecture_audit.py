@@ -180,6 +180,14 @@ require(all(marker in playback_history for marker in [
         ]),
         "PlaybackHistoryStore owns migrations, reconciliation and resume persistence")
 
+export_relay = text("app/src/main/java/com/prelude/iptv/ui/coordinator/ExportRelayCoordinator.kt")
+require("private val exportRelay" in main_vm and main_vm.count("exportRelay.") >= 4,
+        "MainViewModel delegates relay and resolved M3U export")
+require("RelayHub." not in main_vm and all(marker in export_relay for marker in [
+            "fun startRelay", "fun stopRelay", "fun exportableChannels", "fun buildResolvedM3u"
+        ]),
+        "ExportRelayCoordinator owns relay lifecycle and export preparation")
+
 print("ARCHITECTURE AUDIT")
 for item in passes:
     print(f"PASS  {item}")

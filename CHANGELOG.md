@@ -9,6 +9,8 @@ implementation notes are preserved in `docs/archive/changelog`.
   isolated app data and the existing visible `Prelude+ QA` label.
 - Replaced the provider download retry `Thread.sleep` with a bounded,
   interruptible backoff component and added focused policy tests.
+- Extracted relay lifecycle and resolved-M3U export preparation from
+  `MainViewModel` into a focused, tested coordinator while preserving its API.
 
 ## 1.46.0 — versionCode 115
 

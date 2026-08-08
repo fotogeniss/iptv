@@ -7,7 +7,6 @@ import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistIdentity
 import com.prelude.iptv.data.PlaylistStore
-import com.prelude.iptv.data.RelayHub
 import com.prelude.iptv.data.SourceLoadProgress
 import com.prelude.iptv.data.SourceProgressCallback
 import com.prelude.iptv.data.Repository
@@ -17,6 +16,7 @@ import com.prelude.iptv.source.StalkerClient
 import com.prelude.iptv.tvhome.TvHomeSyncScheduler
 import com.prelude.iptv.ui.coordinator.CatalogLoadCoordinator
 import com.prelude.iptv.ui.coordinator.CatalogSessionStore
+import com.prelude.iptv.ui.coordinator.ExportRelayCoordinator
 import com.prelude.iptv.ui.coordinator.MainEpgCoordinator
 import com.prelude.iptv.ui.coordinator.ProfileSettingsCoordinator
 import com.prelude.iptv.ui.coordinator.SeriesLoadCoordinator
@@ -428,6 +428,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             state = _state,
             sourceId = ::currentSourceId,
             favKey = ::favKey,
+        )
+    }
+
+    /** Relay and M3U export boundary; MainViewModel keeps only the public facade. */
+    private val exportRelay by lazy {
+        ExportRelayCoordinator(
+            currentStalker = ::currentStalker,
+            currentChannels = { _state.value.channels },
+            resolvePlayableUrl = ::resolvePlayableUrl,
+            startRelayService = { com.prelude.iptv.RelayService.start(getApplication()) },
+            stopRelayService = { com.prelude.iptv.RelayService.stop(getApplication()) },
+            publishRelayState = { running, url ->
+                _state.value = _state.value.copy(relayRunning = running, relayUrl = url)
+            },
         )
     }
 
@@ -1363,20 +1377,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Άμεση φόρτωση (M3U, Xtream VOD/Series). */
-    fun startRelay(selected: List<Channel>): String {
-        RelayHub.channels = selected.filter { it.kind != "series" }
-        RelayHub.stalker = currentStalker()
-        RelayHub.port = 8899
-        com.prelude.iptv.RelayService.start(getApplication())
-        val url = "http://${RelayHub.localIp()}:${RelayHub.port}/playlist.m3u"
-        _state.value = _state.value.copy(relayRunning = true, relayUrl = url)
-        return url
-    }
+    fun startRelay(selected: List<Channel>): String = exportRelay.startRelay(selected)
 
-    fun stopRelay() {
-        com.prelude.iptv.RelayService.stop(getApplication())
-        _state.value = _state.value.copy(relayRunning = false, relayUrl = "")
-    }
+    fun stopRelay() = exportRelay.stopRelay()
 
     /** Πληροφορίες ταινίας (MAC: από το κανάλι, Xtream: get_vod_info). */
     suspend fun vodInfo(ch: Channel): Map<String, String> = withContext(Dispatchers.IO) {
@@ -1391,31 +1394,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun exportableChannels(): List<Channel> =
-        _state.value.channels.filter { it.kind != "series" }
+    fun exportableChannels(): List<Channel> = exportRelay.exportableChannels()
 
     /** Κάνει resolve τα κανάλια και φτιάχνει M3U με πραγματικά URLs (για MAC → αρχείο). */
-    suspend fun buildResolvedM3u(channels: List<Channel>): String = withContext(Dispatchers.IO) {
-        val sb = StringBuilder("#EXTM3U\n")
-        fun c(s: String) = s.replace("\"", "")   // τα " σπάνε τα attributes — δεν υπάρχει escape στο M3U
-        for (ch in channels) {
-            val url = try {
-                resolvePlayableUrl(ch)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                ""
-            }
-            if (url.isNotEmpty()) {
-                sb.append(
-                    "#EXTINF:-1 tvg-id=\"${c(ch.tvgId)}\" tvg-logo=\"${c(ch.logo)}\" " +
-                        "group-title=\"${c(ch.group)}\",${ch.name}\n"
-                )
-                sb.append("$url\n")
-            }
-        }
-        sb.toString()
-    }
+    suspend fun buildResolvedM3u(channels: List<Channel>): String =
+        exportRelay.buildResolvedM3u(channels)
 
     fun setSearch(s: String) { _state.value = _state.value.copy(search = s) }
     fun setGroup(g: String) { _state.value = _state.value.copy(selectedGroup = g) }
