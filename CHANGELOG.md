@@ -5,6 +5,9 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Added a functional premium mobile/TV content-navigation prototype that unifies
+  Home, Live TV, movies, series and automatic search while preserving direct
+  playback, detail hierarchy, DPAD focus and predictable Back behavior.
 - Fixed QA Kotlin compilation failures caused by Compose importing its internal
   `layout.weight` symbol and by duplicate TV onboarding helper type names.
 - Rebuilt source onboarding on mobile and Android TV around plain-language source

@@ -266,6 +266,12 @@ has now been implemented for Android TV.
   cancels an in-flight submission and dialogs/file selection restore focus.
 - The QR phone-pairing concept remains prototype-only. It requires a separate
   transport/security decision and no fake production button was introduced.
+- A new unified content-navigation proposal is available at
+  `prototypes/home/CONTENT_NAVIGATION_FLOW_PREVIEW.html`. It demonstrates the
+  complete mobile/TV path across Home, direct-play Live TV, movies, series,
+  automatic search, details, episodes, player return, responsive navigation and
+  spatial DPAD focus. It is a prototype only and still needs owner approval
+  before any Android UI implementation.
 - Static contracts cover the new ownership and focus boundaries. A normal Android
   Studio build plus phone/TV device QA is still required; Codex did not run Gradle.
 
