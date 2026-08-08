@@ -1,0 +1,9 @@
+<resources>
+    <string name="browse_refresh">Refresh</string>
+    <string name="browse_empty_filter">Nothing matches this filter</string>
+    <string name="browse_clear_filters">Clear filters</string>
+    <string name="browse_generic_error">Something went wrong</string>
+    <string name="browse_try_again">Try again</string>
+    <string name="browse_not_loaded">This section has not been loaded yet</string>
+    <string name="browse_load_now">Load now</string>
+</resources>

@@ -33,12 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -97,7 +99,7 @@ internal fun MobilePremiumHomeHero(
                 Text("PRELUDE", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Black)
                 Text("+", color = IptvColors.Primary, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 Spacer(Modifier.weight(1f))
-                MobileHeroRoundButton(Icons.Default.Search, "Αναζήτηση", onSearch)
+                MobileHeroRoundButton(Icons.Default.Search, stringResource(R.string.home_search), onSearch)
                 Spacer(Modifier.width(10.dp))
                 Box(
                     Modifier.size(34.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xAA2D3035)),
@@ -115,9 +117,9 @@ internal fun MobilePremiumHomeHero(
                 Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(22.dp)
             ) {
-                MobileHeroTab("Σειρές", selectedDestination == "series", onOpenSeries)
-                MobileHeroTab("Ταινίες", selectedDestination == "movies" || selectedDestination == "home", onOpenMovies)
-                MobileHeroTab("Κατηγορίες ▾", false, onOpenCategories)
+                MobileHeroTab(stringResource(R.string.home_section_series), selectedDestination == "series", onOpenSeries)
+                MobileHeroTab(stringResource(R.string.home_section_movies), selectedDestination == "movies" || selectedDestination == "home", onOpenMovies)
+                MobileHeroTab(stringResource(R.string.home_categories_dropdown), false, onOpenCategories)
             }
         }
         Row(
@@ -157,7 +159,7 @@ private fun MobileHeroPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "#1 ΣΤΙΣ ΕΠΙΛΟΓΕΣ ΣΟΥ",
+                stringResource(R.string.home_top_choice),
                 color = Color.White,
                 fontSize = 9.sp,
                 letterSpacing = 1.8.sp,
@@ -190,7 +192,7 @@ private fun MobileHeroPage(
             Spacer(Modifier.height(9.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 meta?.rating?.takeIf(String::isNotBlank)?.let {
-                    Text("$it Match", color = IptvColors.Success, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.home_rating_match, it), color = IptvColors.Success, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Text(" · ", color = IptvColors.TextSecondary, fontSize = 11.sp)
                 }
                 if (year.isNotBlank()) Text(year, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
@@ -219,14 +221,14 @@ private fun MobileHeroPage(
                 ) {
                     Icon(Icons.Default.PlayArrow, null, tint = Color.Black)
                     Spacer(Modifier.width(6.dp))
-                    Text("Αναπαραγωγή", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.home_play), color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
                 }
                 MobileHeroSquareButton(
                     icon = if (favorite) Icons.Default.Check else Icons.Default.Add,
-                    contentDescription = "Η λίστα μου",
+                    contentDescription = stringResource(R.string.home_section_my_list),
                     onClick = onToggleFavorite
                 )
-                MobileHeroSquareButton(Icons.Default.Info, "Πληροφορίες", onDetails)
+                MobileHeroSquareButton(Icons.Default.Info, stringResource(R.string.home_information), onDetails)
             }
         }
     }

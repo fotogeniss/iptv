@@ -62,6 +62,7 @@ import com.prelude.iptv.ui.PremiumTvNavigationRail
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
+import com.prelude.iptv.ui.localization.catalogRailLabels
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.isTvDevice
@@ -870,10 +871,11 @@ internal fun BrowseScreen(
                 // Continue Watching is rendered inside the dedicated mobile hero and
                 // as a catalog rail on TV. Do not render a second legacy row.
                 val hasContinue = false
-                val tvRails = remember(channels, state.favorites, cw) {
+                val railLabels = catalogRailLabels()
+                val tvRails = remember(channels, state.favorites, cw, railLabels) {
                     // This branch is the non-home browser. Building every home
                     // rail here was unused, yet duplicated the largest catalog.
-                    if (isCatalogHome) buildCatalogRailSections(channels, state.favorites, cw)
+                    if (isCatalogHome) buildCatalogRailSections(channels, state.favorites, cw, railLabels)
                     else emptyList()
                 }
                 val hasHero = (state.contentType == "vod" || state.contentType == "series") &&
@@ -882,7 +884,9 @@ internal fun BrowseScreen(
                 if (channels.isEmpty() && !state.loading) EmptyState(
                     hasLoaded = state.channels.isNotEmpty(),
                     isError = state.status.startsWith("Σφάλμα"),
-                    message = state.status,
+                    // View-model status text is still a legacy Greek string. Home uses the
+                    // localized recovery copy until catalog status becomes a typed UI event.
+                    message = if (isCatalogHome) "" else state.status,
                     onLoad = { vm.loadCurrent() },
                     onClearFilters = { vm.setSearch(""); vm.setGroup(UiState.ALL_GROUP) },
                     onRefresh = { vm.requestRefresh() },

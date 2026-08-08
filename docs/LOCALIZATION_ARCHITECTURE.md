@@ -1,7 +1,7 @@
 # Prelude+ localization architecture
 
-Status: owner-approved design; runtime foundation and the first navigation/settings
-slice are implemented behind the QA/parity rollout gate.
+Status: owner-approved design; runtime foundation, navigation/settings and the
+mobile/TV Home slice are implemented behind the QA/parity rollout gate.
 
 ## Product contract
 
@@ -66,6 +66,7 @@ app/src/main/res/
     ├── strings_core.xml
     ├── strings_navigation.xml
     ├── strings_home.xml
+    ├── strings_browse.xml
     ├── strings_live.xml
     ├── strings_catalog.xml
     ├── strings_search.xml
@@ -115,11 +116,13 @@ cohesive vertical slices:
    **Implemented.**
 2. Primary navigation plus mobile/TV language settings UI. **Implemented for
    QA builds; public visibility remains gated.**
-3. Home, Live, movies, series, Search, details and episodes.
-4. Player, audio/subtitle panels and playback errors.
-5. Source onboarding/management, EPG and all settings flows.
-6. Profiles, billing, legal, diagnostics, backup/export and system notifications.
-7. Final hardcoded-string audit, translation parity gate and public picker
+3. Home. **Implemented for mobile and TV, including shared empty/recovery
+   states; public visibility remains gated.**
+4. Live, movies, series, Search, details and episodes.
+5. Player, audio/subtitle panels and playback errors.
+6. Source onboarding/management, EPG and all settings flows.
+7. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+8. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -132,8 +135,9 @@ still bypass resources.
   every English default key must have a matching `values-el` key. Intentional
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
-  the release-safe Greek baseline, host coverage and the closed public rollout
-  gate.
+  the release-safe Greek baseline, host coverage, Android-free display-copy
+  boundaries, migrated Home resource mappings, the Home hardcoded-copy audit
+  and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

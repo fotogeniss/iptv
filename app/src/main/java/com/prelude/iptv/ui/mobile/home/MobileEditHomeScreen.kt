@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -33,8 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.home.HomeEntry
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
+import com.prelude.iptv.ui.localization.titleRes
 import kotlin.math.roundToInt
 
 /**
@@ -78,7 +81,7 @@ internal fun MobileEditHomeScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowBack, "Πίσω",
+                Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.home_back),
                 tint = IptvColors.TextPrimary,
                 modifier = Modifier
                     .clip(RoundedCornerShape(99.dp))
@@ -87,7 +90,7 @@ internal fun MobileEditHomeScreen(
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                "Επεξεργασία αρχικής",
+                stringResource(R.string.home_edit_title),
                 color = IptvColors.TextPrimary,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Black
@@ -140,9 +143,7 @@ internal fun MobileEditHomeScreen(
                     }
                 }
                 Text(
-                    "Το μάτι κρύβει την ενότητα από την αρχική. Κράτα πατημένο πάνω στις " +
-                        "γραμμές δεξιά και σύρε για να αλλάξεις σειρά. Οι δύο πρώτες " +
-                        "γραμμές είναι σταθερές.",
+                    stringResource(R.string.home_edit_instructions),
                     color = IptvColors.TextTertiary,
                     fontSize = 11.5.sp,
                     lineHeight = 17.sp,
@@ -154,7 +155,8 @@ internal fun MobileEditHomeScreen(
 
     categoryFor?.let { sectionId ->
         CategoryPicker(
-            title = entries.firstOrNull { it.section.id == sectionId }?.section?.title.orEmpty(),
+            title = entries.firstOrNull { it.section.id == sectionId }
+                ?.section?.let { stringResource(it.titleRes()) }.orEmpty(),
             options = categoriesFor(sectionId),
             selected = categoryOf(sectionId),
             onPick = { onPickCategory(sectionId, it); categoryFor = null },
@@ -165,15 +167,15 @@ internal fun MobileEditHomeScreen(
     confirmClear?.let { entry ->
         AlertDialog(
             onDismissRequest = { confirmClear = null },
-            title = { Text(entry.section.title) },
-            text = { Text("Να διαγραφεί το ιστορικό αυτής της ενότητας; Δεν αναιρείται.") },
+            title = { Text(stringResource(entry.section.titleRes())) },
+            text = { Text(stringResource(R.string.home_clear_history_confirmation)) },
             confirmButton = {
                 TextButton(onClick = { onClear(entry.section.id); confirmClear = null }) {
-                    Text("Καθάρισμα", color = IptvColors.Primary)
+                    Text(stringResource(R.string.home_clear), color = IptvColors.Primary)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { confirmClear = null }) { Text("Άκυρο") }
+                TextButton(onClick = { confirmClear = null }) { Text(stringResource(R.string.home_cancel)) }
             }
         )
     }
@@ -213,7 +215,7 @@ private fun EditRow(
         } else {
             Icon(
                 if (entry.visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                if (entry.visible) "Κρύψε" else "Εμφάνισε",
+                stringResource(if (entry.visible) R.string.home_hide_section else R.string.home_show_section),
                 tint = IptvColors.TextPrimary,
                 modifier = Modifier
                     .size(22.dp)
@@ -223,7 +225,7 @@ private fun EditRow(
         }
         Spacer(Modifier.width(13.dp))
         Text(
-            entry.section.title,
+            stringResource(entry.section.titleRes()),
             color = if (fixed) IptvColors.TextTertiary else IptvColors.TextPrimary,
             fontSize = 14.5.sp,
             fontWeight = if (fixed) FontWeight.SemiBold else FontWeight.Bold,
@@ -233,7 +235,7 @@ private fun EditRow(
         )
         if (entry.section.categorised && hasCategories) {
             Text(
-                category.ifBlank { "Επιλογή" },
+                category.ifBlank { stringResource(R.string.home_choose_category) },
                 color = IptvColors.Info,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Black,
@@ -248,7 +250,7 @@ private fun EditRow(
         }
         if (entry.section.clearable) {
             Text(
-                "Καθάρισμα",
+                stringResource(R.string.home_clear),
                 color = IptvColors.Primary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Black,
@@ -263,7 +265,7 @@ private fun EditRow(
             Spacer(Modifier.width(22.dp))
         } else {
             Icon(
-                Icons.Default.DragHandle, "Αλλαγή σειράς",
+                Icons.Default.DragHandle, stringResource(R.string.home_reorder_section),
                 tint = IptvColors.TextSecondary,
                 modifier = Modifier
                     .size(22.dp)
@@ -311,7 +313,7 @@ private fun CategoryPicker(
                 }
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.home_cancel)) } },
         confirmButton = {}
     )
 }

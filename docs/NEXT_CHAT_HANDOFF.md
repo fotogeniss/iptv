@@ -308,8 +308,17 @@ has now been implemented for Android TV.
   feature-owned resource files, English fallback, Greek parity requirement,
   Kotlin boundaries and staged migration gates.
 - The runtime foundation now uses AppCompat per-app locales across all five
-  activity hosts. The first paired resource slice covers primary navigation and
-  the language/appearance settings surface.
+  activity hosts. Paired Greek/QA-English resources cover primary navigation,
+  the language/appearance settings surface and the complete mobile/TV Home
+  experience: hero actions, rails, category exploration, Home editing,
+  empty/recovery states, accessibility labels, plurals and locale-aware counts.
+- Home display copy is owned at the Android UI boundary. `HomeSection` keeps
+  only stable IDs and behavior flags, `CatalogPolicy` receives localized labels,
+  and provider category/title data is deliberately left untouched. The static
+  localization contract rejects Greek literals in the migrated Home UI files.
+- The next cohesive localization slice is Live TV across phone and TV. Treat
+  catalog status/error strings in `MainViewModel` as a typed-state migration,
+  not as ad-hoc resource lookup from the data layer.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.
@@ -423,7 +432,6 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate task is to build and verify the approved
-> source onboarding implementation from Android Studio: check its mobile input,
-> provider failures, TV DPAD focus, Back cancellation and direct Live TV routing
-> on physical devices.
+> cohesive completed change. The immediate implementation task is the Live TV
+> localization slice across phone and TV, keeping provider/EPG data untouched
+> and moving app-owned status/error copy behind typed UI state before resources.

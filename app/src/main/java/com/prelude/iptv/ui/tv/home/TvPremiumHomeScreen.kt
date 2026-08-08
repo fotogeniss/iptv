@@ -28,6 +28,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -230,17 +232,17 @@ fun TvPremiumHomeScreen(
                 },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TvActionRow("Αναπαραγωγή", Modifier.focusRequester(actionFocus)) {
+                        TvActionRow(stringResource(R.string.home_play), Modifier.focusRequester(actionFocus)) {
                             actionChannel = null
                             onPlay(target)
                         }
-                        TvActionRow("Πληροφορίες") {
+                        TvActionRow(stringResource(R.string.home_information)) {
                             actionChannel = null
                             onDetails(target)
                         }
                         TvActionRow(
-                            if (PlaybackQueue.favKey(target) in favoriteKeys) "Αφαίρεση από τη λίστα μου"
-                            else "Προσθήκη στη λίστα μου"
+                            if (PlaybackQueue.favKey(target) in favoriteKeys) stringResource(R.string.home_remove_from_my_list)
+                            else stringResource(R.string.home_add_to_my_list)
                         ) {
                             actionChannel = null
                             onToggleFavorite(target)
@@ -250,7 +252,7 @@ fun TvPremiumHomeScreen(
                 confirmButton = {},
                 dismissButton = {
                     TvDialogTextButton(
-                        label = "Κλείσιμο",
+                        label = stringResource(R.string.home_close),
                         color = Color.White,
                         onClick = { actionChannel = null }
                     )

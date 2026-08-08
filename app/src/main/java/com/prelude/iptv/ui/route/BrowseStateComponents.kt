@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -47,7 +48,7 @@ internal fun ContinueWatchingRow(
 ) {
     Column(Modifier.padding(bottom = 6.dp)) {
         Text(
-            "Συνέχισε να βλέπεις", color = TextHi, fontSize = 16.sp,
+            stringResource(R.string.home_section_continue), color = TextHi, fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp)
         )
@@ -110,10 +111,10 @@ private fun EmptyStateRecoveryActions(
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, Line),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextHi),
-            ) { Text("Ανανέωση") }
+            ) { Text(stringResource(R.string.browse_refresh)) }
         }
         onOpenSettings?.let { openSettings ->
-            TextButton(onClick = openSettings) { Text("Ρυθμίσεις") }
+            TextButton(onClick = openSettings) { Text(stringResource(R.string.nav_settings)) }
         }
     }
 }
@@ -147,7 +148,7 @@ internal fun EmptyState(
                     // υπάρχουν δεδομένα — απλά το φίλτρο/group δεν πιάνει τίποτα
                     Icon(Icons.Default.SearchOff, null, tint = BgElev2, modifier = Modifier.size(64.dp))
                     Spacer(Modifier.height(10.dp))
-                    Text("Τίποτα δεν ταιριάζει στο φίλτρο", color = TextMid, fontSize = 15.sp)
+                    Text(stringResource(R.string.browse_empty_filter), color = TextMid, fontSize = 15.sp)
                     Spacer(Modifier.height(14.dp))
                     OutlinedButton(
                         onClick = onClearFilters,
@@ -155,12 +156,12 @@ internal fun EmptyState(
                         border = BorderStroke(1.dp, Line),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = TextHi),
                         modifier = Modifier.focusRequester(f).tvFocus(RoundedCornerShape(12.dp))
-                    ) { Text("Καθαρισμός φίλτρων") }
+                    ) { Text(stringResource(R.string.browse_clear_filters)) }
                 }
                 isError -> {
                     Icon(Icons.Outlined.Info, null, tint = BgElev2, modifier = Modifier.size(64.dp))
                     Spacer(Modifier.height(10.dp))
-                    Text("Κάτι πήγε στραβά", color = TextMid, fontSize = 15.sp)
+                    Text(stringResource(R.string.browse_generic_error), color = TextMid, fontSize = 15.sp)
                     if (message.isNotBlank())
                         Text(message, color = TextLo, fontSize = 12.sp,
                             modifier = Modifier.padding(top = 4.dp))
@@ -170,20 +171,20 @@ internal fun EmptyState(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         modifier = Modifier.focusRequester(f).tvFocus(RoundedCornerShape(12.dp), tint = false)
-                    ) { Text("Δοκίμασε ξανά", fontWeight = FontWeight.Bold) }
+                    ) { Text(stringResource(R.string.browse_try_again), fontWeight = FontWeight.Bold) }
                 }
                 else -> {
                     // δεν έχει φορτωθεί ΠΟΤΕ (ή πάτησε «Άκυρο» την πρώτη φορά)
                     Icon(Icons.Outlined.LiveTv, null, tint = BgElev2, modifier = Modifier.size(64.dp))
                     Spacer(Modifier.height(10.dp))
-                    Text("Αυτή η ενότητα δεν έχει φορτωθεί ακόμα", color = TextMid, fontSize = 15.sp)
+                    Text(stringResource(R.string.browse_not_loaded), color = TextMid, fontSize = 15.sp)
                     Spacer(Modifier.height(14.dp))
                     Button(
                         onClick = onLoad,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         modifier = Modifier.focusRequester(f).tvFocus(RoundedCornerShape(12.dp), tint = false)
-                    ) { Text("Φόρτωσε τώρα", fontWeight = FontWeight.Bold) }
+                    ) { Text(stringResource(R.string.browse_load_now), fontWeight = FontWeight.Bold) }
                 }
             }
             if (!hasLoaded) EmptyStateRecoveryActions(onRefresh, onOpenSettings)

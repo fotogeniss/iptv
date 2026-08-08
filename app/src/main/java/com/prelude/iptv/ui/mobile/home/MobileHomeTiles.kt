@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 import java.text.NumberFormat
-import java.util.Locale
 
 /**
  * Τα τρία πλακίδια: Ζωντανά · Ταινίες · Σειρές, με το πλήθος του καθενός.
@@ -44,9 +46,9 @@ internal fun MobileHomeTiles(
         modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Tile(Modifier.weight(1f), Icons.Default.LiveTv, "Ζωντανά", liveCount, onOpenLive)
-        Tile(Modifier.weight(1f), Icons.Default.Movie, "Ταινίες", movieCount, onOpenMovies)
-        Tile(Modifier.weight(1f), Icons.Default.Tv, "Σειρές", seriesCount, onOpenSeries)
+        Tile(Modifier.weight(1f), Icons.Default.LiveTv, stringResource(R.string.home_section_live), liveCount, onOpenLive)
+        Tile(Modifier.weight(1f), Icons.Default.Movie, stringResource(R.string.home_section_movies), movieCount, onOpenMovies)
+        Tile(Modifier.weight(1f), Icons.Default.Tv, stringResource(R.string.home_section_series), seriesCount, onOpenSeries)
     }
 }
 
@@ -72,7 +74,7 @@ private fun Tile(
         Text(label, color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         Text(
             // Με διαχωριστικό χιλιάδων: «10747» διαβάζεται δύο φορές, «10.747» μία.
-            if (count > 0) NumberFormat.getIntegerInstance(Locale("el", "GR")).format(count) else "—",
+            if (count > 0) NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(count) else "—",
             color = IptvColors.TextTertiary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium

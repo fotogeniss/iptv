@@ -34,12 +34,6 @@ class PremiumPolicyTest {
     }
 
     @Test
-    fun `η ετικέτα περιγράφει το πραγματικό entitlement`() {
-        assertEquals("PREMIUM", PremiumPolicy.label(PremiumTier.PREMIUM))
-        assertEquals("ΔΩΡΕΑΝ", PremiumPolicy.label(PremiumTier.FREE))
-    }
-
-    @Test
     fun `άγνωστο αποθηκευμένο κείμενο πέφτει στην προεπιλογή`() {
         assertEquals(PremiumPolicy.defaultTier, PremiumPolicy.tierOf("ΟΤΙΝΑΝΑΙ"))
         assertEquals(PremiumPolicy.defaultTier, PremiumPolicy.tierOf(""))

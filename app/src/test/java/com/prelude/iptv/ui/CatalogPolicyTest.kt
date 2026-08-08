@@ -7,6 +7,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CatalogPolicyTest {
+    private val labels = CatalogRailLabels("Continue", "My list", "Trending", "New")
+
     private fun movie(id: Int, group: String, year: String = "2024") = Channel(
         name = "Movie $id",
         url = "https://example.test/$id.m3u8",
@@ -23,10 +25,12 @@ class CatalogPolicyTest {
         val sections = buildCatalogRailSections(
             channels = items,
             favoriteKeys = setOf(favorite),
-            continueWatching = listOf(items[1] to 0.42f)
+            continueWatching = listOf(items[1] to 0.42f),
+            labels = labels,
         )
 
         assertEquals(listOf("continue", "my-list", "trending"), sections.take(3).map { it.id })
+        assertEquals(listOf("Continue", "My list", "Trending"), sections.take(3).map { it.title })
         assertEquals(items[1], sections.first().items.first())
         assertEquals(items[3], sections[1].items.first())
     }
@@ -37,7 +41,7 @@ class CatalogPolicyTest {
         val duplicate = original.copy(name = "Same stream, other title")
         val items = listOf(original, duplicate, movie(2, "Action"), movie(3, "Action"))
 
-        val trending = buildCatalogRailSections(items, emptySet(), emptyList())
+        val trending = buildCatalogRailSections(items, emptySet(), emptyList(), labels)
             .first { it.id == "trending" }
 
         assertEquals(3, trending.items.size)
@@ -50,7 +54,7 @@ class CatalogPolicyTest {
         val live = Channel(name = "SPORT HD", url = "http://x/live", kind = "live", group = "Sports")
         val items = listOf(movie(1, "Action"), live, movie(2, "Action"), movie(3, "Action"))
 
-        val sections = buildCatalogRailSections(items, emptySet(), emptyList())
+        val sections = buildCatalogRailSections(items, emptySet(), emptyList(), labels)
 
         assertTrue(sections.isNotEmpty())
         assertTrue(sections.none { section -> section.allItems.any { it.kind == "live" } })
@@ -62,13 +66,13 @@ class CatalogPolicyTest {
         val live = (1..5).map {
             Channel(name = "CH $it", url = "http://x/$it", kind = "live", group = "News")
         }
-        assertTrue(buildCatalogRailSections(live, emptySet(), emptyList()).isEmpty())
+        assertTrue(buildCatalogRailSections(live, emptySet(), emptyList(), labels).isEmpty())
     }
 
     @Test
     fun railPreviewIsCappedButViewAllKeepsFullSection() {
         val items = (1..34).map { movie(it, "Action") }
-        val trending = buildCatalogRailSections(items, emptySet(), emptyList())
+        val trending = buildCatalogRailSections(items, emptySet(), emptyList(), labels)
             .first { it.id == "trending" }
 
         assertEquals(20, trending.items.size)

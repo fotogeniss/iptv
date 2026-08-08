@@ -7,6 +7,7 @@ import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.mobile.home.MobilePremiumHomeScreen
 import com.prelude.iptv.ui.tv.home.TvPremiumHomeScreen
+import com.prelude.iptv.ui.localization.catalogRailLabels
 
 /**
  * Adaptive dispatcher for the premium Home experience.
@@ -50,8 +51,9 @@ fun AdaptiveCatalogHome(
 ) {
     if (channels.isEmpty()) return
 
-    val sections = remember(channels, favoriteKeys, continueWatching) {
-        buildCatalogRailSections(channels, favoriteKeys, continueWatching).sortedBy { section ->
+    val railLabels = catalogRailLabels()
+    val sections = remember(channels, favoriteKeys, continueWatching, railLabels) {
+        buildCatalogRailSections(channels, favoriteKeys, continueWatching, railLabels).sortedBy { section ->
             when (section.id) {
                 "continue" -> 0
                 "trending" -> 1

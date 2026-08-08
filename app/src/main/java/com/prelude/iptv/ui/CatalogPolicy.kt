@@ -12,6 +12,14 @@ data class CatalogRailSection(
     val allItems: List<Channel> = items
 )
 
+/** App-owned rail copy is injected by the UI; provider group titles stay data. */
+data class CatalogRailLabels(
+    val continueWatching: String,
+    val myList: String,
+    val trending: String,
+    val newReleases: String,
+)
+
 /**
  * Deterministic catalog policy, intentionally independent from Compose.
  * It can be unit-tested without an emulator and keeps expensive grouping out of
@@ -20,7 +28,8 @@ data class CatalogRailSection(
 fun buildCatalogRailSections(
     channels: List<Channel>,
     favoriteKeys: Set<String>,
-    continueWatching: List<Pair<Channel, Float>>
+    continueWatching: List<Pair<Channel, Float>>,
+    labels: CatalogRailLabels,
 ): List<CatalogRailSection> {
     if (channels.isEmpty()) return emptyList()
 
@@ -60,7 +69,7 @@ fun buildCatalogRailSections(
         val all = unique(continueWatching.map { it.first })
         out += section(
             id = "continue",
-            title = "Συνέχισε να βλέπεις",
+            title = labels.continueWatching,
             all = all,
             progress = progress
         )
@@ -68,13 +77,13 @@ fun buildCatalogRailSections(
 
     val favorites = unique(channels.filter { key(it) in favoriteKeys })
     if (favorites.isNotEmpty()) {
-        out += section("my-list", "Η λίστα μου", favorites)
+        out += section("my-list", labels.myList, favorites)
     }
 
     val trending = unique(channels)
     out += section(
         id = "trending",
-        title = "Δημοφιλή τώρα",
+        title = labels.trending,
         all = trending,
         ranked = true
     )
@@ -82,7 +91,7 @@ fun buildCatalogRailSections(
     val newest = unique(
         channels.filter { it.year.length == 4 }.sortedByDescending { it.year }
     )
-    if (newest.size >= 4) out += section("new", "Νέες κυκλοφορίες", newest)
+    if (newest.size >= 4) out += section("new", labels.newReleases, newest)
 
     // ΟΛΑ τα groups που κατέβασε ο χρήστης γίνονται sections, ώστε να φαίνονται
     // όλα στα (scrollable) chips και να επιλέγονται. Το πλήθος των rails που

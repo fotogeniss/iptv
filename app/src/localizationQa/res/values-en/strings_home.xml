@@ -1,0 +1,69 @@
+<resources>
+    <string name="home_section_header">Header</string>
+    <string name="home_section_hero">Hero selection</string>
+    <string name="home_section_suggestions">Suggestions for you</string>
+    <string name="home_section_continue">Continue watching</string>
+    <string name="home_section_recent_live">Channels you watched</string>
+    <string name="home_section_new_live">New live channels</string>
+    <string name="home_section_new_movies">New movies</string>
+    <string name="home_section_new_episodes">New episodes</string>
+    <string name="home_section_live">Live</string>
+    <string name="home_section_movies">Movies</string>
+    <string name="home_section_series">Series</string>
+    <string name="home_section_my_list">My list</string>
+    <string name="home_section_trending">Trending now</string>
+    <string name="home_section_new_releases">New releases</string>
+    <string name="home_section_with_category">%1$s · %2$s</string>
+
+    <string name="home_explore">Explore</string>
+    <string name="home_explore_hint">Quickly find what you want</string>
+    <string name="home_categories">Categories</string>
+    <string name="home_all_categories">All</string>
+    <string name="home_category_sheet_hint">Choose a category to filter instantly</string>
+    <string name="home_movie_explore_hint">Quickly find the movie you want</string>
+    <string name="home_series_explore_hint">Quickly find the series you want</string>
+    <string name="home_movie_categories">Movie categories</string>
+    <string name="home_series_categories">Series categories</string>
+
+    <string name="home_suggestions_heading">✦ Suggestions for you</string>
+    <string name="home_suggestions_empty_title">Selected for you</string>
+    <string name="home_suggestions_empty_body">Watch something or add a favorite and suggestions will start appearing…</string>
+
+    <string name="home_back">Back</string>
+    <string name="home_edit_title">Edit Home</string>
+    <string name="home_edit_instructions">The eye hides a section from Home. Press and hold the lines on the right, then drag to reorder. The first row is fixed.</string>
+    <string name="home_clear_history_confirmation">Delete this section’s history? This cannot be undone.</string>
+    <string name="home_clear">Clear</string>
+    <string name="home_cancel">Cancel</string>
+    <string name="home_hide_section">Hide</string>
+    <string name="home_show_section">Show</string>
+    <string name="home_choose_category">Choose</string>
+    <string name="home_reorder_section">Reorder</string>
+
+    <string name="home_tier_free">FREE</string>
+    <string name="home_tier_premium">PREMIUM</string>
+    <string name="home_quick_actions">Quick actions</string>
+    <string name="home_refresh_content">Refresh content</string>
+    <string name="home_categories_groups">Categories / Groups</string>
+    <string name="home_export_playlist">Export playlist</string>
+
+    <string name="home_search">Search</string>
+    <string name="home_categories_dropdown">Categories ▾</string>
+    <string name="home_top_choice">#1 IN YOUR PICKS</string>
+    <string name="home_rating_match">%1$s Match</string>
+    <string name="home_play">Play</string>
+    <string name="home_information">Information</string>
+    <string name="home_add_to_my_list">Add to my list</string>
+    <string name="home_remove_from_my_list">Remove from my list</string>
+    <string name="home_in_my_list">In my list</string>
+    <string name="home_view_all">View all</string>
+    <string name="home_previews">Previews</string>
+    <string name="home_close">Close</string>
+    <string name="home_tv_kicker">S E R I E S   &amp;   M O V I E S</string>
+    <string name="home_rating_out_of_ten">%1$s/10</string>
+
+    <plurals name="home_title_count">
+        <item quantity="one">%1$d title</item>
+        <item quantity="other">%1$d titles</item>
+    </plurals>
+</resources>

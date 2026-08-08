@@ -24,10 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.CatalogRailSection
@@ -61,11 +64,19 @@ internal fun MobilePremiumSectionScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.home_back), tint = Color.White)
                 }
                 Column(Modifier.weight(1f)) {
                     Text(section.title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
-                    Text("${section.allItems.size} τίτλοι", color = IptvColors.TextTertiary, fontSize = 11.sp)
+                    Text(
+                        pluralStringResource(
+                            R.plurals.home_title_count,
+                            section.allItems.size,
+                            section.allItems.size,
+                        ),
+                        color = IptvColors.TextTertiary,
+                        fontSize = 11.sp,
+                    )
                 }
                 MobileSettingsAction(onClick = onOpenSettings)
             }

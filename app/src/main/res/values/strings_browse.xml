@@ -1,0 +1,9 @@
+<resources>
+    <string name="browse_refresh">Ανανέωση</string>
+    <string name="browse_empty_filter">Τίποτα δεν ταιριάζει στο φίλτρο</string>
+    <string name="browse_clear_filters">Καθαρισμός φίλτρων</string>
+    <string name="browse_generic_error">Κάτι πήγε στραβά</string>
+    <string name="browse_try_again">Δοκίμασε ξανά</string>
+    <string name="browse_not_loaded">Αυτή η ενότητα δεν έχει φορτωθεί ακόμα</string>
+    <string name="browse_load_now">Φόρτωσε τώρα</string>
+</resources>

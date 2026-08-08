@@ -32,13 +32,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 import java.text.NumberFormat
-import java.util.Locale
 
 internal data class MobileCategoryOption(
     val id: String,
@@ -59,9 +61,9 @@ internal fun MobileCategoryExplorer(
     options: List<MobileCategoryOption>,
     selectedId: String,
     onSelect: (String) -> Unit,
-    title: String = "Εξερεύνησε",
-    hint: String = "Βρες γρήγορα αυτό που θέλεις",
-    sheetTitle: String = "Κατηγορίες",
+    title: String? = null,
+    hint: String? = null,
+    sheetTitle: String? = null,
     modifier: Modifier = Modifier,
 ) {
     if (options.size <= 1) return
@@ -74,14 +76,14 @@ internal fun MobileCategoryExplorer(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    title,
+                    title ?: stringResource(R.string.home_explore),
                     color = IptvColors.TextPrimary,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Black,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    hint,
+                    hint ?: stringResource(R.string.home_explore_hint),
                     color = IptvColors.TextTertiary,
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -95,7 +97,7 @@ internal fun MobileCategoryExplorer(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Όλες",
+                    stringResource(R.string.home_all_categories),
                     color = IptvColors.TextSecondary,
                     fontSize = 10.5.sp,
                     fontWeight = FontWeight.Black,
@@ -140,13 +142,13 @@ internal fun MobileCategoryExplorer(
             ) {
                 item(key = "category-sheet-heading") {
                     Text(
-                        sheetTitle,
+                        sheetTitle ?: stringResource(R.string.home_categories),
                         color = IptvColors.TextPrimary,
                         fontSize = 21.sp,
                         fontWeight = FontWeight.Black,
                     )
                     Text(
-                        "Διάλεξε μία κατηγορία για άμεσο φιλτράρισμα",
+                        stringResource(R.string.home_category_sheet_hint),
                         color = IptvColors.TextTertiary,
                         fontSize = 10.sp,
                         modifier = Modifier.padding(top = 3.dp, bottom = 16.dp),
@@ -294,5 +296,6 @@ private fun CategoryGridIcon(color: Color) {
     }
 }
 
+@Composable
 private fun formatCount(count: Int): String =
-    NumberFormat.getIntegerInstance(Locale("el", "GR")).format(count)
+    NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(count)

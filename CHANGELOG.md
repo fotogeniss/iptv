@@ -5,6 +5,12 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the complete Home experience for mobile and Android TV in the
+  staged QA flow, including rails, hero actions, category exploration, Home
+  editing, empty/recovery states, accessibility labels, plurals and
+  locale-aware counts. Provider-owned titles remain unchanged, while pure Home
+  and catalog policies now receive or expose stable IDs instead of owning UI
+  copy.
 - Implemented the approved localization foundation across all five activity
   hosts, with AndroidX per-app locale persistence, paired English/Greek
   navigation and settings resources, localized mobile/TV primary navigation,

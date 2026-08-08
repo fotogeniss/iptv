@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.CatalogRailSection
@@ -81,7 +83,7 @@ internal fun MobilePremiumHomeRail(
         ) {
             Text(section.title, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
             Text(
-                "Προβολή όλων",
+                stringResource(R.string.home_view_all),
                 color = IptvColors.TextTertiary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -168,7 +170,7 @@ private fun MobilePremiumHomeCard(
             Box(
                 Modifier.align(Alignment.TopEnd).padding(8.dp).size(25.dp).clip(RoundedCornerShape(99.dp)).background(Color.Black.copy(alpha = .72f)),
                 contentAlignment = Alignment.Center
-            ) { Icon(Icons.Default.Check, "Στη λίστα μου", tint = Color.White, modifier = Modifier.size(15.dp)) }
+            ) { Icon(Icons.Default.Check, stringResource(R.string.home_in_my_list), tint = Color.White, modifier = Modifier.size(15.dp)) }
         }
         Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(horizontal = 10.dp, vertical = 9.dp)) {
             Text(channel.name, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -195,7 +197,7 @@ internal fun MobilePreviewsRow(
     if (previews.isEmpty()) return
     Column(modifier.fillMaxWidth().padding(top = 16.dp)) {
         Text(
-            "Προεπισκοπήσεις",
+            stringResource(R.string.home_previews),
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Black,
@@ -281,7 +283,7 @@ private fun MobileTop10Card(
                     Modifier.align(Alignment.TopEnd).padding(6.dp).size(22.dp)
                         .clip(RoundedCornerShape(99.dp)).background(Color.Black.copy(alpha = .72f)),
                     contentAlignment = Alignment.Center
-                ) { Icon(Icons.Default.Check, "Στη λίστα μου", tint = Color.White, modifier = Modifier.size(13.dp)) }
+                ) { Icon(Icons.Default.Check, stringResource(R.string.home_in_my_list), tint = Color.White, modifier = Modifier.size(13.dp)) }
             }
         }
     }

@@ -28,12 +28,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.design.Motion
@@ -105,7 +107,7 @@ private fun TvHeroInfo(channel: Channel, meta: TmdbClient.Meta?) {
             Text("P", color = IptvColors.Primary, fontSize = 20.sp, fontWeight = FontWeight.Black)
             Spacer(Modifier.width(8.dp))
             Text(
-                "S E R I E S   &   M O V I E S",
+                stringResource(R.string.home_tv_kicker),
                 color = Color.White.copy(alpha = 0.88f),
                 fontSize = 11.sp,
                 letterSpacing = 3.sp,
@@ -138,7 +140,7 @@ private fun TvHeroInfo(channel: Channel, meta: TmdbClient.Meta?) {
                     Text("IMDb", color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.width(9.dp))
-                Text("$rating/10", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.home_rating_out_of_ten, rating), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             }
         }
         Spacer(Modifier.height(8.dp))

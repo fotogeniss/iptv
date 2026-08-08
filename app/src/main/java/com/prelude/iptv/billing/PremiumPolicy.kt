@@ -28,11 +28,6 @@ object PremiumPolicy {
         PremiumTier.FREE -> feature in freeFeatures
     }
 
-    fun label(tier: PremiumTier): String = when (tier) {
-        PremiumTier.FREE -> "ΔΩΡΕΑΝ"
-        PremiumTier.PREMIUM -> "PREMIUM"
-    }
-
     fun tierOf(saved: String): PremiumTier =
         PremiumTier.entries.firstOrNull { it.name == saved } ?: defaultTier
 }

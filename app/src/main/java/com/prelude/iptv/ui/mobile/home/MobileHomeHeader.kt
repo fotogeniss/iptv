@@ -21,13 +21,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prelude.iptv.billing.PremiumPolicy
 import com.prelude.iptv.billing.hasQaPremiumOverride
 import com.prelude.iptv.billing.rememberPremiumTier
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 
 /**
@@ -67,8 +69,8 @@ internal fun MobileHomeHeader(
             // όχι από αγορά. Χωρίς αυτό, δοκιμάζοντας δεν ξεχωρίζεις αν κάτι
             // δουλεύει επειδή το πλήρωσες ή επειδή η σημαία το ανοίγει — και τα
             // κλειδώματα δεν δοκιμάζονται ποτέ στα σοβαρά.
-            PremiumPolicy.label(rememberPremiumTier()) +
-                if (hasQaPremiumOverride()) " · QA" else "",
+            stringResource(rememberPremiumTier().labelRes()) +
+                if (hasQaPremiumOverride()) stringResource(R.string.home_qa_suffix) else "",
             color = IptvColors.TextTertiary,
             fontSize = 10.sp,
             fontWeight = FontWeight.Black,
@@ -135,7 +137,7 @@ private fun QuickMenu(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Γρήγορα",
+                stringResource(R.string.home_quick_actions),
                 color = IptvColors.TextPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
@@ -151,10 +153,10 @@ private fun QuickMenu(
             onDismissRequest = { open = false },
             containerColor = IptvColors.Surface
         ) {
-            QuickItem("Ανανέωση περιεχομένου", Icons.Default.Refresh) { open = false; onUpdateContents() }
-            QuickItem("Επεξεργασία αρχικής", Icons.Default.Tune) { open = false; onEditHome() }
-            QuickItem("Κατηγορίες / Ομάδες", Icons.Default.Category) { open = false; onCategories() }
-            QuickItem("Εξαγωγή λίστας", Icons.Default.IosShare) { open = false; onExport() }
+            QuickItem(stringResource(R.string.home_refresh_content), Icons.Default.Refresh) { open = false; onUpdateContents() }
+            QuickItem(stringResource(R.string.home_edit_title), Icons.Default.Tune) { open = false; onEditHome() }
+            QuickItem(stringResource(R.string.home_categories_groups), Icons.Default.Category) { open = false; onCategories() }
+            QuickItem(stringResource(R.string.home_export_playlist), Icons.Default.IosShare) { open = false; onExport() }
         }
     }
 }

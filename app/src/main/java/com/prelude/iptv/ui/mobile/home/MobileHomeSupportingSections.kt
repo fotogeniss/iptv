@@ -12,11 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 
 @Composable
 internal fun CatalogCategoryExplorer(
@@ -33,11 +35,13 @@ internal fun CatalogCategoryExplorer(
             onSelectGroup(id.removePrefix("group:").takeIf { id != "all" })
         },
         hint = if (movies) {
-            "Βρες γρήγορα την ταινία που θέλεις"
+            stringResource(R.string.home_movie_explore_hint)
         } else {
-            "Βρες γρήγορα τη σειρά που θέλεις"
+            stringResource(R.string.home_series_explore_hint)
         },
-        sheetTitle = if (movies) "Κατηγορίες ταινιών" else "Κατηγορίες σειρών",
+        sheetTitle = stringResource(
+            if (movies) R.string.home_movie_categories else R.string.home_series_categories
+        ),
     )
 }
 
@@ -45,7 +49,7 @@ internal fun CatalogCategoryExplorer(
 internal fun SuggestionsEmptyState() {
     Column(Modifier.fillMaxWidth().padding(top = 18.dp)) {
         Text(
-            "✦ Προτάσεις για σένα",
+            stringResource(R.string.home_suggestions_heading),
             color = IptvColors.TextPrimary,
             fontSize = 17.sp,
             fontWeight = FontWeight.Black,
@@ -62,14 +66,14 @@ internal fun SuggestionsEmptyState() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Διαλεγμένα για σένα",
+                stringResource(R.string.home_suggestions_empty_title),
                 color = IptvColors.TextPrimary,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Black
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Δες κάτι ή πρόσθεσε στα αγαπημένα και θα αρχίσουν οι προτάσεις…",
+                stringResource(R.string.home_suggestions_empty_body),
                 color = IptvColors.TextTertiary,
                 fontSize = 12.5.sp,
                 lineHeight = 20.sp,

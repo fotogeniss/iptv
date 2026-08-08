@@ -1,0 +1,70 @@
+<resources>
+    <string name="home_section_header">Κεφαλίδα</string>
+    <string name="home_section_hero">Επιλογή του hero</string>
+    <string name="home_section_suggestions">Προτάσεις για σένα</string>
+    <string name="home_section_continue">Συνέχισε να βλέπεις</string>
+    <string name="home_section_recent_live">Κανάλια που είδες</string>
+    <string name="home_section_new_live">Νέα ζωντανά</string>
+    <string name="home_section_new_movies">Νέες ταινίες</string>
+    <string name="home_section_new_episodes">Νέα επεισόδια</string>
+    <string name="home_section_live">Ζωντανά</string>
+    <string name="home_section_movies">Ταινίες</string>
+    <string name="home_section_series">Σειρές</string>
+    <string name="home_section_my_list">Η λίστα μου</string>
+    <string name="home_section_trending">Δημοφιλή τώρα</string>
+    <string name="home_section_new_releases">Νέες κυκλοφορίες</string>
+    <string name="home_section_with_category">%1$s · %2$s</string>
+
+    <string name="home_explore">Εξερεύνησε</string>
+    <string name="home_explore_hint">Βρες γρήγορα αυτό που θέλεις</string>
+    <string name="home_categories">Κατηγορίες</string>
+    <string name="home_all_categories">Όλες</string>
+    <string name="home_category_sheet_hint">Διάλεξε μία κατηγορία για άμεσο φιλτράρισμα</string>
+    <string name="home_movie_explore_hint">Βρες γρήγορα την ταινία που θέλεις</string>
+    <string name="home_series_explore_hint">Βρες γρήγορα τη σειρά που θέλεις</string>
+    <string name="home_movie_categories">Κατηγορίες ταινιών</string>
+    <string name="home_series_categories">Κατηγορίες σειρών</string>
+
+    <string name="home_suggestions_heading">✦ Προτάσεις για σένα</string>
+    <string name="home_suggestions_empty_title">Διαλεγμένα για σένα</string>
+    <string name="home_suggestions_empty_body">Δες κάτι ή πρόσθεσε στα αγαπημένα και θα αρχίσουν οι προτάσεις…</string>
+
+    <string name="home_back">Πίσω</string>
+    <string name="home_edit_title">Επεξεργασία αρχικής</string>
+    <string name="home_edit_instructions">Το μάτι κρύβει την ενότητα από την αρχική. Κράτα πατημένο πάνω στις γραμμές δεξιά και σύρε για να αλλάξεις σειρά. Η πρώτη γραμμή είναι σταθερή.</string>
+    <string name="home_clear_history_confirmation">Να διαγραφεί το ιστορικό αυτής της ενότητας; Δεν αναιρείται.</string>
+    <string name="home_clear">Καθάρισμα</string>
+    <string name="home_cancel">Άκυρο</string>
+    <string name="home_hide_section">Κρύψε</string>
+    <string name="home_show_section">Εμφάνισε</string>
+    <string name="home_choose_category">Επιλογή</string>
+    <string name="home_reorder_section">Αλλαγή σειράς</string>
+
+    <string name="home_tier_free">ΔΩΡΕΑΝ</string>
+    <string name="home_tier_premium">PREMIUM</string>
+    <string name="home_qa_suffix" translatable="false"> · QA</string>
+    <string name="home_quick_actions">Γρήγορα</string>
+    <string name="home_refresh_content">Ανανέωση περιεχομένου</string>
+    <string name="home_categories_groups">Κατηγορίες / Ομάδες</string>
+    <string name="home_export_playlist">Εξαγωγή λίστας</string>
+
+    <string name="home_search">Αναζήτηση</string>
+    <string name="home_categories_dropdown">Κατηγορίες ▾</string>
+    <string name="home_top_choice">#1 ΣΤΙΣ ΕΠΙΛΟΓΕΣ ΣΟΥ</string>
+    <string name="home_rating_match">%1$s Match</string>
+    <string name="home_play">Αναπαραγωγή</string>
+    <string name="home_information">Πληροφορίες</string>
+    <string name="home_add_to_my_list">Προσθήκη στη λίστα μου</string>
+    <string name="home_remove_from_my_list">Αφαίρεση από τη λίστα μου</string>
+    <string name="home_in_my_list">Στη λίστα μου</string>
+    <string name="home_view_all">Προβολή όλων</string>
+    <string name="home_previews">Προεπισκοπήσεις</string>
+    <string name="home_close">Κλείσιμο</string>
+    <string name="home_tv_kicker">S E R I E S   &amp;   M O V I E S</string>
+    <string name="home_rating_out_of_ten">%1$s/10</string>
+
+    <plurals name="home_title_count">
+        <item quantity="one">%1$d τίτλος</item>
+        <item quantity="other">%1$d τίτλοι</item>
+    </plurals>
+</resources>

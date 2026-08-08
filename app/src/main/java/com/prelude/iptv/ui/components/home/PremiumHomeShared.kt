@@ -18,7 +18,6 @@ import coil.compose.AsyncImage
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.CatalogRailSection
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 
@@ -91,14 +90,6 @@ fun HomeCinematicBackdrop(
             )
         }
     }
-}
-
-fun homeSectionSubtitle(section: CatalogRailSection): String = when (section.id) {
-    "continue" -> "Συνέχισε από εκεί που σταμάτησες"
-    "my-list" -> "Οι αποθηκευμένες επιλογές σου"
-    "trending" -> "Δημοφιλή αυτή την εβδομάδα"
-    "new" -> "Ταινίες και σειρές που μόλις προστέθηκαν"
-    else -> "Επιλεγμένα για εσένα"
 }
 
 fun homeHeroCandidates(channels: List<Channel>): List<Channel> =

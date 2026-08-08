@@ -3,13 +3,11 @@ package com.prelude.iptv.ui.home
 /**
  * Μία ενότητα της αρχικής, όπως τη βλέπει ο χρήστης στην «Επεξεργασία αρχικής».
  *
- * Το [id] είναι αυτό που γράφεται στον δίσκο και ΔΕΝ αλλάζει ποτέ. Ο [title]
- * είναι κείμενο για τα μάτια και μπορεί να αλλάξει ελεύθερα — αν αποθηκεύαμε
- * τίτλους, μια διόρθωση ορθογραφίας θα έσβηνε τη διάταξη του χρήστη.
+ * Το [id] είναι αυτό που γράφεται στον δίσκο και ΔΕΝ αλλάζει ποτέ. Το display
+ * κείμενο ανήκει στο UI resource mapping, όχι σε αυτό το Android-free model.
  */
 data class HomeSection(
     val id: String,
-    val title: String,
     /**
      * Σταθερή: ούτε κρύβεται ούτε μετακινείται.
      *
@@ -64,17 +62,17 @@ object HomeLayoutPolicy {
     // της οθόνης. Ο μετρητής («10.793») είναι χρήσιμος μία φορά, όταν στήνεις την
     // πηγή, και μετά είναι θόρυβος πάνω από την εικόνα της ταινίας.
     val DEFAULT: List<HomeSection> = listOf(
-        HomeSection(HEADER, "Κεφαλίδα", fixed = true),
-        HomeSection(HERO, "Επιλογή του hero"),
-        HomeSection(SUGGESTIONS, "Προτάσεις για σένα"),
-        HomeSection(CONTINUE, "Συνέχισε να βλέπεις", clearable = true),
-        HomeSection(RECENT_LIVE, "Κανάλια που είδες", clearable = true),
-        HomeSection(NEW_LIVE, "Νέα ζωντανά"),
-        HomeSection(NEW_MOVIES, "Νέες ταινίες"),
-        HomeSection(NEW_EPISODES, "Νέα επεισόδια"),
-        HomeSection(LIVE, "Ζωντανά", categorised = true),
-        HomeSection(MOVIES, "Ταινίες", categorised = true),
-        HomeSection(SERIES, "Σειρές", categorised = true),
+        HomeSection(HEADER, fixed = true),
+        HomeSection(HERO),
+        HomeSection(SUGGESTIONS),
+        HomeSection(CONTINUE, clearable = true),
+        HomeSection(RECENT_LIVE, clearable = true),
+        HomeSection(NEW_LIVE),
+        HomeSection(NEW_MOVIES),
+        HomeSection(NEW_EPISODES),
+        HomeSection(LIVE, categorised = true),
+        HomeSection(MOVIES, categorised = true),
+        HomeSection(SERIES, categorised = true),
     )
 
     private val BY_ID = DEFAULT.associateBy { it.id }

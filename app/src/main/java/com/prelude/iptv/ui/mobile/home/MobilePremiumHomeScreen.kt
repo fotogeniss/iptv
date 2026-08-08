@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.prelude.iptv.billing.PremiumFeature
+import com.prelude.iptv.R
 import com.prelude.iptv.billing.PremiumRequiredDialog
 import com.prelude.iptv.billing.isUnlocked
 import com.prelude.iptv.data.Channel
@@ -19,6 +20,7 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.CatalogRailSection
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
 import com.prelude.iptv.ui.home.HomeRailContentPolicy
+import com.prelude.iptv.ui.localization.titleRes
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import com.prelude.iptv.category.CategoryLayoutPolicy
 import kotlin.random.Random
@@ -76,7 +78,8 @@ fun MobilePremiumHomeScreen(
 ) {
     if (channels.isEmpty()) return
 
-    val appContext = LocalContext.current.applicationContext
+    val context = LocalContext.current
+    val appContext = context.applicationContext
     val store = remember(appContext) { PlaylistStore(appContext) }
     // Οι αλλαγές γράφονται αμέσως στον δίσκο, αλλά η οθόνη πρέπει να τις δει
     // ΤΩΡΑ: το SharedPreferences δεν ειδοποιεί το Compose. Ο μετρητής είναι το
@@ -151,7 +154,7 @@ fun MobilePremiumHomeScreen(
         }
     }
     val catalogCategoryOptions = remember(catalogGroups, channels.size) {
-        listOf(MobileCategoryOption("all", "Όλες", channels.size)) +
+        listOf(MobileCategoryOption("all", context.getString(R.string.home_all_categories), channels.size)) +
             catalogGroups.map { entry ->
                 MobileCategoryOption("group:${entry.key}", entry.key, entry.value)
             }
@@ -275,6 +278,13 @@ fun MobilePremiumHomeScreen(
         selectedDestination = selectedDestination,
         selectedCatalogGroup = selectedCatalogGroup,
         categoryOf = categoryOf,
+        sectionTitle = { id ->
+            val section = HomeLayoutPolicy.DEFAULT.first { it.id == id }
+            context.getString(section.titleRes())
+        },
+        categoryTitle = { label, category ->
+            context.getString(R.string.home_section_with_category, label, category)
+        },
     )
 
     val heroVisible = entries.any { it.section.id == HomeLayoutPolicy.HERO && it.visible }

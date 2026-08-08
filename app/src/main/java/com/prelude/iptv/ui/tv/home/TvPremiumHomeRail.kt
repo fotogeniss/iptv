@@ -50,6 +50,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.rememberPosterArtwork
@@ -294,7 +296,7 @@ private fun TvPosterCard(
                     .background(Color.Black.copy(alpha = 0.72f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Check, "Στη λίστα μου", tint = Color.White, modifier = Modifier.size(12.dp))
+                Icon(Icons.Default.Check, stringResource(R.string.home_in_my_list), tint = Color.White, modifier = Modifier.size(12.dp))
             }
         }
         // Σκούρο πέπλο στις μη-εστιασμένες κάρτες (πάνω από την αφίσα, κάτω από
