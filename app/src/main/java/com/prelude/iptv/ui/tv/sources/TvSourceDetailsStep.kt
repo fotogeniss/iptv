@@ -310,7 +310,7 @@ internal fun inputValue(input: TvPlaylistInput, draft: PlaylistSourceDraft): Str
 private fun PlaylistSourceValidation?.forField(field: PlaylistSourceField): String? =
     this?.message?.takeIf { this.field == field }
 
-private data class TvMethodContent(
+private data class TvMethodFormContent(
     val icon: ImageVector,
     val summaryTitle: String,
     val summaryText: String,
@@ -318,9 +318,9 @@ private data class TvMethodContent(
     val subtitle: String,
 )
 
-private fun tvMethodContent(method: PlaylistSourceMethod): TvMethodContent = when (method) {
-    PlaylistSourceMethod.URL -> TvMethodContent(Icons.Default.Link, "Σύνδεσμος λίστας", "Θα ελέγξουμε ότι η λίστα απαντά πριν αποθηκευτεί.", "Συμπλήρωσε τον σύνδεσμο", "Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.")
-    PlaylistSourceMethod.XTREAM -> TvMethodContent(Icons.Default.Lock, "Server και κωδικοί", "Χρειαζόμαστε server, username και password.", "Συμπλήρωσε τα στοιχεία σύνδεσης", "Αντέγραψε τα τρία στοιχεία ακριβώς όπως εμφανίζονται στο μήνυμα του παρόχου.")
-    PlaylistSourceMethod.MAC -> TvMethodContent(Icons.Default.Dns, "Portal και MAC", "Η MAC address μορφοποιείται αυτόματα.", "Συμπλήρωσε Portal και MAC", "Χρησιμοποίησε το Portal URL και τη MAC address που σου έδωσε ο πάροχος.")
-    PlaylistSourceMethod.FILE -> TvMethodContent(Icons.Default.FolderOpen, "Τοπικό αρχείο", "Το αρχείο διαβάζεται μόνο σε αυτή τη συσκευή.", "Διάλεξε το αρχείο σου", "Υποστηρίζονται αρχεία M3U και M3U8 από τη συσκευή.")
+private fun tvMethodContent(method: PlaylistSourceMethod): TvMethodFormContent = when (method) {
+    PlaylistSourceMethod.URL -> TvMethodFormContent(Icons.Default.Link, "Σύνδεσμος λίστας", "Θα ελέγξουμε ότι η λίστα απαντά πριν αποθηκευτεί.", "Συμπλήρωσε τον σύνδεσμο", "Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.")
+    PlaylistSourceMethod.XTREAM -> TvMethodFormContent(Icons.Default.Lock, "Server και κωδικοί", "Χρειαζόμαστε server, username και password.", "Συμπλήρωσε τα στοιχεία σύνδεσης", "Αντέγραψε τα τρία στοιχεία ακριβώς όπως εμφανίζονται στο μήνυμα του παρόχου.")
+    PlaylistSourceMethod.MAC -> TvMethodFormContent(Icons.Default.Dns, "Portal και MAC", "Η MAC address μορφοποιείται αυτόματα.", "Συμπλήρωσε Portal και MAC", "Χρησιμοποίησε το Portal URL και τη MAC address που σου έδωσε ο πάροχος.")
+    PlaylistSourceMethod.FILE -> TvMethodFormContent(Icons.Default.FolderOpen, "Τοπικό αρχείο", "Το αρχείο διαβάζεται μόνο σε αυτή τη συσκευή.", "Διάλεξε το αρχείο σου", "Υποστηρίζονται αρχεία M3U και M3U8 από τη συσκευή.")
 }

@@ -75,6 +75,7 @@ playback_engine = (ROOT / "app/src/main/java/com/prelude/iptv/player/PlaybackEng
 proguard_rules = (ROOT / "app/proguard-rules.pro").read_text(encoding="utf-8")
 add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/AddPlaylistScreen.kt").read_text(encoding="utf-8")
 tv_add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistScreen.kt").read_text(encoding="utf-8")
+tv_add_playlist_components = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistComponents.kt").read_text(encoding="utf-8")
 mobile_add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileAddPlaylistScreen.kt").read_text(encoding="utf-8")
 tv_onboarding_steps = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceOnboardingSteps.kt").read_text(encoding="utf-8")
 tv_source_details = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceDetailsStep.kt").read_text(encoding="utf-8")
@@ -245,6 +246,12 @@ source_contracts = {
             tv_source_details,
             tv_onboarding_steps,
         )
+    ),
+    "TV onboarding helper models have distinct package-level names": (
+        "data class TvMethodCardContent" in tv_add_playlist_components
+        and "data class TvMethodFormContent" in tv_source_details
+        and "data class TvMethodContent" not in tv_add_playlist_components
+        and "data class TvMethodContent" not in tv_source_details
     ),
     "Successful onboarding skips the redundant content chooser for Live TV": main_activity.count('vm.setContentType("live")') >= 2,
     "Source onboarding detects credentials and owns field-level validation centrally": (

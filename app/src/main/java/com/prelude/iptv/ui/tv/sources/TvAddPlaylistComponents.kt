@@ -76,10 +76,10 @@ internal fun TvPlaylistMethodCard(
     onSelect: () -> Unit,
 ) {
     val content = when (method) {
-        PlaylistSourceMethod.URL -> TvMethodContent(Icons.Default.Link, "Έναν σύνδεσμο", "M3U", "M3U ή get.php URL")
-        PlaylistSourceMethod.XTREAM -> TvMethodContent(Icons.Default.Lock, "Server και κωδικούς", "XTREAM", "Server, username, password")
-        PlaylistSourceMethod.MAC -> TvMethodContent(Icons.Default.Dns, "Portal και MAC", "STALKER", "Portal URL και MAC address")
-        PlaylistSourceMethod.FILE -> TvMethodContent(Icons.Default.FolderOpen, "Ένα αρχείο", "FILE", "M3U ή M3U8 στη συσκευή")
+        PlaylistSourceMethod.URL -> TvMethodCardContent(Icons.Default.Link, "Έναν σύνδεσμο", "M3U", "M3U ή get.php URL")
+        PlaylistSourceMethod.XTREAM -> TvMethodCardContent(Icons.Default.Lock, "Server και κωδικούς", "XTREAM", "Server, username, password")
+        PlaylistSourceMethod.MAC -> TvMethodCardContent(Icons.Default.Dns, "Portal και MAC", "STALKER", "Portal URL και MAC address")
+        PlaylistSourceMethod.FILE -> TvMethodCardContent(Icons.Default.FolderOpen, "Ένα αρχείο", "FILE", "M3U ή M3U8 στη συσκευή")
     }
     Row(
         modifier
@@ -341,7 +341,7 @@ internal fun TvPlaylistAction(
     }
 }
 
-private data class TvMethodContent(
+private data class TvMethodCardContent(
     val icon: ImageVector,
     val title: String,
     val tag: String,
