@@ -1,8 +1,8 @@
 # Prelude+ localization architecture
 
 Status: owner-approved design; runtime foundation, navigation/settings, Home,
-Live TV, and movie/series browsing are implemented behind the QA/parity rollout
-gate.
+Live TV, movie/series browsing and global Search are implemented behind the
+QA/parity rollout gate.
 
 ## Product contract
 
@@ -124,11 +124,13 @@ cohesive vertical slices:
    later slice.**
 5. Movie and series browsing. **Implemented for mobile and TV; provider titles,
    categories and metadata remain data.**
-6. Search, details and episodes.
-7. Player, audio/subtitle panels and playback errors.
-8. Source onboarding/management, EPG and all settings flows.
-9. Profiles, billing, legal, diagnostics, backup/export and system notifications.
-10. Final hardcoded-string audit, translation parity gate and public picker
+6. Global Search. **Implemented for mobile and TV, including typed headings,
+   categories and locale-aware TV keyboard selection.**
+7. Movie/series details, seasons and episodes.
+8. Player, audio/subtitle panels and playback errors.
+9. Source onboarding/management, EPG and all settings flows.
+10. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+11. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -142,8 +144,8 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog mappings and hardcoded-copy audits,
-  and the closed public rollout gate.
+  boundaries, migrated Home/Live/catalog/Search mappings and hardcoded-copy
+  audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

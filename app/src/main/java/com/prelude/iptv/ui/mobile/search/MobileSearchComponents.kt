@@ -37,20 +37,23 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.greekUppercase
 import com.prelude.iptv.ui.SearchUiPolicy
 import com.prelude.iptv.ui.StreamingProgress
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.localizedSearchCategory
+import com.prelude.iptv.ui.localization.localizedUppercase
 import androidx.compose.animation.core.tween
 
 @Composable
@@ -87,7 +90,10 @@ internal fun MobileSearchFeatured(
             Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(17.dp)
         ) {
             Text(
-                "${SearchUiPolicy.category(channel).greekUppercase()} · ΠΡΟΤΕΙΝΟΜΕΝΟ",
+                stringResource(
+                    R.string.search_featured,
+                    localizedUppercase(localizedSearchCategory(SearchUiPolicy.category(channel))),
+                ),
                 color = IptvColors.Success,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black
@@ -119,7 +125,7 @@ internal fun MobileSearchFeatured(
                 ) {
                     Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(5.dp))
-                    Text("Άνοιγμα", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.search_open), color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
                 }
                 IconButton(
                     onClick = onToggleFavorite,
@@ -127,7 +133,8 @@ internal fun MobileSearchFeatured(
                 ) {
                     Icon(
                         if (favorite) Icons.Default.Check else Icons.Default.Add,
-                        if (favorite) "Αφαίρεση από τη λίστα" else "Προσθήκη στη λίστα",
+                        if (favorite) stringResource(R.string.search_remove_from_list)
+                        else stringResource(R.string.search_add_to_list),
                         tint = Color.White
                     )
                 }
@@ -181,7 +188,8 @@ internal fun MobileSearchResultCard(
             ) {
                 Icon(
                     if (favorite) Icons.Default.Check else Icons.Default.Add,
-                    null,
+                    if (favorite) stringResource(R.string.search_remove_from_list)
+                    else stringResource(R.string.search_add_to_list),
                     tint = Color.White,
                     modifier = Modifier.size(18.dp)
                 )

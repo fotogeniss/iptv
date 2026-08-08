@@ -45,10 +45,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.TmdbClient
@@ -57,6 +60,8 @@ import com.prelude.iptv.ui.PremiumSearchFilter
 import com.prelude.iptv.ui.SearchUiPolicy
 import com.prelude.iptv.ui.components.search.PremiumSearchEmpty
 import com.prelude.iptv.ui.components.search.rememberSearchMeta
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedSearchHeading
 import com.prelude.iptv.ui.mobile.navigation.PremiumMobileBottomNavigation
 import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
@@ -141,7 +146,11 @@ fun MobilePremiumSearchScreen(
                 item {
                     MobileRecentSearches(
                         labels = if (recents.isNotEmpty()) recents else suggestions.take(5),
-                        title = if (recents.isNotEmpty()) "Πρόσφατες αναζητήσεις" else "Δημοφιλείς αναζητήσεις",
+                        title = if (recents.isNotEmpty()) {
+                            stringResource(R.string.search_recent)
+                        } else {
+                            stringResource(R.string.search_popular)
+                        },
                         onSelect = onQueryChange,
                         showClear = recents.isNotEmpty(),
                         onClear = { recents.clear() }
@@ -168,13 +177,17 @@ fun MobilePremiumSearchScreen(
             item {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                     Text(
-                        SearchUiPolicy.title(query, filter),
+                        localizedSearchHeading(SearchUiPolicy.heading(query, filter)),
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier.weight(1f)
                     )
-                    Text("${filtered.size} τίτλοι", color = IptvColors.TextTertiary, fontSize = 11.sp)
+                    Text(
+                        pluralStringResource(R.plurals.search_title_count, filtered.size, filtered.size),
+                        color = IptvColors.TextTertiary,
+                        fontSize = 11.sp,
+                    )
                 }
             }
             itemsIndexed(
@@ -231,7 +244,7 @@ private fun MobileSearchTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.search_back), tint = Color.White)
         }
         OutlinedTextField(
             value = query,
@@ -241,14 +254,14 @@ private fun MobileSearchTopBar(
             trailingIcon = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (query.isNotBlank()) IconButton(onClick = { onQueryChange("") }) {
-                        Icon(Icons.Default.Close, "Καθαρισμός", tint = Color.White)
+                        Icon(Icons.Default.Close, stringResource(R.string.search_clear), tint = Color.White)
                     }
                     IconButton(onClick = onVoiceSearch) {
-                        Icon(Icons.Default.Mic, "Φωνητική αναζήτηση", tint = Color.White)
+                        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = Color.White)
                     }
                 }
             },
-            placeholder = { Text("Τίτλοι, ηθοποιοί, είδη", color = IptvColors.TextTertiary) },
+            placeholder = { Text(stringResource(R.string.search_field_hint), color = IptvColors.TextTertiary) },
             shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onCommit() }),
@@ -275,7 +288,7 @@ private fun MobileSearchFilterChip(
     onClick: () -> Unit
 ) {
     Text(
-        filter.label,
+        stringResource(filter.labelRes()),
         color = if (selected) Color.Black else IptvColors.TextSecondary,
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
@@ -299,7 +312,7 @@ private fun MobileRecentSearches(
             Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
             if (showClear) {
                 Text(
-                    "Καθαρισμός",
+                    stringResource(R.string.search_clear),
                     color = IptvColors.TextTertiary,
                     fontSize = 11.sp,
                     modifier = Modifier.clickable(onClick = onClear).padding(8.dp)

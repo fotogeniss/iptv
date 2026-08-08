@@ -24,11 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -116,7 +118,7 @@ fun PremiumSearchEmpty(
             )
             Spacer(Modifier.height(14.dp))
             Text(
-                "Δεν βρέθηκαν αποτελέσματα",
+                stringResource(R.string.search_no_results),
                 color = Color.White,
                 fontSize = 19.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -124,8 +126,8 @@ fun PremiumSearchEmpty(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                if (query.isBlank()) "Δεν υπάρχει περιεχόμενο σε αυτή την κατηγορία."
-                else "Δοκίμασε διαφορετικές λέξεις για «${query.trim()}».",
+                if (query.isBlank()) stringResource(R.string.search_empty_category)
+                else stringResource(R.string.search_try_different, query.trim()),
                 color = IptvColors.TextSecondary,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center

@@ -28,9 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.TmdbClient
@@ -42,6 +45,7 @@ import com.prelude.iptv.ui.TvIconButton
 import com.prelude.iptv.ui.components.search.PremiumSearchEmpty
 import com.prelude.iptv.ui.components.search.SearchCinematicBackdrop
 import com.prelude.iptv.ui.components.search.rememberSearchMeta
+import com.prelude.iptv.ui.localization.localizedSearchHeading
 import com.prelude.iptv.ui.rememberInitialFocus
 
 @Composable
@@ -80,11 +84,11 @@ fun TvPremiumSearchScreen(
         SearchCinematicBackdrop(selected, meta, mobile = false)
         Column(Modifier.fillMaxSize().padding(horizontal = 30.dp, vertical = 20.dp)) {
             Row(Modifier.fillMaxWidth()) {
-                TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", onClick = onBack)
+                TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.search_back), onClick = onBack)
                 Spacer(Modifier.width(13.dp))
                 Column {
-                    Text("PRELUDE+ SEARCH", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
-                    Text("Αναζήτησε σε ολόκληρη τη βιβλιοθήκη", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                    Text(stringResource(R.string.search_brand_title), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.search_library_hint), color = IptvColors.TextTertiary, fontSize = 10.sp)
                 }
             }
             Spacer(Modifier.height(15.dp))
@@ -126,13 +130,17 @@ fun TvPremiumSearchScreen(
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.fillMaxWidth()) {
                         Text(
-                            SearchUiPolicy.title(query, filter),
+                            localizedSearchHeading(SearchUiPolicy.heading(query, filter)),
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.weight(1f)
                         )
-                        Text("${filtered.size} τίτλοι", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                        Text(
+                            pluralStringResource(R.plurals.search_title_count, filtered.size, filtered.size),
+                            color = IptvColors.TextTertiary,
+                            fontSize = 10.sp,
+                        )
                     }
                     Spacer(Modifier.height(8.dp))
                     if (filtered.isEmpty()) {
@@ -167,7 +175,7 @@ fun TvPremiumSearchScreen(
 
     if (editorOpen) {
         TextEntryDialog(
-            title = "Αναζήτηση",
+            title = stringResource(R.string.search_title),
             initial = query,
             onDismiss = { editorOpen = false },
             onOk = {

@@ -49,4 +49,28 @@ class SearchUiPolicyTest {
         assertEquals(listOf("Movie", "Series", "Live"), SearchUiPolicy.discovery(items).map { it.name })
     }
 
+    @Test fun headingsAndCategoriesRemainTypedOutsideAndroidResources() {
+        assertEquals(
+            SearchHeading.Query("matrix"),
+            SearchUiPolicy.heading("  matrix  ", PremiumSearchFilter.ALL)
+        )
+        assertEquals(
+            SearchHeading.Filter(PremiumSearchFilter.SERIES),
+            SearchUiPolicy.heading("", PremiumSearchFilter.SERIES)
+        )
+        assertEquals(SearchHeading.Popular, SearchUiPolicy.heading("", PremiumSearchFilter.ALL))
+        assertEquals(
+            SearchCategory.Movie,
+            SearchUiPolicy.category(Channel(name = "Movie", kind = "vod"))
+        )
+        assertEquals(
+            SearchCategory.Provider("Concerts"),
+            SearchUiPolicy.category(Channel(name = "Other", kind = "other", group = "Concerts"))
+        )
+    }
+
+    @Test fun missingDescriptionStaysTypedAsMissing() {
+        assertEquals(null, SearchUiPolicy.description(Channel(name = "Movie"), null))
+    }
+
 }

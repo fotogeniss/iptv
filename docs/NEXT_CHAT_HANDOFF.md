@@ -333,10 +333,17 @@ has now been implemented for Android TV.
   provider data. `CatalogLocalizationResources.kt` owns the synthetic-group and
   locale-aware progress boundaries; the shared locale-aware uppercase helper is
   intentionally no longer Live-owned.
-- The next cohesive localization slice is Search, followed by movie/series
-  details and seasons/episodes. The full EPG UI remains with the later
-  EPG/settings slice; only programme labels shown directly inside Live were
-  included there.
+- Global Search is now localized across the active phone and TV routes:
+  filters, typed headings/categories, result counts, empty states, featured
+  actions and accessibility copy. `SearchUiPolicy` no longer owns localized
+  labels or fallback sentences; `SearchLocalizationResources.kt` performs the
+  Android mapping. `SearchKeyboardPolicy` keeps stable input actions and starts
+  the TV keyboard from the active app language while retaining Greek, Latin and
+  numeric layouts. Provider suggestions, titles, categories and metadata remain
+  data.
+- The next cohesive localization slice is movie/series details, seasons and
+  episodes. The full EPG UI remains with the later EPG/settings slice; only
+  programme labels shown directly inside Live were included there.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.

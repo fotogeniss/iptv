@@ -15,13 +15,20 @@ data class SearchGroups(
 }
 
 @Immutable
-enum class PremiumSearchFilter(val label: String) {
-    ALL("Όλα"),
-    MOVIES("Ταινίες"),
-    SERIES("Σειρές"),
-    LIVE("Live"),
-    SPORTS("Αθλητικά"),
-    DOCUMENTARIES("Ντοκιμαντέρ")
+enum class PremiumSearchFilter { ALL, MOVIES, SERIES, LIVE, SPORTS, DOCUMENTARIES }
+
+sealed interface SearchHeading {
+    data class Query(val query: String) : SearchHeading
+    data class Filter(val filter: PremiumSearchFilter) : SearchHeading
+    data object Popular : SearchHeading
+}
+
+sealed interface SearchCategory {
+    data object Live : SearchCategory
+    data object Series : SearchCategory
+    data object Movie : SearchCategory
+    data object Content : SearchCategory
+    data class Provider(val label: String) : SearchCategory
 }
 
 /** Pure search presentation policies. The repository/search engine stays unchanged. */
@@ -79,17 +86,18 @@ object SearchUiPolicy {
         PremiumSearchFilter.DOCUMENTARIES -> items.filter { matchesTerms(it, documentaryTerms) }
     }
 
-    fun title(query: String, filter: PremiumSearchFilter): String = when {
-        query.isNotBlank() -> "Αποτελέσματα για «${query.trim()}»"
-        filter != PremiumSearchFilter.ALL -> filter.label
-        else -> "Δημοφιλή τώρα"
+    fun heading(query: String, filter: PremiumSearchFilter): SearchHeading = when {
+        query.isNotBlank() -> SearchHeading.Query(query.trim())
+        filter != PremiumSearchFilter.ALL -> SearchHeading.Filter(filter)
+        else -> SearchHeading.Popular
     }
 
-    fun category(channel: Channel): String = when (channel.kind) {
-        "live" -> "Ζωντανό"
-        "series" -> "Σειρά"
-        "vod", "movie" -> "Ταινία"
-        else -> channel.group.ifBlank { "Περιεχόμενο" }
+    fun category(channel: Channel): SearchCategory = when (channel.kind) {
+        "live" -> SearchCategory.Live
+        "series" -> SearchCategory.Series
+        "vod", "movie" -> SearchCategory.Movie
+        else -> channel.group.takeIf(String::isNotBlank)?.let { SearchCategory.Provider(it) }
+            ?: SearchCategory.Content
     }
 
     fun metaLine(channel: Channel, meta: TmdbClient.Meta? = null): String =
@@ -100,10 +108,9 @@ object SearchUiPolicy {
             channel.duration
         ).filter(String::isNotBlank).distinct().joinToString(" · ")
 
-    fun description(channel: Channel, meta: TmdbClient.Meta?): String =
+    fun description(channel: Channel, meta: TmdbClient.Meta?): String? =
         meta?.overview?.takeIf(String::isNotBlank)
             ?: channel.plot.takeIf(String::isNotBlank)
-            ?: "Ανακάλυψε περισσότερα για ${channel.name}."
 
     private fun matchesTerms(channel: Channel, terms: List<String>): Boolean {
         val haystack = listOf(channel.name, channel.group, channel.genre, channel.plot)

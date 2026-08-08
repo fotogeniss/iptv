@@ -1,0 +1,49 @@
+<resources>
+    <string name="search_brand_title">PRELUDE+ SEARCH</string>
+    <string name="search_library_hint">Search your entire library</string>
+    <string name="search_back">Back</string>
+    <string name="search_title">Search</string>
+    <string name="search_field_hint">Titles, actors, genres</string>
+    <string name="search_clear">Clear</string>
+    <string name="search_voice">Voice search</string>
+
+    <string name="search_filter_all">All</string>
+    <string name="search_filter_movies">Movies</string>
+    <string name="search_filter_series">Series</string>
+    <string name="search_filter_live">Live</string>
+    <string name="search_filter_sports">Sports</string>
+    <string name="search_filter_documentaries">Documentaries</string>
+
+    <string name="search_results_for">Results for “%1$s”</string>
+    <string name="search_popular_now">Popular now</string>
+    <string name="search_recent">Recent searches</string>
+    <string name="search_popular">Popular searches</string>
+    <string name="search_recent_recommended">RECENT &amp; RECOMMENDED</string>
+    <string name="search_featured">%1$s · RECOMMENDED</string>
+
+    <string name="search_category_live">Live</string>
+    <string name="search_category_series">Series</string>
+    <string name="search_category_movie">Movie</string>
+    <string name="search_category_content">Content</string>
+    <string name="search_discover_more">Discover more about %1$s.</string>
+
+    <string name="search_open">Open</string>
+    <string name="search_list">List</string>
+    <string name="search_add_to_list">Add to list</string>
+    <string name="search_remove_from_list">Remove from list</string>
+    <string name="search_no_results">No results found</string>
+    <string name="search_empty_category">There is no content in this category.</string>
+    <string name="search_try_different">Try different words for “%1$s”.</string>
+
+    <string name="search_keyboard_space">SPACE</string>
+    <string name="search_keyboard_clear">CLEAR</string>
+    <string name="search_keyboard_greek">EL</string>
+    <string name="search_keyboard_latin">ABC</string>
+    <string name="search_keyboard_numeric">123</string>
+    <string name="search_keyboard_backspace">Delete character</string>
+
+    <plurals name="search_title_count">
+        <item quantity="one">%1$d title</item>
+        <item quantity="other">%1$d titles</item>
+    </plurals>
+</resources>

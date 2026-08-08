@@ -215,6 +215,38 @@ for legacy_copy in ("Τι θέλεις να δεις;", "Η φωνητική α�
     if f'"{legacy_copy}"' in uncomment_kotlin(browse_route):
         failures.append("voice-search catalog copy bypasses resources")
 
+search_policy = read("app/src/main/java/com/prelude/iptv/ui/SearchUiPolicy.kt")
+search_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/SearchLocalizationResources.kt"
+)
+if "enum class PremiumSearchFilter(val label:" in search_policy:
+    failures.append("Android-free Search filter model still owns display copy")
+for typed_boundary in ("sealed interface SearchHeading", "sealed interface SearchCategory"):
+    if typed_boundary not in search_policy:
+        failures.append(f"typed Search resource boundary missing: {typed_boundary}")
+for filter_name in ("ALL", "MOVIES", "SERIES", "LIVE", "SPORTS", "DOCUMENTARIES"):
+    if f"PremiumSearchFilter.{filter_name} -> R.string.search_filter_" not in search_mapping:
+        failures.append(f"Search filter resource mapping missing: {filter_name}")
+if "fun description(channel: Channel, meta: TmdbClient.Meta?): String?" not in search_policy:
+    failures.append("Search fallback description is still formatted outside resources")
+
+migrated_search_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/components/search/SearchFoundation.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/search/MobilePremiumSearchScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/search/MobileSearchComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/search/TvPremiumSearchScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/search/TvSearchControls.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/search/TvSearchResults.kt",
+]
+for ui_path in migrated_search_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Search UI: {ui_path}")
+
+search_keyboard = read("app/src/main/java/com/prelude/iptv/ui/SearchKeyboardPolicy.kt")
+if 'initialMode(language: String)' not in search_keyboard:
+    failures.append("TV Search keyboard no longer follows the active app language")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

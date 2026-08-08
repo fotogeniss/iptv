@@ -1,0 +1,49 @@
+<resources>
+    <string name="search_brand_title">PRELUDE+ SEARCH</string>
+    <string name="search_library_hint">Αναζήτησε σε ολόκληρη τη βιβλιοθήκη</string>
+    <string name="search_back">Πίσω</string>
+    <string name="search_title">Αναζήτηση</string>
+    <string name="search_field_hint">Τίτλοι, ηθοποιοί, είδη</string>
+    <string name="search_clear">Καθαρισμός</string>
+    <string name="search_voice">Φωνητική αναζήτηση</string>
+
+    <string name="search_filter_all">Όλα</string>
+    <string name="search_filter_movies">Ταινίες</string>
+    <string name="search_filter_series">Σειρές</string>
+    <string name="search_filter_live">Live</string>
+    <string name="search_filter_sports">Αθλητικά</string>
+    <string name="search_filter_documentaries">Ντοκιμαντέρ</string>
+
+    <string name="search_results_for">Αποτελέσματα για «%1$s»</string>
+    <string name="search_popular_now">Δημοφιλή τώρα</string>
+    <string name="search_recent">Πρόσφατες αναζητήσεις</string>
+    <string name="search_popular">Δημοφιλείς αναζητήσεις</string>
+    <string name="search_recent_recommended">ΠΡΟΣΦΑΤΑ &amp; ΠΡΟΤΕΙΝΟΜΕΝΑ</string>
+    <string name="search_featured">%1$s · ΠΡΟΤΕΙΝΟΜΕΝΟ</string>
+
+    <string name="search_category_live">Ζωντανό</string>
+    <string name="search_category_series">Σειρά</string>
+    <string name="search_category_movie">Ταινία</string>
+    <string name="search_category_content">Περιεχόμενο</string>
+    <string name="search_discover_more">Ανακάλυψε περισσότερα για %1$s.</string>
+
+    <string name="search_open">Άνοιγμα</string>
+    <string name="search_list">Λίστα</string>
+    <string name="search_add_to_list">Προσθήκη στη λίστα</string>
+    <string name="search_remove_from_list">Αφαίρεση από τη λίστα</string>
+    <string name="search_no_results">Δεν βρέθηκαν αποτελέσματα</string>
+    <string name="search_empty_category">Δεν υπάρχει περιεχόμενο σε αυτή την κατηγορία.</string>
+    <string name="search_try_different">Δοκίμασε διαφορετικές λέξεις για «%1$s».</string>
+
+    <string name="search_keyboard_space">ΚΕΝΟ</string>
+    <string name="search_keyboard_clear">CLEAR</string>
+    <string name="search_keyboard_greek">ΕΛ</string>
+    <string name="search_keyboard_latin">ABC</string>
+    <string name="search_keyboard_numeric">123</string>
+    <string name="search_keyboard_backspace">Διαγραφή χαρακτήρα</string>
+
+    <plurals name="search_title_count">
+        <item quantity="one">%1$d τίτλος</item>
+        <item quantity="other">%1$d τίτλοι</item>
+    </plurals>
+</resources>

@@ -37,16 +37,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.greekUppercase
 import com.prelude.iptv.ui.PremiumSearchFilter
 import com.prelude.iptv.ui.SearchUiPolicy
 import com.prelude.iptv.ui.StreamingProgress
@@ -54,6 +55,9 @@ import androidx.compose.animation.core.tween
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedSearchCategory
+import com.prelude.iptv.ui.localization.localizedUppercase
 
 @Composable
 internal fun TvSearchFeatured(
@@ -81,7 +85,10 @@ internal fun TvSearchFeatured(
         )
         Column(Modifier.align(Alignment.BottomStart).fillMaxWidth(.78f).padding(23.dp)) {
             Text(
-                "${SearchUiPolicy.category(channel).greekUppercase()} · ΠΡΟΤΕΙΝΟΜΕΝΟ",
+                stringResource(
+                    R.string.search_featured,
+                    localizedUppercase(localizedSearchCategory(SearchUiPolicy.category(channel))),
+                ),
                 color = IptvColors.Success,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Black
@@ -95,7 +102,8 @@ internal fun TvSearchFeatured(
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                SearchUiPolicy.description(channel, meta),
+                SearchUiPolicy.description(channel, meta)
+                    ?: stringResource(R.string.search_discover_more, channel.name),
                 color = IptvColors.TextSecondary,
                 fontSize = 11.sp,
                 lineHeight = 15.sp,
@@ -107,8 +115,8 @@ internal fun TvSearchFeatured(
             Modifier.align(Alignment.BottomEnd).padding(18.dp),
             horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            TvHeroAction(Icons.Default.PlayArrow, "Άνοιγμα", primary = true, onClick = onOpen)
-            TvHeroAction(if (favorite) Icons.Default.Check else Icons.Default.Add, "Λίστα", primary = false, onClick = onToggleFavorite)
+            TvHeroAction(Icons.Default.PlayArrow, stringResource(R.string.search_open), primary = true, onClick = onOpen)
+            TvHeroAction(if (favorite) Icons.Default.Check else Icons.Default.Add, stringResource(R.string.search_list), primary = false, onClick = onToggleFavorite)
         }
     }
 }
@@ -165,7 +173,7 @@ private fun TvSearchFilterChip(
         label = "tvSearchFilterScale"
     )
     Text(
-        filter.label,
+        stringResource(filter.labelRes()),
         color = if (focused) Color.Black else if (selected) Color.White else IptvColors.TextSecondary,
         fontSize = 10.sp,
         fontWeight = FontWeight.Black,

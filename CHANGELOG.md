@@ -5,6 +5,12 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized global Search across the active mobile and Android TV routes,
+  including filters, headings, result counts, empty states, featured actions,
+  accessibility copy and a TV keyboard that starts with the active app
+  language while retaining explicit Greek, Latin and numeric layouts. Search
+  policy models now expose typed identities instead of owning display copy;
+  provider suggestions, titles and metadata remain unchanged.
 - Localized movie and series browsing across the active mobile and Android TV
   routes, including app-owned section/category labels, search and sorting,
   counts, loading/empty states, refresh dialogs, voice-search language,

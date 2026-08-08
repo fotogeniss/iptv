@@ -34,15 +34,24 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import androidx.compose.animation.core.tween
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.SearchKeyboardAction
+import com.prelude.iptv.ui.SearchKeyboardMode
+import com.prelude.iptv.ui.SearchKeyboardPolicy
+import com.prelude.iptv.ui.localization.labelRes
 
 @Composable
 internal fun TvSearchEntryRow(
@@ -81,7 +90,7 @@ private fun TvSearchEntrySurface(query: String, onClick: () -> Unit, modifier: M
         Icon(Icons.Default.Search, null, tint = if (focused) Color.Black else IptvColors.TextSecondary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(11.dp))
         Text(
-            query.ifBlank { "Τίτλοι, ηθοποιοί, είδη" },
+            query.ifBlank { stringResource(R.string.search_field_hint) },
             color = when {
                 focused -> Color.Black
                 query.isBlank() -> IptvColors.TextTertiary
@@ -110,7 +119,7 @@ private fun TvRoundAction(onClick: () -> Unit) {
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(Icons.Default.Mic, "Φωνητική αναζήτηση", tint = if (focused) Color.Black else Color.White)
+        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = if (focused) Color.Black else Color.White)
     }
 }
 
@@ -120,40 +129,39 @@ internal fun TvSearchKeyboard(
     onBackspace: () -> Unit,
     onClear: () -> Unit
 ) {
-    var mode by remember { mutableStateOf("el") }
-    val letters = when (mode) {
-        "en" -> ('A'..'Z').map(Char::toString)
-        "num" -> ('0'..'9').map(Char::toString)
-        else -> listOf(
-            "Α", "Ά", "Β", "Γ", "Δ", "Ε", "Έ", "Ζ", "Η", "Ή", "Θ", "Ι", "Ί",
-            "Κ", "Λ", "Μ", "Ν", "Ξ", "Ο", "Ό", "Π", "Ρ", "Σ", "Τ", "Υ", "Ύ",
-            "Φ", "Χ", "Ψ", "Ω", "Ώ"
-        )
-    }
-    val modeKeys = when (mode) {
-        "en" -> listOf("ΕΛ", "123")
-        "num" -> listOf("ΕΛ", "ABC")
-        else -> listOf("ABC", "123")
-    }
-    val keys = letters + listOf("ΚΕΝΟ", "⌫") + modeKeys + "CLEAR"
+    val language = LocalConfiguration.current.locales[0].language
+    var mode by remember(language) { mutableStateOf(SearchKeyboardPolicy.initialMode(language)) }
+    val keys = SearchKeyboardPolicy.keys(mode)
     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
         keys.chunked(6).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 row.forEach { key ->
+                    val label = when (key.action) {
+                        SearchKeyboardAction.CHARACTER -> key.character
+                        SearchKeyboardAction.BACKSPACE -> "⌫"
+                        else -> stringResource(key.action.labelRes())
+                    }
                     TvKeyboardKey(
-                        label = key,
+                        label = label,
+                        a11yDescription = if (key.action == SearchKeyboardAction.BACKSPACE) {
+                            stringResource(R.string.search_keyboard_backspace)
+                        } else null,
                         onClick = {
-                            when (key) {
-                                "ΚΕΝΟ" -> onCharacter(" ")
-                                "⌫" -> onBackspace()
-                                "ABC" -> mode = "en"
-                                "ΕΛ" -> mode = "el"
-                                "123" -> mode = "num"
-                                "CLEAR" -> onClear()
-                                else -> onCharacter(key)
+                            when (key.action) {
+                                SearchKeyboardAction.CHARACTER -> onCharacter(key.character)
+                                SearchKeyboardAction.SPACE -> onCharacter(" ")
+                                SearchKeyboardAction.BACKSPACE -> onBackspace()
+                                SearchKeyboardAction.CLEAR -> onClear()
+                                SearchKeyboardAction.GREEK -> mode = SearchKeyboardMode.GREEK
+                                SearchKeyboardAction.LATIN -> mode = SearchKeyboardMode.LATIN
+                                SearchKeyboardAction.NUMERIC -> mode = SearchKeyboardMode.NUMERIC
                             }
                         },
-                        modifier = Modifier.weight(if (key == "ΚΕΝΟ" || key == "CLEAR") 1.35f else 1f)
+                        modifier = Modifier.weight(
+                            if (key.action == SearchKeyboardAction.SPACE ||
+                                key.action == SearchKeyboardAction.CLEAR
+                            ) 1.35f else 1f
+                        )
                     )
                 }
                 repeat(6 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -163,7 +171,12 @@ internal fun TvSearchKeyboard(
 }
 
 @Composable
-private fun TvKeyboardKey(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun TvKeyboardKey(
+    label: String,
+    a11yDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var focused by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         if (focused) motionScale(Motion.TvEmphasisScale) else 1f,
@@ -172,6 +185,11 @@ private fun TvKeyboardKey(label: String, onClick: () -> Unit, modifier: Modifier
     )
     Box(
         modifier.height(39.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+            .then(
+                if (a11yDescription != null) Modifier.semantics {
+                    contentDescription = a11yDescription
+                } else Modifier
+            )
             .shadow(if (focused) 15.dp else 0.dp, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(if (focused) Color.White else IptvColors.SurfaceRaised.copy(alpha = .88f))
@@ -189,7 +207,7 @@ internal fun TvSearchSuggestions(
 ) {
     if (labels.isEmpty()) return
     Column(Modifier.fillMaxWidth().padding(top = 15.dp)) {
-        Text("ΠΡΟΣΦΑΤΑ & ΠΡΟΤΕΙΝΟΜΕΝΑ", color = IptvColors.TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.search_recent_recommended), color = IptvColors.TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(7.dp))
         labels.take(4).forEach { label -> TvSuggestionRow(label) { onSelect(label) } }
     }
