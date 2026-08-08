@@ -5,6 +5,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed the QA Kotlin compilation failure caused by Compose auto-importing its
+  internal `layout.weight` symbol in the new mobile/TV source-onboarding files.
 - Rebuilt source onboarding on mobile and Android TV around plain-language source
   choices, premium iconography, mobile smart credential detection, field-level
   errors, one atomic provider-test-and-add action, clear progress and confirmed

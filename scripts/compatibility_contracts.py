@@ -237,6 +237,15 @@ source_contracts = {
         tv_source_details.count("left = changeFocus") >= 4
         and "right = firstInput" in tv_source_details
     ),
+    "Source onboarding never imports Compose's internal weight symbol": all(
+        "import androidx.compose.foundation.layout.weight" not in source
+        for source in (
+            mobile_source_details,
+            tv_add_playlist,
+            tv_source_details,
+            tv_onboarding_steps,
+        )
+    ),
     "Successful onboarding skips the redundant content chooser for Live TV": main_activity.count('vm.setContentType("live")') >= 2,
     "Source onboarding detects credentials and owns field-level validation centrally": (
         "fun detect(raw: String)" in playlist_source_draft
