@@ -1,0 +1,4 @@
+Changed Kotlin syntax scan
+raw compiler diagnostics=1855
+syntax findings=0
+PASS no parser/syntax diagnostics

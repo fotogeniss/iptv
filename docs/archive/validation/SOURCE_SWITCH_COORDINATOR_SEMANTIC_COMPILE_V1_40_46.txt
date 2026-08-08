@@ -1,0 +1,3 @@
+SourceSwitchCoordinator semantic compile
+Command: kotlinc data/JUnit stubs + MainUiState.kt + SourceSwitchCoordinator.kt + SourceSwitchCoordinatorTest.kt + Runner.kt
+RESULT: PASS

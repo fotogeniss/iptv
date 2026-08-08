@@ -1,0 +1,3 @@
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt
+app/src/main/java/com/prelude/iptv/ui/coordinator/SourceSwitchCoordinator.kt
+app/src/test/java/com/prelude/iptv/ui/coordinator/SourceSwitchCoordinatorTest.kt

@@ -1,0 +1,16 @@
+PRODUCTION RISK INVENTORY v1.40.44
+PASS non_null_assertions=0
+PASS global_scope=0
+PASS blocking_run=0
+PASS thread_sleep=0
+PASS process_exit=0
+PASS unsafe_saf_stream_assertion=0
+PASS stalker_session_assertion=0
+INFO catch_exception=62
+INFO catch_throwable=0
+INFO post_delayed=28
+INFO todo_fixme=0
+INFO files_over_1500_lines=2
+  app/src/main/java/com/prelude/iptv/PlayerActivity.kt: 3228
+  app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt: 1894
+SUMMARY critical_categories_failed=0 informational_categories=4

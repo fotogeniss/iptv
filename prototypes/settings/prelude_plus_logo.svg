@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" width="100%" height="100%">
+  <defs>
+    <filter id="red-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="bg-radial" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#1a0304"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="300" fill="url(#bg-radial)" rx="16"/>
+  <g transform="translate(140,190)">
+    <text x="0" y="0" fill="#FFFFFF" font-family="Montserrat,Helvetica Neue,sans-serif"
+      font-weight="700" font-size="110" letter-spacing="-4">prelude</text>
+    <text x="405" y="-3" fill="#E50914" font-family="Montserrat,Helvetica Neue,sans-serif"
+      font-weight="900" font-size="125" filter="url(#red-glow)">+</text>
+  </g>
+</svg>

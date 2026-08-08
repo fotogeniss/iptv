@@ -1,0 +1,1 @@
+ERROR: adb is not available. Install Android platform-tools.

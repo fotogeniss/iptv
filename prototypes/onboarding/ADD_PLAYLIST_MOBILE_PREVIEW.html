@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ — Προσθήκη λίστας</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #030304;
+      --surface: #151518;
+      --surface-2: #202024;
+      --surface-3: #29292e;
+      --text: #f7f7f8;
+      --muted: #a3a3aa;
+      --line: rgba(255,255,255,.12);
+      --line-strong: rgba(255,255,255,.55);
+      --red: #e50914;
+      --red-2: #a0060d;
+      --danger: #ff6470;
+      --ok: #45d483;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #070708; }
+    body {
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .phone {
+      position: relative;
+      width: min(100%, 440px);
+      min-height: 100dvh;
+      margin: auto;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 4% 31%, rgba(229,9,20,.14), transparent 30%),
+        radial-gradient(circle at 103% 22%, rgba(56,78,112,.14), transparent 28%),
+        radial-gradient(circle at 68% 83%, rgba(116,8,18,.12), transparent 38%),
+        var(--bg);
+      box-shadow: 0 0 80px rgba(0,0,0,.55);
+    }
+
+    .screen {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: max(18px, env(safe-area-inset-top)) 20px max(22px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+    .tip, .login {
+      width: max-content;
+      min-height: 38px;
+      border-radius: 12px;
+      padding: 0 13px;
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: rgba(27,27,32,.86);
+    }
+    .tip { justify-self: start; }
+    .login { justify-self: end; background: transparent; color: var(--muted); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+    .brand-icon { position: relative; width: 28px; height: 26px; }
+    .brand-icon::before {
+      content: "";
+      position: absolute;
+      inset: 1px 0 1px 7px;
+      border-radius: 5px;
+      background: var(--red);
+      clip-path: polygon(0 0,100% 50%,0 100%);
+    }
+    .brand-icon::after {
+      content: "";
+      position: absolute;
+      width: 5px; height: 5px;
+      left: 0; top: 10px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .brand b { color: var(--red); }
+
+    .intro { text-align: center; padding: 20px 8px 23px; }
+    .intro h1 {
+      margin: 0;
+      color: var(--red);
+      font-size: clamp(27px, 7.8vw, 34px);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+    .intro p {
+      max-width: 355px;
+      margin: 15px auto 0;
+      color: #d2d2d6;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .section-label { margin: 0 0 11px; font-size: 15px; font-weight: 750; }
+    .method-list { display: grid; gap: 9px; }
+    .method {
+      width: 100%;
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      color: var(--muted);
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(18,18,20,.72);
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .method:active { transform: scale(.987); }
+    .method.active {
+      color: var(--text);
+      border-color: rgba(255,255,255,.74);
+      background: linear-gradient(110deg, rgba(255,255,255,.12), rgba(255,255,255,.055));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+    .method-icon {
+      width: 38px; height: 38px;
+      display: grid; place-items: center;
+      border-radius: 11px;
+      background: rgba(255,255,255,.055);
+      font-size: 21px;
+    }
+    .method-name { font-weight: 800; font-size: 15px; }
+    .method-sub { margin-top: 2px; color: #85858d; font-size: 10.5px; line-height: 1.2; }
+    .method.active .method-sub { color: #b7b7bd; }
+    .radio {
+      width: 24px; height: 24px;
+      border: 2px solid #363642;
+      border-radius: 50%;
+      display: grid; place-items: center;
+    }
+    .method.active .radio { border-color: #fff; }
+    .method.active .radio::after {
+      content: "";
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      margin-left: 6px;
+      padding: 0 7px;
+      border-radius: 7px;
+      color: #bdbdc3;
+      background: rgba(255,255,255,.07);
+      font-size: 9px;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+
+    .form { padding-top: 19px; }
+    .panel { display: none; animation: reveal .2s ease; }
+    .panel.active { display: block; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(5px); } }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      margin: 0 2px 7px;
+      color: #d4d4d8;
+      font-size: 12.5px;
+      font-weight: 650;
+    }
+    .optional { color: #777780; font-size: 10px; font-weight: 600; }
+    .input-wrap { position: relative; }
+    .field input {
+      width: 100%;
+      min-height: 55px;
+      padding: 0 15px;
+      color: #fff;
+      caret-color: var(--red);
+      border: 1px solid var(--line);
+      outline: none;
+      border-radius: 13px;
+      background: rgba(42,42,46,.92);
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input::placeholder { color: #77777e; }
+    .field input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,9,20,.12); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .reveal-password {
+      position: absolute;
+      top: 50%; right: 7px;
+      width: 42px; height: 42px;
+      transform: translateY(-50%);
+      border: 0;
+      color: #bcbcc2;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 17px;
+    }
+    .has-action input { padding-right: 50px; }
+    .file-picker {
+      min-height: 66px;
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(42,42,46,.92);
+      cursor: pointer;
+    }
+    .file-picker input { display: none; }
+    .file-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,255,255,.06); font-size: 20px; }
+    .file-title { color: var(--muted); font-size: 13px; }
+    .file-sub { margin-top: 3px; color: #77777e; font-size: 9px; }
+    .file-check { color: var(--ok); font-weight: 900; opacity: 0; }
+    .file-picker.loaded .file-title { color: var(--text); font-weight: 750; }
+    .file-picker.loaded .file-check { opacity: 1; }
+
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 1px 0 14px;
+      padding: 0;
+      color: #b7b7bd;
+      border: 0;
+      background: none;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .advanced-toggle span { transition: transform .18s; }
+    .advanced-toggle.open span { transform: rotate(180deg); }
+    .advanced { display: none; padding-top: 2px; }
+    .advanced.open { display: block; animation: reveal .2s ease; }
+
+    .form-message {
+      min-height: 18px;
+      margin: 0 2px 8px;
+      color: var(--danger);
+      font-size: 11px;
+    }
+    .actions { margin-top: auto; padding: 20px 0 0; }
+    .save {
+      width: 100%;
+      min-height: 56px;
+      border: 0;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red), #c80711);
+      box-shadow: 0 15px 38px rgba(229,9,20,.17);
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .later {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 7px;
+      border: 0;
+      color: #d6d6da;
+      background: transparent;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .modal {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(10px);
+    }
+    .modal.open { display: flex; }
+    .sheet {
+      width: min(100%, 405px);
+      padding: 21px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #18181c;
+      box-shadow: 0 30px 90px #000;
+    }
+    .sheet h2 { margin: 0 0 12px; font-size: 21px; }
+    .sheet p { margin: 0; color: #b8b8bf; font-size: 13px; line-height: 1.55; }
+    .sheet button {
+      width: 100%; min-height: 48px; margin-top: 18px;
+      border: 0; border-radius: 13px; color: #070708; background: #fff; font-weight: 850;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 60;
+      left: 50%; bottom: 24px;
+      width: max-content;
+      max-width: calc(100% - 40px);
+      padding: 12px 17px;
+      color: #070708;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 15px 50px #000;
+      font-size: 12px;
+      font-weight: 850;
+      opacity: 0;
+      transform: translate(-50%, 18px);
+      transition: .2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-height: 780px) {
+      .intro { padding: 12px 8px 17px; }
+      .intro p { margin-top: 10px; }
+      .method { min-height: 58px; }
+      .form { padding-top: 15px; }
+      .field input { min-height: 50px; }
+      .field { margin-bottom: 11px; }
+      .actions { padding-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <section class="screen">
+      <header class="topbar">
+        <button class="tip" id="tipButton">Γρήγορη βοήθεια</button>
+        <div class="brand"><span class="brand-icon" aria-hidden="true"></span>PRELUDE<b>+</b></div>
+        <button class="login" id="loginButton">Σύνδεση</button>
+      </header>
+
+      <div class="intro">
+        <h1>Προσθήκη λίστας</h1>
+        <p>Το PRELUDE+ είναι media player και δεν παρέχει περιεχόμενο ή συνδρομές IPTV.</p>
+      </div>
+
+      <section aria-labelledby="methodTitle">
+        <h2 class="section-label" id="methodTitle">Τρόπος σύνδεσης</h2>
+        <div class="method-list" role="radiogroup" aria-label="Τύπος λίστας">
+          <button class="method active" data-method="url" role="radio" aria-checked="true">
+            <span class="method-icon">↗</span>
+            <span><span class="method-name">URL <span class="tag">M3U</span></span><span class="method-sub">Επικόλληση συνδέσμου playlist</span></span>
+            <span class="radio"></span>
+          </button>
+          <button class="method" data-method="xtream" role="radio" aria-checked="false">
+            <span class="method-icon">⌁</span>
+            <span><span class="method-name">Όνομα χρήστη & κωδικός <span class="tag">XTREAM</span></span><span class="method-sub">Server, username και password</span></span>
+            <span class="radio"></span>
+          </button>
+          <button class="method" data-method="mac" role="radio" aria-checked="false">
+            <span class="method-icon">▣</span>
+            <span><span class="method-name">MAC Portal <span class="tag">STALKER</span></span><span class="method-sub">Portal URL και MAC address</span></span>
+            <span class="radio"></span>
+          </button>
+          <button class="method" data-method="file" role="radio" aria-checked="false">
+            <span class="method-icon">▤</span>
+            <span><span class="method-name">Αρχείο M3U <span class="tag">FILE</span></span><span class="method-sub">Επιλογή αρχείου από τη συσκευή</span></span>
+            <span class="radio"></span>
+          </button>
+        </div>
+      </section>
+
+      <form class="form" id="playlistForm" novalidate>
+        <div class="panel active" data-panel="url">
+          <div class="field">
+            <label for="playlistUrl">URL λίστας</label>
+            <input id="playlistUrl" type="url" inputmode="url" autocomplete="url" placeholder="http://example.com/playlist.m3u">
+          </div>
+        </div>
+
+        <div class="panel" data-panel="xtream">
+          <div class="field">
+            <label for="server">Server URL</label>
+            <input id="server" type="url" inputmode="url" autocomplete="url" placeholder="http://example.com:port">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="username">Username</label>
+              <input id="username" autocomplete="username" placeholder="Username">
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <div class="input-wrap has-action">
+                <input id="password" type="password" autocomplete="current-password" placeholder="Password">
+                <button class="reveal-password" type="button" aria-label="Εμφάνιση κωδικού">◉</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" data-panel="mac">
+          <div class="field">
+            <label for="portal">Portal URL</label>
+            <input id="portal" type="url" inputmode="url" autocomplete="url" placeholder="http://portal.example.com/c/">
+          </div>
+          <div class="field">
+            <label for="macAddress">MAC address</label>
+            <input id="macAddress" inputmode="text" autocapitalize="characters" maxlength="17" placeholder="00:1A:79:00:00:00">
+          </div>
+          <div class="field">
+            <label for="userAgent">User-Agent <span class="optional">Προαιρετικό</span></label>
+            <input id="userAgent" placeholder="MAG250 / custom User-Agent">
+          </div>
+        </div>
+
+        <div class="panel" data-panel="file">
+          <div class="field">
+            <label>Αρχείο M3U</label>
+            <label class="file-picker" id="filePicker">
+              <input id="playlistFile" type="file" accept=".m3u,.m3u8,audio/x-mpegurl,application/x-mpegURL,text/plain">
+              <span class="file-icon">▤</span>
+              <span><span class="file-title" id="fileTitle">Επίλεξε αρχείο από τη συσκευή</span><span class="file-sub">Υποστηρίζονται .m3u και .m3u8</span></span>
+              <span class="file-check">✓</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="advanced-toggle" type="button" id="advancedToggle"><span>⌄</span> Περισσότερες επιλογές</button>
+        <div class="advanced" id="advancedFields">
+          <div class="field">
+            <label for="playlistName">Όνομα λίστας <span class="optional">Προαιρετικό</span></label>
+            <input id="playlistName" placeholder="π.χ. Η λίστα μου">
+          </div>
+          <div class="field">
+            <label for="epgUrl">EPG URL <span class="optional">Προαιρετικό</span></label>
+            <input id="epgUrl" type="url" inputmode="url" placeholder="http://example.com/epg.xml">
+          </div>
+        </div>
+
+        <div class="form-message" id="formMessage" aria-live="polite"></div>
+      </form>
+
+      <footer class="actions">
+        <button class="save" id="saveButton" type="submit" form="playlistForm">Αποθήκευση λίστας</button>
+        <button class="later" id="laterButton" type="button">Ίσως αργότερα</button>
+      </footer>
+    </section>
+  </main>
+
+  <div class="modal" id="tipModal" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
+    <div class="sheet">
+      <h2 id="tipTitle">Πού βρίσκω τα στοιχεία;</h2>
+      <p>Χρησιμοποίησε τα στοιχεία που σου έχει δώσει ο νόμιμος πάροχος περιεχομένου. Για M3U χρειάζεσαι URL, για Xtream server/username/password και για MAC/Stalker Portal URL μαζί με MAC address.</p>
+      <button type="button" id="closeTip">Κατάλαβα</button>
+    </div>
+  </div>
+  <div class="toast" id="toast">Η προεπισκόπηση λειτουργεί σωστά</div>
+
+  <script>
+    const methods = [...document.querySelectorAll('.method')];
+    const panels = [...document.querySelectorAll('.panel')];
+    const message = document.getElementById('formMessage');
+    let selectedMethod = 'url';
+
+    function selectMethod(method) {
+      selectedMethod = method;
+      methods.forEach(button => {
+        const active = button.dataset.method === method;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-checked', String(active));
+      });
+      panels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === method));
+      message.textContent = '';
+    }
+
+    methods.forEach(button => button.addEventListener('click', () => selectMethod(button.dataset.method)));
+
+    const advancedToggle = document.getElementById('advancedToggle');
+    const advancedFields = document.getElementById('advancedFields');
+    advancedToggle.addEventListener('click', () => {
+      const open = advancedFields.classList.toggle('open');
+      advancedToggle.classList.toggle('open', open);
+      advancedToggle.lastChild.textContent = open ? ' Λιγότερες επιλογές' : ' Περισσότερες επιλογές';
+    });
+
+    document.querySelector('.reveal-password').addEventListener('click', event => {
+      const field = document.getElementById('password');
+      field.type = field.type === 'password' ? 'text' : 'password';
+      event.currentTarget.textContent = field.type === 'password' ? '◉' : '◌';
+    });
+
+    document.getElementById('macAddress').addEventListener('input', event => {
+      const hex = event.target.value.toUpperCase().replace(/[^0-9A-F]/g, '').slice(0, 12);
+      event.target.value = hex.match(/.{1,2}/g)?.join(':') ?? '';
+    });
+
+    document.getElementById('playlistFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      document.getElementById('filePicker').classList.toggle('loaded', Boolean(file));
+      document.getElementById('fileTitle').textContent = file?.name || 'Επίλεξε αρχείο από τη συσκευή';
+      message.textContent = '';
+    });
+
+    function validUrl(value) {
+      try { const url = new URL(value); return url.protocol === 'http:' || url.protocol === 'https:'; }
+      catch { return false; }
+    }
+
+    document.getElementById('playlistForm').addEventListener('submit', event => {
+      event.preventDefault();
+      let error = '';
+      if (selectedMethod === 'url' && !validUrl(document.getElementById('playlistUrl').value.trim())) {
+        error = 'Γράψε ένα έγκυρο URL λίστας.';
+      }
+      if (selectedMethod === 'xtream') {
+        if (!validUrl(document.getElementById('server').value.trim())) error = 'Γράψε ένα έγκυρο Server URL.';
+        else if (!document.getElementById('username').value.trim() || !document.getElementById('password').value) error = 'Συμπλήρωσε username και password.';
+      }
+      if (selectedMethod === 'mac') {
+        if (!validUrl(document.getElementById('portal').value.trim())) error = 'Γράψε ένα έγκυρο Portal URL.';
+        else if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(document.getElementById('macAddress').value)) error = 'Η MAC address πρέπει να έχει μορφή 00:1A:79:00:00:00.';
+      }
+      if (selectedMethod === 'file' && !document.getElementById('playlistFile').files.length) {
+        error = 'Διάλεξε ένα αρχείο M3U από τη συσκευή.';
+      }
+      message.textContent = error;
+      if (error) return;
+      showToast('✓ Η λίστα είναι έτοιμη για αποθήκευση');
+    });
+
+    const modal = document.getElementById('tipModal');
+    document.getElementById('tipButton').addEventListener('click', () => modal.classList.add('open'));
+    document.getElementById('closeTip').addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', event => { if (event.target === modal) modal.classList.remove('open'); });
+    document.getElementById('loginButton').addEventListener('click', () => showToast('Η σύνδεση λογαριασμού θα προστεθεί αργότερα'));
+    document.getElementById('laterButton').addEventListener('click', () => showToast('Η προσθήκη λίστας παραλείφθηκε'));
+
+    let toastTimer;
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+  </script>
+</body>
+</html>

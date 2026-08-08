@@ -1,0 +1,11 @@
+PASS: reject live
+PASS: movie 3 percent threshold
+PASS: episode 2 minute threshold
+PASS: near completion rejected
+PASS: locked excluded
+PASS: sorted and capped
+PASS: one episode per series
+PASS: dedupe identity
+PASS: suppressed item stays hidden
+PASS: new engagement republishes
+RESULT: 10 passed, 0 failed

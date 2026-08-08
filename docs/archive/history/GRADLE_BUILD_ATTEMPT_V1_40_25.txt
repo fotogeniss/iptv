@@ -1,0 +1,5 @@
+Command:
+./gradlew --offline :app:testDebugUnitTest :app:compileDebugKotlin --stacktrace
+
+Result: NOT STARTED / ENVIRONMENT LIMITATION
+The Gradle wrapper attempted to obtain Gradle 8.9, but the distribution was not cached and services.gradle.org was unreachable. Project configuration, Android compilation and JUnit execution did not start.

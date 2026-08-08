@@ -1,0 +1,228 @@
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:40: warning: parameter 'uri' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:48: warning: parameter 'p' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                               ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:65: warning: parameter 's' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:75: warning: parameter 'a' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                          ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:92: warning: parameter 'o' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                           ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:128: warning: parameter 'uri' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                               ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:136: warning: parameter 'v' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:152: warning: parameter 's' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:162: warning: parameter 'a' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                 ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:198: warning: parameter 'uri' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                                                     ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:206: warning: parameter 'v' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                                                             ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:245: warning: parameter 'uri' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                                                                                                    ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:253: warning: parameter 's' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                                                                                                            ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:6:263: warning: parameter 'a' is never used
+open class ContentResolver { fun query(uri:Uri,p:Array<String>?,s:String?,a:Array<String>?,o:String?):Cursor?=null; fun update(uri:Uri,v:ContentValues,s:String?,a:Array<String>?):Int=0; fun insert(uri:Uri,v:ContentValues):Uri?=null; fun delete(uri:Uri,s:String?,a:Array<String>?):Int=0 }
+                                                                                                                                                                                                                                                                      ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:31: warning: parameter 'k' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                              ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:40: warning: parameter 'v' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:62: warning: parameter 'k' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                                                             ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:71: warning: parameter 'v' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                                                                      ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:89: warning: parameter 'k' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                                                                                        ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:7:98: warning: parameter 'v' is never used
+class ContentValues { fun put(k:String,v:String?){}; fun put(k:String,v:Int){}; fun put(k:String,v:Long){} }
+                                                                                                 ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:11:19: warning: parameter 'k' is never used
+ fun getLongExtra(k:String,d:Long):Long=d
+                  ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:12:14: warning: parameter 'context' is never used
+ constructor(context:Context, cls:Class<*>)
+             ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:12:31: warning: parameter 'cls' is never used
+ constructor(context:Context, cls:Class<*>)
+                              ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:13:14: warning: parameter 'action' is never used
+ constructor(action:String, uri:Uri, context:Context, cls:Class<*>)
+             ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:13:29: warning: parameter 'uri' is never used
+ constructor(action:String, uri:Uri, context:Context, cls:Class<*>)
+                            ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:13:38: warning: parameter 'context' is never used
+ constructor(action:String, uri:Uri, context:Context, cls:Class<*>)
+                                     ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:13:55: warning: parameter 'cls' is never used
+ constructor(action:String, uri:Uri, context:Context, cls:Class<*>)
+                                                      ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:14:17: warning: parameter 'v' is never used
+ fun setPackage(v:String):Intent=this
+                ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:15:12: warning: parameter 'flags' is never used
+ fun toUri(flags:Int):String=""
+           ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:16:15: warning: parameter 'k' is never used
+ fun putExtra(k:String,v:String):Intent=this
+              ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:16:24: warning: parameter 'v' is never used
+ fun putExtra(k:String,v:String):Intent=this
+                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:17:15: warning: parameter 'k' is never used
+ fun putExtra(k:String,v:Int):Intent=this
+              ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:17:24: warning: parameter 'v' is never used
+ fun putExtra(k:String,v:Int):Intent=this
+                       ^
+/tmp/tvhome_semantic/stubs/android/content/Content.kt:20:49: warning: parameter 'id' is never used
+object ContentUris { fun withAppendedId(uri:Uri,id:Long)=uri }
+                                                ^
+/tmp/tvhome_semantic/stubs/android/media/tv/TvContract.kt:6:31: warning: parameter 'id' is never used
+ fun buildWatchNextProgramUri(id:Long):Uri=Uri.parse("")
+                              ^
+/tmp/tvhome_semantic/stubs/android/net/Uri.kt:2:124: warning: parameter 'v' is never used
+class Uri { val scheme:String?=null; val host:String?=null; val lastPathSegment:String?=null; companion object { fun parse(v:String)=Uri() } }
+                                                                                                                           ^
+/tmp/tvhome_semantic/stubs/android/widget/Toast.kt:3:87: warning: parameter 'c' is never used
+class Toast { fun show(){}; companion object { const val LENGTH_SHORT=0; fun makeText(c:Context,s:String,d:Int)=Toast() } }
+                                                                                      ^
+/tmp/tvhome_semantic/stubs/android/widget/Toast.kt:3:97: warning: parameter 's' is never used
+class Toast { fun show(){}; companion object { const val LENGTH_SHORT=0; fun makeText(c:Context,s:String,d:Int)=Toast() } }
+                                                                                                ^
+/tmp/tvhome_semantic/stubs/android/widget/Toast.kt:3:106: warning: parameter 'd' is never used
+class Toast { fun show(){}; companion object { const val LENGTH_SHORT=0; fun makeText(c:Context,s:String,d:Int)=Toast() } }
+                                                                                                         ^
+/tmp/tvhome_semantic/stubs/androidx/activity/ComponentActivity.kt:5:135: warning: parameter 'i' is never used
+open class ComponentActivity: Context() { open fun onCreate(savedInstanceState:Bundle?){}; val intent:Intent?=null; fun startActivity(i:Intent){}; fun finish(){} }
+                                                                                                                                      ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:5:64: warning: parameter 'p' is never used
+abstract class CoroutineWorker(val applicationContext:Context, p:WorkerParameters):ListenableWorker(){ abstract suspend fun doWork():Result }
+                                                               ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:8:42: warning: parameter 'c' is never used
+class OneTimeWorkRequest { class Builder(c:Class<out ListenableWorker>){ fun setExpedited(p:OutOfQuotaPolicy)=this; fun build()=OneTimeWorkRequest() } }
+                                         ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:8:91: warning: parameter 'p' is never used
+class OneTimeWorkRequest { class Builder(c:Class<out ListenableWorker>){ fun setExpedited(p:OutOfQuotaPolicy)=this; fun build()=OneTimeWorkRequest() } }
+                                                                                          ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:9:43: warning: parameter 'n' is never used
+class WorkManager { fun enqueueUniqueWork(n:String,p:ExistingWorkPolicy,r:OneTimeWorkRequest){}; companion object { fun getInstance(c:Context)=WorkManager() } }
+                                          ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:9:52: warning: parameter 'p' is never used
+class WorkManager { fun enqueueUniqueWork(n:String,p:ExistingWorkPolicy,r:OneTimeWorkRequest){}; companion object { fun getInstance(c:Context)=WorkManager() } }
+                                                   ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:9:73: warning: parameter 'r' is never used
+class WorkManager { fun enqueueUniqueWork(n:String,p:ExistingWorkPolicy,r:OneTimeWorkRequest){}; companion object { fun getInstance(c:Context)=WorkManager() } }
+                                                                        ^
+/tmp/tvhome_semantic/stubs/androidx/work/Work.kt:9:133: warning: parameter 'c' is never used
+class WorkManager { fun enqueueUniqueWork(n:String,p:ExistingWorkPolicy,r:OneTimeWorkRequest){}; companion object { fun getInstance(c:Context)=WorkManager() } }
+                                                                                                                                    ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:6:21: warning: parameter 'c' is never used
+class SecureStorage(c:Context){ fun getString(k:String):String?=null; fun putString(k:String,v:String){}; fun remove(k:String){} }
+                    ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:6:47: warning: parameter 'k' is never used
+class SecureStorage(c:Context){ fun getString(k:String):String?=null; fun putString(k:String,v:String){}; fun remove(k:String){} }
+                                              ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:6:85: warning: parameter 'k' is never used
+class SecureStorage(c:Context){ fun getString(k:String):String?=null; fun putString(k:String,v:String){}; fun remove(k:String){} }
+                                                                                    ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:6:94: warning: parameter 'v' is never used
+class SecureStorage(c:Context){ fun getString(k:String):String?=null; fun putString(k:String,v:String){}; fun remove(k:String){} }
+                                                                                             ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:6:118: warning: parameter 'k' is never used
+class SecureStorage(c:Context){ fun getString(k:String):String?=null; fun putString(k:String,v:String){}; fun remove(k:String){} }
+                                                                                                                     ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:21: warning: parameter 'c' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                    ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:156: warning: parameter 's' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                                                                                                                                                           ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:228: warning: parameter 's' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                                                                                                                                                                                                                                   ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:237: warning: parameter 'k' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                                                                                                                                                                                                                                            ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:353: warning: parameter 's' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                                                                                                                                                                                                                                                                                                                                                                ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:7:362: warning: parameter 'k' is never used
+class PlaylistStore(c:Context){ var tvHomeEnabled=false; var activeProfile=0; fun loadPlaylists():MutableList<Playlist> = mutableListOf(); fun loadRecents(s:String):MutableList<Channel> = mutableListOf(); fun loadSavedPosition(s:String,k:String):SavedPosition?=null; fun lockedGroups():MutableSet<String> = mutableSetOf(); fun ensurePositionEngagement(s:String,k:String,f:Long)=f; data class SavedPosition(val positionMs:Long,val durationMs:Long,val lastEngagementMs:Long) }
+                                                                                                                                                                                                                                                                                                                                                                         ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:9:40: warning: parameter 'p' is never used
+object PlaylistIdentity { fun stableId(p:Playlist)="id"; fun digest(v:String)="hash" }
+                                       ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:9:69: warning: parameter 'v' is never used
+object PlaylistIdentity { fun stableId(p:Playlist)="id"; fun digest(v:String)="hash" }
+                                                                    ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:11:86: warning: parameter 'v' is never used
+object SubtitleSearchPolicy { data class E(val seriesTitle:String); fun parseEpisode(v:String):E?=null; fun fromChannel(c:Channel)=SubtitleSearchRequest(c.name) }
+                                                                                     ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:12:40: warning: parameter 'p' is never used
+object Repository { fun stalkerConnect(p:Playlist):Any=Any(); fun playableUrl(c:Channel,s:Any?):String=c.url }
+                                       ^
+/tmp/tvhome_semantic/stubs/com/prelude/iptv/data/Data.kt:12:89: warning: parameter 's' is never used
+object Repository { fun stalkerConnect(p:Playlist):Any=Any(); fun playableUrl(c:Channel,s:Any?):String=c.url }
+                                                                                        ^
+/tmp/tvhome_semantic/stubs/kotlinx/coroutines/Coroutines.kt:6:27: warning: parameter 'block' is never used
+fun CoroutineScope.launch(block: suspend () -> Unit) {}
+                          ^
+/tmp/tvhome_semantic/stubs/kotlinx/coroutines/Coroutines.kt:7:29: warning: parameter 'context' is never used
+suspend fun <T> withContext(context: Any, block: suspend () -> T): T = block()
+                            ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:2:46: warning: parameter 'v' is never used
+class JSONArray { constructor(); constructor(v:String); fun put(v:Any?):JSONArray=this; fun length()=0; fun optJSONObject(i:Int):JSONObject?=null; override fun toString()="[]" }
+                                             ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:2:65: warning: parameter 'v' is never used
+class JSONArray { constructor(); constructor(v:String); fun put(v:Any?):JSONArray=this; fun length()=0; fun optJSONObject(i:Int):JSONObject?=null; override fun toString()="[]" }
+                                                                ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:2:123: warning: parameter 'i' is never used
+class JSONArray { constructor(); constructor(v:String); fun put(v:Any?):JSONArray=this; fun length()=0; fun optJSONObject(i:Int):JSONObject?=null; override fun toString()="[]" }
+                                                                                                                          ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:43: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                          ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:52: warning: parameter 'v' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                   ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:91: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                          ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:116: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                                                   ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:141: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                                                                            ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:167: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                                                                                                      ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:205: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                                                                                                                                            ^
+/tmp/tvhome_semantic/stubs/org/json/Json.kt:3:243: warning: parameter 'k' is never used
+class JSONObject { constructor(); fun put(k:String,v:Any?):JSONObject=this; fun getString(k:String)=""; fun getInt(k:String)=0; fun getLong(k:String)=0L; fun optLong(k:String,d:Long)=d; fun getJSONObject(k:String)=JSONObject(); fun optString(k:String,d:String="")=d }
+                                                                                                                                                                                                                                                  ^

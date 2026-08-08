@@ -1,0 +1,5 @@
+KOTLIN SYNTAX-RISK SCAN v1.40.43
+changed_kotlin_files=35
+syntax_findings=0
+NOTE: unresolved Android/Compose symbols are expected without the Android SDK classpath.
+RESULT: PASS

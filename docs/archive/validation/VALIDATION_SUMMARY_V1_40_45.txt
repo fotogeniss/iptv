@@ -1,0 +1,11 @@
+v1.40.45 controlled catalog load validation
+PASS coordinator semantic compile
+PASS actual focused test source semantic compile
+PASS runtime focused assertions 8/8
+PASS compatibility contracts 21/21
+PASS architecture contracts 35 pass, 2 warnings, 0 fail
+PASS deep validation 47 pass, 1 warning, 0 fail
+PASS production critical-risk categories 0 failures
+PASS changed Kotlin syntax findings 0
+PASS XML parse 24 files, 0 errors
+BLOCKED Gradle gate before startup: Gradle 8.9 distribution unavailable

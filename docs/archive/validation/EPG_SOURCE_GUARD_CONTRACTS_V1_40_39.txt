@@ -1,0 +1,15 @@
+PASS: v1.40.39 version name
+PASS: version code 83
+PASS: persist helper exists
+PASS: encrypted playlist persistence reused
+PASS: manual selection validates remote URL
+PASS: commit validates source and loaded URL
+PASS: source switch cancels and clears EPG
+PASS: auto and manual loads serialized
+PASS: EPG generation guard
+PASS: EPG discovery close cancels job
+PASS: cancellation rethrown
+PASS: only HTTP(S) policy
+PASS: local URI schemes rejected by policy tests
+
+13/13 contracts passed

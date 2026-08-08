@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true"
+    android:orientation="horizontal"
+    android:weightSum="2">
+
+    <FrameLayout
+        android:id="@+id/multiview_left_frame"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/multiview_left_player"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#000000"
+            android:contentDescription="Αριστερό κανάλι"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            app:resize_mode="fit"
+            app:surface_type="surface_view"
+            app:use_controller="false" />
+
+        <!--
+            Σκίαση ανενεργού παραθύρου.
+
+            Πριν, το θόλωμα γινόταν με alpha πάνω στο PlayerView. Με SurfaceView
+            αυτό δεν δουλεύει αξιόπιστα: η επιφάνεια συντίθεται ξεχωριστά από το
+            παράθυρο και δεν υπακούει πάντα στη διαφάνεια της View. Ένα κανονικό
+            View από πάνω ζωγραφίζεται μέσα στο παράθυρο και φαίνεται πάντα.
+        -->
+        <View
+            android:id="@+id/multiview_left_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/multiview_left_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#99000000"
+            android:paddingStart="24dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="14dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <View
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="#FF7B61FF" />
+
+    <FrameLayout
+        android:id="@+id/multiview_right_frame"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/multiview_right_player"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#000000"
+            android:contentDescription="Δεξί κανάλι"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            app:resize_mode="fit"
+            app:surface_type="surface_view"
+            app:use_controller="false" />
+
+        <!-- Δες το αριστερό: γιατί σκίαση και όχι alpha. -->
+        <View
+            android:id="@+id/multiview_right_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/multiview_right_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#99000000"
+            android:paddingStart="24dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="14dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+</LinearLayout>

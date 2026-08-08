@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  ΠΡΟΤΕΙΝΟΜΕΝΟ MANIFEST — σύγκρινέ το με το δικό σου AndroidManifest.xml
+  και μετέφερε ό,τι λείπει (ή μετονόμασέ το, κρατώντας το δικό σου theme).
+  Το build ΑΓΝΟΕΙ αυτό το αρχείο όσο λέγεται .RECOMMENDED.xml — ασφαλές.
+
+  Τα ΚΡΙΣΙΜΑ σημεία με τη σειρά σημασίας:
+
+  1. PlayerActivity → android:configChanges
+     Ο κώδικας κάνει override onConfigurationChanged() και αλλάζει
+     requestedOrientation στο fullscreen. ΧΩΡΙΣ configChanges, κάθε toggle
+     fullscreen ΞΑΝΑΔΗΜΙΟΥΡΓΕΙ το Activity → η αναπαραγωγή ξεκινά από το 0.
+
+  2. android:usesCleartextTraffic="true"
+     Τα περισσότερα IPTV portals είναι σκέτο http://. Από API 28+ το Android
+     ΜΠΛΟΚΑΡΕΙ το cleartext by default → κανένα stream δεν παίζει χωρίς αυτό.
+
+  3. supportsPictureInPicture στο PlayerActivity
+     Νέο feature: πατάς home ενώ παίζει → μίνι παράθυρο (μόνο κινητό).
+     Ο κώδικας είναι προστατευμένος με runCatching — αν λείπει το flag,
+     απλά δεν ανοίγει PiP, δεν κρασάρει.
+
+  4. LEANBACK_LAUNCHER + uses-feature
+     Χωρίς αυτά, η εφαρμογή ΔΕΝ εμφανίζεται στο launcher των Android TV
+     (μόνο μέσα από Settings → Apps). Το touchscreen required=false
+     επιτρέπει την εγκατάσταση σε boxes χωρίς αφή.
+  ═══════════════════════════════════════════════════════════════════════
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- για το RelayService (MAC → M3U http server) σε νεότερα Android -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Υπενθυμίσεις EPG -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- Android TV: να φαίνεται στο launcher, να μπαίνει χωρίς αφή -->
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:label="Ultimate IPTV"
+        android:icon="@mipmap/ic_launcher"
+        android:banner="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+        <!-- ΚΡΑΤΑ ΤΟ ΔΙΚΟ ΣΟΥ theme αν έχεις custom (π.χ. @style/Theme.UPL).
+             Για TV, το banner θέλει κανονικά 320x180 drawable — βάλε δικό σου. -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- ΑΠΑΡΑΙΤΗΤΟ για να εμφανίζεται στο home του Android TV -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".PlayerActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:supportsPictureInPicture="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode" />
+
+        <service
+            android:name=".RelayService"
+            android:exported="false" />
+
+        <!-- Υπενθυμίσεις EPG -->
+        <receiver
+            android:name=".data.ReminderReceiver"
+            android:exported="false" />
+
+    </application>
+</manifest>

@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PRELUDE+ · TV Player Preview</title>
+  <style>
+    :root {
+      --accent:#ef101b;
+      --accent-soft:#ff3540;
+      --text:#fff;
+      --muted:#b5b5bd;
+      --dim:#777780;
+      --panel:rgba(9,9,11,.965);
+      --surface:#1a1a1f;
+      --surface-2:#28282f;
+      --line:rgba(255,255,255,.13);
+      --ok:#52db89;
+    }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; }
+    body {
+      margin:0;
+      overflow:hidden;
+      background:#030304;
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    }
+    button { border:0; color:inherit; font:inherit; cursor:pointer; }
+    .stage {
+      position:relative;
+      width:100vw;
+      height:100vh;
+      min-width:800px;
+      min-height:450px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 70% 30%,rgba(193,88,51,.45),transparent 24%),
+        radial-gradient(circle at 39% 43%,rgba(21,72,89,.72),transparent 36%),
+        linear-gradient(112deg,#061013 0%,#182427 43%,#25130f 72%,#070708 100%);
+    }
+    .stage::before {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg,rgba(0,0,0,.32),transparent 24%,transparent 76%,rgba(0,0,0,.18)),
+        linear-gradient(180deg,rgba(0,0,0,.56),transparent 25%,transparent 48%,rgba(0,0,0,.94));
+      pointer-events:none;
+    }
+    .ambient {
+      position:absolute;
+      left:13%; top:17%;
+      width:72%; height:48%;
+      opacity:.34;
+      filter:blur(1px);
+      background:
+        linear-gradient(110deg,transparent 0 18%,rgba(255,255,255,.13) 18.3% 18.8%,transparent 19% 66%,rgba(255,255,255,.1) 66.3% 66.8%,transparent 67%),
+        linear-gradient(0deg,rgba(0,0,0,.62) 0 8%,transparent 8% 77%,rgba(255,255,255,.08) 78% 79%,transparent 80%);
+      transform:perspective(900px) rotateX(4deg);
+    }
+    .chrome { position:absolute; inset:0; opacity:1; transition:opacity .22s ease; }
+    .stage.chrome-hidden .chrome { opacity:0; pointer-events:none; }
+
+    .topbar {
+      position:absolute;
+      z-index:3;
+      top:0; left:0; right:0;
+      height:110px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      padding:24px 46px 22px;
+    }
+    .round {
+      width:52px; height:52px;
+      display:grid; place-items:center;
+      border-radius:50%;
+      background:rgba(14,14,17,.48);
+      border:1px solid transparent;
+      font-size:25px;
+    }
+    .top-title { min-width:0; }
+    .eyebrow { color:#b8b8c0; font-size:12px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }
+    .top-title strong { display:block; margin-top:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:20px; }
+    .top-actions { display:flex; gap:10px; margin-left:auto; }
+    .brand { display:flex; align-items:center; gap:8px; margin-left:10px; color:#ddd; font-size:13px; font-weight:900; letter-spacing:.06em; }
+    .brand-mark { width:21px; height:21px; display:grid; place-items:center; border-radius:7px; background:var(--accent); font-size:11px; }
+
+    .center-controls {
+      position:absolute;
+      z-index:2;
+      inset:0 0 124px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+    .center-control {
+      pointer-events:auto;
+      width:72px; height:72px;
+      display:grid; place-items:center;
+      border-radius:50%;
+      background:rgba(10,10,12,.44);
+      border:1px solid rgba(255,255,255,.15);
+      font-weight:900;
+      backdrop-filter:blur(8px);
+    }
+    .center-control.play { width:88px; height:88px; background:#fff; color:#09090b; font-size:34px; padding-left:6px; }
+
+    .bottom {
+      position:absolute;
+      z-index:3;
+      left:0; right:0; bottom:0;
+      padding:14px 48px 30px;
+      background:linear-gradient(transparent,rgba(0,0,0,.36) 8%,rgba(0,0,0,.88) 38%,#000 100%);
+    }
+    .info-row { display:flex; align-items:flex-end; gap:20px; }
+    .title-block { min-width:0; flex:1; }
+    .title-block h1 { margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:30px; line-height:1.1; letter-spacing:-.02em; }
+    .meta { display:flex; align-items:center; gap:10px; margin-top:8px; color:var(--muted); font-size:13px; font-weight:650; }
+    .quality { padding:3px 7px; border:1px solid rgba(255,255,255,.7); border-radius:5px; color:#fff; font-size:10px; font-weight:950; }
+    .live-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(239,16,27,.18); }
+    .next-card {
+      display:flex; align-items:center; gap:12px;
+      min-width:250px;
+      padding:9px 13px 9px 9px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(19,19,22,.86);
+    }
+    .next-thumb { width:70px; height:42px; border-radius:9px; background:linear-gradient(135deg,#273946,#b85032); }
+    .next-card small { display:block; color:var(--muted); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+    .next-card strong { display:block; margin-top:3px; max-width:155px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:12px; }
+    .timeline { display:grid; grid-template-columns:58px 1fr 58px; align-items:center; gap:14px; margin-top:15px; }
+    .time { color:#ddd; font-size:11px; font-weight:800; }
+    .time:last-child { text-align:right; }
+    .bar { position:relative; height:6px; border-radius:99px; background:rgba(255,255,255,.25); }
+    .bar-fill { width:42%; height:100%; border-radius:inherit; background:var(--accent); }
+    .bar-dot { position:absolute; left:42%; top:50%; width:16px; height:16px; transform:translate(-50%,-50%); border-radius:50%; background:#fff; box-shadow:0 0 0 4px rgba(255,255,255,.1); }
+
+    .actions { display:flex; align-items:center; gap:10px; margin-top:15px; overflow:visible; }
+    .action {
+      height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 17px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;
+      background:rgba(27,27,31,.9);
+      color:#e5e5e9;
+      font-size:12px;
+      font-weight:850;
+      white-space:nowrap;
+      transition:transform .12s,background .12s,color .12s,border-color .12s;
+    }
+    .action.primary { background:#fff; color:#09090b; padding-inline:24px; }
+    .action-icon { font-size:17px; line-height:1; }
+    .remote-help { margin-left:auto; color:#777780; font-size:10px; font-weight:750; white-space:nowrap; }
+
+    button:focus-visible,.focused {
+      outline:0;
+      transform:scale(1.06);
+      border-color:#fff !important;
+      background:#fff !important;
+      color:#08080a !important;
+      box-shadow:0 0 0 3px rgba(255,255,255,.2),0 11px 34px rgba(0,0,0,.5);
+    }
+
+    .scrim {
+      position:absolute; z-index:5; inset:0;
+      visibility:hidden; opacity:0;
+      background:rgba(0,0,0,.66);
+      transition:.2s;
+    }
+    .stage.panel-open .scrim { visibility:visible; opacity:1; }
+    .side-panel {
+      position:absolute; z-index:6;
+      top:26px; right:30px; bottom:26px;
+      width:min(43vw,560px);
+      display:flex; flex-direction:column;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:var(--panel);
+      box-shadow:0 30px 90px rgba(0,0,0,.65);
+      backdrop-filter:blur(24px);
+      transform:translateX(calc(100% + 45px));
+      opacity:0;
+      transition:.24s cubic-bezier(.2,.8,.2,1);
+    }
+    .stage.panel-open .side-panel { transform:translateX(0); opacity:1; }
+    .panel-head { display:grid; grid-template-columns:1fr 50px; gap:12px; padding:13px 13px 8px; }
+    .tabs { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:16px; background:#030304; }
+    .tab { height:48px; border-radius:12px; background:transparent; color:#aaaab3; font-size:14px; font-weight:900; }
+    .tab.active { background:#38383f; color:#fff; }
+    .panel-close { border-radius:50%; background:#222226; font-size:24px; }
+    .panel-body { min-height:0; overflow-y:auto; padding:8px 16px 20px; scrollbar-width:thin; }
+    .pane { display:none; }
+    .pane.active { display:block; }
+    .section-title { margin:13px 3px 9px; color:#96969f; font-size:10px; font-weight:950; letter-spacing:.1em; text-transform:uppercase; }
+    .track {
+      width:100%; min-height:66px;
+      display:grid; grid-template-columns:44px 1fr 26px;
+      align-items:center; gap:12px;
+      margin-bottom:8px; padding:9px 12px;
+      border:1px solid transparent; border-radius:14px;
+      background:var(--surface); text-align:left;
+    }
+    .track.selected { border-color:rgba(255,255,255,.55); background:var(--surface-2); }
+    .badge { width:42px; height:40px; display:grid; place-items:center; border-radius:10px; background:#303038; font-size:11px; font-weight:950; }
+    .track strong { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:13px; }
+    .track small { display:block; margin-top:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#9999a2; font-size:10px; }
+    .check { width:23px; height:23px; display:grid; place-items:center; border-radius:50%; background:#fff; color:#08080a; font-weight:950; }
+    .search-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .search-action { height:48px; border:1px solid var(--line); border-radius:12px; background:var(--surface); font-size:11px; font-weight:900; }
+    .appearance { margin-top:14px; padding:13px; border:1px solid var(--line); border-radius:15px; background:#111114; }
+    .setting { display:flex; align-items:center; justify-content:space-between; min-height:39px; font-size:11px; font-weight:850; }
+    .setting + .setting { border-top:1px solid var(--line); }
+    .choice { color:#d8d8dd; }
+
+    .popover {
+      position:absolute; z-index:7;
+      right:340px; bottom:95px;
+      width:235px; padding:8px;
+      visibility:hidden; opacity:0; transform:translateY(10px);
+      border:1px solid var(--line); border-radius:16px;
+      background:rgba(13,13,16,.97);
+      box-shadow:0 24px 60px rgba(0,0,0,.58);
+      transition:.16s;
+    }
+    .popover.open { visibility:visible; opacity:1; transform:none; }
+    .popover h3 { margin:8px 10px; color:#a4a4ad; font-size:10px; text-transform:uppercase; letter-spacing:.09em; }
+    .option { width:100%; height:43px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-radius:10px; background:transparent; font-size:12px; font-weight:800; }
+    .option.selected { background:#34343a; }
+    .option.selected::after { content:"✓"; }
+    .toast { position:absolute; z-index:10; left:50%; bottom:24px; padding:10px 18px; border-radius:99px; transform:translate(-50%,70px); opacity:0; background:#fff; color:#09090b; font-size:11px; font-weight:900; transition:.2s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+
+    @media (max-width:1000px), (max-height:600px) {
+      .topbar { height:82px; padding:16px 30px; }
+      .round { width:44px; height:44px; }
+      .bottom { padding:10px 32px 18px; }
+      .title-block h1 { font-size:24px; }
+      .actions { margin-top:11px; gap:7px; }
+      .action { height:42px; padding:0 12px; font-size:10px; }
+      .center-controls { bottom:105px; }
+      .next-card { display:none; }
+      .side-panel { top:16px; right:18px; bottom:16px; width:min(48vw,480px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <div class="ambient"></div>
+
+    <section class="chrome" id="chrome">
+      <header class="topbar">
+        <button class="round nav" aria-label="Πίσω">‹</button>
+        <div class="top-title">
+          <span class="eyebrow">Season 1 · Episode 3</span>
+          <strong>Diablero — The Hidden Children</strong>
+        </div>
+        <div class="top-actions">
+          <button class="round nav" id="ccButton" aria-label="Υπότιτλοι και ήχος">CC</button>
+          <button class="round nav" aria-label="Ρυθμίσεις">⚙</button>
+        </div>
+        <div class="brand"><span class="brand-mark">▶</span> PRELUDE+</div>
+      </header>
+
+      <div class="center-controls">
+        <button class="center-control play" id="centerPlay" aria-label="Παύση">Ⅱ</button>
+      </div>
+
+      <footer class="bottom">
+        <div class="info-row">
+          <div class="title-block">
+            <h1>Diablero — S01E03 · The Hidden Children</h1>
+            <div class="meta">
+              <span>2024</span><span>52 λεπτά</span><span class="quality">FHD · 25 FPS</span><span>Dolby 5.1</span>
+            </div>
+          </div>
+          <button class="next-card nav" data-toast="Άνοιγμα επόμενου επεισοδίου">
+            <span class="next-thumb"></span><span><small>Σε 2:41</small><strong>Επόμενο επεισόδιο</strong></span>
+          </button>
+        </div>
+
+        <div class="timeline">
+          <span class="time">21:54</span>
+          <div class="bar"><div class="bar-fill"></div><div class="bar-dot"></div></div>
+          <span class="time">52:18</span>
+        </div>
+
+        <div class="actions" id="actions">
+          <button class="action primary nav" id="playButton"><span class="action-icon">Ⅱ</span><span>Παύση</span></button>
+          <button class="action nav" id="tracksButton"><span class="action-icon">CC</span><span>Υπότιτλοι & ήχος</span></button>
+          <button class="action nav" id="aspectButton"><span class="action-icon">▭</span><span>Εικόνα · Αυτόματο</span></button>
+          <button class="action nav" data-toast="Ανάλυση FHD"><span class="action-icon">HD</span><span>Ανάλυση</span></button>
+          <button class="action nav" data-toast="Ταχύτητα 1×"><span class="action-icon">1×</span><span>Ταχύτητα</span></button>
+          <button class="action nav" data-toast="Χρονοδιακόπτης ύπνου"><span class="action-icon">◔</span><span>Ύπνος</span></button>
+          <span class="remote-help">↑ Μπάρα χρόνου · ← → Αναζήτηση μόνο στη μπάρα · OK Επιλογή · BACK Απόκρυψη</span>
+        </div>
+      </footer>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+    <aside class="side-panel" id="tracksPanel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="tabs">
+          <button class="tab nav active" data-pane="subtitles">Υπότιτλοι</button>
+          <button class="tab nav" data-pane="audio">Ήχος</button>
+        </div>
+        <button class="panel-close nav" id="panelClose" aria-label="Κλείσιμο">×</button>
+      </div>
+      <div class="panel-body">
+        <section class="pane active" id="subtitles">
+          <div class="section-title">Διαθέσιμοι υπότιτλοι</div>
+          <button class="track nav"><span class="badge">×</span><span><strong>Απενεργοποίηση</strong><small>Χωρίς υπότιτλους</small></span><span></span></button>
+          <button class="track nav selected"><span class="badge">EL</span><span><strong>Ελληνικά · Ενσωματωμένος</strong><small>Εσωτερικός υπότιτλος · Track 1</small></span><span class="check">✓</span></button>
+          <button class="track nav"><span class="badge">EN</span><span><strong>English · SDH</strong><small>Internal subtitle · Track 2</small></span><span></span></button>
+          <div class="section-title">Αναζήτηση OpenSubtitles</div>
+          <div class="search-row">
+            <button class="search-action nav" data-toast="Αυτόματη αναζήτηση ξεκίνησε">✦ Αυτόματη</button>
+            <button class="search-action nav" data-toast="Χειροκίνητη αναζήτηση">⌕ Χειροκίνητη</button>
+          </div>
+          <div class="appearance">
+            <div class="setting"><span>Μέγεθος</span><span class="choice">Μεσαίο</span></div>
+            <div class="setting"><span>Έντονα γράμματα</span><span class="choice">Όχι</span></div>
+            <div class="setting"><span>Φόντο υποτίτλων</span><span class="choice">35%</span></div>
+          </div>
+        </section>
+        <section class="pane" id="audio">
+          <div class="section-title">Κομμάτια ήχου</div>
+          <button class="track nav selected"><span class="badge">EN</span><span><strong>English · Original</strong><small>Dolby Digital Plus 5.1</small></span><span class="check">✓</span></button>
+          <button class="track nav"><span class="badge">EL</span><span><strong>Ελληνικά</strong><small>Μεταγλωττισμένο · Stereo</small></span><span></span></button>
+          <button class="track nav"><span class="badge">EN</span><span><strong>English Commentary</strong><small>Σχολιασμός δημιουργών · Stereo</small></span><span></span></button>
+        </section>
+      </div>
+    </aside>
+
+    <div class="popover" id="aspectMenu">
+      <h3>Αναλογία εικόνας</h3>
+      <button class="option nav selected">Αυτόματο</button>
+      <button class="option nav">Γέμισμα</button>
+      <button class="option nav">4:3</button>
+      <button class="option nav">16:9</button>
+    </div>
+    <div class="toast" id="toast">Η επιλογή εφαρμόστηκε</div>
+  </main>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const panel = document.getElementById('tracksPanel');
+    const aspectMenu = document.getElementById('aspectMenu');
+    const toast = document.getElementById('toast');
+    const tracksButton = document.getElementById('tracksButton');
+    let playing = true;
+    let toastTimer;
+
+    const showToast = message => {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+    };
+    const setPanel = open => {
+      stage.classList.toggle('panel-open', open);
+      panel.setAttribute('aria-hidden', String(!open));
+      if (open) setTimeout(() => panel.querySelector('.tab.active').focus(), 80);
+      else tracksButton.focus();
+    };
+    const setPlaying = value => {
+      playing = value;
+      document.getElementById('centerPlay').textContent = playing ? 'Ⅱ' : '▶';
+      document.querySelector('#playButton .action-icon').textContent = playing ? 'Ⅱ' : '▶';
+      document.querySelector('#playButton span:last-child').textContent = playing ? 'Παύση' : 'Αναπαραγωγή';
+      showToast(playing ? 'Αναπαραγωγή' : 'Παύση');
+    };
+
+    document.getElementById('ccButton').onclick = () => setPanel(true);
+    tracksButton.onclick = () => setPanel(true);
+    document.getElementById('panelClose').onclick = () => setPanel(false);
+    document.getElementById('scrim').onclick = () => setPanel(false);
+    document.getElementById('centerPlay').onclick = () => setPlaying(!playing);
+    document.getElementById('playButton').onclick = () => setPlaying(!playing);
+    document.getElementById('aspectButton').onclick = () => {
+      aspectMenu.classList.toggle('open');
+      if (aspectMenu.classList.contains('open')) setTimeout(() => aspectMenu.querySelector('.selected').focus(), 40);
+    };
+
+    document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => {
+      document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item === tab));
+      document.querySelectorAll('.pane').forEach(pane => pane.classList.toggle('active', pane.id === tab.dataset.pane));
+    });
+    document.querySelectorAll('.track').forEach(track => track.onclick = () => {
+      const pane = track.closest('.pane');
+      pane.querySelectorAll('.track').forEach(item => {
+        item.classList.toggle('selected', item === track);
+        const check = item.querySelector('.check');
+        if (check && item !== track) check.remove();
+      });
+      if (!track.querySelector('.check')) track.insertAdjacentHTML('beforeend','<span class="check">✓</span>');
+      showToast('Η επιλογή εφαρμόστηκε χωρίς διακοπή');
+    });
+    document.querySelectorAll('.option').forEach(option => option.onclick = () => {
+      document.querySelectorAll('.option').forEach(item => item.classList.toggle('selected', item === option));
+      document.querySelector('#aspectButton span:last-child').textContent = `Εικόνα · ${option.textContent.trim()}`;
+      aspectMenu.classList.remove('open');
+      document.getElementById('aspectButton').focus();
+      showToast(`Εικόνα: ${option.textContent.trim()}`);
+    });
+    document.querySelectorAll('[data-toast]').forEach(button => button.addEventListener('click', () => showToast(button.dataset.toast)));
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' || event.key === 'Backspace') {
+        event.preventDefault();
+        if (stage.classList.contains('panel-open')) return setPanel(false);
+        if (aspectMenu.classList.contains('open')) {
+          aspectMenu.classList.remove('open');
+          return document.getElementById('aspectButton').focus();
+        }
+        stage.classList.toggle('chrome-hidden');
+        return;
+      }
+      if (event.key === 'Enter' && document.activeElement === document.body) {
+        stage.classList.remove('chrome-hidden');
+        document.getElementById('playButton').focus();
+      }
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
+      const current = document.activeElement;
+      const scope = stage.classList.contains('panel-open') ? panel : (aspectMenu.classList.contains('open') ? aspectMenu : stage);
+      const focusables = [...scope.querySelectorAll('.nav:not([disabled])')].filter(el => el.offsetParent !== null);
+      if (!focusables.includes(current)) return focusables[0]?.focus();
+      const rect = current.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      const direction = event.key.replace('Arrow','');
+      const candidates = focusables.filter(el => el !== current).map(el => {
+        const r = el.getBoundingClientRect();
+        const x = r.left + r.width / 2, y = r.top + r.height / 2;
+        const valid = direction === 'Left' ? x < cx : direction === 'Right' ? x > cx : direction === 'Up' ? y < cy : y > cy;
+        const primary = direction === 'Left' || direction === 'Right' ? Math.abs(x-cx) : Math.abs(y-cy);
+        const cross = direction === 'Left' || direction === 'Right' ? Math.abs(y-cy) : Math.abs(x-cx);
+        return {el,valid,score:primary + cross*2.4};
+      }).filter(item => item.valid).sort((a,b) => a.score-b.score);
+      if (candidates[0]) { event.preventDefault(); candidates[0].el.focus(); }
+    });
+
+    setTimeout(() => document.getElementById('playButton').focus(), 120);
+  </script>
+</body>
+</html>

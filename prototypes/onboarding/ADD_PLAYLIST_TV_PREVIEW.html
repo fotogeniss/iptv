@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PRELUDE+ — Προσθήκη λίστας TV</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #030304;
+      --surface: #151518;
+      --surface-2: #202024;
+      --text: #f7f7f8;
+      --muted: #a3a3aa;
+      --line: rgba(255,255,255,.13);
+      --red: #e50914;
+      --ok: #45d483;
+      --danger: #ff6d78;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); }
+    body {
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .tv {
+      position: relative;
+      min-height: 100vh;
+      padding: clamp(24px,3.2vw,62px) clamp(40px,5vw,96px) clamp(26px,3vw,58px);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 13% 79%, rgba(229,9,20,.15), transparent 32%),
+        radial-gradient(circle at 86% 20%, rgba(52,71,106,.17), transparent 30%),
+        linear-gradient(135deg,#030304,#080305 58%,#030304);
+    }
+    .tv::after {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      inset: auto -12% -46% 35%;
+      height: 70%;
+      border-radius: 50%;
+      background: rgba(104,0,8,.08);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .shell { position: relative; z-index: 1; width: min(1760px,100%); margin: auto; }
+
+    .topbar {
+      height: clamp(58px,6vw,88px);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      font-size: clamp(25px,2vw,38px); font-weight: 950; letter-spacing: -.045em;
+    }
+    .brand-mark { position: relative; width: 43px; height: 39px; }
+    .brand-mark::before {
+      content: ""; position: absolute; inset: 1px 0 1px 10px; border-radius: 7px;
+      background: var(--red); clip-path: polygon(0 0,100% 50%,0 100%);
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; width: 7px; height: 7px; left: 0; top: 16px;
+      border-radius: 50%; background: var(--red);
+    }
+    .brand b { color: var(--red); }
+    .small-button {
+      width: max-content;
+      min-height: 48px;
+      padding: 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      color: var(--text);
+      background: rgba(23,23,28,.82);
+      font-size: clamp(14px,1vw,18px);
+      font-weight: 700;
+    }
+    .help { justify-self: start; }
+    .login { justify-self: end; color: var(--muted); background: transparent; }
+
+    .hero { text-align: center; margin: clamp(10px,1.5vw,24px) 0 clamp(24px,2.6vw,48px); }
+    .hero h1 {
+      margin: 0; color: var(--red); font-size: clamp(34px,3.5vw,64px);
+      line-height: 1; letter-spacing: -.05em;
+    }
+    .hero p {
+      margin: 14px auto 0; max-width: 830px; color: #c6c6cb;
+      font-size: clamp(15px,1.25vw,23px); line-height: 1.45;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(470px,.9fr) minmax(570px,1.1fr);
+      gap: clamp(30px,4vw,78px);
+      align-items: start;
+    }
+    .section-label {
+      margin: 0 0 15px;
+      color: var(--text);
+      font-size: clamp(16px,1.35vw,24px);
+      font-weight: 800;
+    }
+    .methods { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .method {
+      min-height: clamp(105px,9vw,150px);
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 17px;
+      color: var(--muted);
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(18,18,21,.78);
+      transition: transform .15s, border-color .15s, background .15s, box-shadow .15s;
+    }
+    .method.active { color: #fff; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.55); }
+    .method:focus-visible, .focusable:focus-visible {
+      outline: 0;
+      transform: scale(1.035);
+      border-color: #fff;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.14), 0 24px 55px rgba(0,0,0,.38);
+    }
+    .method-icon {
+      width: 50px; height: 50px; display: grid; place-items: center;
+      border-radius: 14px; background: rgba(255,255,255,.06); font-size: 26px;
+    }
+    .method-title { font-size: clamp(16px,1.28vw,23px); font-weight: 850; line-height: 1.15; }
+    .method-sub { margin-top: 7px; color: #85858e; font-size: clamp(10px,.75vw,14px); line-height: 1.35; }
+    .tag {
+      display: inline-flex; margin-top: 8px; padding: 4px 7px; border-radius: 6px;
+      background: rgba(255,255,255,.07); color: #babac0; font-size: 10px; font-weight: 900;
+    }
+    .radio { width: 25px; height: 25px; border: 2px solid #3d3d49; border-radius: 50%; display: grid; place-items: center; }
+    .method.active .radio { border-color: #fff; }
+    .method.active .radio::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+
+    .form-card {
+      min-height: clamp(350px,32vw,530px);
+      padding: clamp(20px,2vw,34px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(18,18,21,.72);
+      box-shadow: 0 28px 90px rgba(0,0,0,.28);
+    }
+    .form-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 22px; }
+    .form-head h2 { margin: 0; font-size: clamp(22px,1.7vw,31px); }
+    .form-head p { margin: 7px 0 0; color: var(--muted); font-size: clamp(11px,.85vw,15px); }
+    .step { color: #707078; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .panel { display: none; animation: reveal .18s ease; }
+    .panel.active { display: block; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(7px); } }
+    .field { margin-bottom: 17px; }
+    .field label { display: flex; justify-content: space-between; margin: 0 2px 8px; color: #d5d5d9; font-size: 13px; font-weight: 750; }
+    .optional { color: #777780; font-size: 10px; }
+    .field input {
+      width: 100%; min-height: 58px; padding: 0 17px; color: #fff;
+      border: 1px solid var(--line); outline: 0; border-radius: 13px;
+      background: var(--surface-2); caret-color: var(--red);
+      font-size: clamp(14px,1vw,18px);
+    }
+    .field input::placeholder { color: #6f6f77; }
+    .field input:focus { border-color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.12); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 56px; }
+    .eye { position: absolute; top: 50%; right: 7px; width: 42px; height: 42px; transform: translateY(-50%); border: 0; border-radius: 10px; color: #bbb; background: transparent; }
+
+    .file-picker {
+      min-height: 110px;
+      display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 17px;
+      padding: 18px; border: 1px dashed rgba(255,255,255,.3); border-radius: 16px;
+      background: rgba(255,255,255,.035); cursor: pointer;
+    }
+    .file-picker input { display: none; }
+    .file-icon { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 15px; background: rgba(255,255,255,.07); font-size: 28px; }
+    .file-title { color: var(--muted); font-size: 17px; }
+    .file-sub { margin-top: 5px; color: #72727a; font-size: 12px; }
+    .file-check { color: var(--ok); font-size: 24px; opacity: 0; }
+    .file-picker.loaded { border-style: solid; border-color: rgba(69,212,131,.5); }
+    .file-picker.loaded .file-title { color: #fff; font-weight: 800; }
+    .file-picker.loaded .file-check { opacity: 1; }
+
+    .advanced-toggle { padding: 8px 0; color: #b8b8be; border: 0; background: none; font-weight: 750; }
+    .advanced { display: none; padding-top: 12px; }
+    .advanced.open { display: block; animation: reveal .18s ease; }
+    .error { min-height: 19px; margin-top: 9px; color: var(--danger); font-size: 12px; }
+
+    .actions {
+      display: flex; justify-content: flex-end; align-items: center; gap: 13px;
+      margin-top: clamp(22px,2.3vw,40px);
+    }
+    .action {
+      min-width: 190px; min-height: 58px; padding: 0 26px;
+      border: 1px solid var(--line); border-radius: 14px;
+      color: #fff; background: var(--surface); font-size: 16px; font-weight: 900;
+    }
+    .action.primary { min-width: 270px; border-color: transparent; background: var(--red); }
+    .action:focus-visible, .small-button:focus-visible, .eye:focus-visible, .advanced-toggle:focus-visible {
+      outline: 0; transform: scale(1.045); box-shadow: 0 0 0 4px #fff, 0 18px 50px rgba(0,0,0,.42);
+    }
+
+    .modal {
+      position: fixed; z-index: 20; inset: 0; display: none; align-items: center; justify-content: center;
+      padding: 40px; background: rgba(0,0,0,.74); backdrop-filter: blur(12px);
+    }
+    .modal.open { display: flex; }
+    .dialog { width: min(680px,100%); padding: 34px; border: 1px solid var(--line); border-radius: 23px; background: #18181c; box-shadow: 0 35px 110px #000; }
+    .dialog h2 { margin: 0 0 14px; font-size: 30px; }
+    .dialog p { margin: 0; color: #bbbcc2; font-size: 17px; line-height: 1.6; }
+    .dialog .action { margin-top: 25px; float: right; background: #fff; color: #080808; }
+    .toast { position: fixed; z-index: 30; left: 50%; bottom: 35px; transform: translate(-50%,20px); padding: 13px 20px; border-radius: 999px; background: #fff; color: #080808; font-weight: 850; opacity: 0; transition: .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    @media (max-width: 1150px) {
+      body { overflow: auto; }
+      .workspace { grid-template-columns: 1fr; }
+      .methods { grid-template-columns: repeat(4,1fr); }
+      .method { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .method-sub { display: none; }
+      .form-card { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="tv">
+    <div class="shell">
+      <header class="topbar">
+        <button class="small-button help focusable" id="helpButton">Γρήγορη βοήθεια</button>
+        <div class="brand"><span class="brand-mark"></span>PRELUDE<b>+</b></div>
+        <button class="small-button login focusable" id="loginButton">Σύνδεση</button>
+      </header>
+
+      <section class="hero">
+        <h1>Προσθήκη λίστας</h1>
+        <p>Το PRELUDE+ είναι media player και δεν παρέχει περιεχόμενο ή συνδρομές IPTV.</p>
+      </section>
+
+      <section class="workspace">
+        <div>
+          <h2 class="section-label">1. Επίλεξε τρόπο σύνδεσης</h2>
+          <div class="methods" role="radiogroup" aria-label="Τύπος λίστας">
+            <button class="method active" data-method="url" role="radio" aria-checked="true">
+              <span class="method-icon">↗</span><span><span class="method-title">URL</span><span class="tag">M3U</span><span class="method-sub">Επικόλληση συνδέσμου playlist</span></span><span class="radio"></span>
+            </button>
+            <button class="method" data-method="xtream" role="radio" aria-checked="false">
+              <span class="method-icon">⌁</span><span><span class="method-title">Όνομα χρήστη & κωδικός</span><span class="tag">XTREAM</span><span class="method-sub">Server, username και password</span></span><span class="radio"></span>
+            </button>
+            <button class="method" data-method="mac" role="radio" aria-checked="false">
+              <span class="method-icon">▣</span><span><span class="method-title">MAC Portal</span><span class="tag">STALKER</span><span class="method-sub">Portal URL και MAC address</span></span><span class="radio"></span>
+            </button>
+            <button class="method" data-method="file" role="radio" aria-checked="false">
+              <span class="method-icon">▤</span><span><span class="method-title">Αρχείο M3U</span><span class="tag">FILE</span><span class="method-sub">Επιλογή αρχείου από τη συσκευή</span></span><span class="radio"></span>
+            </button>
+          </div>
+        </div>
+
+        <form class="form-card" id="playlistForm" novalidate>
+          <div class="form-head">
+            <div><h2 id="formTitle">Σύνδεση με URL</h2><p id="formSubtitle">Συμπλήρωσε τον σύνδεσμο της λίστας σου.</p></div>
+            <span class="step">ΒΗΜΑ 2 ΑΠΟ 2</span>
+          </div>
+
+          <div class="panel active" data-panel="url">
+            <div class="field"><label for="playlistUrl">URL λίστας</label><input class="focusable" id="playlistUrl" type="url" placeholder="http://example.com/playlist.m3u"></div>
+          </div>
+          <div class="panel" data-panel="xtream">
+            <div class="field"><label for="server">Server URL</label><input class="focusable" id="server" type="url" placeholder="http://example.com:port"></div>
+            <div class="field-row">
+              <div class="field"><label for="username">Username</label><input class="focusable" id="username" autocomplete="username" placeholder="Username"></div>
+              <div class="field"><label for="password">Password</label><div class="password-wrap"><input class="focusable" id="password" type="password" autocomplete="current-password" placeholder="Password"><button class="eye focusable" type="button">◉</button></div></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="mac">
+            <div class="field"><label for="portal">Portal URL</label><input class="focusable" id="portal" type="url" placeholder="http://portal.example.com/c/"></div>
+            <div class="field-row">
+              <div class="field"><label for="macAddress">MAC address</label><input class="focusable" id="macAddress" maxlength="17" placeholder="00:1A:79:00:00:00"></div>
+              <div class="field"><label for="userAgent">User-Agent <span class="optional">Προαιρετικό</span></label><input class="focusable" id="userAgent" placeholder="MAG250 / custom User-Agent"></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="file">
+            <div class="field">
+              <label>Αρχείο M3U</label>
+              <label class="file-picker focusable" id="filePicker" tabindex="0">
+                <input id="playlistFile" type="file" accept=".m3u,.m3u8,audio/x-mpegurl,application/x-mpegURL,text/plain">
+                <span class="file-icon">▤</span><span><span class="file-title" id="fileTitle">Επίλεξε αρχείο από τη συσκευή</span><span class="file-sub">Υποστηρίζονται .m3u και .m3u8</span></span><span class="file-check">✓</span>
+              </label>
+            </div>
+          </div>
+
+          <button class="advanced-toggle focusable" type="button" id="advancedToggle">⌄ Περισσότερες επιλογές</button>
+          <div class="advanced" id="advancedFields">
+            <div class="field-row">
+              <div class="field"><label for="playlistName">Όνομα λίστας <span class="optional">Προαιρετικό</span></label><input class="focusable" id="playlistName" placeholder="π.χ. Η λίστα μου"></div>
+              <div class="field" id="epgField"><label for="epgUrl">EPG URL <span class="optional">Προαιρετικό</span></label><input class="focusable" id="epgUrl" type="url" placeholder="http://example.com/epg.xml"></div>
+            </div>
+          </div>
+          <div class="error" id="formError" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <footer class="actions">
+        <button class="action focusable" id="laterButton">Ίσως αργότερα</button>
+        <button class="action primary focusable" type="submit" form="playlistForm">Αποθήκευση λίστας</button>
+      </footer>
+    </div>
+  </main>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true">
+    <div class="dialog"><h2>Πού βρίσκω τα στοιχεία;</h2><p>Χρησιμοποίησε τα στοιχεία που σου έχει δώσει ο νόμιμος πάροχος περιεχομένου. Για M3U χρειάζεσαι URL, για Xtream server, username και password, ενώ για MAC/Stalker χρειάζεσαι Portal URL και MAC address.</p><button class="action focusable" id="closeHelp">Κατάλαβα</button></div>
+  </div>
+  <div class="toast" id="toast">Έτοιμο</div>
+
+  <script>
+    const metadata = {
+      url: ['Σύνδεση με URL','Συμπλήρωσε τον σύνδεσμο της λίστας σου.'],
+      xtream: ['Σύνδεση Xtream','Συμπλήρωσε τα στοιχεία πρόσβασης του παρόχου.'],
+      mac: ['Σύνδεση MAC / Stalker','Συμπλήρωσε το Portal URL και τη MAC address.'],
+      file: ['Τοπικό αρχείο M3U','Επίλεξε ένα αρχείο M3U από τη συσκευή.']
+    };
+    const methods = [...document.querySelectorAll('.method')];
+    const panels = [...document.querySelectorAll('.panel')];
+    let selected = 'url';
+
+    function selectMethod(method) {
+      selected = method;
+      methods.forEach(button => {
+        const active = button.dataset.method === method;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-checked', String(active));
+      });
+      panels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === method));
+      document.getElementById('formTitle').textContent = metadata[method][0];
+      document.getElementById('formSubtitle').textContent = metadata[method][1];
+      document.getElementById('epgField').style.display = method === 'file' ? 'none' : '';
+      document.getElementById('formError').textContent = '';
+    }
+    methods.forEach(button => button.addEventListener('click', () => selectMethod(button.dataset.method)));
+
+    document.getElementById('macAddress').addEventListener('input', event => {
+      const hex = event.target.value.toUpperCase().replace(/[^0-9A-F]/g,'').slice(0,12);
+      event.target.value = hex.match(/.{1,2}/g)?.join(':') || '';
+    });
+    document.querySelector('.eye').addEventListener('click', event => {
+      const password = document.getElementById('password');
+      password.type = password.type === 'password' ? 'text' : 'password';
+      event.currentTarget.textContent = password.type === 'password' ? '◉' : '◌';
+    });
+    document.getElementById('playlistFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      document.getElementById('filePicker').classList.toggle('loaded', Boolean(file));
+      document.getElementById('fileTitle').textContent = file?.name || 'Επίλεξε αρχείο από τη συσκευή';
+    });
+    document.getElementById('filePicker').addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') document.getElementById('playlistFile').click();
+    });
+
+    const advanced = document.getElementById('advancedFields');
+    document.getElementById('advancedToggle').addEventListener('click', event => {
+      const open = advanced.classList.toggle('open');
+      event.currentTarget.textContent = open ? '⌃ Λιγότερες επιλογές' : '⌄ Περισσότερες επιλογές';
+    });
+    function validUrl(value) { try { const url = new URL(value); return ['http:','https:'].includes(url.protocol); } catch { return false; } }
+    document.getElementById('playlistForm').addEventListener('submit', event => {
+      event.preventDefault();
+      let error = '';
+      if (selected === 'url' && !validUrl(document.getElementById('playlistUrl').value.trim())) error = 'Γράψε ένα έγκυρο URL λίστας.';
+      if (selected === 'xtream') {
+        if (!validUrl(document.getElementById('server').value.trim())) error = 'Γράψε ένα έγκυρο Server URL.';
+        else if (!document.getElementById('username').value.trim() || !document.getElementById('password').value) error = 'Συμπλήρωσε username και password.';
+      }
+      if (selected === 'mac') {
+        if (!validUrl(document.getElementById('portal').value.trim())) error = 'Γράψε ένα έγκυρο Portal URL.';
+        else if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(document.getElementById('macAddress').value)) error = 'Η MAC address πρέπει να έχει μορφή 00:1A:79:00:00:00.';
+      }
+      if (selected === 'file' && !document.getElementById('playlistFile').files.length) error = 'Διάλεξε ένα αρχείο M3U από τη συσκευή.';
+      document.getElementById('formError').textContent = error;
+      if (!error) showToast('✓ Η λίστα είναι έτοιμη για αποθήκευση');
+    });
+
+    const helpModal = document.getElementById('helpModal');
+    document.getElementById('helpButton').addEventListener('click', () => { helpModal.classList.add('open'); document.getElementById('closeHelp').focus(); });
+    document.getElementById('closeHelp').addEventListener('click', () => { helpModal.classList.remove('open'); document.getElementById('helpButton').focus(); });
+    document.getElementById('loginButton').addEventListener('click', () => showToast('Η σύνδεση λογαριασμού θα προστεθεί αργότερα'));
+    document.getElementById('laterButton').addEventListener('click', () => showToast('Η προσθήκη λίστας παραλείφθηκε'));
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'),2200);
+    }
+
+    document.addEventListener('keydown', event => {
+      if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)) return;
+      const focusable = [...document.querySelectorAll('button:not([disabled]), input:not([type=file]), [tabindex="0"]')]
+        .filter(element => element.offsetParent !== null);
+      const current = focusable.indexOf(document.activeElement);
+      if (current < 0) return;
+      const direction = event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1;
+      focusable[(current + direction + focusable.length) % focusable.length].focus();
+      event.preventDefault();
+    });
+    document.querySelector('.method').focus();
+  </script>
+</body>
+</html>

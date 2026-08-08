@@ -1,0 +1,15 @@
+v1.40.43 DEEP VALIDATION SUMMARY
+
+PASS compatibility contracts: 11 / 0 failures
+PASS architecture contracts: 29 / 0 failures (2 large-file warnings)
+PASS deep validation contracts: 45 / 0 failures (1 cleartext compatibility warning)
+PASS production critical-risk categories: 7 / 0 failures
+PASS broad pure/JVM regression suite: 179 / 0 failures
+PASS Kotlin changed-file syntax-risk scan: 35 files / 0 findings
+PASS Stalker semantic compile against dependency stubs
+PASS Xtream + ProviderCancellation semantic compile against dependency stubs
+PASS XML parse: 24 files / 0 errors
+PASS CI YAML parse and version contract
+
+NOT EXECUTED: Android instrumentation/device tests (adb/Android SDK unavailable)
+BLOCKED BEFORE STARTUP: Gradle clean/unit/lint/debug/release gate (Gradle 8.9 distribution download unavailable)

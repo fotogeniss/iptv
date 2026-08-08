@@ -1,0 +1,15 @@
+PUBLIC API / FUNCTION PRESERVATION AUDIT v1.40.41
+
+app/src/main/java/com/prelude/iptv/PlayerActivity.kt
+baseline_functions=146
+current_functions=141
+removed=['buildSchedule', 'fmtEpgTime', 'loadXmltv', 'rebuildScheduleFromXmltv', 'showEpgMenu', 'xmltvUrlDialog']
+removed_non_private=[]
+
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt
+baseline_functions=118
+current_functions=112
+removed=['autoEpgUrl', 'beginEpgLoad', 'cancelEpgLoad', 'isCurrentEpgRequest', 'matchCount', 'persistEpgUrlForSource']
+removed_non_private=[]
+
+RESULT=PASS: no non-private PlayerActivity/MainViewModel function was removed.

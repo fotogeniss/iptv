@@ -1,0 +1,87 @@
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:36:27: warning: parameter 'client' is never used
+    fun stalkerCategories(client: com.prelude.iptv.source.StalkerClient, type: String): List<Pair<String,String>> = emptyList()
+                          ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:36:74: warning: parameter 'type' is never used
+    fun stalkerCategories(client: com.prelude.iptv.source.StalkerClient, type: String): List<Pair<String,String>> = emptyList()
+                                                                         ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:37:29: warning: parameter 'pl' is never used
+    fun xtreamVodCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                            ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:37:43: warning: parameter 'progress' is never used
+    fun xtreamVodCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                                          ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:38:32: warning: parameter 'pl' is never used
+    fun xtreamSeriesCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                               ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:38:46: warning: parameter 'progress' is never used
+    fun xtreamSeriesCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                                             ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:39:30: warning: parameter 'pl' is never used
+    fun xtreamLiveCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                             ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:39:44: warning: parameter 'progress' is never used
+    fun xtreamLiveCategories(pl: Playlist, progress: SourceProgressCallback?): List<Pair<String,String>> = emptyList()
+                                           ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:40:21: warning: parameter 'client' is never used
+    fun stalkerLoad(client: com.prelude.iptv.source.StalkerClient, type: String, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                    ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:40:68: warning: parameter 'type' is never used
+    fun stalkerLoad(client: com.prelude.iptv.source.StalkerClient, type: String, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                   ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:40:82: warning: parameter 'ids' is never used
+    fun stalkerLoad(client: com.prelude.iptv.source.StalkerClient, type: String, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                 ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:40:102: warning: parameter 'progress' is never used
+    fun stalkerLoad(client: com.prelude.iptv.source.StalkerClient, type: String, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                                     ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:40:137: warning: parameter 'partial' is never used
+    fun stalkerLoad(client: com.prelude.iptv.source.StalkerClient, type: String, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                                                                        ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:41:27: warning: parameter 'pl' is never used
+    fun xtreamVodSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                          ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:41:41: warning: parameter 'ids' is never used
+    fun xtreamVodSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                        ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:41:61: warning: parameter 'progress' is never used
+    fun xtreamVodSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                            ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:41:96: warning: parameter 'partial' is never used
+    fun xtreamVodSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                               ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:42:30: warning: parameter 'pl' is never used
+    fun xtreamSeriesSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                             ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:42:44: warning: parameter 'ids' is never used
+    fun xtreamSeriesSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                           ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:42:64: warning: parameter 'progress' is never used
+    fun xtreamSeriesSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                               ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:42:99: warning: parameter 'partial' is never used
+    fun xtreamSeriesSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                                  ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:43:28: warning: parameter 'pl' is never used
+    fun xtreamLiveSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                           ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:43:42: warning: parameter 'ids' is never used
+    fun xtreamLiveSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                         ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:43:62: warning: parameter 'progress' is never used
+    fun xtreamLiveSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                             ^
+mnt/data/catalog_coord_test_compile/src/com/prelude/iptv/data/Stubs.kt:43:97: warning: parameter 'partial' is never used
+    fun xtreamLiveSelected(pl: Playlist, ids: List<String>?, progress: SourceProgressCallback?, partial: SourcePartialCallback?): List<Channel> = emptyList()
+                                                                                                ^
+mnt/data/catalog_coord_test_compile/src/org/junit/JunitStubs.kt:4:22: warning: parameter 'expected' is never used
+    fun assertEquals(expected: Any?, actual: Any?) {}
+                     ^
+mnt/data/catalog_coord_test_compile/src/org/junit/JunitStubs.kt:4:38: warning: parameter 'actual' is never used
+    fun assertEquals(expected: Any?, actual: Any?) {}
+                                     ^
+mnt/data/catalog_coord_test_compile/src/org/junit/JunitStubs.kt:5:21: warning: parameter 'value' is never used
+    fun assertFalse(value: Boolean) {}
+                    ^
+mnt/data/catalog_coord_test_compile/src/org/junit/JunitStubs.kt:6:20: warning: parameter 'value' is never used
+    fun assertTrue(value: Boolean) {}
+                   ^

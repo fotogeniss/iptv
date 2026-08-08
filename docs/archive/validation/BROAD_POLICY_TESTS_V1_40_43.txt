@@ -1,0 +1,180 @@
+PASS com.prelude.iptv.data.CatalogNormalizerLargeDatasetTest#fiftyThousandLiveRowsAreDeduplicatedWithoutLosingOrder
+PASS com.prelude.iptv.data.CatalogNormalizerLargeDatasetTest#largeSeriesDatasetBuildsOneParentPerSeriesAndOrderedEpisodes
+PASS com.prelude.iptv.data.CatalogNormalizerTest#live and movie duplicates collapse by provider identity
+PASS com.prelude.iptv.data.CatalogNormalizerTest#search hides episode rows when parent exists
+PASS com.prelude.iptv.data.CatalogNormalizerTest#search reclassifies legacy vod episode rows as one series
+PASS com.prelude.iptv.data.CatalogNormalizerTest#series episodes collapse into one parent and ordered seasons
+PASS com.prelude.iptv.data.CatalogNormalizerTest#xtream series containers stay as containers
+PASS com.prelude.iptv.data.CatchupUrlTest#builds a well-formed timeshift url
+PASS com.prelude.iptv.data.CatchupUrlTest#returns null for future programme
+PASS com.prelude.iptv.data.CatchupUrlTest#returns null for sub-minute duration
+PASS com.prelude.iptv.data.CatchupUrlTest#returns null without streamId or server
+PASS com.prelude.iptv.data.CatchupUrlTest#trims trailing slash on server
+PASS com.prelude.iptv.data.CatchupUrlTest#url-encodes credentials with special chars
+PASS com.prelude.iptv.data.EpgSelectionPolicyTest#accepts http and https remote guides
+PASS com.prelude.iptv.data.EpgSelectionPolicyTest#commits only for the active source and exact loaded url
+PASS com.prelude.iptv.data.EpgSelectionPolicyTest#rejects local and malformed guide locations
+PASS com.prelude.iptv.data.PlaybackQueuePolicyTest#requestedEpisodeQueueWinsOverCatalogFallback
+PASS com.prelude.iptv.data.PlaybackQueuePolicyTest#targetIsUsedWhenBothQueuesAreEmpty
+PASS com.prelude.iptv.data.PlaylistIdentityTest#different accounts on the same server stay isolated
+PASS com.prelude.iptv.data.PlaylistIdentityTest#different m3u urls stay isolated and raw url is not exposed
+PASS com.prelude.iptv.data.PlaylistIdentityTest#renaming a source keeps its history namespace
+PASS com.prelude.iptv.data.SessionCatalogCacheTest#cacheEvictsLeastRecentlyUsedEntry
+PASS com.prelude.iptv.data.SessionCatalogCacheTest#catalogsAreIsolatedBySourceTypeAndSelection
+PASS com.prelude.iptv.data.SessionCatalogCacheTest#categorySignature_isStableAcrossOrderAndDuplicates
+PASS com.prelude.iptv.data.SessionCatalogCacheTest#invalidateSourceDoesNotTouchOtherSources
+PASS com.prelude.iptv.data.SourceFavoritePolicyTest#migrationDeduplicatesProviderRows
+PASS com.prelude.iptv.data.SourceFavoritePolicyTest#migrationDoesNotGuessSeriesIdOnlyFavorites
+PASS com.prelude.iptv.data.SourceFavoritePolicyTest#migrationRequiresExactLegacyItemKey
+PASS com.prelude.iptv.data.SourceFavoritePolicyTest#seriesContainerIsNotLauncherPlayable
+PASS com.prelude.iptv.data.SourceFavoritePolicyTest#snapshotReconciliationNeverCrossesSources
+PASS com.prelude.iptv.data.SubtitleSearchPolicyTest#episodeApiParametersKeepStructuredIdentity
+PASS com.prelude.iptv.data.SubtitleSearchPolicyTest#episodeQueryExtractsSeriesSeasonAndEpisode
+PASS com.prelude.iptv.data.SubtitleSearchPolicyTest#explicitSeriesContextSupportsPlainEpisodeTitles
+PASS com.prelude.iptv.data.SubtitleSearchPolicyTest#movieQueryRemovesProviderAndQualityNoise
+PASS com.prelude.iptv.net.ProviderCancellationTest#business error mentioning cancelled is not treated as coroutine cancellation
+PASS com.prelude.iptv.net.ProviderCancellationTest#existing cancellation is rethrown unchanged
+PASS com.prelude.iptv.net.ProviderCancellationTest#interrupted IO becomes cancellation with original cause
+PASS com.prelude.iptv.net.ProviderCancellationTest#ordinary provider error remains available to caller fallback
+PASS com.prelude.iptv.net.ProviderCancellationTest#provider canceled message becomes cancellation
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#choosesExactCinemaModeOverHigherMultiples
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#choosesFiftyForTwentyFiveFpsWhenExactModeIsMissing
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#choosesFiftyNineNinetyFourForTwentyNineNinetySeven
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#invalidContentFrameRatesAreRejected
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#neverChangesResolution
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#storageModeParsingIsSafe
+PASS com.prelude.iptv.player.FrameRateMatchPolicyTest#twentyFourFpsDoesNotTreatSixtyAsCompatible
+PASS com.prelude.iptv.player.MultiviewPolicyTest#dpadSelectsExpectedPane
+PASS com.prelude.iptv.player.MultiviewPolicyTest#launchDebounceRejectsRapidRepeat
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest#absoluteTargetHonoursKnownDuration
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest#relativeTargetClampsWithoutOverflow
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest#unknownDurationStillPreventsNegativeTargets
+PASS com.prelude.iptv.player.PlaybackStabilityPolicyTest#retryIsLimitedAndRequiresCurrentIoRequest
+PASS com.prelude.iptv.player.PlaybackStabilityPolicyTest#wrappedIoFailuresAreDetected
+PASS com.prelude.iptv.player.PlaybackStabilityPolicyTest#zapDeltaIsCoalescedAndBounded
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#channelKeysZapOnlyForLiveContent
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#channelPanelOnlyConsumesLeftForClose
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#dedicatedMenuAndCaptionsKeysStayDirectlyRoutable
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#digitsOnlyZapWhenLiveQueueExists
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#explicitPlayPauseAndStopActionsAreNeverDelegated
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#focusedVodSeekBarOwnsLeftRightAndConfirm
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#hiddenLiveDpadRoutesToZapAndChannelPanel
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#hiddenVodArrowsSeekButVerticalKeysRevealChrome
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#lostTvFocusIsRestoredBeforeAnyNavigation
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#mediaKeysRemainAvailableWithVisibleChrome
+PASS com.prelude.iptv.player.PlayerRemoteInputPolicyTest#visibleChromeLetsAndroidMoveFocus
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#boundaryStepDoesNotMutateQueueOrSession
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#failedRapidZapReturnsToLastCommittedChannelNotIntermediateTarget
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#manualSubtitleOverrideSurvivesCommittedState
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#pendingStepPresentsTargetButKeepsCommittedStreamAlive
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#staleResolveCannotReplaceNewerSelection
+PASS com.prelude.iptv.player.PlayerSessionControllerTest#successfulResolveBecomesTheNextRollbackBaseline
+PASS com.prelude.iptv.player.PlayerUiPolicyTest#invalidProgrammeHasZeroProgress
+PASS com.prelude.iptv.player.PlayerUiPolicyTest#progressIsClamped
+PASS com.prelude.iptv.player.PlayerUiPolicyTest#tvControlsRemainVisibleLonger
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest#invalidDurationMapsToZero
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest#normalDurationsMapOneToOne
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest#veryLongDurationsScaleWithoutIntOverflow
+PASS com.prelude.iptv.player.SrtParserTest#empty input yields empty list
+PASS com.prelude.iptv.player.SrtParserTest#handles CRLF line endings
+PASS com.prelude.iptv.player.SrtParserTest#hour component is counted
+PASS com.prelude.iptv.player.SrtParserTest#joins multi-line subtitle text
+PASS com.prelude.iptv.player.SrtParserTest#malformed blocks are skipped, not crashing
+PASS com.prelude.iptv.player.SrtParserTest#parses a basic cue with correct millis
+PASS com.prelude.iptv.player.SrtParserTest#parses multiple cues separated by blank lines
+PASS com.prelude.iptv.player.SrtParserTest#strips html-style tags
+PASS com.prelude.iptv.player.TvSeekControllerTest#cancelDropsPendingTarget
+PASS com.prelude.iptv.player.TvSeekControllerTest#repeatedNudgesAccumulateAndCommitOnce
+PASS com.prelude.iptv.player.TvSeekControllerTest#targetIsClampedAtBothEnds
+PASS com.prelude.iptv.player.TvSeekControllerTest#unknownDurationUsesImmediateRelativeSeekAndClearsPending
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest#confirmOnlyFiresOnFirstDownEvent
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest#keyUpIsConsumedToPreventFrameworkDoubleMove
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest#leftAndRightBecomeTenSecondNudges
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest#liveMobileAndUnrelatedKeysPassThrough
+PASS com.prelude.iptv.source.M3uParserClassifyTest#file extension implies vod even with negative duration
+PASS com.prelude.iptv.source.M3uParserClassifyTest#live channel keeps live even in a CINEMA group
+PASS com.prelude.iptv.source.M3uParserClassifyTest#parse reports real line progress and completes at 100 percent
+PASS com.prelude.iptv.source.M3uParserClassifyTest#plain live stream with no hints stays live
+PASS com.prelude.iptv.source.M3uParserClassifyTest#positive duration means a file
+PASS com.prelude.iptv.source.M3uParserClassifyTest#provider path wins over everything
+PASS com.prelude.iptv.source.M3uParserClassifyTest#series group only applies to actual files
+PASS com.prelude.iptv.source.M3uParserClassifyTest#series tag in the name is detected on files
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#duplicateIdentityIsRemoved
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#episodeRequiresTwoMinutes
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#excludesLockedGroupsCaseInsensitively
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#hiddenItemRequiresNewerEngagementBeforeRepublishing
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#movieBecomesEligibleAtEarlierOfThreePercentOrTwoMinutes
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#newestItemsComeFirstAndResultIsCapped
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#onlyNewestEpisodePerSeriesIsPublished
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#rejectsCompletedOrNearlyCompletedItems
+PASS com.prelude.iptv.tvhome.TvHomeEligibilityPolicyTest#rejectsLiveAndSeriesContainers
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#accepts exact my list route
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#accepts exact play next route
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#rejects extra path segments
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#rejects non canonical token formatting
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#rejects non uuid and oversized token
+PASS com.prelude.iptv.tvhome.TvHomePlaybackRoutePolicyTest#rejects unsupported scheme and host
+PASS com.prelude.iptv.tvhome.TvHomeProviderOwnershipPolicyTest#accepts only owned my list identifier
+PASS com.prelude.iptv.tvhome.TvHomeProviderOwnershipPolicyTest#accepts only owned watch next identifier
+PASS com.prelude.iptv.tvhome.TvHomeProviderOwnershipPolicyTest#rejects foreign malformed and cross namespace identifiers
+PASS com.prelude.iptv.tvhome.TvMyListPolicyTest#duplicateIdentityIsPublishedOnce
+PASS com.prelude.iptv.tvhome.TvMyListPolicyTest#filtersMissingSourcesLockedGroupsAndSeriesContainers
+PASS com.prelude.iptv.tvhome.TvMyListPolicyTest#newestItemsComeFirstAndResultIsCapped
+PASS com.prelude.iptv.tvhome.TvMyListPolicyTest#zeroLimitPublishesNothing
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#allGroupsRemainsAll
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#empty-category refresh fallback remains transactional
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#existingGroupsArePreselected
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#normal initial load does not defer selection persistence
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#refresh falls back to all when the visible group disappeared
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#refresh keeps the visible group when it still exists
+PASS com.prelude.iptv.ui.CatalogRefreshPolicyTest#removedGroupsAreDroppedButNewGroupsStayAvailable
+PASS com.prelude.iptv.ui.LibraryPolicyTest#favorites_returnsOnlyKnownFavoriteItems
+PASS com.prelude.iptv.ui.LibraryPolicyTest#search_matchesAllTermsAcrossMetadata
+PASS com.prelude.iptv.ui.LibraryPolicyTest#unique_preservesFirstOccurrence
+PASS com.prelude.iptv.ui.LiveTvPolicyTest#favorites_keep_provider_order
+PASS com.prelude.iptv.ui.LiveTvPolicyTest#progress_is_clamped
+PASS com.prelude.iptv.ui.LoadPolicyTest#deleting a list AFTER the current keeps the index
+PASS com.prelude.iptv.ui.LoadPolicyTest#deleting a list BEFORE the current shifts index down
+PASS com.prelude.iptv.ui.LoadPolicyTest#deleting the current when it was last clamps to new last
+PASS com.prelude.iptv.ui.LoadPolicyTest#deleting the only list yields zero
+PASS com.prelude.iptv.ui.LoadPolicyTest#empty group maps to the no-group label for locking
+PASS com.prelude.iptv.ui.LoadPolicyTest#force always stale even if fresh
+PASS com.prelude.iptv.ui.LoadPolicyTest#fresh cache is not stale
+PASS com.prelude.iptv.ui.LoadPolicyTest#locked group is hidden when not unlocked
+PASS com.prelude.iptv.ui.LoadPolicyTest#never-saved cache is stale
+PASS com.prelude.iptv.ui.LoadPolicyTest#never-unlocked counts as expired
+PASS com.prelude.iptv.ui.LoadPolicyTest#no locks means everything allowed
+PASS com.prelude.iptv.ui.LoadPolicyTest#old cache is stale
+PASS com.prelude.iptv.ui.LoadPolicyTest#orderWithFirst is a no-op when first is already first
+PASS com.prelude.iptv.ui.LoadPolicyTest#orderWithFirst is a no-op when requested item is absent
+PASS com.prelude.iptv.ui.LoadPolicyTest#orderWithFirst preserves duplicate entries and their order
+PASS com.prelude.iptv.ui.LoadPolicyTest#orderWithFirst puts the requested section first, keeps the rest
+PASS com.prelude.iptv.ui.LoadPolicyTest#result is always a valid index
+PASS com.prelude.iptv.ui.LoadPolicyTest#unlock past ttl expires
+PASS com.prelude.iptv.ui.LoadPolicyTest#unlock within ttl is valid
+PASS com.prelude.iptv.ui.LoadPolicyTest#unlocked session shows everything
+PASS com.prelude.iptv.ui.LoadPolicyTest#unlocked-named group stays visible
+PASS com.prelude.iptv.ui.MultiviewSelectionPolicyTest#differentChannelLaunchesPairInOrder
+PASS com.prelude.iptv.ui.MultiviewSelectionPolicyTest#noPrimaryPlaysSingleChannel
+PASS com.prelude.iptv.ui.MultiviewSelectionPolicyTest#sameChannelKeepsPrimaryArmed
+PASS com.prelude.iptv.ui.CatalogPolicyTest#continueAndMyListComeBeforeTrending
+PASS com.prelude.iptv.ui.CatalogPolicyTest#duplicateStreamsAppearOnlyOncePerRail
+PASS com.prelude.iptv.ui.CatalogPolicyTest#railPreviewIsCappedButViewAllKeepsFullSection
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#all valid deletion combinations preserve a bounded index
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#deleting a source after active preserves active source
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#deleting a source before active shifts index but preserves source
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#deleting active source activates bounded replacement
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#deleting only active source yields empty state
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#duplicate source keeps source scoped data
+PASS com.prelude.iptv.ui.SourceDeletionPolicyTest#last source reference permits cleanup
+PASS com.prelude.iptv.ui.UiStateSlicesTest#catalog changes do not invalidate app shell slice
+PASS com.prelude.iptv.ui.UiStateSlicesTest#catalog progress does not invalidate catalog content slice
+PASS com.prelude.iptv.ui.UiStateSlicesTest#epg changes are isolated from settings slice
+PASS com.prelude.iptv.ui.UiStateSlicesTest#export slice changes only with favorites or relay state
+PASS com.prelude.iptv.ui.WatchProgressPolicyTest#calculatesStableFractionAndRemainingLabel
+PASS com.prelude.iptv.ui.WatchProgressPolicyTest#rejectsTinyCompletedAndInvalidProgress
+PASS com.prelude.iptv.ui.coordinator.CatalogSessionStoreTest#clearWorkingSetDoesNotEraseCachedCatalogs
+PASS com.prelude.iptv.ui.coordinator.CatalogSessionStoreTest#m3uPayloadCacheIsBoundedAndUsesLruOrder
+PASS com.prelude.iptv.ui.coordinator.CatalogSessionStoreTest#sectionInvalidationDoesNotDropOtherSections
+PASS com.prelude.iptv.ui.coordinator.CatalogSessionStoreTest#sourceInvalidationClearsCatalogAndM3uTogether
+SUMMARY pass=179 fail=0

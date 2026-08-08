@@ -1,0 +1,16 @@
+PASS - Version name 1.40.35
+PASS - Version code 79
+PASS - Browse opens refresh choice
+PASS - Settings opens refresh choice
+PASS - Existing-selection action
+PASS - Fresh-group action
+PASS - Per-source/per-section persistence
+PASS - Fresh categories forced
+PASS - Visible catalog preserved during existing refresh
+PASS - Remembered groups preselected
+PASS - Refresh picker cancel returns to catalog
+PASS - Picker accepts initial selection
+PASS - Refresh state reaches UI slice
+PASS - Live/Movies/Series labels
+PASS - No Browse/Settings direct refresh bypass
+PASS - 24 Manifest/XML files parse

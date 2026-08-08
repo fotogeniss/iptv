@@ -1,0 +1,22 @@
+PASS PlayerActivity: preserved 10 v1.40.41 public members
+PASS MainViewModel: preserved 89 v1.40.41 public members
+PASS PlayerActivity delegates session ownership
+PASS PlayerActivity has no legacy load token
+PASS PlayerActivity has no mutable duplicated playback URL
+PASS PlayerActivity saves resume against committed playback
+PASS Controller separates committed and pending state
+PASS Controller rejects stale async commits
+PASS Controller restores committed queue index
+PASS Failed zap does not restart the committed player
+PASS Recents commit only after resolved playback
+PASS PlayerActivity delegates chrome ownership
+PASS Chrome controller owns auto-hide
+PASS Chrome controller owns bounded TV focus retry
+PASS Activity has no legacy chrome runnables
+PASS MainViewModel delegates catalog provider loading
+PASS MainViewModel has no legacy catalog fetch function
+PASS Catalog coordinator owns provider serialization
+PASS Catalog coordinator normalizes progressive and final snapshots
+PASS Progressive refresh failure restores visible catalog
+PASS Series requests share the catalog provider boundary
+SUMMARY pass=21 fail=0

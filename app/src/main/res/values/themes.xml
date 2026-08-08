@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.UPL" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#16161A</item>
+        <item name="android:navigationBarColor">#16161A</item>
+    </style>
+    <style name="Theme.UPL.Startup" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:colorAccent">#FFFFFF</item>
+    </style>
+</resources>

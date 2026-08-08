@@ -1,0 +1,92 @@
+mnt/data/mv_compile_stubs/src/android_os.kt:4:15: warning: parameter 'looper' is never used
+class Handler(looper: Looper) {
+              ^
+mnt/data/mv_compile_stubs/src/android_os.kt:5:21: warning: parameter 'r' is never used
+    fun postDelayed(r: Runnable, delay: Long): Boolean = true
+                    ^
+mnt/data/mv_compile_stubs/src/android_os.kt:5:34: warning: parameter 'delay' is never used
+    fun postDelayed(r: Runnable, delay: Long): Boolean = true
+                                 ^
+mnt/data/mv_compile_stubs/src/android_os.kt:6:25: warning: parameter 'r' is never used
+    fun removeCallbacks(r: Runnable) {}
+                        ^
+mnt/data/mv_compile_stubs/src/android_os.kt:7:36: warning: parameter 'token' is never used
+    fun removeCallbacksAndMessages(token: Any?) {}
+                                   ^
+mnt/data/mv_compile_stubs/src/android_util.kt:2:20: warning: parameter 'tag' is never used
+object Log { fun w(tag: String, msg: String, tr: Throwable? = null): Int = 0 }
+                   ^
+mnt/data/mv_compile_stubs/src/android_util.kt:2:33: warning: parameter 'msg' is never used
+object Log { fun w(tag: String, msg: String, tr: Throwable? = null): Int = 0 }
+                                ^
+mnt/data/mv_compile_stubs/src/android_util.kt:2:46: warning: parameter 'tr' is never used
+object Log { fun w(tag: String, msg: String, tr: Throwable? = null): Int = 0 }
+                                             ^
+mnt/data/mv_compile_stubs/src/androidx_activity.kt:19:24: warning: parameter 'id' is never used
+    fun setContentView(id: Int) {}
+                       ^
+mnt/data/mv_compile_stubs/src/androidx_activity.kt:20:33: warning: parameter 'id' is never used
+    fun <T : View> findViewById(id: Int): T = throw NotImplementedError()
+                                ^
+mnt/data/mv_compile_stubs/src/androidx_activity.kt:22:35: warning: parameter 'name' is never used
+class Intent { fun getStringExtra(name: String): String? = null }
+                                  ^
+mnt/data/mv_compile_stubs/src/media_common.kt:4:50: warning: parameter 'uri' is never used
+class MediaItem { companion object { fun fromUri(uri: String) = MediaItem() } }
+                                                 ^
+mnt/data/mv_compile_stubs/src/media_datasource.kt:4:26: warning: parameter 'v' is never used
+        fun setUserAgent(v: String) = this
+                         ^
+mnt/data/mv_compile_stubs/src/media_datasource.kt:5:44: warning: parameter 'v' is never used
+        fun setAllowCrossProtocolRedirects(v: Boolean) = this
+                                           ^
+mnt/data/mv_compile_stubs/src/media_datasource.kt:6:33: warning: parameter 'v' is never used
+        fun setConnectTimeoutMs(v: Int) = this
+                                ^
+mnt/data/mv_compile_stubs/src/media_datasource.kt:7:30: warning: parameter 'v' is never used
+        fun setReadTimeoutMs(v: Int) = this
+                             ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:10:46: warning: parameter 'type' is never used
+    class Builder { fun setTrackTypeDisabled(type: Int, disabled: Boolean) = this; fun build() = TrackSelectionParameters() }
+                                             ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:10:57: warning: parameter 'disabled' is never used
+    class Builder { fun setTrackTypeDisabled(type: Int, disabled: Boolean) = this; fun build() = TrackSelectionParameters() }
+                                                        ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:20:28: warning: parameter 'attributes' is never used
+    fun setAudioAttributes(attributes: AudioAttributes, handleAudioFocus: Boolean) {}
+                           ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:20:57: warning: parameter 'handleAudioFocus' is never used
+    fun setAudioAttributes(attributes: AudioAttributes, handleAudioFocus: Boolean) {}
+                                                        ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:21:21: warning: parameter 'listener' is never used
+    fun addListener(listener: Player.Listener) {}
+                    ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:22:22: warning: parameter 'item' is never used
+    fun setMediaItem(item: MediaItem) {}
+                     ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:25:19: warning: parameter 'context' is never used
+    class Builder(context: ComponentActivity, renderersFactory: Any) {
+                  ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:25:47: warning: parameter 'renderersFactory' is never used
+    class Builder(context: ComponentActivity, renderersFactory: Any) {
+                                              ^
+mnt/data/mv_compile_stubs/src/media_exoplayer.kt:26:35: warning: parameter 'factory' is never used
+        fun setMediaSourceFactory(factory: Any) = this
+                                  ^
+mnt/data/mv_compile_stubs/src/media_source.kt:2:33: warning: parameter 'factory' is never used
+class DefaultMediaSourceFactory(factory: Any) { fun setLoadErrorHandlingPolicy(policy: Any) = this }
+                                ^
+mnt/data/mv_compile_stubs/src/media_source.kt:2:80: warning: parameter 'policy' is never used
+class DefaultMediaSourceFactory(factory: Any) { fun setLoadErrorHandlingPolicy(policy: Any) = this }
+                                                                               ^
+mnt/data/mv_compile_stubs/src/media_upstream.kt:2:38: warning: parameter 'count' is never used
+class DefaultLoadErrorHandlingPolicy(count: Int)
+                                     ^
+mnt/data/mv_compile_stubs/src/nextlib.kt:4:28: warning: parameter 'context' is never used
+class NextRenderersFactory(context: ComponentActivity) {
+                           ^
+mnt/data/mv_compile_stubs/src/nextlib.kt:5:34: warning: parameter 'mode' is never used
+    fun setExtensionRendererMode(mode: Int): NextRenderersFactory = this
+                                 ^
+
+Result: PASS

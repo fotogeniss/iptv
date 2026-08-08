@@ -1,0 +1,6 @@
+XML OK: app/src/main/AndroidManifest.xml
+XML OK: app/src/main/res/xml/backup_rules.xml
+XML OK: app/src/main/res/xml/data_extraction_rules.xml
+YAML OK: .github/workflows/android-ci.yml
+Manifest PiP: True
+Manifest system backup disabled: True

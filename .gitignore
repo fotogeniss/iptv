@@ -1,0 +1,12 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+/.kotlin
+/.codex-remote-attachments
+.DS_Store
+/build
+/app/build
+/app/google-services.json
+/captures
+/validation/device-runs/

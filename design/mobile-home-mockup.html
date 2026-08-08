@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRELUDE+ · Νέα αρχική κινητού</title>
+<style>
+  :root{
+    --bg:#080808; --raised:#101010; --surface:#181818; --surf2:#222;
+    --primary:#E50914; --txt:#F5F5F5; --txt2:#B3B3B3; --txt3:#7A7A7A;
+    --divider:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#0c0c0e;color:var(--txt);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       display:flex;flex-direction:column;align-items:center;padding:16px 10px 40px;gap:14px}
+
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .toolbar button{background:var(--surf2);color:var(--txt);border:1px solid var(--divider);
+    border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .toolbar button.on{background:var(--txt);color:#000;border-color:var(--txt)}
+  .hint{color:var(--txt3);font-size:12px;max-width:420px;text-align:center;line-height:1.5}
+
+  /* ---------- phone frame ---------- */
+  .phone{width:390px;max-width:100%;height:800px;background:var(--bg);border-radius:34px;
+    border:1px solid #2a2a2a;overflow:hidden;position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,.7)}
+  .scroll{height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+
+  /* ---------- header ---------- */
+  .hdr{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px 12px;transition:background .25s}
+  .hdr.solid{background:rgba(8,8,8,.94);backdrop-filter:blur(14px)}
+  .brand{display:flex;align-items:center;gap:7px;font-weight:900;letter-spacing:.5px;font-size:17px}
+  .brand .dot{width:5px;height:5px;border-radius:50%;background:var(--primary)}
+  .brand .tri{width:0;height:0;border-left:13px solid var(--primary);
+    border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .quick{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--txt);cursor:pointer}
+  .quick svg{transition:transform .2s}
+  .quick.open svg{transform:rotate(180deg)}
+  .pill-tag{font-size:10px;font-weight:900;letter-spacing:1.4px;color:var(--txt3)}
+
+  .quickmenu{position:absolute;top:52px;right:14px;z-index:40;width:236px;
+    background:#141416;border:1px solid var(--divider);border-radius:14px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.75);
+    opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:.18s}
+  .quickmenu.show{opacity:1;transform:none;pointer-events:auto}
+  .quickmenu div{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  .quickmenu div+div{border-top:1px solid rgba(255,255,255,.07)}
+  .quickmenu div:active{background:#1e1e21}
+  .quickmenu .ic{color:var(--txt2)}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;height:430px;margin-top:-62px}
+  .hero .art{position:absolute;inset:0;
+    background:
+      radial-gradient(120% 80% at 70% 25%, #3a1f4d 0%, #1a1030 45%, #0a0a10 100%);}
+  .hero .art:after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,8,8,.75) 0%,rgba(8,8,8,0) 32%,rgba(8,8,8,.6) 72%,var(--bg) 100%)}
+  .hero .body{position:absolute;left:0;right:0;bottom:14px;padding:0 18px;text-align:center}
+  .hero h1{margin:0 0 8px;font-size:30px;font-weight:900;letter-spacing:-.5px;line-height:1.05}
+  .hero .meta{color:var(--txt2);font-size:12px;font-weight:600;margin-bottom:14px}
+  .hero .meta b{color:#46d369}
+  .hero .btns{display:flex;gap:9px;justify-content:center}
+  .btn{border:0;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:800;
+       display:flex;align-items:center;gap:7px;cursor:pointer}
+  .btn.play{background:#fff;color:#000}
+  .btn.info{background:rgba(255,255,255,.16);color:#fff;backdrop-filter:blur(6px)}
+
+  /* ---------- tiles ---------- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 16px 20px}
+  .tile{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:16px;
+    padding:16px 8px 12px;text-align:center;cursor:pointer;transition:.15s}
+  .tile:active{background:var(--surf2);transform:scale(.97)}
+  .tile .ic{height:34px;display:flex;align-items:center;justify-content:center;color:var(--txt);margin-bottom:10px}
+  .tile .lbl{font-size:13px;font-weight:700}
+  .tile .cnt{font-size:12px;color:var(--txt3);margin-top:2px;font-variant-numeric:tabular-nums}
+
+  /* ---------- rails ---------- */
+  .rail{margin-bottom:22px}
+  .railhdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px 9px}
+  .railhdr .t{font-size:15px;font-weight:800}
+  .railhdr .t .spark{color:#c07bff;margin-right:5px}
+  .railhdr .all{font-size:12px;font-weight:700;color:var(--txt2);display:flex;align-items:center;gap:2px;cursor:pointer}
+  .row{display:flex;gap:10px;overflow-x:auto;padding:0 16px 2px;scrollbar-width:none}
+  .row::-webkit-scrollbar{display:none}
+  .card{flex:0 0 auto;width:108px;cursor:pointer}
+  .card .art{width:108px;height:158px;border-radius:10px;background:var(--surface);
+    display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .card .art span{font-size:11px;font-weight:800;color:rgba(255,255,255,.5);text-align:center;padding:0 8px;line-height:1.3}
+  .card .nm{font-size:11px;font-weight:600;color:var(--txt2);margin-top:6px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card.live .art{height:88px;width:132px;background:#15151b;border:1px solid rgba(255,255,255,.06)}
+  .card.live{width:132px}
+  .card .x{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;
+    background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
+  .card .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.25)}
+  .card .bar i{display:block;height:100%;background:var(--primary)}
+  .empty{margin:0 16px;padding:26px 18px;border-radius:12px;background:var(--surface);text-align:center}
+  .empty b{display:block;font-size:17px;font-weight:900;margin-bottom:6px}
+  .empty p{margin:0;font-size:12.5px;color:var(--txt3);line-height:1.6}
+
+  /* ---------- bottom nav ---------- */
+  .nav{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;
+    display:flex;align-items:center;gap:4px;padding:6px;border-radius:99px;
+    background:rgba(22,22,24,.92);backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.09);box-shadow:0 12px 34px rgba(0,0,0,.6);
+    transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .22s}
+  .nav.hidden{transform:translateX(-50%) translateY(96px);opacity:0}
+  .nav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 14px;
+    border-radius:99px;font-size:10.5px;font-weight:700;color:var(--txt3);cursor:pointer}
+  .nav a.sel{background:#fff;color:#000;flex-direction:row;gap:7px;padding:10px 18px;font-size:12px}
+  .nav a.sel svg{color:var(--primary)}
+
+  /* ---------- edit home ---------- */
+  .ehdr{display:flex;align-items:center;padding:16px;gap:14px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .ehdr .bk{font-size:24px;color:var(--txt);cursor:pointer;line-height:1}
+  .ehdr .ti{font-size:17px;font-weight:800}
+  .elist{padding:14px}
+  .egrp{background:var(--surface);border-radius:14px;overflow:hidden}
+  .erow{display:flex;align-items:center;gap:13px;padding:15px 14px}
+  .erow+.erow{border-top:1px solid rgba(255,255,255,.07)}
+  .erow .eye{width:22px;color:var(--txt);cursor:pointer;flex:0 0 auto}
+  .erow.off{opacity:.42}
+  .erow .nm{flex:1;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .erow .cat{font-size:12px;font-weight:800;color:#4aa8ff;cursor:pointer;flex:0 0 auto;max-width:130px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .erow .clr{font-size:12px;font-weight:800;color:var(--primary);cursor:pointer;flex:0 0 auto}
+  .erow .grab{color:var(--txt2);cursor:grab;flex:0 0 auto;font-size:17px;letter-spacing:0}
+  .erow.fixed{color:var(--txt3)}
+  .erow.fixed .nm{color:var(--txt3);font-weight:600}
+  .erow.drag{background:#242428;box-shadow:0 12px 26px rgba(0,0,0,.6)}
+  .enote{color:var(--txt3);font-size:11.5px;padding:14px 4px 0;line-height:1.6}
+  .hidden-screen{display:none}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="tabHome" class="on">Αρχική</button>
+  <button id="tabEdit">Επεξεργασία αρχικής</button>
+</div>
+<div class="hint">Σκρολάρισε μέσα στην οθόνη: η μπάρα από κάτω μαζεύεται όσο κινείσαι και ξαναβγαίνει μόλις σταματήσεις. Πάτα το «Γρήγορα ⌄» πάνω δεξιά.</div>
+
+<!-- ============ ΑΡΧΙΚΗ ============ -->
+<div class="phone" id="screenHome">
+  <div class="quickmenu" id="qmenu">
+    <div>Ανανέωση περιεχομένου <span class="ic">⟳</span></div>
+    <div>Επεξεργασία αρχικής <span class="ic">☰</span></div>
+    <div>Κατηγορίες / Ομάδες <span class="ic">⚙</span></div>
+    <div>Εξαγωγή λίστας <span class="ic">↗</span></div>
+  </div>
+
+  <div class="scroll" id="sc">
+    <div class="hdr" id="hdr">
+      <span class="pill-tag">PREMIUM</span>
+      <span class="brand"><span class="dot"></span><span class="tri"></span>PRELUDE+</span>
+      <span class="quick" id="qbtn">Γρήγορα
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="art"></div>
+      <div class="body">
+        <h1>Ο Γιατρός</h1>
+        <div class="meta"><b>98% ταίριασμα</b> · 2023 · Σειρά · 4 σεζόν</div>
+        <div class="btns">
+          <button class="btn play">▶ Αναπαραγωγή</button>
+          <button class="btn info">ⓘ Πληροφορίες</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ΤΡΙΑ ΠΛΑΚΙΔΙΑ -->
+    <div class="tiles">
+      <div class="tile">
+        <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4.9 4.9a10 10 0 000 14.2M19.1 4.9a10 10 0 010 14.2M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg></div>
+        <div class="lbl">Ζωντανά</div><div class="cnt">1.888</div>
+      </div>
+      <div class="tile">
+        <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 8.5h19v11a1.5 1.5 0 01-1.5 1.5H4a1.5 1.5 0 01-1.5-1.5v-11z"/><path d="M3 8.5l2.5-5 4 4M9.5 7.5l4-4 4 4M17.5 7.5l3-3.5"/></svg></div>
+        <div class="lbl">Ταινίες</div><div class="cnt">10.747</div>
+      </div>
+      <div class="tile">
+        <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8.5 21h7"/></svg></div>
+        <div class="lbl">Σειρές</div><div class="cnt">1.955</div>
+      </div>
+    </div>
+
+    <!-- ΠΡΟΤΑΣΕΙΣ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t"><span class="spark">✦</span>Προτάσεις για σένα</div></div>
+      <div class="empty"><b>Διαλεγμένα για σένα</b><p>Δες κάτι ή πρόσθεσε στα αγαπημένα και θα αρχίσουν οι προτάσεις…</p></div>
+    </div>
+
+    <!-- ΣΥΝΕΧΙΣΕ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Συνέχισε να βλέπεις</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowContinue"></div>
+    </div>
+
+    <!-- ΠΡΟΣΦΑΤΑ ΚΑΝΑΛΙΑ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Κανάλια που είδες</div></div>
+      <div class="row" id="rowRecentLive"></div>
+    </div>
+
+    <!-- ΝΕΕΣ ΤΑΙΝΙΕΣ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Νέες ταινίες</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowNewMovies"></div>
+    </div>
+
+    <!-- ΝΕΑ ΕΠΕΙΣΟΔΙΑ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Νέα επεισόδια</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowNewEps"></div>
+    </div>
+
+    <!-- LIVE TV -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Ζωντανά · DIGEA</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowLive"></div>
+    </div>
+
+    <!-- ΤΑΙΝΙΕΣ -->
+    <div class="rail">
+      <div class="railhdr"><div class="t">Ταινίες · ΞΕΝΕΣ 2026</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowMovies"></div>
+    </div>
+
+    <!-- ΣΕΙΡΕΣ -->
+    <div class="rail" style="margin-bottom:110px">
+      <div class="railhdr"><div class="t">Σειρές · ΕΛΛΗΝΙΚΕΣ</div><div class="all">Όλα ›</div></div>
+      <div class="row" id="rowSeries"></div>
+    </div>
+  </div>
+
+  <div class="nav" id="nav">
+    <a class="sel"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Αρχική</a>
+    <a><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.5 6 .8-4.3 4.2 1 6-5.3-2.9L6.7 20l1-6L3.4 9.8l6-.8z"/></svg>Αγαπημένα</a>
+    <a><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Αναζήτηση</a>
+    <a><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></svg>Ρυθμίσεις</a>
+  </div>
+</div>
+
+<!-- ============ ΕΠΕΞΕΡΓΑΣΙΑ ============ -->
+<div class="phone hidden-screen" id="screenEdit">
+  <div class="ehdr"><span class="bk" id="backBtn">‹</span><span class="ti">Επεξεργασία αρχικής</span></div>
+  <div class="scroll">
+    <div class="elist">
+      <div class="egrp" id="egrp"></div>
+      <div class="enote">Το μάτι κρύβει την ενότητα από την αρχική. Σύρε από τις γραμμές δεξιά για να αλλάξεις σειρά. Οι δύο πρώτες γραμμές είναι σταθερές και δεν μετακινούνται.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- γέμισμα rails ---------- */
+const P = [
+  ['#3d1f2e','#8e2b3f','Kill Trip'], ['#1e2a4a','#3a5a9c','Ο Γιατρός'],
+  ['#42301a','#9c6b2f','Η Γη Της Ελιάς'], ['#2a1a3d','#6b3a9c','Το Σόι Σου'],
+  ['#1a3d33','#2f9c7a','I Love Boosters'], ['#3d1a1a','#9c2f2f','IKKA'],
+  ['#25252e','#5a5a7a','Just Cause'], ['#2e2415','#8a7030','Λεωφόρος'],
+];
+const LIVE = ['NOVA CINEMA 2','INFO KANAL','ΕΛΛΗΝΙΚΗ ΒΟΥΛΗ','ERT WORLD','MEGA HD','ANT1 HD','STAR HD','ALPHA HD'];
+
+function poster(i){ const p = P[i % P.length];
+  return `<div class="art" style="background:linear-gradient(160deg,${p[0]},${p[1]})"><span>${p[2]}</span></div>`; }
+
+function fill(id, n, opts={}){
+  const el = document.getElementById(id); if(!el) return;
+  let h = '';
+  for(let i=0;i<n;i++){
+    const idx = (i + (opts.off||0));
+    if(opts.live){
+      h += `<div class="card live"><div class="art" style="background:linear-gradient(150deg,#17171f,#101018)">
+              <span>${LIVE[idx % LIVE.length]}</span>${opts.x?'<div class="x">×</div>':''}</div>
+              <div class="nm">${LIVE[idx % LIVE.length]}</div></div>`;
+    } else {
+      const bar = opts.progress ? `<div class="bar"><i style="width:${20+((i*23)%65)}%"></i></div>` : '';
+      h += `<div class="card">${poster(idx).replace('</div>', bar+'</div>')}<div class="nm">${P[idx%P.length][2]}</div></div>`;
+    }
+  }
+  el.innerHTML = h;
+}
+fill('rowContinue',6,{progress:true});
+fill('rowRecentLive',5,{live:true,x:true});
+fill('rowNewMovies',8,{off:0});
+fill('rowNewEps',8,{off:3});
+fill('rowLive',8,{live:true,off:1});
+fill('rowMovies',8,{off:4});
+fill('rowSeries',8,{off:2});
+
+/* ---------- μπάρα: κρύβεται στο σκρολ, βγαίνει στην ακινησία ---------- */
+const sc = document.getElementById('sc'), nav = document.getElementById('nav'), hdr = document.getElementById('hdr');
+let last = 0, idle;
+sc.addEventListener('scroll', () => {
+  const y = sc.scrollTop;
+  hdr.classList.toggle('solid', y > 340);
+  if (y > last + 6 && y > 60) nav.classList.add('hidden');
+  else if (y < last - 24) nav.classList.remove('hidden');
+  last = y;
+  clearTimeout(idle);
+  idle = setTimeout(() => nav.classList.remove('hidden'), 420);
+});
+
+/* ---------- γρήγορο μενού ---------- */
+const qb = document.getElementById('qbtn'), qm = document.getElementById('qmenu');
+qb.onclick = e => { e.stopPropagation(); qm.classList.toggle('show'); qb.classList.toggle('open'); };
+document.addEventListener('click', () => { qm.classList.remove('show'); qb.classList.remove('open'); });
+
+/* ---------- οθόνη επεξεργασίας ---------- */
+const ROWS = [
+  {n:'Δημοφιλή', fixed:true},
+  {n:'Ζωντανά · Ταινίες · Σειρές', fixed:true},
+  {n:'Επιλογή του hero', on:true},
+  {n:'Προτάσεις για σένα', on:true},
+  {n:'Συνέχισε να βλέπεις', on:true, clear:true},
+  {n:'Κανάλια που είδες', on:true, clear:true},
+  {n:'Νέα ζωντανά', on:false},
+  {n:'Νέες ταινίες', on:true},
+  {n:'Νέα επεισόδια', on:true},
+  {n:'Ζωντανά', on:true, cat:'DIGEA'},
+  {n:'Ταινίες', on:true, cat:'ΞΕΝΕΣ ΤΑΙΝΙΕΣ 2026'},
+  {n:'Σειρές', on:true, cat:'ΕΛΛΗΝΙΚΕΣ ΣΕΙΡΕΣ'},
+];
+const EYE_ON = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg>';
+const EYE_OFF = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5c1.7 0 3.2.4 4.5 1M22 12s-3.6 6.5-10 6.5c-1.8 0-3.3-.4-4.6-1"/><path d="M4 4l16 16"/></svg>';
+
+function renderEdit(){
+  document.getElementById('egrp').innerHTML = ROWS.map((r,i)=>`
+    <div class="erow ${r.fixed?'fixed':''} ${(!r.fixed&&!r.on)?'off':''}" data-i="${i}" draggable="${!r.fixed}">
+      <span class="eye" data-eye="${i}">${r.fixed?'':(r.on?EYE_ON:EYE_OFF)}</span>
+      <span class="nm">${r.n}</span>
+      ${r.cat?`<span class="cat">${r.cat}</span>`:''}
+      ${r.clear?`<span class="clr">Καθάρισμα</span>`:''}
+      <span class="grab">${r.fixed?'':'☰'}</span>
+    </div>`).join('');
+}
+renderEdit();
+
+document.getElementById('egrp').addEventListener('click', e=>{
+  const eye = e.target.closest('[data-eye]'); if(!eye) return;
+  const i = +eye.dataset.eye; if(ROWS[i].fixed) return;
+  ROWS[i].on = !ROWS[i].on; renderEdit();
+});
+
+/* σύρσιμο */
+let dragI = null;
+const grp = document.getElementById('egrp');
+grp.addEventListener('dragstart', e=>{ const r=e.target.closest('.erow'); if(!r||r.classList.contains('fixed'))return;
+  dragI = +r.dataset.i; r.classList.add('drag'); });
+grp.addEventListener('dragover', e=>{ e.preventDefault();
+  const r = e.target.closest('.erow'); if(!r||r.classList.contains('fixed')||dragI===null)return;
+  const over = +r.dataset.i; if(over===dragI)return;
+  const [m] = ROWS.splice(dragI,1); ROWS.splice(over,0,m); dragI = over; renderEdit();
+  grp.querySelector(`[data-i="${over}"]`)?.classList.add('drag');
+});
+grp.addEventListener('dragend', ()=>{ dragI=null; renderEdit(); });
+
+/* ---------- εναλλαγή οθονών ---------- */
+const H=document.getElementById('screenHome'), E=document.getElementById('screenEdit');
+const bH=document.getElementById('tabHome'), bE=document.getElementById('tabEdit');
+function show(edit){ H.classList.toggle('hidden-screen',edit); E.classList.toggle('hidden-screen',!edit);
+  bH.classList.toggle('on',!edit); bE.classList.toggle('on',edit); }
+bH.onclick=()=>show(false); bE.onclick=()=>show(true);
+document.getElementById('backBtn').onclick=()=>show(false);
+</script>
+</body>
+</html>

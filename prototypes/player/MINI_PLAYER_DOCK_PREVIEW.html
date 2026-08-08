@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Player timeline & dock preview</title>
+  <style>
+    :root{--bg:#080808;--surface:#181818;--raised:#222;--text:#f5f5f5;--sub:#b3b3b3;--red:#e50914;--line:rgba(255,255,255,.14)}
+    *{box-sizing:border-box}html,body{margin:0;background:#111;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button{font:inherit;color:inherit}.phone{position:relative;width:min(100%,430px);height:100dvh;margin:auto;overflow:hidden;background:var(--bg)}
+    .page{height:100%;overflow-y:auto;padding:24px 18px 180px}.page h1{font-size:27px}.hero{height:190px;border-radius:20px;background:linear-gradient(145deg,#363b43,#131313);padding:20px;display:flex;align-items:end}.rail{display:flex;gap:12px;margin-top:28px}.card{width:30%;height:170px;border-radius:13px;background:var(--surface)}
+    .full-player{position:absolute;z-index:40;inset:0;background:#000;transition:.28s}.full-player.minimized{opacity:0;visibility:hidden;transform:scale(.94)}
+    .video{position:relative;width:100%;aspect-ratio:16/9;background:radial-gradient(circle at 65% 30%,#36444d,transparent 36%),#050505}.video-title{position:absolute;left:18px;top:16px;font-size:13px;font-weight:800}.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border:0;border-radius:50%;background:rgba(20,20,20,.74);font-size:18px}
+    .collapse{position:absolute;top:11px;right:12px;width:36px;height:36px;border:0;border-radius:50%;background:#222;font-size:19px}.timeline{position:absolute;left:12px;right:12px;bottom:14px;height:24px;display:flex;align-items:center}.track{position:relative;width:100%;height:3px;background:#777}.played{width:38%;height:100%;background:var(--red)}.thumb{position:absolute;left:38%;top:50%;width:11px;height:11px;border-radius:50%;background:var(--red);transform:translate(-50%,-50%)}
+    .info{padding:20px 18px}.info h2{font-size:25px}.info p{color:var(--sub);line-height:1.55}.hint{margin-top:25px;padding:14px;border:1px solid var(--line);border-radius:12px;color:var(--sub);font-size:13px}
+    .bottom-stack{position:absolute;z-index:20;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));filter:drop-shadow(0 15px 35px #000)}
+    .mini{height:68px;background:rgba(0,0,0,.86);backdrop-filter:blur(16px);border:1px solid var(--line);border-bottom:0;border-radius:13px 13px 0 0;display:grid;grid-template-columns:121px 1fr 42px 42px;align-items:center;overflow:hidden}
+    .mini-video{height:100%;background:radial-gradient(circle at 65% 35%,#40525e,transparent 35%),#050505}.mini-copy{min-width:0;padding:0 10px}.mini-copy b,.mini-copy span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-copy b{font-size:12px}.mini-copy span{font-size:10px;color:#888;margin-top:3px}.mini-action{height:44px;border:0;background:transparent;font-size:20px}
+    .nav{height:68px;background:rgba(0,0,0,.84);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:0 0 22px 22px;padding:5px 7px;display:grid;grid-template-columns:repeat(4,1fr)}.nav button{border:0;background:transparent;border-radius:16px;color:var(--sub);font-size:10px;display:grid;place-items:center}.nav button span{font-size:20px}.nav button.active{background:rgba(255,255,255,.94);color:var(--red);font-weight:850}
+    .label{position:absolute;left:50%;bottom:168px;transform:translateX(-50%);background:#292929;border:1px solid var(--line);padding:7px 12px;border-radius:99px;font-size:11px;color:var(--sub);white-space:nowrap}
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="page"><h1>Movies</h1><div class="hero"><b>Συνέχισε να βλέπεις</b></div><div class="rail"><div class="card"></div><div class="card"></div><div class="card"></div></div><div class="hint">Ο mini player και το menu έχουν ίδιο πλάτος και σχηματίζουν ένα ενιαίο bottom dock, αλλά παραμένουν δύο ανεξάρτητα components.</div></div>
+
+    <section class="full-player" id="fullPlayer">
+      <div class="video">
+        <div class="video-title">ROGUE HOSTAGE</div>
+        <button class="collapse" id="collapse">⌄</button>
+        <button class="play">▶</button>
+        <div class="timeline"><div class="track"><div class="played"></div><i class="thumb"></i></div></div>
+      </div>
+      <div class="info"><h2>ROGUE HOSTAGE</h2><p>Η γραμμή χρόνου έχει πλέον 12px καθαρό κενό δεξιά και αριστερά.</p><div class="hint">Πάτησε το βελάκι επάνω δεξιά για να δεις τον mini player κολλημένο στο menu.</div></div>
+    </section>
+
+    <div class="label" id="label" hidden>Mini player + menu: μηδενικό κενό</div>
+    <div class="bottom-stack">
+      <div class="mini">
+        <div class="mini-video"></div><div class="mini-copy"><b>ROGUE HOSTAGE</b><span>2021 · Action</span></div>
+        <button class="mini-action" id="expand">▶</button><button class="mini-action">×</button>
+      </div>
+      <nav class="nav"><button class="active"><span>⌂</span>Home</button><button><span>▦</span>Browse</button><button><span>⌕</span>Search</button><button><span>⚙</span>Settings</button></nav>
+    </div>
+  </main>
+  <script>
+    const full=document.getElementById("fullPlayer"),label=document.getElementById("label");
+    document.getElementById("collapse").onclick=()=>{full.classList.add("minimized");label.hidden=false};
+    document.getElementById("expand").onclick=()=>{full.classList.remove("minimized");label.hidden=true};
+  </script>
+</body>
+</html>

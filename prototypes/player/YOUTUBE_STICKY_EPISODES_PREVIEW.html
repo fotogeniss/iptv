@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ · TMDB Episodes & Quality</title>
+  <style>
+    :root{
+      --bg:#080808;--surface:#181818;--raised:#222;--text:#f5f5f5;
+      --sub:#b3b3b3;--muted:#777;--line:rgba(255,255,255,.13);--red:#e50914;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#101010;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,select{font:inherit;color:inherit}
+    .phone{position:relative;width:min(100%,430px);height:100dvh;margin:auto;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);box-shadow:0 0 70px #000}
+
+    /* Μόνο για το prototype — δεν είναι μέρος της εφαρμογής. */
+    .demo{height:39px;flex:none;display:flex;align-items:center;gap:6px;padding:5px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:#0c0c0c}
+    .demo-label{margin-right:auto;color:#666;font-size:8px;font-weight:900;letter-spacing:1.1px}
+    .demo button{height:27px;padding:0 12px;border:0;border-radius:99px;background:#1c1c1c;color:#858585;font-size:10px;font-weight:850}
+    .demo button.active{background:#f2f2f2;color:#080808}
+
+    .viewport{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .viewport::-webkit-scrollbar,.episode-window::-webkit-scrollbar,.recommendations::-webkit-scrollbar,.season-tabs::-webkit-scrollbar{display:none}
+    .screen{display:none;min-height:100%;padding-bottom:45px}.screen.active{display:block}
+
+    /* YouTube λογική: το video είναι στοιχείο του scroll, αλλά κολλάει στην κορυφή. */
+    .sticky-player{position:sticky;z-index:20;top:0;aspect-ratio:16/9;overflow:hidden;background:#000;transition:box-shadow .2s}
+    .sticky-player.stuck{box-shadow:0 12px 28px rgba(0,0,0,.88)}
+    .video-art{position:absolute;inset:0;background:
+      radial-gradient(circle at 66% 34%,rgba(105,30,40,.48),transparent 34%),
+      linear-gradient(145deg,#111b24,#050505 64%)}
+    .video-art:after{content:"DIABLERO";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);font-size:24px;font-weight:950;letter-spacing:-1px;color:#e8e8e8;white-space:nowrap}
+    .video-top{position:absolute;z-index:2;left:11px;right:11px;top:10px;display:flex;justify-content:space-between}
+    .round{width:34px;height:34px;border:0;border-radius:50%;background:rgba(10,10,10,.72);font-size:19px}
+    .play{position:absolute;z-index:2;left:50%;top:50%;width:43px;height:43px;transform:translate(-50%,-50%);border:0;border-radius:50%;background:rgba(15,15,15,.72);font-size:16px;padding-left:4px}
+    .timeline{position:absolute;z-index:3;left:14px;right:14px;bottom:11px;height:3px;border-radius:5px;background:#595959}
+    .timeline i{display:block;width:41%;height:100%;border-radius:5px;background:var(--red)}
+
+    .content{padding:0 16px}
+    .now{padding:18px 0 5px}
+    .now h1{margin:0;font-size:21px;letter-spacing:-.35px}.now-sub{margin-top:5px;color:var(--sub);font-size:11px}
+    .meta{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px;color:#a3a3a3;font-size:10px}.match{color:#46d369;font-weight:850}.badge{padding:2px 5px;border:1px solid #666;border-radius:4px}.quality-badge{padding:3px 6px;border:1px solid #fff;border-radius:4px;color:#fff;font-size:9px;font-weight:950;letter-spacing:.03em}
+    .summary{margin:13px 0 0;color:#c9c9c9;font-size:12.5px;line-height:1.55;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+    .summary.expanded{display:block}.toggle-text{padding:6px 0;border:0;background:transparent;color:#fff;font-size:10.5px;font-weight:900}
+
+    .section{padding-top:24px}
+    .section-head{display:flex;align-items:center;margin-bottom:11px}
+    .section-head h2{flex:1;margin:0;font-size:18px;letter-spacing:-.2px}
+    .section-head small{color:var(--muted);font-size:9px}
+    /* Minimal seasons: a single horizontal rail, no cards or dropdown. */
+    .season-tabs{display:flex;gap:25px;overflow-x:auto;margin:0 -16px;padding:2px 16px 0;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+    .season-tab{position:relative;flex:0 0 auto;height:40px;padding:0 1px 10px;border:0;background:transparent;color:#777;font-size:12px;font-weight:750;white-space:nowrap;scroll-snap-align:start;transition:color .18s}
+    .season-tab.active{color:#f5f5f5}
+    .season-tab.active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px;background:var(--red)}
+    .episode-order{display:flex;align-items:center;gap:7px;margin:14px 0 10px;border:0;background:transparent;color:#d8d8d8;font-size:11px;font-weight:850}
+    .episode-order i{font-style:normal;font-size:17px;line-height:1}
+
+    /* Τρεις πλούσιες κάρτες ακριβώς. Το scroll μένει ΜΕΣΑ στα επεισόδια. */
+    .episode-shell{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:#111}
+    .episode-window{height:468px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#555 transparent;scroll-snap-type:y mandatory}
+    .episode{height:156px;display:grid;grid-template-columns:138px minmax(0,1fr);gap:11px;align-items:center;padding:10px;border-bottom:1px solid rgba(255,255,255,.09);scroll-snap-align:start;cursor:pointer}
+    .episode:last-child{border-bottom:0}
+    .episode-art{position:relative;height:88px;overflow:hidden;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#33404c,#171717);font-size:15px}
+    .episode-art:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(0,0,0,.75))}
+    .episode-art img{width:100%;height:100%;object-fit:cover;display:block}
+    .episode-play{position:absolute;z-index:2;left:50%;top:50%;width:31px;height:31px;display:grid;place-items:center;transform:translate(-50%,-50%);border-radius:50%;background:rgba(0,0,0,.64);font-size:11px;padding-left:2px}
+    .episode-number{position:absolute;z-index:2;left:8px;bottom:6px;color:#fff;font-size:9px;font-weight:950}
+    .episode-quality{position:absolute;z-index:2;right:7px;top:7px;padding:2px 5px;border:1px solid #fff;border-radius:4px;background:#0009;color:#fff;font-size:7px;font-style:normal;font-weight:950}
+    .episode-copy{min-width:0}.episode-copy h3{margin:0;color:#eee;font-size:12px;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+    .episode-copy p{margin:6px 0 0;color:#9a9a9f;font-size:9.5px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+    .episode-copy time{display:block;margin-top:5px;color:#707078;font-size:8.5px;font-weight:700}
+    .episode-fade{position:absolute;z-index:2;left:0;right:0;bottom:0;height:18px;pointer-events:none;background:linear-gradient(transparent,rgba(8,8,8,.72))}
+    .inside-hint{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:7px;color:#676767;font-size:8.5px}
+    .inside-hint i{width:13px;height:13px;border:1px solid #555;border-radius:5px;position:relative}.inside-hint i:after{content:"";position:absolute;left:4px;top:3px;width:3px;height:5px;border-right:1px solid #777;border-bottom:1px solid #777;transform:rotate(45deg)}
+
+    .recommendations{display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px 8px;scrollbar-width:none}
+    .rec{width:118px;flex:0 0 118px}
+    .poster{height:166px;border-radius:12px;background:linear-gradient(145deg,#354d61,#171717 62%,#48151b)}
+    .rec:nth-child(2) .poster{background:linear-gradient(145deg,#604132,#171717)}.rec:nth-child(3) .poster{background:linear-gradient(145deg,#342d5c,#171717)}.rec:nth-child(4) .poster{background:linear-gradient(145deg,#21483f,#171717)}
+    .rec b{display:-webkit-box;margin:7px 2px 0;font-size:10.5px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+    .rec span{display:block;margin:3px 2px 0;color:#6f6f6f;font-size:8.5px}.rec .rec-quality{display:inline-block;margin-top:5px;padding:2px 4px;border:1px solid #666;border-radius:3px;color:#cfcfcf;font-size:7px;font-weight:900}
+    .source-note{margin:8px 2px 0;color:#555;font-size:8px;line-height:1.4}
+
+    /* Σελίδα πληροφοριών */
+    .detail-hero{position:relative;height:315px;background:radial-gradient(circle at 68% 28%,rgba(108,36,45,.48),transparent 38%),linear-gradient(145deg,#1d2730,#080808 67%)}
+    .detail-hero:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,var(--bg))}
+    .detail-top{position:absolute;z-index:2;left:13px;right:13px;top:13px;display:flex;justify-content:space-between}
+    .detail-title{position:absolute;z-index:2;left:18px;right:18px;bottom:22px}.detail-title h1{margin:0;font-size:31px;letter-spacing:-.9px}.detail-title p{margin:8px 0 0;color:#aaa;font-size:10px}
+    .detail-body{padding:0 18px}
+    .detail-actions{display:grid;grid-template-columns:1fr 48px;gap:9px;margin-top:4px}.detail-actions button{height:46px;border:0;border-radius:10px;background:#f1f1f1;color:#090909;font-weight:900}.detail-actions button:last-child{background:#222;color:#fff}
+    .detail-summary{margin:19px 0 0;color:#d0d0d0;font-size:13.5px;line-height:1.62;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+    .detail-summary.expanded{display:block}.detail-credits{margin-top:12px;color:#686868;font-size:10.5px;line-height:1.65}.detail-credits b{color:#929292}
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <nav class="demo">
+      <span class="demo-label">DEMO ΟΘΟΝΗΣ</span>
+      <button class="active" data-view="playerScreen">Player</button>
+      <button data-view="detailScreen">Πληροφορίες</button>
+    </nav>
+
+    <div class="viewport" id="viewport">
+      <section class="screen active" id="playerScreen">
+        <div class="sticky-player" id="stickyPlayer">
+          <div class="video-art"></div>
+          <div class="video-top"><button class="round">⌄</button><button class="round">⋮</button></div>
+          <button class="play">▶</button>
+          <div class="timeline"><i></i></div>
+        </div>
+
+        <div class="content">
+          <section class="now">
+            <h1>Diablero · S1 E2</h1>
+            <div class="now-sub">Leg of a Dog · 18:42 από 39:00</div>
+            <div class="meta"><span class="match">96% Match</span><span>2018</span><span class="badge">16+</span><span class="quality-badge">FHD</span></div>
+            <p class="summary">Ο Elvis και η ομάδα ακολουθούν ένα νέο δαιμονικό ίχνος στην Πόλη του Μεξικού, ενώ η εξαφάνιση ενός παιδιού αποκαλύπτει μια επικίνδυνη σύνδεση με το παρελθόν.</p>
+            <button class="toggle-text">Περισσότερα</button>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <h2>Επεισόδια</h2>
+              <small id="seasonCount">6 σεζόν</small>
+            </div>
+            <nav class="season-tabs" aria-label="Σεζόν">
+              <button class="season-tab active" data-season="1">Σεζόν 1</button>
+              <button class="season-tab" data-season="2">Σεζόν 2</button>
+              <button class="season-tab" data-season="3">Σεζόν 3</button>
+              <button class="season-tab" data-season="4">Σεζόν 4</button>
+              <button class="season-tab" data-season="5">Σεζόν 5</button>
+              <button class="season-tab" data-season="6">Σεζόν 6</button>
+            </nav>
+            <button class="episode-order" id="episodeOrder"><i>⇅</i><span>Από το πρώτο</span></button>
+            <div class="episode-shell">
+              <div class="episode-window" id="episodeWindow">
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 1"><span class="episode-play">▶</span><b class="episode-number">EP 1</b><em class="episode-quality">FHD</em></div><div class="episode-copy"><h3>1. The Demons Are Among Us</h3><p>Ένας ιερέας ζητά τη βοήθεια του Elvis Infante όταν μια νεαρή κοπέλα εξαφανίζεται και όλα δείχνουν πως εμπλέκεται μια ισχυρή δαιμονική παρουσία.</p><time>40 λεπτά · 21 Δεκ 2018</time></div></article>
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 2"><span class="episode-play">▶</span><b class="episode-number">EP 2</b><em class="episode-quality">4K</em></div><div class="episode-copy"><h3>2. Leg of a Dog</h3><p>Η ομάδα ακολουθεί ένα νέο ίχνος στην Πόλη του Μεξικού. Μια φαινομενικά άσχετη υπόθεση αποκαλύπτει σύνδεση με την εξαφάνιση του παιδιού.</p><time>39 λεπτά · Παίζει τώρα</time></div></article>
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1483347756197-71ef80e95f73?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 3"><span class="episode-play">▶</span><b class="episode-number">EP 3</b><em class="episode-quality">HD</em></div><div class="episode-copy"><h3>3. The Hidden Children</h3><p>Ο Elvis ανακαλύπτει ότι δεν είναι το μοναδικό παιδί που κινδυνεύει. Η Keta αναζητά απαντήσεις, ενώ ο Ventura δοκιμάζει τα όρια της πίστης του.</p><time>41 λεπτά · 21 Δεκ 2018</time></div></article>
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 4"><span class="episode-play">▶</span><b class="episode-number">EP 4</b><em class="episode-quality">2K</em></div><div class="episode-copy"><h3>4. An Arcane Incantation</h3><p>Μια απαγορευμένη τελετουργία μπορεί να τους οδηγήσει πιο κοντά στην αλήθεια, όμως το τίμημα είναι μεγαλύτερο από όσο περίμενε η ομάδα.</p><time>38 λεπτά · 21 Δεκ 2018</time></div></article>
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 5"><span class="episode-play">▶</span><b class="episode-number">EP 5</b><em class="episode-quality">FHD</em></div><div class="episode-copy"><h3>5. The Conclave</h3><p>Οι Diableros συγκεντρώνονται για να αντιμετωπίσουν την απειλή. Παλιές συμμαχίες διαλύονται και ένα μυστικό αλλάζει την ισορροπία δυνάμεων.</p><time>42 λεπτά · 21 Δεκ 2018</time></div></article>
+                <article class="episode"><div class="episode-art"><img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=500&q=78" alt="TMDB still επεισοδίου 6"><span class="episode-play">▶</span><b class="episode-number">EP 6</b><em class="episode-quality">4K</em></div><div class="episode-copy"><h3>6. A Woman Diablero</h3><p>Η Nancy αναλαμβάνει έναν κρίσιμο ρόλο, ενώ η ομάδα πλησιάζει στον στόχο της. Η τελική σύγκρουση απαιτεί μια θυσία που κανείς δεν είχε προβλέψει.</p><time>44 λεπτά · 21 Δεκ 2018</time></div></article>
+              </div>
+              <div class="episode-fade"></div>
+            </div>
+            <div class="inside-hint"><i></i> Scroll μόνο μέσα στα επεισόδια · εμφανίζονται 3</div>
+            <div class="source-note">Στην εφαρμογή: φωτογραφία από TMDB still_path, περίληψη από TMDB overview, ποιότητα από την πραγματική ροή.</div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>Προτεινόμενες σειρές</h2><small>Παρόμοιοι τίτλοι</small></div>
+            <div class="recommendations">
+              <article class="rec"><div class="poster"></div><b>The Harbor</b><span>2025 · Μυστήριο</span><span class="rec-quality">4K</span></article>
+              <article class="rec"><div class="poster"></div><b>North Line: The Investigation</b><span>2026 · Δράμα</span><span class="rec-quality">FHD</span></article>
+              <article class="rec"><div class="poster"></div><b>Echoes</b><span>2024 · Thriller</span><span class="rec-quality">HD</span></article>
+              <article class="rec"><div class="poster"></div><b>Silent Coast</b><span>2025 · Αστυνομικό</span><span class="rec-quality">2K</span></article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="detailScreen">
+        <div class="detail-hero">
+          <div class="detail-top"><button class="round">‹</button><button class="round">↗</button></div>
+          <div class="detail-title"><h1>Diablero</h1><p>2018 · 2 σεζόν · 16+ · <span class="quality-badge">4K</span></p></div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-actions"><button>▶ Συνέχεια S2:E3</button><button>＋</button></div>
+          <p class="detail-summary">Ένας ιερέας ζητά τη βοήθεια ενός θρυλικού κυνηγού δαιμόνων και της ομάδας του για να βρουν ένα απαχθέν κορίτσι. Η αναζήτηση τους οδηγεί στον σκοτεινό υπερφυσικό κόσμο της Πόλης του Μεξικού, όπου τίποτα δεν είναι όπως φαίνεται.</p>
+          <button class="toggle-text">Περισσότερα</button>
+          <div class="detail-credits"><b>Πρωταγωνιστούν:</b> Anna Cross, Leo Marin, Sofia Reed<br><b>Είδη:</b> Μυστήριο, Αστυνομικό, Δράμα<br><b>Δημιουργός:</b> Elena Marks</div>
+          <section class="section">
+            <div class="section-head"><h2>Παρόμοια για εσένα</h2></div>
+            <div class="recommendations">
+              <article class="rec"><div class="poster"></div><b>The Harbor</b></article>
+              <article class="rec"><div class="poster"></div><b>North Line</b></article>
+              <article class="rec"><div class="poster"></div><b>Echoes</b></article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const viewport = document.getElementById("viewport");
+    const stickyPlayer = document.getElementById("stickyPlayer");
+
+    viewport.addEventListener("scroll", () => {
+      stickyPlayer.classList.toggle("stuck", viewport.scrollTop > 4);
+    });
+
+    document.querySelectorAll("[data-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-view],.screen").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.view).classList.add("active");
+        viewport.scrollTo({top:0, behavior:"smooth"});
+      });
+    });
+
+    document.querySelectorAll(".toggle-text").forEach(button => {
+      button.addEventListener("click", () => {
+        const paragraph = button.previousElementSibling;
+        paragraph.classList.toggle("expanded");
+        button.textContent = paragraph.classList.contains("expanded") ? "Λιγότερα" : "Περισσότερα";
+      });
+    });
+
+    document.querySelectorAll(".episode").forEach((episode, index) => {
+      episode.addEventListener("click", () => {
+        document.querySelector(".now h1").textContent = `Diablero · S1 E${index + 1}`;
+        viewport.scrollTo({top:0, behavior:"smooth"});
+      });
+    });
+
+    document.querySelectorAll(".season-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".season-tab").forEach(item => item.classList.remove("active"));
+        tab.classList.add("active");
+        tab.scrollIntoView({behavior:"smooth", inline:"center", block:"nearest"});
+        document.querySelector(".now h1").textContent = `Diablero · Σεζόν ${tab.dataset.season}`;
+        document.querySelectorAll(".episode-number").forEach((label, index) => label.textContent = `EP ${index + 1}`);
+        document.getElementById("episodeWindow").scrollTo({top:0, behavior:"smooth"});
+      });
+    });
+
+    const orderButton = document.getElementById("episodeOrder");
+    orderButton.addEventListener("click", () => {
+      const ascending = orderButton.dataset.order !== "desc";
+      orderButton.dataset.order = ascending ? "desc" : "asc";
+      orderButton.querySelector("span").textContent = ascending ? "Από το τελευταίο" : "Από το πρώτο";
+      const list = document.getElementById("episodeWindow");
+      [...list.querySelectorAll(".episode")].reverse().forEach(item => list.appendChild(item));
+      list.scrollTo({top:0, behavior:"smooth"});
+    });
+  </script>
+</body>
+</html>

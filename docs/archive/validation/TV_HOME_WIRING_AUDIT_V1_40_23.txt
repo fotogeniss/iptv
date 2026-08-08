@@ -1,0 +1,25 @@
+PASS: version 1.40.23 / 67
+PASS: TV provider write permission
+PASS: opaque playback activity deep link
+PASS: launcher URI does not expose transport fields
+PASS: payload stored through SecureStorage
+PASS: TV Provider receives only token/provider digest
+PASS: required progress metadata
+PASS: poster URI and aspect ratio always set
+PASS: browsable is read only on writes
+PASS: user-removal broadcast honored
+PASS: suppression requires newer engagement
+PASS: traditional VOD only
+PASS: movie and episode thresholds
+PASS: near-complete content removed
+PASS: one episode per series and cap five
+PASS: locked groups excluded
+PASS: active profile enforced on deep link
+PASS: locked group rechecked on deep link
+PASS: feature defaults off
+PASS: setting schedules immediate sync
+PASS: reliable unique WorkManager sync
+PASS: WorkManager 2.11.2
+PASS: playback exit schedules sync
+PASS: profile/history/lock mutations schedule sync (calls=9)
+RESULT: 24 passed, 0 failed

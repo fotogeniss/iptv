@@ -1,0 +1,7 @@
+listener=true
+left=true
+right=true
+keyup=true
+debounce=true
+up_not_handled=true
+down_not_handled=true

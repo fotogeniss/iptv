@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PRELUDE+ · Υπότιτλοι και ήχος</title>
+  <style>
+    :root {
+      --bg:#000;
+      --panel:rgba(9,9,12,.96);
+      --surface:#1a1a20;
+      --surface2:#26262d;
+      --line:#34343d;
+      --text:#fff;
+      --muted:#9a9aa5;
+      --accent:#e50914;
+      --green:#4bd486;
+    }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body { width:100%; min-height:100%; }
+    body { margin:0; display:grid; place-items:center; overflow:hidden; background:#09090c; color:var(--text); font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    button,input { font:inherit; }
+    button { border:0; color:inherit; cursor:pointer; }
+
+    .player {
+      position:relative;
+      width:min(100vw,1200px);
+      height:min(100vh,675px);
+      min-height:430px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 72% 28%,rgba(107,39,42,.46),transparent 27%),
+        radial-gradient(circle at 31% 48%,rgba(31,61,71,.45),transparent 35%),
+        linear-gradient(112deg,#08090b 2%,#17171b 48%,#08080a 100%);
+      box-shadow:0 30px 100px #000a;
+    }
+    .player::before {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(#0009 0,transparent 25%,transparent 52%,#000c 100%);
+      pointer-events:none;
+    }
+    .topbar { position:absolute; z-index:2; top:0; left:0; right:0; height:66px; display:flex; align-items:center; padding:0 10px; background:linear-gradient(#0009,transparent); }
+    .back,.close { width:46px; height:46px; display:grid; place-items:center; border-radius:50%; background:transparent; font-size:32px; font-weight:250; }
+    .top-actions { display:flex; align-items:center; gap:2px; margin-left:auto; }
+    .chrome-button { width:40px; height:40px; display:grid; place-items:center; border-radius:50%; background:transparent; color:#fff; }
+    .chrome-button.active { background:#ffffff20; }
+    .chrome-button .cc-mark { min-width:27px; height:20px; display:grid; place-items:center; border:1.5px solid currentColor; border-radius:4px; font-size:10px; font-weight:900; }
+    .gear { font-size:20px; }
+    .center-controls { position:absolute; z-index:2; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    .play { pointer-events:auto; background:transparent; font-weight:800; }
+    .play { width:72px; height:84px; font-size:58px; line-height:1; }
+
+    .bottom { position:absolute; z-index:2; left:0; right:0; bottom:0; padding:22px 12px 5px; background:linear-gradient(transparent,#000c); }
+    .bottom-info { display:flex; align-items:center; gap:11px; padding:0 3px 3px; color:#fff; font-size:13px; font-weight:650; }
+    .bottom-info .push { margin-left:auto; }
+    .quality { padding:3px 6px; border:1px solid #fff; border-radius:4px; background:transparent; color:#fff; font-size:9px; font-weight:900; }
+    .aspect-trigger { height:24px; min-width:54px; display:flex; align-items:center; justify-content:center; gap:5px; padding:0 7px; border:1px solid #ffffff80; border-radius:5px; background:#ffffff12; color:#fff; font-size:9px; font-weight:900; letter-spacing:.02em; }
+    .aspect-trigger.active { border-color:#fff; background:#ffffff28; }
+    .aspect-icon { width:13px; height:9px; display:inline-block; border:1.4px solid currentColor; border-radius:2px; }
+    .mini-action { width:30px; height:28px; padding:0; background:transparent; color:#fff; font-size:18px; }
+    .bar { height:5px; border-radius:9px; background:#56565d; position:relative; }
+    .bar::before { content:""; position:absolute; left:0; top:0; bottom:0; width:31%; border-radius:inherit; background:var(--accent); }
+    .bar::after { content:""; position:absolute; left:31%; top:50%; width:18px; height:18px; border-radius:50%; transform:translate(-50%,-50%); background:white; }
+    .aspect-menu { position:absolute; z-index:4; right:76px; bottom:52px; width:230px; display:none; padding:7px; border:1px solid #ffffff1b; border-radius:17px; background:#121216f2; box-shadow:0 18px 55px #000b; backdrop-filter:blur(18px); }
+    .aspect-menu.open { display:block; }
+    .aspect-title { display:flex; justify-content:space-between; padding:9px 11px 7px; color:#aaaab4; font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.05em; }
+    .aspect-option { width:100%; display:flex; align-items:center; justify-content:space-between; min-height:43px; padding:0 12px; border-radius:11px; background:transparent; text-align:left; font-size:13px; font-weight:750; }
+    .aspect-option:hover,.aspect-option.selected { background:#303037; }
+    .aspect-option.selected::after { content:"✓"; font-weight:950; }
+
+    .scrim { position:absolute; z-index:5; inset:0; visibility:hidden; opacity:0; background:rgba(0,0,0,.66); transition:.2s ease; }
+    .player.panel-open .scrim { visibility:visible; opacity:1; }
+    .track-panel {
+      position:absolute;
+      z-index:6;
+      top:18px;
+      right:clamp(18px,3vw,36px);
+      width:min(46%,500px);
+      max-height:calc(100% - 36px);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border:1px solid #ffffff12;
+      border-radius:24px;
+      background:var(--panel);
+      box-shadow:0 24px 80px #000b;
+      backdrop-filter:blur(22px);
+      transform:translateX(calc(100% + 30px));
+      opacity:0;
+      transition:.24s cubic-bezier(.2,.8,.2,1);
+    }
+    .player.panel-open .track-panel { transform:translateX(0); opacity:1; }
+    .panel-head { display:grid; grid-template-columns:1fr 42px; gap:12px; padding:12px 12px 8px; }
+    .tabs { display:grid; grid-template-columns:1fr 1fr; padding:4px; border-radius:18px; background:#050506; }
+    .tab { min-height:48px; border-radius:14px; background:transparent; color:#c7c7ce; font-size:15px; font-weight:850; }
+    .tab.active { background:#3b3b41; color:white; box-shadow:0 5px 18px #0008; }
+    .close { align-self:center; background:#29292f; color:#ddd; font-size:26px; }
+    .panel-scroll { min-height:0; overflow-y:auto; padding:10px 16px 18px; scrollbar-width:thin; }
+    .pane { display:none; }
+    .pane.active { display:block; }
+    .group-title { margin:12px 3px 8px; color:#a7a7b0; font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+    .track { width:100%; min-height:58px; display:grid; grid-template-columns:40px minmax(0,1fr) 28px; align-items:center; gap:11px; margin-bottom:7px; padding:9px 12px; border:1px solid transparent; border-radius:14px; background:var(--surface); text-align:left; }
+    .track.selected { border-color:#ffffff65; background:var(--surface2); }
+    .track-badge { width:38px; height:34px; display:grid; place-items:center; border-radius:9px; background:#303039; color:#eee; font-size:11px; font-weight:900; }
+    .track strong { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:14px; }
+    .track small { display:block; margin-top:3px; overflow:hidden; color:var(--muted); white-space:nowrap; text-overflow:ellipsis; font-size:11px; }
+    .check { width:22px; height:22px; display:grid; place-items:center; border-radius:50%; background:white; color:#111; font-weight:950; }
+    .search-modes { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .search-mode { min-height:48px; padding:8px; border:1px solid var(--line); border-radius:13px; background:var(--surface); font-size:12px; font-weight:850; }
+    .search-mode.active { border-color:#ffffff70; background:#303037; }
+    .manual-search { display:none; margin-top:9px; }
+    .manual-search.open { display:grid; grid-template-columns:1fr 46px; gap:7px; }
+    .manual-search input { min-width:0; height:45px; padding:0 12px; border:1px solid var(--line); border-radius:12px; outline:0; background:#111116; color:white; }
+    .manual-search input:focus { border-color:#fff8; }
+    .search-go { border-radius:12px; background:white; color:#111; font-size:20px; }
+    .search-results { display:none; margin-top:9px; }
+    .manual-search.open + .search-results { display:block; }
+    .result-count { margin:3px 3px 8px; color:var(--muted); font-size:11px; font-weight:750; }
+    .subtitle-name { font-size:13px !important; }
+    .match { color:var(--green); font-weight:850; }
+    .appearance { margin-top:14px; padding:12px; border:1px solid #ffffff12; border-radius:15px; background:#111115; }
+    .appearance-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .appearance-row + .appearance-row { margin-top:10px; padding-top:10px; border-top:1px solid #292930; }
+    .appearance-label { font-size:12px; font-weight:800; }
+    .sizes { display:flex; gap:3px; padding:3px; border-radius:9px; background:#25252c; }
+    .sizes button { width:32px; height:27px; border-radius:7px; background:transparent; color:#bbb; font-size:11px; }
+    .sizes button.active { background:#fff; color:#111; font-weight:900; }
+    .switch { width:40px; height:23px; padding:3px; border-radius:20px; background:#4a4a53; }
+    .switch i { display:block; width:17px; height:17px; border-radius:50%; background:white; transition:.18s; }
+    .switch.on { background:var(--accent); }
+    .switch.on i { transform:translateX(17px); }
+    .audio-note { margin:7px 3px 13px; color:var(--muted); font-size:12px; line-height:1.45; }
+    .toast { position:absolute; z-index:9; left:50%; bottom:24px; max-width:75%; padding:10px 16px; border-radius:99px; transform:translate(-50%,70px); opacity:0; background:white; color:#111; font-size:12px; font-weight:850; transition:.22s; }
+    .toast.show { transform:translate(-50%,0); opacity:1; }
+
+    @media (max-width:720px) {
+      .player { height:100vh; min-height:360px; }
+      .topbar { height:58px; padding:0 6px; }
+      .play { width:52px; font-size:46px; }
+      .bottom { padding-left:8px; padding-right:8px; }
+      .bottom-info { font-size:11px; }
+      .track-panel { top:8px; right:8px; width:min(66%,480px); max-height:calc(100% - 16px); border-radius:20px; }
+      .tab { min-height:42px; font-size:13px; }
+      .panel-scroll { padding:6px 12px 14px; }
+      .track { min-height:52px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="player" id="player">
+    <div class="topbar">
+      <button class="back" aria-label="Κλείσιμο player">⌄</button>
+      <div class="top-actions">
+        <!-- Το CC παραμένει ακριβώς στη σημερινή θέση του player. -->
+        <button class="chrome-button" id="ccButton" aria-label="Υπότιτλοι και ήχος"><span class="cc-mark">CC</span></button>
+        <button class="chrome-button gear" aria-label="Ρυθμίσεις">⚙</button>
+      </div>
+    </div>
+
+    <div class="center-controls">
+      <button class="play" aria-label="Παύση">Ⅱ</button>
+    </div>
+
+    <div class="bottom">
+      <div class="bottom-info">
+        <span>18:42 / 52:18</span>
+        <span class="push"></span>
+        <button class="quality" aria-label="Ποιότητα βίντεο">FHD</button>
+        <button class="aspect-trigger" id="aspectButton" aria-label="Αναλογία εικόνας"><span class="aspect-icon"></span><span id="aspectValue">AUTO</span></button>
+        <button class="mini-action" aria-label="Χρονοδιακόπτης">◔</button>
+        <button class="mini-action" aria-label="Πλήρης οθόνη">⛶</button>
+      </div>
+      <div class="bar"></div>
+    </div>
+
+    <div class="aspect-menu" id="aspectMenu">
+      <div class="aspect-title"><span>Αναλογία εικόνας</span><span id="aspectMenuValue">AUTO</span></div>
+      <button class="aspect-option selected" data-value="Auto">Αυτόματο</button>
+      <button class="aspect-option" data-value="Fit">Προσαρμογή</button>
+      <button class="aspect-option" data-value="Fill">Γέμισμα οθόνης</button>
+      <button class="aspect-option" data-value="Zoom">Ζουμ</button>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <aside class="track-panel" id="trackPanel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="tabs">
+          <button class="tab active" data-tab="subtitles">Υπότιτλοι</button>
+          <button class="tab" data-tab="audio">Ήχος</button>
+        </div>
+        <button class="close" id="closePanel" aria-label="Κλείσιμο">×</button>
+      </div>
+
+      <div class="panel-scroll">
+        <section class="pane active" id="subtitlesPane">
+          <div class="group-title">Διαθέσιμοι υπότιτλοι</div>
+          <button class="track"><span class="track-badge">×</span><span><strong>Απενεργοποίηση</strong><small>Χωρίς υπότιτλους</small></span><span></span></button>
+          <button class="track selected"><span class="track-badge">EL</span><span><strong>Ελληνικά — Ενσωματωμένος 1</strong><small>Εσωτερικός υπότιτλος · SRT</small></span><span class="check">✓</span></button>
+          <button class="track"><span class="track-badge">EN</span><span><strong>English — Embedded SDH</strong><small>Internal subtitle · Track 2</small></span><span></span></button>
+          <button class="track"><span class="track-badge">EL</span><span><strong>Diablero.S01E01.1080p.NF.WEB-DL-GR</strong><small>Ελληνικά · OpenSubtitles · Κατεβασμένος</small></span><span></span></button>
+
+          <div class="group-title">Αναζήτηση OpenSubtitles</div>
+          <div class="search-modes">
+            <button class="search-mode" id="autoSearch">✦ Αυτόματη</button>
+            <button class="search-mode active" id="manualSearch">⌕ Χειροκίνητη</button>
+          </div>
+          <div class="manual-search open" id="manualBox">
+            <input value="Diablero 2018 S01E01" aria-label="Τίτλος αναζήτησης">
+            <button class="search-go" id="searchGo" aria-label="Αναζήτηση">⌕</button>
+          </div>
+          <div class="search-results" id="searchResults">
+            <div class="result-count">Βρέθηκαν 4 αποτελέσματα · όλα εμφανίζουν πλήρες όνομα</div>
+            <button class="track"><span class="track-badge">EL</span><span><strong class="subtitle-name">Diablero.S01E01.1080p.NF.WEB-DL.DDP5.1</strong><small>Ελληνικά · OpenSubtitles · <span class="match">98% αντιστοίχιση</span></small></span><span></span></button>
+            <button class="track"><span class="track-badge">EL</span><span><strong class="subtitle-name">Diablero.01x01.Los.demonios.están.entre.nosotros</strong><small>Ελληνικά · OpenSubtitles · <span class="match">94% αντιστοίχιση</span></small></span><span></span></button>
+            <button class="track"><span class="track-badge">EN</span><span><strong class="subtitle-name">Diablero.S01E01.WEBRip.x264-ION10</strong><small>English · OpenSubtitles · <span class="match">91% match</span></small></span><span></span></button>
+            <button class="track"><span class="track-badge">ES</span><span><strong class="subtitle-name">Diablero.Capítulo.1.NF.WEB-DL</strong><small>Español · OpenSubtitles · <span class="match">88% match</span></small></span><span></span></button>
+          </div>
+
+          <div class="appearance">
+            <div class="appearance-row"><span class="appearance-label">Μέγεθος υποτίτλων</span><span class="sizes"><button>S</button><button class="active">M</button><button>L</button></span></div>
+            <div class="appearance-row"><span class="appearance-label">Έντονα γράμματα</span><button class="switch" data-setting="bold"><i></i></button></div>
+            <div class="appearance-row"><span class="appearance-label">Μαύρο φόντο</span><button class="switch on" data-setting="background"><i></i></button></div>
+          </div>
+        </section>
+
+        <section class="pane" id="audioPane">
+          <div class="group-title">Κομμάτια ήχου</div>
+          <p class="audio-note">Ο ήχος και οι υπότιτλοι ανήκουν στο ίδιο panel, ώστε να μη χρειάζεται δεύτερο μενού στον player.</p>
+          <button class="track selected"><span class="track-badge">EN</span><span><strong>English</strong><small>Original · Dolby Digital 5.1</small></span><span class="check">✓</span></button>
+          <button class="track"><span class="track-badge">EL</span><span><strong>Ελληνικά</strong><small>Μεταγλωττισμένο · Stereo</small></span><span></span></button>
+          <button class="track"><span class="track-badge">EN</span><span><strong>English Commentary</strong><small>Director commentary · Stereo</small></span><span></span></button>
+        </section>
+      </div>
+    </aside>
+    <div class="toast" id="toast">Η επιλογή εφαρμόστηκε</div>
+  </main>
+
+  <script>
+    const player = document.getElementById('player');
+    const panel = document.getElementById('trackPanel');
+    const ccButton = document.getElementById('ccButton');
+    const aspectButton = document.getElementById('aspectButton');
+    const aspectMenu = document.getElementById('aspectMenu');
+    const aspectValue = document.getElementById('aspectValue');
+    const aspectMenuValue = document.getElementById('aspectMenuValue');
+    const scrim = document.getElementById('scrim');
+    const toast = document.getElementById('toast');
+
+    function openPanel() {
+      aspectMenu.classList.remove('open');
+      aspectButton.classList.remove('active');
+      player.classList.add('panel-open');
+      ccButton.classList.add('active');
+      panel.setAttribute('aria-hidden','false');
+    }
+    function closePanel() {
+      player.classList.remove('panel-open');
+      ccButton.classList.remove('active');
+      panel.setAttribute('aria-hidden','true');
+    }
+    function notify(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(notify.timer);
+      notify.timer = setTimeout(() => toast.classList.remove('show'), 1700);
+    }
+    function selectTrack(button) {
+      const pane = button.closest('.pane');
+      pane.querySelectorAll('.track').forEach(item => {
+        item.classList.remove('selected');
+        const mark = item.querySelector('.check');
+        if (mark) mark.remove();
+      });
+      button.classList.add('selected');
+      button.insertAdjacentHTML('beforeend','<span class="check">✓</span>');
+      notify(button.querySelector('strong').textContent + ' επιλέχθηκε');
+    }
+
+    ccButton.addEventListener('click', openPanel);
+    aspectButton.addEventListener('click', () => {
+      const opening = !aspectMenu.classList.contains('open');
+      aspectMenu.classList.toggle('open', opening);
+      aspectButton.classList.toggle('active', opening);
+    });
+    document.querySelectorAll('.aspect-option').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.aspect-option').forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      aspectValue.textContent = button.dataset.value.toUpperCase();
+      aspectMenuValue.textContent = button.dataset.value.toUpperCase();
+      aspectMenu.classList.remove('open');
+      aspectButton.classList.remove('active');
+      notify('Αναλογία: ' + button.textContent);
+    }));
+    document.getElementById('closePanel').addEventListener('click', closePanel);
+    scrim.addEventListener('click', closePanel);
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item === tab));
+      document.querySelectorAll('.pane').forEach(paneItem => paneItem.classList.remove('active'));
+      document.getElementById(tab.dataset.tab + 'Pane').classList.add('active');
+    }));
+    document.querySelectorAll('.track').forEach(button => button.addEventListener('click', () => selectTrack(button)));
+    document.getElementById('manualSearch').addEventListener('click', event => {
+      document.getElementById('autoSearch').classList.remove('active');
+      event.currentTarget.classList.add('active');
+      document.getElementById('manualBox').classList.add('open');
+    });
+    document.getElementById('autoSearch').addEventListener('click', event => {
+      document.getElementById('manualSearch').classList.remove('active');
+      event.currentTarget.classList.add('active');
+      document.getElementById('manualBox').classList.remove('open');
+      notify('Ξεκίνησε αυτόματη αναζήτηση');
+    });
+    document.getElementById('searchGo').addEventListener('click', () => {
+      document.getElementById('searchResults').style.display = 'block';
+      notify('Βρέθηκαν 4 υπότιτλοι με πλήρη ονόματα');
+    });
+    document.querySelectorAll('.sizes button').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.sizes button').forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+    }));
+    document.querySelectorAll('.switch').forEach(button => button.addEventListener('click', () => button.classList.toggle('on')));
+  </script>
+</body>
+</html>

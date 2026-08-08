@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SCREEN 06 — Premium Player Redesign</title>
+<style>
+:root{
+  --bg:#030304; --panel:rgba(18,18,22,.74); --panel2:rgba(28,28,34,.88);
+  --text:#fff; --muted:#b2b2bc; --red:#e50914; --green:#43d17a;
+  --line:rgba(255,255,255,.12); --soft:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#050506;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}
+body{min-height:100vh}
+.global-controls{
+  position:fixed;z-index:500;top:16px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;padding:6px;border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;background:rgba(10,10,12,.72);backdrop-filter:blur(20px);
+  box-shadow:0 18px 55px rgba(0,0,0,.45)
+}
+.global-controls button{
+  border:0;background:transparent;color:#b9b9c2;border-radius:999px;
+  padding:10px 17px;font-weight:900;cursor:pointer
+}
+.global-controls button.active{background:#fff;color:#09090b}
+.view{display:none;min-height:100vh}.view.active{display:block}
+
+/* shared player background */
+.player-bg{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+  transform:scale(1.025);transition:background-image .45s ease,filter .3s ease
+}
+.player-bg:after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.5),transparent 26%,transparent 56%,rgba(0,0,0,.85) 100%),
+    radial-gradient(circle at 50% 45%,transparent 0 30%,rgba(0,0,0,.1) 60%,rgba(0,0,0,.48) 100%)
+}
+.grain{
+  position:absolute;inset:0;opacity:.06;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+.live-pill{
+  display:inline-flex;align-items:center;gap:7px;padding:7px 10px;
+  background:rgba(229,9,20,.92);border-radius:6px;font-size:11px;font-weight:950;letter-spacing:.06em
+}
+.dot{width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff}
+
+/* TV */
+#tv{position:relative;overflow:hidden;background:#000}
+.tv-layer{position:relative;z-index:2;min-height:100vh;padding:72px 68px 42px}
+.tv-top{
+  display:flex;justify-content:space-between;align-items:flex-start;transition:.25s ease
+}
+.tv-brand{font-size:16px;font-weight:950;letter-spacing:.16em}
+.tv-meta-top{text-align:right;color:#c9c9d1;font-size:13px;line-height:1.5}
+.tv-center{
+  position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;justify-content:center;gap:26px
+}
+.center-btn{
+  width:92px;height:92px;border-radius:50%;border:1px solid rgba(255,255,255,.16);
+  display:grid;place-items:center;background:rgba(9,9,12,.5);backdrop-filter:blur(16px);
+  color:#fff;font-size:34px;cursor:pointer;transition:.17s ease;box-shadow:0 20px 55px rgba(0,0,0,.35)
+}
+.center-btn.small{width:62px;height:62px;font-size:22px}
+.center-btn.focused{transform:scale(1.12);background:#fff;color:#09090b;box-shadow:0 0 0 5px rgba(255,255,255,.12),0 25px 70px rgba(0,0,0,.65)}
+.tv-bottom{
+  position:absolute;z-index:2;left:68px;right:68px;bottom:40px;
+  display:grid;gap:15px;transition:.25s ease
+}
+.tv-title-row{display:flex;justify-content:space-between;align-items:end;gap:28px}
+.tv-title{font-size:28px;font-weight:950;letter-spacing:-.025em}
+.tv-sub{color:#b9b9c2;margin-top:5px;font-size:14px}
+.tv-clock{color:#d2d2d9;font-size:13px;text-align:right}
+.timeline-wrap{display:grid;gap:8px}
+.timeline-row{display:flex;justify-content:space-between;color:#c2c2ca;font-size:12px}
+.timeline{
+  height:7px;background:rgba(255,255,255,.21);border-radius:999px;position:relative;overflow:visible
+}
+.timeline .buffer{position:absolute;left:0;top:0;height:100%;width:74%;background:rgba(255,255,255,.26);border-radius:999px}
+.timeline .played{position:absolute;left:0;top:0;height:100%;width:42%;background:#fff;border-radius:999px}
+.timeline.live .played{background:var(--red)}
+.timeline .thumb{position:absolute;left:42%;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(255,255,255,.16)}
+.timeline.live .thumb{background:var(--red)}
+.tv-actions{
+  display:flex;gap:10px;align-items:center;overflow:hidden;padding:4px 0
+}
+.tv-action{
+  min-width:52px;height:52px;padding:0 17px;border:1px solid rgba(255,255,255,.13);
+  border-radius:11px;background:rgba(20,20,24,.7);color:#fff;font-weight:850;
+  display:flex;align-items:center;gap:9px;justify-content:center;cursor:pointer;backdrop-filter:blur(14px);
+  transition:.16s ease
+}
+.tv-action.icon{padding:0;width:52px}
+.tv-action.focused{background:#fff;color:#09090b;transform:scale(1.07);box-shadow:0 0 0 4px rgba(255,255,255,.1)}
+.tv-hint{margin-left:auto;color:#8f8f99;font-size:12px}
+.side-panel{
+  position:absolute;z-index:4;right:0;top:0;bottom:0;width:min(410px,38vw);
+  background:rgba(10,10,13,.91);backdrop-filter:blur(26px);border-left:1px solid var(--line);
+  padding:78px 24px 30px;transform:translateX(105%);transition:.28s cubic-bezier(.2,.8,.2,1);
+  box-shadow:-30px 0 80px rgba(0,0,0,.4)
+}
+.side-panel.open{transform:translateX(0)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.panel-head h2{margin:0;font-size:22px}
+.close-btn{width:38px;height:38px;border-radius:50%;border:0;background:#26262c;color:#fff;font-size:16px}
+.panel-section{margin-top:22px}
+.panel-label{font-size:11px;color:#8e8e98;letter-spacing:.12em;font-weight:900;text-transform:uppercase;margin-bottom:9px}
+.option{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  border:1px solid transparent;background:transparent;color:#d3d3da;padding:13px 12px;border-radius:10px;text-align:left
+}
+.option.active{background:rgba(255,255,255,.1);color:#fff}
+.option.focused{background:#fff;color:#09090b;transform:scale(1.015)}
+.check{font-weight:950}
+.next-card{
+  margin-top:24px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#17171c
+}
+.next-art{height:128px;background-size:cover;background-position:center;position:relative}
+.next-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.72),transparent)}
+.next-info{padding:14px}.next-title{font-weight:950}.next-meta{color:#a7a7b0;font-size:12px;margin-top:5px}
+.auto-next{
+  position:absolute;z-index:5;right:42px;bottom:145px;width:360px;border:1px solid var(--line);
+  background:rgba(15,15,19,.92);backdrop-filter:blur(20px);border-radius:16px;padding:14px;
+  display:none;gap:13px;box-shadow:0 24px 70px rgba(0,0,0,.5)
+}
+.auto-next.show{display:flex}
+.auto-thumb{width:120px;height:74px;border-radius:10px;background-size:cover;background-position:center;flex:none}
+.auto-copy{flex:1}.auto-label{font-size:10px;color:#9e9ea7;text-transform:uppercase;font-weight:900;letter-spacing:.1em}.auto-title{font-weight:950;margin-top:5px}.auto-count{color:#c7c7cf;font-size:12px;margin-top:5px}
+
+/* hide controls */
+#tv.controls-hidden .tv-top,#tv.controls-hidden .tv-bottom,#tv.controls-hidden .tv-center{opacity:0;pointer-events:none}
+#tv.controls-hidden .player-bg{filter:brightness(.96)}
+
+/* Mobile */
+
+.m-action:before,.round:before,.m-play:before{
+  content:"";position:absolute;inset:-5px;border-radius:inherit;
+}
+
+#mobile{background:#09090b;min-height:100vh;padding:0 0 96px}
+.phone{width:min(100%,460px);min-height:100vh;margin:auto;background:#070709;position:relative;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,.5)}
+.m-video{height:61vh;min-height:430px;max-height:650px;position:relative;background-size:cover;background-position:center}
+.m-video:after{
+  content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(0,0,0,.46),transparent 26%,transparent 58%,rgba(0,0,0,.82) 100%)
+}
+.m-top{position:absolute;z-index:2;left:15px;right:15px;top:18px;display:flex;justify-content:space-between;align-items:center}
+.round{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.14);
+  background:rgba(10,10,13,.47);color:#fff;display:grid;place-items:center;backdrop-filter:blur(12px)
+}
+.m-live-meta{display:flex;align-items:center;gap:8px}
+.m-center{position:absolute;z-index:2;left:50%;top:48%;transform:translate(-50%,-50%)}
+.m-play{width:64px;height:64px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(8,8,10,.48);color:#fff;font-size:25px;backdrop-filter:blur(14px)}
+.double-zone{position:absolute;z-index:1;top:80px;bottom:100px;width:42%}
+.double-zone.left{left:0}.double-zone.right{right:0}
+.seek-bubble{
+  position:absolute;z-index:3;top:45%;transform:translateY(-50%);
+  background:rgba(0,0,0,.56);backdrop-filter:blur(12px);border-radius:999px;padding:10px 13px;
+  font-size:12px;font-weight:900;opacity:0;transition:.18s
+}
+.seek-bubble.show{opacity:1}.seek-bubble.left{left:28px}.seek-bubble.right{right:28px}
+.m-bottom-overlay{position:absolute;z-index:2;left:16px;right:16px;bottom:18px}
+.m-title{font-size:22px;font-weight:950}.m-sub{font-size:12px;color:#c3c3cb;margin-top:5px}
+.m-time{display:flex;justify-content:space-between;margin-top:13px;color:#d0d0d6;font-size:11px}
+.m-timeline{height:5px;margin-top:7px;background:rgba(255,255,255,.22);border-radius:999px;position:relative}
+.m-timeline .played{height:100%;width:42%;background:#fff;border-radius:999px}.m-timeline.live .played{background:var(--red)}
+.m-actions{display:flex;justify-content:space-around;margin-top:13px;padding:0 8px}
+.m-action{width:38px;height:38px;position:relative;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(15,15,18,.64);color:#fff;font-size:16px}
+.m-sheet{
+  margin-top:-14px;position:relative;z-index:3;border-radius:22px 22px 0 0;background:#101014;
+  border-top:1px solid rgba(255,255,255,.09);padding:10px 18px 28px
+}
+.handle{width:42px;height:4px;background:#44444b;border-radius:999px;margin:0 auto 17px}
+.m-sheet h2{font-size:21px;margin:0}.m-desc{font-size:13px;color:#aaaab4;line-height:1.5;margin:9px 0 17px}
+.info-row{display:flex;gap:9px;flex-wrap:wrap}.tag{padding:7px 10px;background:#1f1f24;border-radius:7px;color:#d0d0d7;font-size:11px;font-weight:800}
+.m-settings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+.setting-tile{min-height:66px;border:1px solid var(--line);background:#17171c;border-radius:14px;color:#fff;padding:11px 7px;text-align:center}
+.setting-tile b{display:block;font-size:17px;margin-bottom:7px}.setting-tile span{font-size:10px;color:#b8b8c1;font-weight:800}
+.up-next{margin-top:22px}.up-next h3{font-size:17px;margin:0 0 11px}
+.up-card{display:grid;grid-template-columns:126px 1fr;gap:12px;border:1px solid var(--line);background:#17171c;border-radius:14px;overflow:hidden}
+.up-img{background-size:cover;background-position:center;min-height:82px}.up-info{padding:11px 10px 10px 0}.up-title{font-weight:950}.up-meta{font-size:11px;color:#a5a5ae;margin-top:5px}
+.bottom-sheet{
+  position:fixed;z-index:100;left:50%;bottom:0;transform:translate(-50%,105%);
+  width:min(100%,460px);background:#17171c;border-radius:24px 24px 0 0;border-top:1px solid var(--line);
+  padding:13px 18px 26px;transition:.25s ease;box-shadow:0 -25px 70px rgba(0,0,0,.5)
+}
+.bottom-sheet.open{transform:translate(-50%,0)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center}.sheet-head h3{margin:0}.sheet-list{margin-top:15px}
+.sheet-option{width:100%;padding:14px 5px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:transparent;color:#fff;display:flex;justify-content:space-between}
+.sheet-option.active{font-weight:950}.sheet-option.active span:last-child{color:var(--green)}
+.toast{
+  position:fixed;z-index:300;left:50%;bottom:28px;transform:translate(-50%,20px);
+  background:#fff;color:#09090b;padding:11px 16px;border-radius:999px;font-weight:900;
+  opacity:0;pointer-events:none;transition:.2s
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:900px){
+  .tv-layer{padding:72px 26px 32px}.tv-bottom{left:26px;right:26px}.tv-title{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="global-controls">
+  <button id="tvMode" class="active">Android TV</button>
+  <button id="mobileMode">Mobile</button>
+  <button id="vodMode" class="active">VOD</button>
+  <button id="liveMode">Live</button>
+</div>
+
+<section id="tv" class="view active">
+  <div class="player-bg" id="tvBg"></div><div class="grain"></div>
+  <div class="tv-layer">
+    <div class="tv-top">
+      <div><div class="tv-brand">PRELUDE PLAYER</div><div id="tvLivePill" style="margin-top:12px;display:none"><span class="live-pill"><span class="dot"></span> LIVE</span></div></div>
+      <div class="tv-meta-top"><div id="qualityTop">4K · HDR10 · 5.1</div><div id="clockTop">22:34</div></div>
+    </div>
+    <div class="tv-center" id="tvCenter">
+      <button class="center-btn small" data-focus="0" onclick="seek(-10)">↶<span style="font-size:10px;position:absolute;margin-top:25px">10</span></button>
+      <button class="center-btn focused" data-focus="1" onclick="togglePlay()">▶</button>
+      <button class="center-btn small" data-focus="2" onclick="seek(10)">↷<span style="font-size:10px;position:absolute;margin-top:25px">10</span></button>
+    </div>
+    <div class="tv-bottom">
+      <div class="tv-title-row">
+        <div><div class="tv-title" id="tvTitle">Dune: Part Two</div><div class="tv-sub" id="tvSub">Paul Atreides · Κεφάλαιο 2 · 2024</div></div>
+        <div class="tv-clock" id="tvRightMeta">1:12:34 / 2:46:00</div>
+      </div>
+      <div class="timeline-wrap">
+        <div class="timeline-row"><span id="leftTime">1:12:34</span><span id="rightTime">-1:33:26</span></div>
+        <div class="timeline" id="tvTimeline"><div class="buffer"></div><div class="played"></div><div class="thumb"></div></div>
+      </div>
+      <div class="tv-actions" id="tvActions">
+        <button class="tv-action focused" data-action="0" onclick="togglePlay()">⏯ Αναπαραγωγή</button>
+        <button class="tv-action" data-action="1" onclick="openPanel('audio')">♫ Ήχος</button>
+        <button class="tv-action" data-action="2" onclick="openPanel('subs')">CC Υπότιτλοι</button>
+        <button class="tv-action" data-action="3" onclick="openPanel('quality')">⚙ Ποιότητα</button>
+        <button class="tv-action icon" data-action="4" onclick="toast('Αλλαγή αναλογίας εικόνας')">▣</button>
+        <button class="tv-action icon" data-action="5" onclick="toast('Προστέθηκε στη λίστα')">♡</button>
+        <div class="tv-hint">↑ κεντρικά controls · Enter επιλογή · Back κλείσιμο</div>
+      </div>
+    </div>
+    <div class="auto-next" id="autoNext">
+      <div class="auto-thumb" id="autoThumb"></div>
+      <div class="auto-copy"><div class="auto-label">Επόμενο επεισόδιο</div><div class="auto-title">S01 E04 · The Signal</div><div class="auto-count">Ξεκινά σε 8 δευτερόλεπτα</div></div>
+    </div>
+  </div>
+  <aside class="side-panel" id="sidePanel">
+    <div class="panel-head"><h2 id="panelTitle">Υπότιτλοι</h2><button class="close-btn" onclick="closePanel()">×</button></div>
+    <div id="panelContent"></div>
+    <div class="next-card">
+      <div class="next-art" id="nextArt"></div>
+      <div class="next-info"><div class="panel-label">Επόμενο</div><div class="next-title">The Signal</div><div class="next-meta">S01 E04 · 52 λεπτά</div></div>
+    </div>
+  </aside>
+</section>
+
+<section id="mobile" class="view">
+  <div class="phone">
+    <div class="m-video" id="mVideo">
+      <div class="m-top">
+        <button class="round" onclick="toast('Επιστροφή')">‹</button>
+        <div class="m-live-meta"><span id="mLivePill" class="live-pill" style="display:none"><span class="dot"></span> LIVE</span><button class="round" onclick="toast('Cast σε συσκευή')">◫</button></div>
+      </div>
+      <div class="double-zone left" ondblclick="mobileSeek(-10)"></div>
+      <div class="double-zone right" ondblclick="mobileSeek(10)"></div>
+      <div class="seek-bubble left" id="seekLeft">↶ 10 δευτ.</div>
+      <div class="seek-bubble right" id="seekRight">10 δευτ. ↷</div>
+      <div class="m-center"><button class="m-play" onclick="togglePlay()">▶</button></div>
+      <div class="m-bottom-overlay">
+        <div class="m-title" id="mTitle">Dune: Part Two</div>
+        <div class="m-sub" id="mSub">Κεφάλαιο 2 · 4K HDR · 5.1</div>
+        <div class="m-time"><span id="mLeftTime">1:12:34</span><span id="mRightTime">-1:33:26</span></div>
+        <div class="m-timeline" id="mTimeline"><div class="played"></div></div>
+        <div class="m-actions">
+          <button class="m-action" onclick="openMobileSheet('audio')">♫</button>
+          <button class="m-action" onclick="openMobileSheet('subs')">CC</button>
+          <button class="m-action" onclick="openMobileSheet('quality')">⚙</button>
+          <button class="m-action" onclick="toast('Αλλαγή αναλογίας εικόνας')">▣</button>
+          <button class="m-action" onclick="toast('Πλήρης οθόνη')">⛶</button>
+        </div>
+      </div>
+    </div>
+    <div class="m-sheet">
+      <div class="handle"></div>
+      <h2 id="sheetTitle">Dune: Part Two</h2>
+      <div class="m-desc" id="sheetDesc">Ο Paul Atreides ενώνεται με τη Chani και τους Fremen, καθώς η μάχη για το Arrakis αποκτά προσωπικό και κοσμικό κόστος.</div>
+      <div class="info-row"><span class="tag">2024</span><span class="tag">PG-13</span><span class="tag">2ω 46λ</span><span class="tag">Dolby 5.1</span></div>
+      <div class="m-settings-grid">
+        <button class="setting-tile" onclick="openMobileSheet('audio')"><b>♫</b><span>Ελληνικά 5.1</span></button>
+        <button class="setting-tile" onclick="openMobileSheet('subs')"><b>CC</b><span>Ελληνικά</span></button>
+        <button class="setting-tile" onclick="openMobileSheet('quality')"><b>⚙</b><span>Αυτόματο 4K</span></button>
+        <button class="setting-tile" onclick="toast('Προστέθηκε στη λίστα')"><b>♡</b><span>Η λίστα μου</span></button>
+      </div>
+      <div class="up-next">
+        <h3>Επόμενο</h3>
+        <div class="up-card">
+          <div class="up-img" id="upImg"></div>
+          <div class="up-info"><div class="up-title">The Signal</div><div class="up-meta">S01 E04 · 52 λεπτά</div><div class="up-meta">Αυτόματη αναπαραγωγή ενεργή</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-sheet" id="mobileSheet">
+    <div class="handle"></div>
+    <div class="sheet-head"><h3 id="mobileSheetTitle">Υπότιτλοι</h3><button class="round" onclick="closeMobileSheet()">×</button></div>
+    <div class="sheet-list" id="mobileSheetList"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const assets={
+  vod:"https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=2000&q=88",
+  live:"https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=2000&q=88",
+  next:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=84"
+};
+let currentView="tv", mode="vod", playing=false, centerFocus=1, actionFocus=0, tvZone="actions", panelOpen=false, controlsTimer;
+
+function applyBackgrounds(){
+  const img=mode==="vod"?assets.vod:assets.live;
+  tvBg.style.backgroundImage=`url('${img}')`;
+  mVideo.style.backgroundImage=`url('${img}')`;
+  nextArt.style.backgroundImage=`url('${assets.next}')`;
+  upImg.style.backgroundImage=`url('${assets.next}')`;
+  autoThumb.style.backgroundImage=`url('${assets.next}')`;
+}
+function setMode(next){
+  mode=next;
+  vodMode.classList.toggle("active",mode==="vod");
+  liveMode.classList.toggle("active",mode==="live");
+  const live=mode==="live";
+  tvLivePill.style.display=live?"block":"none";
+  mLivePill.style.display=live?"inline-flex":"none";
+  tvTitle.textContent=live?"Champions League Live":"Dune: Part Two";
+  tvSub.textContent=live?"NOVASPORTS PRIME · Ζωντανή μετάδοση":"Paul Atreides · Κεφάλαιο 2 · 2024";
+  tvRightMeta.textContent=live?"21:45 · LIVE":"1:12:34 / 2:46:00";
+  leftTime.textContent=live?"21:45":"1:12:34";
+  rightTime.textContent=live?"Στο Live":"-1:33:26";
+  tvTimeline.classList.toggle("live",live);
+  mTimeline.classList.toggle("live",live);
+  mTitle.textContent=live?"Champions League Live":"Dune: Part Two";
+  mSub.textContent=live?"NOVASPORTS PRIME · LIVE HD":"Κεφάλαιο 2 · 4K HDR · 5.1";
+  mLeftTime.textContent=live?"21:45":"1:12:34";
+  mRightTime.textContent=live?"Στο Live":"-1:33:26";
+  sheetTitle.textContent=live?"Champions League Live":"Dune: Part Two";
+  sheetDesc.textContent=live?"Ζωντανή μετάδοση της μεγάλης ευρωπαϊκής βραδιάς με πλήρη σχολιασμό και στατιστικά αγώνα.":"Ο Paul Atreides ενώνεται με τη Chani και τους Fremen, καθώς η μάχη για το Arrakis αποκτά προσωπικό και κοσμικό κόστος.";
+  qualityTop.textContent=live?"HD · 50fps · Stereo":"4K · HDR10 · 5.1";
+  document.querySelectorAll('.center-btn.small').forEach(b=>b.style.display=live?"none":"grid");
+  autoNext.classList.toggle("show",false);
+  applyBackgrounds();
+}
+function switchView(v){
+  currentView=v;
+  tv.classList.toggle("active",v==="tv"); mobile.classList.toggle("active",v==="mobile");
+  tvMode.classList.toggle("active",v==="tv"); mobileMode.classList.toggle("active",v==="mobile");
+}
+function togglePlay(){
+  playing=!playing;
+  document.querySelectorAll(".center-btn:not(.small),.m-play").forEach(b=>b.textContent=playing?"Ⅱ":"▶");
+  toast(playing?"Αναπαραγωγή":"Παύση");
+  showControls();
+}
+function seek(sec){ if(mode==="live"){toast("Επιστροφή στο Live");return} toast((sec>0?"+":"")+sec+" δευτερόλεπτα");}
+function mobileSeek(sec){
+  if(mode==="live"){toast("Το Live παραμένει στο ζωντανό σημείο");return}
+  const el=sec<0?seekLeft:seekRight; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),700);
+}
+function showControls(){
+  tv.classList.remove("controls-hidden");
+  clearTimeout(controlsTimer);
+  controlsTimer=setTimeout(()=>{if(!panelOpen)tv.classList.add("controls-hidden")},4500);
+}
+function openPanel(type){
+  panelOpen=true; sidePanel.classList.add("open"); tv.classList.remove("controls-hidden");
+  const sets={
+    audio:{title:"Ήχος",items:["Ελληνικά 5.1","Αγγλικά Dolby Atmos","Αγγλικά Stereo","Audio Description"]},
+    subs:{title:"Υπότιτλοι",items:["Απενεργοποιημένοι","Ελληνικά","Αγγλικά","Ελληνικά CC"]},
+    quality:{title:"Ποιότητα",items:["Αυτόματο · 4K","4K · 2160p","Full HD · 1080p","HD · 720p","Εξοικονόμηση δεδομένων"]}
+  };
+  panelTitle.textContent=sets[type].title;
+  panelContent.innerHTML=`<div class="panel-section"><div class="panel-label">Επιλογή</div>${sets[type].items.map((x,i)=>`<button class="option ${i===0?'active focused':''}" onclick="chooseOption(this)"><span>${x}</span><span class="check">${i===0?'✓':''}</span></button>`).join("")}</div>`;
+}
+function closePanel(){panelOpen=false;sidePanel.classList.remove("open");showControls()}
+function chooseOption(el){
+  el.parentElement.querySelectorAll(".option").forEach(x=>{x.classList.remove("active","focused");x.querySelector(".check").textContent=""});
+  el.classList.add("active","focused");el.querySelector(".check").textContent="✓";toast("Επιλέχθηκε: "+el.firstElementChild.textContent);
+}
+function openMobileSheet(type){
+  const sets={
+    audio:{title:"Ήχος",items:["Ελληνικά 5.1","Αγγλικά Dolby Atmos","Αγγλικά Stereo"]},
+    subs:{title:"Υπότιτλοι",items:["Ελληνικά","Αγγλικά","Απενεργοποιημένοι"]},
+    quality:{title:"Ποιότητα",items:["Αυτόματο · 4K","2160p","1080p","720p","Εξοικονόμηση"]}
+  };
+  mobileSheetTitle.textContent=sets[type].title;
+  mobileSheetList.innerHTML=sets[type].items.map((x,i)=>`<button class="sheet-option ${i===0?'active':''}" onclick="selectMobileOption(this)"><span>${x}</span><span>${i===0?'✓':''}</span></button>`).join("");
+  mobileSheet.classList.add("open");
+}
+function closeMobileSheet(){mobileSheet.classList.remove("open")}
+function selectMobileOption(el){
+  el.parentElement.querySelectorAll(".sheet-option").forEach(x=>{x.classList.remove("active");x.lastElementChild.textContent=""});
+  el.classList.add("active");el.lastElementChild.textContent="✓";toast("Επιλέχθηκε: "+el.firstElementChild.textContent);
+}
+function renderFocus(){
+  document.querySelectorAll(".center-btn").forEach((b,i)=>b.classList.toggle("focused",tvZone==="center"&&i===centerFocus));
+  document.querySelectorAll(".tv-action").forEach((b,i)=>b.classList.toggle("focused",tvZone==="actions"&&i===actionFocus));
+}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500)}
+document.addEventListener("keydown",e=>{
+  if(currentView!=="tv")return;
+  showControls();
+  if(panelOpen && e.key==="Escape"){closePanel();return}
+  if(panelOpen)return;
+  if(e.key==="ArrowUp")tvZone="center";
+  if(e.key==="ArrowDown")tvZone="actions";
+  if(e.key==="ArrowLeft"){
+    if(tvZone==="center")centerFocus=Math.max(0,centerFocus-1);
+    else actionFocus=Math.max(0,actionFocus-1);
+  }
+  if(e.key==="ArrowRight"){
+    if(tvZone==="center")centerFocus=Math.min(2,centerFocus+1);
+    else actionFocus=Math.min(5,actionFocus+1);
+  }
+  if(e.key==="Enter"){
+    if(tvZone==="center"){ if(centerFocus===0)seek(-10); else if(centerFocus===1)togglePlay(); else seek(10); }
+    else document.querySelectorAll(".tv-action")[actionFocus].click();
+  }
+  renderFocus();
+});
+tvMode.onclick=()=>switchView("tv");mobileMode.onclick=()=>switchView("mobile");
+vodMode.onclick=()=>setMode("vod");liveMode.onclick=()=>setMode("live");
+applyBackgrounds();setMode("vod");renderFocus();showControls();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+mnt/data/v14039_junit_compile_final/org/junit/Assert.kt:3:33: warning: parameter 'expected' is never used
+    @JvmStatic fun assertEquals(expected: Any?, actual: Any?) {}
+                                ^
+mnt/data/v14039_junit_compile_final/org/junit/Assert.kt:3:49: warning: parameter 'actual' is never used
+    @JvmStatic fun assertEquals(expected: Any?, actual: Any?) {}
+                                                ^
+mnt/data/v14039_junit_compile_final/org/junit/Assert.kt:4:32: warning: parameter 'value' is never used
+    @JvmStatic fun assertFalse(value: Boolean) {}
+                               ^
+mnt/data/v14039_junit_compile_final/org/junit/Assert.kt:5:31: warning: parameter 'value' is never used
+    @JvmStatic fun assertNull(value: Any?) {}
+                              ^
+mnt/data/v14039_junit_compile_final/org/junit/Assert.kt:6:31: warning: parameter 'value' is never used
+    @JvmStatic fun assertTrue(value: Boolean) {}
+                              ^
+META-INF/MANIFEST.MF
+com/prelude/iptv/data/EpgSelectionPolicy.class
+com/prelude/iptv/data/EpgSelectionPolicyTest.class
+org/junit/Assert.class
+org/junit/Test.class
+META-INF/main.kotlin_module

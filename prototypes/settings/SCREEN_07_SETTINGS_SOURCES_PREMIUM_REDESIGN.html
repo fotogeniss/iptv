@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCREEN 07 — Premium Settings & Sources</title>
+<style>
+:root{
+  --bg:#060608;--surface:#111115;--surface2:#19191f;--surface3:#222229;
+  --text:#fff;--muted:#aaaab4;--line:rgba(255,255,255,.09);--red:#e50914;
+  --green:#42d17b;--amber:#f1b84b;--blue:#5ea2ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#08080a;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select{font:inherit}
+body{min-height:100vh}
+.mode-switch{
+ position:fixed;z-index:1000;top:16px;left:50%;transform:translateX(-50%);
+ display:flex;gap:8px;padding:6px;border:1px solid rgba(255,255,255,.14);
+ background:rgba(10,10,13,.78);backdrop-filter:blur(20px);border-radius:999px;
+ box-shadow:0 18px 50px rgba(0,0,0,.45)
+}
+.mode-switch button{border:0;background:transparent;color:#b7b7c1;padding:10px 18px;border-radius:999px;font-weight:900}
+.mode-switch button.active{background:#fff;color:#08080a}
+.view{display:none;min-height:100vh}.view.active{display:block}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:950}
+.pill.ok{background:rgba(66,209,123,.14);color:#77e7a7;border:1px solid rgba(66,209,123,.22)}
+.pill.warn{background:rgba(241,184,75,.14);color:#ffd27a;border:1px solid rgba(241,184,75,.24)}
+.pill.off{background:rgba(255,255,255,.07);color:#aaaab3;border:1px solid rgba(255,255,255,.08)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
+.section-kicker{font-size:11px;letter-spacing:.13em;color:#8c8c96;font-weight:950;text-transform:uppercase}
+.switch{width:46px;height:26px;border-radius:999px;background:#35353c;position:relative;transition:.2s}
+.switch:after{content:"";position:absolute;width:20px;height:20px;top:3px;left:3px;border-radius:50%;background:#fff;transition:.2s}
+.switch.on{background:var(--green)}.switch.on:after{left:23px}
+.toast{
+ position:fixed;z-index:2000;left:50%;bottom:28px;transform:translate(-50%,20px);
+ background:#fff;color:#08080a;padding:11px 16px;border-radius:999px;font-weight:900;
+ opacity:0;transition:.2s;pointer-events:none
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* TV */
+#tv{background:
+ radial-gradient(circle at 72% 18%,rgba(65,68,92,.20),transparent 34%),
+ radial-gradient(circle at 25% 85%,rgba(229,9,20,.09),transparent 26%),
+ #070709}
+.tv-shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh;padding-top:70px}
+.tv-sidebar{
+ padding:36px 18px 28px 30px;border-right:1px solid var(--line);
+ background:linear-gradient(180deg,rgba(13,13,16,.92),rgba(8,8,10,.86));backdrop-filter:blur(20px)
+}
+.tv-brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:.14em;margin-bottom:34px}
+.brand-mark{width:13px;height:28px;background:var(--red);box-shadow:6px 0 #8e050b;transform:skew(-4deg)}
+.tv-profile{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);margin-bottom:22px}
+.avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(145deg,#37415f,#191d2d);display:grid;place-items:center;font-weight:950}
+.profile-name{font-weight:900}.profile-sub{font-size:11px;color:#90909a;margin-top:3px}
+.tv-nav{display:grid;gap:6px}
+.nav-btn{
+ width:100%;border:0;background:transparent;color:#a9a9b3;border-radius:11px;padding:13px 14px;
+ display:flex;align-items:center;gap:12px;text-align:left;font-weight:850;transition:.16s
+}
+.nav-btn .icon{width:24px;text-align:center;font-size:17px}
+.nav-btn.active{background:rgba(255,255,255,.09);color:#fff}
+.nav-btn.focused{background:#fff;color:#08080a;transform:scale(1.025);box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+.tv-version{position:absolute;left:42px;bottom:27px;color:#707079;font-size:11px}
+.tv-content{padding:36px 48px 50px;overflow:auto}
+.tv-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px}
+.tv-head h1{font-size:42px;letter-spacing:-.04em;margin:5px 0 7px}
+.tv-head p{margin:0;color:#a9a9b3;max-width:680px;line-height:1.5}
+.tv-head-actions{display:flex;gap:9px}
+.tv-btn{
+ border:1px solid var(--line);background:#1a1a20;color:#fff;border-radius:10px;padding:12px 15px;font-weight:900
+}
+.tv-btn.primary{background:#fff;color:#08080a}
+.tv-btn.focused{transform:scale(1.05);box-shadow:0 0 0 4px rgba(255,255,255,.1)}
+.source-grid{display:grid;grid-template-columns:repeat(3,minmax(230px,1fr));gap:15px}
+.source-card{
+ border:1px solid var(--line);background:linear-gradient(160deg,rgba(31,31,38,.9),rgba(18,18,22,.9));
+ border-radius:18px;padding:17px;min-height:206px;position:relative;transition:.18s
+}
+.source-card.focused{transform:scale(1.035);filter:brightness(1.12);box-shadow:0 26px 70px rgba(0,0,0,.5);z-index:2}
+.source-top{display:flex;justify-content:space-between;align-items:flex-start}
+.source-logo{width:52px;height:52px;border-radius:14px;background:#292931;display:grid;place-items:center;font-size:13px;font-weight:950}
+.source-logo.xtream{background:linear-gradient(145deg,#5421a7,#2c165a)}
+.source-logo.m3u{background:linear-gradient(145deg,#125d7a,#12384b)}
+.source-logo.stalker{background:linear-gradient(145deg,#5c2814,#32170d)}
+.source-name{font-size:18px;font-weight:950;margin-top:16px}.source-url{font-size:11px;color:#90909a;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.source-stats{display:flex;gap:15px;margin-top:17px}.stat b{display:block;font-size:15px}.stat span{font-size:10px;color:#8f8f98}
+.source-foot{position:absolute;left:17px;right:17px;bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.more{width:34px;height:34px;border-radius:9px;border:0;background:#292930;color:#fff}
+.add-source{border-style:dashed;display:grid;place-items:center;text-align:center;background:rgba(255,255,255,.025)}
+.add-plus{width:54px;height:54px;border-radius:50%;background:#fff;color:#09090b;display:grid;place-items:center;font-size:28px;margin:auto}
+.add-title{font-weight:950;margin-top:13px}.add-sub{font-size:11px;color:#8f8f98;margin-top:5px}
+.panel-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:18px}
+.settings-panel{border:1px solid var(--line);border-radius:18px;background:rgba(18,18,22,.84);overflow:hidden}
+.panel-title{padding:17px 18px;border-bottom:1px solid var(--line);font-size:17px;font-weight:950}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.055)}
+.setting-row:last-child{border-bottom:0}.setting-title{font-weight:850}.setting-sub{font-size:11px;color:#90909a;margin-top:4px}
+.value{color:#c9c9d0;font-size:12px;font-weight:850}
+.setting-row.focused{background:#fff;color:#08080a}.setting-row.focused .setting-sub,.setting-row.focused .value{color:#55555d}
+.health{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;padding:16px}
+.health-card{background:#1d1d23;border-radius:13px;padding:14px}.health-card strong{display:block;font-size:24px}.health-card span{font-size:11px;color:#96969f}
+.sync-line{padding:17px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:#aaaab4;font-size:12px}
+.tv-page{display:none}.tv-page.active{display:block}
+
+/* Mobile */
+#mobile{background:#08080a;padding-bottom:88px}
+.phone{width:min(100%,460px);min-height:100vh;margin:auto;background:#09090b;box-shadow:0 0 90px rgba(0,0,0,.5)}
+.m-header{
+ padding:74px 18px 22px;background:
+ radial-gradient(circle at 82% 0%,rgba(78,88,130,.24),transparent 42%),
+ linear-gradient(180deg,#15151a,#09090b)
+}
+.m-title-row{display:flex;justify-content:space-between;align-items:center}.m-title-row h1{font-size:31px;letter-spacing:-.035em;margin:0}
+.m-avatar{width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#37415f,#191d2d);display:grid;place-items:center;font-weight:950}
+.m-profile{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:16px;padding:14px;margin-top:20px}
+.m-profile-left{display:flex;gap:12px;align-items:center}.m-profile-name{font-weight:950}.m-profile-sub{font-size:11px;color:#9696a0;margin-top:3px}
+.m-content{padding:18px}
+.m-section{margin-bottom:25px}.m-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.m-section-head h2{font-size:20px;margin:0}.m-link{color:#aaaab4;font-size:12px;font-weight:850}
+.m-sources{display:grid;gap:11px}
+.m-source{
+ display:grid;grid-template-columns:49px 1fr auto;gap:12px;align-items:center;
+ border:1px solid var(--line);border-radius:15px;background:#151519;padding:13px
+}
+.m-source-logo{width:49px;height:49px;border-radius:13px;background:#28282f;display:grid;place-items:center;font-size:11px;font-weight:950}
+.m-source-name{font-weight:950}.m-source-sub{font-size:10px;color:#92929b;margin-top:4px}.m-source-meta{font-size:10px;color:#a9a9b2;margin-top:6px}
+.m-more{border:0;background:#232329;color:#fff;width:35px;height:35px;border-radius:10px}
+.m-add{
+ width:100%;border:1px dashed rgba(255,255,255,.18);background:#111115;color:#fff;border-radius:15px;
+ padding:15px;display:flex;justify-content:center;align-items:center;gap:9px;font-weight:950;margin-top:10px
+}
+.m-group{border:1px solid var(--line);border-radius:16px;background:#141418;overflow:hidden}
+.m-row{display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:1px solid rgba(255,255,255,.06)}
+.m-row:last-child{border-bottom:0}.m-row-left{display:flex;gap:12px;align-items:center}.m-row-icon{width:36px;height:36px;border-radius:10px;background:#222229;display:grid;place-items:center}
+.m-row-title{font-weight:850}.m-row-sub{font-size:10px;color:#90909a;margin-top:3px}
+.m-value{font-size:11px;color:#a8a8b1;font-weight:850}
+.m-health{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.m-health-card{border:1px solid var(--line);background:#151519;border-radius:14px;padding:14px}.m-health-card strong{font-size:23px;display:block}.m-health-card span{font-size:10px;color:#93939d}
+.bottom-nav{position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,460px);height:78px;background:rgba(10,10,13,.94);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 4px 7px}
+.nav-item{color:#787882;font-size:10px;text-align:center;font-weight:850;min-width:58px}.nav-item b{display:block;font-size:20px;margin-bottom:5px}.nav-item.active{color:#fff}
+
+/* Wizard */
+.modal{position:fixed;z-index:1500;inset:0;background:rgba(0,0,0,.66);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px}
+.modal.open{display:flex}
+.wizard{width:min(720px,100%);background:#17171c;border:1px solid var(--line);border-radius:22px;box-shadow:0 35px 110px rgba(0,0,0,.65);overflow:hidden}
+.wizard-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.wizard-head h2{margin:0}.wizard-body{padding:22px}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.type-card{border:1px solid var(--line);background:#202026;color:#fff;border-radius:15px;padding:17px;text-align:left}
+.type-card.active{background:#fff;color:#08080a}.type-card b{display:block;font-size:17px}.type-card span{display:block;font-size:11px;color:inherit;opacity:.67;margin-top:5px;line-height:1.4}
+.fields{display:grid;gap:12px;margin-top:18px}.field label{display:block;font-size:11px;color:#9c9ca6;font-weight:900;margin-bottom:7px}
+.field input{width:100%;border:1px solid var(--line);background:#0f0f12;color:#fff;border-radius:11px;padding:13px}
+.wizard-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:9px}
+@media(max-width:980px){
+ .source-grid{grid-template-columns:repeat(2,minmax(220px,1fr))}
+ .panel-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="mode-switch">
+  <button id="tvBtn" class="active">Android TV</button>
+  <button id="mobileBtn">Mobile</button>
+</div>
+
+<section id="tv" class="view active">
+ <div class="tv-shell">
+  <aside class="tv-sidebar">
+   <div class="tv-brand"><span class="brand-mark"></span> PRELUDE</div>
+   <div class="tv-profile"><div class="avatar">Κ</div><div><div class="profile-name">Κωνσταντίνος</div><div class="profile-sub">Κύριο προφίλ · Premium</div></div></div>
+   <nav class="tv-nav" id="tvNav"></nav>
+   <div class="tv-version">v1.38 · Production channel</div>
+  </aside>
+  <main class="tv-content">
+   <div class="tv-page active" id="page-sources">
+    <div class="tv-head">
+     <div><div class="section-kicker">ΡΥΘΜΙΣΕΙΣ</div><h1>Πηγές περιεχομένου</h1><p>Διαχείριση λιστών, παρόχων, συγχρονισμού EPG και κατάστασης σύνδεσης χωρίς να εκτίθενται ευαίσθητα στοιχεία.</p></div>
+     <div class="tv-head-actions"><button class="tv-btn" onclick="syncAll()">↻ Συγχρονισμός</button><button class="tv-btn primary" onclick="openWizard()">＋ Νέα πηγή</button></div>
+    </div>
+    <div class="source-grid" id="sourceGrid"></div>
+    <div class="panel-grid">
+      <div class="settings-panel">
+       <div class="panel-title">Συγχρονισμός & δεδομένα</div>
+       <div class="setting-row"><div><div class="setting-title">Αυτόματος συγχρονισμός</div><div class="setting-sub">Ενημέρωση καναλιών, VOD και EPG στο παρασκήνιο</div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+       <div class="setting-row"><div><div class="setting-title">Μόνο μέσω Wi‑Fi</div><div class="setting-sub">Αποφυγή χρήσης δεδομένων κινητής</div></div><div class="switch" onclick="toggleSwitch(this)"></div></div>
+       <div class="setting-row"><div><div class="setting-title">Συχνότητα EPG</div><div class="setting-sub">Πότε γίνεται ανανέωση του οδηγού</div></div><div class="value">Κάθε 6 ώρες ›</div></div>
+       <div class="setting-row"><div><div class="setting-title">Cache εικόνων</div><div class="setting-sub">Posters, backdrops και logos καναλιών</div></div><div class="value">1.8 GB ›</div></div>
+      </div>
+      <div class="settings-panel">
+       <div class="panel-title">Υγεία συστήματος</div>
+       <div class="health">
+        <div class="health-card"><strong>3</strong><span>Ενεργές πηγές</span></div>
+        <div class="health-card"><strong>12.4K</strong><span>Συνολικά στοιχεία</span></div>
+        <div class="health-card"><strong>96%</strong><span>EPG αντιστοίχιση</span></div>
+        <div class="health-card"><strong>42ms</strong><span>Μέση απόκριση</span></div>
+       </div>
+       <div class="sync-line"><span>Τελευταίος πλήρης συγχρονισμός</span><strong>πριν 8 λεπτά</strong></div>
+      </div>
+    </div>
+   </div>
+
+   <div class="tv-page" id="page-playback">
+    <div class="tv-head"><div><div class="section-kicker">PLAYER</div><h1>Αναπαραγωγή</h1><p>Επιλογή engine, συμπεριφορά live streams, αυτόματη ποιότητα και προτιμήσεις υποτίτλων.</p></div></div>
+    <div class="settings-panel">
+      <div class="panel-title">Κύριες επιλογές</div>
+      <div class="setting-row"><div><div class="setting-title">Προτιμώμενος player</div><div class="setting-sub">Αυτόματη επιλογή με fallback</div></div><div class="value">ExoPlayer ›</div></div>
+      <div class="setting-row"><div><div class="setting-title">Hardware acceleration</div><div class="setting-sub">Χρήση decoder της συσκευής όπου υποστηρίζεται</div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row"><div><div class="setting-title">Αυτόματη επόμενη αναπαραγωγή</div><div class="setting-sub">Μετάβαση στο επόμενο επεισόδιο</div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row"><div><div class="setting-title">Live buffer</div><div class="setting-sub">Ισορροπία σταθερότητας και καθυστέρησης</div></div><div class="value">Κανονικό ›</div></div>
+      <div class="setting-row"><div><div class="setting-title">Προεπιλεγμένοι υπότιτλοι</div><div class="setting-sub">Γλώσσα και εμφάνιση</div></div><div class="value">Ελληνικά ›</div></div>
+    </div>
+   </div>
+
+   <div class="tv-page" id="page-appearance">
+    <div class="tv-head"><div><div class="section-kicker">UI</div><h1>Εμφάνιση & προσβασιμότητα</h1><p>Ρυθμίσεις κίνησης, μεγέθους κειμένου, αντίθεσης και συμπεριφοράς focus.</p></div></div>
+    <div class="settings-panel">
+      <div class="panel-title">Εμπειρία χρήσης</div>
+      <div class="setting-row"><div><div class="setting-title">Cinematic motion</div><div class="setting-sub">Hero crossfades, rail parallax και focus animation</div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row"><div><div class="setting-title">Μειωμένη κίνηση</div><div class="setting-sub">Περιορίζει zoom και parallax</div></div><div class="switch" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row"><div><div class="setting-title">Μέγεθος κειμένου</div><div class="setting-sub">Συμβατό με font scaling συστήματος</div></div><div class="value">Κανονικό ›</div></div>
+      <div class="setting-row"><div><div class="setting-title">Υψηλή αντίθεση</div><div class="setting-sub">Ενισχύει labels και secondary text</div></div><div class="switch" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row"><div><div class="setting-title">TalkBack / Screen reader hints</div><div class="setting-sub">Πλουσιότερες περιγραφές για controls και περιεχόμενο</div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+    </div>
+   </div>
+  </main>
+ </div>
+</section>
+
+<section id="mobile" class="view">
+ <div class="phone">
+  <div class="m-header">
+   <div class="m-title-row"><h1>Ρυθμίσεις</h1><div class="m-avatar">Κ</div></div>
+   <div class="m-profile"><div class="m-profile-left"><div class="avatar">Κ</div><div><div class="m-profile-name">Κωνσταντίνος</div><div class="m-profile-sub">Κύριο προφίλ · Premium</div></div></div><span>›</span></div>
+  </div>
+  <div class="m-content">
+   <section class="m-section">
+    <div class="m-section-head"><h2>Πηγές</h2><span class="m-link" onclick="syncAll()">Συγχρονισμός</span></div>
+    <div class="m-sources" id="mSources"></div>
+    <button class="m-add" onclick="openWizard()">＋ Προσθήκη νέας πηγής</button>
+   </section>
+   <section class="m-section">
+    <div class="m-section-head"><h2>Αναπαραγωγή</h2></div>
+    <div class="m-group">
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">▶</div><div><div class="m-row-title">Προτιμώμενος player</div><div class="m-row-sub">Αυτόματο fallback</div></div></div><div class="m-value">ExoPlayer ›</div></div>
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">⚡</div><div><div class="m-row-title">Hardware acceleration</div><div class="m-row-sub">Decoder συσκευής</div></div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">CC</div><div><div class="m-row-title">Υπότιτλοι</div><div class="m-row-sub">Ελληνικά</div></div></div><div class="m-value">›</div></div>
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">◉</div><div><div class="m-row-title">Live buffer</div><div class="m-row-sub">Σταθερότητα / καθυστέρηση</div></div></div><div class="m-value">Κανονικό ›</div></div>
+    </div>
+   </section>
+   <section class="m-section">
+    <div class="m-section-head"><h2>Εμφάνιση</h2></div>
+    <div class="m-group">
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">✦</div><div><div class="m-row-title">Cinematic motion</div><div class="m-row-sub">Transitions και hero effects</div></div></div><div class="switch on" onclick="toggleSwitch(this)"></div></div>
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">A</div><div><div class="m-row-title">Μέγεθος κειμένου</div><div class="m-row-sub">Σύμφωνα με τη συσκευή</div></div></div><div class="m-value">Κανονικό ›</div></div>
+     <div class="m-row"><div class="m-row-left"><div class="m-row-icon">◐</div><div><div class="m-row-title">Υψηλή αντίθεση</div><div class="m-row-sub">Ενισχυμένη αναγνωσιμότητα</div></div></div><div class="switch" onclick="toggleSwitch(this)"></div></div>
+    </div>
+   </section>
+   <section class="m-section">
+    <div class="m-section-head"><h2>Κατάσταση</h2></div>
+    <div class="m-health">
+      <div class="m-health-card"><strong>3</strong><span>Ενεργές πηγές</span></div>
+      <div class="m-health-card"><strong>96%</strong><span>EPG αντιστοίχιση</span></div>
+      <div class="m-health-card"><strong>1.8 GB</strong><span>Cache εικόνων</span></div>
+      <div class="m-health-card"><strong>8 λεπτά</strong><span>Από τελευταίο sync</span></div>
+    </div>
+   </section>
+   <section class="m-section">
+    <div class="m-group">
+      <div class="m-row"><div class="m-row-left"><div class="m-row-icon">ⓘ</div><div><div class="m-row-title">Σχετικά με την εφαρμογή</div><div class="m-row-sub">Έκδοση, άδειες και διαγνωστικά</div></div></div><div class="m-value">v1.38 ›</div></div>
+      <div class="m-row"><div class="m-row-left"><div class="m-row-icon">↗</div><div><div class="m-row-title">Εξαγωγή διαγνωστικών</div><div class="m-row-sub">Χωρίς usernames ή passwords</div></div></div><div class="m-value">›</div></div>
+    </div>
+   </section>
+  </div>
+ </div>
+ <div class="bottom-nav">
+  <div class="nav-item"><b>⌂</b>Αρχική</div><div class="nav-item"><b>◉</b>Live</div><div class="nav-item"><b>⌕</b>Αναζήτηση</div><div class="nav-item"><b>♡</b>Η λίστα μου</div><div class="nav-item active"><b>⚙</b>Ρυθμίσεις</div>
+ </div>
+</section>
+
+<div class="modal" id="wizardModal">
+ <div class="wizard">
+  <div class="wizard-head"><div><div class="section-kicker">ΝΕΑ ΠΗΓΗ</div><h2>Σύνδεση παρόχου</h2></div><button class="more" onclick="closeWizard()">×</button></div>
+  <div class="wizard-body">
+   <div class="type-grid" id="typeGrid"></div>
+   <div class="fields" id="fields"></div>
+  </div>
+  <div class="wizard-foot"><button class="tv-btn" onclick="closeWizard()">Ακύρωση</button><button class="tv-btn" onclick="toast('Έλεγχος σύνδεσης επιτυχής')">Δοκιμή</button><button class="tv-btn primary" onclick="saveSource()">Αποθήκευση</button></div>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const navItems=[
+ {id:"sources",icon:"▦",label:"Πηγές"},
+ {id:"playback",icon:"▶",label:"Αναπαραγωγή"},
+ {id:"appearance",icon:"✦",label:"Εμφάνιση"},
+ {id:"epg",icon:"◷",label:"EPG & Συγχρονισμός"},
+ {id:"storage",icon:"▣",label:"Αποθήκευση"},
+ {id:"privacy",icon:"⌁",label:"Απόρρητο"},
+ {id:"about",icon:"ⓘ",label:"Σχετικά"}
+];
+let page="sources",navFocus=0,focusZone="nav",sourceFocus=0,type="m3u";
+let sources=[
+ {type:"m3u",name:"Home IPTV",url:"https://provider.example/list.m3u",status:"ok",channels:"1,248",vod:"5,630",sync:"πριν 8 λεπτά"},
+ {type:"xtream",name:"Cinema Plus",url:"https://xtream.example:8080",status:"ok",channels:"832",vod:"4,214",sync:"πριν 12 λεπτά"},
+ {type:"stalker",name:"Family Portal",url:"https://portal.example/stalker",status:"warn",channels:"416",vod:"—",sync:"χρειάζεται έλεγχο"}
+];
+
+function logoClass(t){return t==="xtream"?"xtream":t==="stalker"?"stalker":"m3u"}
+function logoText(t){return t==="xtream"?"XC":t==="stalker"?"MAG":"M3U"}
+function statusPill(s){return s==="ok"?'<span class="pill ok"><span class="dot"></span>Συνδεδεμένο</span>':'<span class="pill warn"><span class="dot"></span>Έλεγχος</span>'}
+function renderNav(){
+ tvNav.innerHTML=navItems.map((n,i)=>`<button class="nav-btn ${n.id===page?'active':''} ${focusZone==='nav'&&i===navFocus?'focused':''}" onclick="selectPage('${n.id}',${i})"><span class="icon">${n.icon}</span>${n.label}</button>`).join("");
+}
+function renderSources(){
+ sourceGrid.innerHTML=sources.map((s,i)=>`<div class="source-card ${focusZone==='sources'&&i===sourceFocus?'focused':''}" onclick="sourceFocus=${i};focusZone='sources';renderAll()">
+  <div class="source-top"><div class="source-logo ${logoClass(s.type)}">${logoText(s.type)}</div>${statusPill(s.status)}</div>
+  <div class="source-name">${s.name}</div><div class="source-url">${s.url}</div>
+  <div class="source-stats"><div class="stat"><b>${s.channels}</b><span>Κανάλια</span></div><div class="stat"><b>${s.vod}</b><span>VOD</span></div></div>
+  <div class="source-foot"><span style="font-size:10px;color:#8f8f99">Sync ${s.sync}</span><button class="more" onclick="event.stopPropagation();toast('Μενού πηγής: ${s.name}')">⋮</button></div>
+ </div>`).join("")+`<div class="source-card add-source ${focusZone==='sources'&&sourceFocus===sources.length?'focused':''}" onclick="openWizard()"><div><div class="add-plus">＋</div><div class="add-title">Νέα πηγή</div><div class="add-sub">M3U, Xtream Codes ή Stalker Portal</div></div></div>`;
+ mSources.innerHTML=sources.map(s=>`<div class="m-source"><div class="m-source-logo ${logoClass(s.type)}">${logoText(s.type)}</div><div><div class="m-source-name">${s.name}</div><div class="m-source-sub">${s.url}</div><div class="m-source-meta">${s.channels} κανάλια · Sync ${s.sync}</div></div><button class="m-more" onclick="toast('Μενού πηγής: ${s.name}')">⋮</button></div>`).join("");
+}
+function selectPage(id,i){
+ navFocus=i;page=id;
+ document.querySelectorAll(".tv-page").forEach(x=>x.classList.remove("active"));
+ const target=document.getElementById("page-"+id);
+ if(target)target.classList.add("active"); else {document.getElementById("page-sources").classList.add("active");toast("Η ενότητα θα χρησιμοποιεί το ίδιο premium component system")}
+ renderNav();
+}
+function toggleSwitch(el){el.classList.toggle("on");toast(el.classList.contains("on")?"Ενεργοποιήθηκε":"Απενεργοποιήθηκε")}
+function syncAll(){toast("Ξεκίνησε συγχρονισμός όλων των πηγών")}
+function openWizard(){wizardModal.classList.add("open");renderWizard()}
+function closeWizard(){wizardModal.classList.remove("open")}
+function renderWizard(){
+ const types=[
+  {id:"m3u",name:"M3U Playlist",sub:"URL λίστας ή συμβατό αρχείο"},
+  {id:"xtream",name:"Xtream Codes",sub:"Server, username και password"},
+  {id:"stalker",name:"Stalker Portal",sub:"Portal URL και MAC address"}
+ ];
+ typeGrid.innerHTML=types.map(x=>`<button class="type-card ${type===x.id?'active':''}" onclick="type='${x.id}';renderWizard()"><b>${x.name}</b><span>${x.sub}</span></button>`).join("");
+ let fs='';
+ if(type==="m3u")fs=`<div class="field"><label>ΟΝΟΜΑ ΠΗΓΗΣ</label><input id="sourceName" value="Νέα M3U"></div><div class="field"><label>PLAYLIST URL</label><input placeholder="https://example.com/playlist.m3u"></div><div class="field"><label>EPG URL (ΠΡΟΑΙΡΕΤΙΚΟ)</label><input placeholder="https://example.com/guide.xml"></div>`;
+ if(type==="xtream")fs=`<div class="field"><label>ΟΝΟΜΑ ΠΗΓΗΣ</label><input id="sourceName" value="Νέο Xtream"></div><div class="field"><label>SERVER URL</label><input placeholder="https://server.example:8080"></div><div class="field"><label>USERNAME</label><input placeholder="Username"></div><div class="field"><label>PASSWORD</label><input type="password" placeholder="Password"></div>`;
+ if(type==="stalker")fs=`<div class="field"><label>ΟΝΟΜΑ ΠΗΓΗΣ</label><input id="sourceName" value="Νέο Portal"></div><div class="field"><label>PORTAL URL</label><input placeholder="https://portal.example/stalker"></div><div class="field"><label>MAC ADDRESS</label><input placeholder="00:1A:79:XX:XX:XX"></div>`;
+ fields.innerHTML=fs;
+}
+function saveSource(){
+ const name=document.getElementById("sourceName")?.value||"Νέα πηγή";
+ sources.push({type,name,url:"Νέα σύνδεση",status:"ok",channels:"—",vod:"—",sync:"μόλις τώρα"});
+ closeWizard();renderSources();toast("Η πηγή αποθηκεύτηκε");
+}
+function renderAll(){renderNav();renderSources()}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
+document.addEventListener("keydown",e=>{
+ if(!tv.classList.contains("active")||wizardModal.classList.contains("open"))return;
+ if(e.key==="ArrowRight"&&focusZone==="nav"){focusZone=page==="sources"?"sources":"content"}
+ else if(e.key==="ArrowLeft"&&focusZone!=="nav")focusZone="nav";
+ else if(e.key==="ArrowUp"){
+   if(focusZone==="nav")navFocus=(navFocus-1+navItems.length)%navItems.length;
+   else if(focusZone==="sources")sourceFocus=Math.max(0,sourceFocus-3);
+ }
+ else if(e.key==="ArrowDown"){
+   if(focusZone==="nav")navFocus=(navFocus+1)%navItems.length;
+   else if(focusZone==="sources")sourceFocus=Math.min(sources.length,sourceFocus+3);
+ }
+ else if(e.key==="ArrowLeft"&&focusZone==="sources")sourceFocus=Math.max(0,sourceFocus-1);
+ else if(e.key==="ArrowRight"&&focusZone==="sources")sourceFocus=Math.min(sources.length,sourceFocus+1);
+ if(e.key==="Enter"){
+   if(focusZone==="nav")selectPage(navItems[navFocus].id,navFocus);
+   else if(focusZone==="sources"){if(sourceFocus===sources.length)openWizard();else toast("Άνοιγμα "+sources[sourceFocus].name)}
+ }
+ renderAll();
+});
+tvBtn.onclick=()=>{tv.classList.add("active");mobile.classList.remove("active");tvBtn.classList.add("active");mobileBtn.classList.remove("active")}
+mobileBtn.onclick=()=>{mobile.classList.add("active");tv.classList.remove("active");mobileBtn.classList.add("active");tvBtn.classList.remove("active")}
+renderAll();
+</script>
+</body>
+</html>

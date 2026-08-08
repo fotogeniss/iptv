@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHASE 13 — Production Refactor Dashboard</title>
+<style>
+:root{
+  --bg:#060608;--surface:#111116;--surface2:#18181e;--surface3:#212128;
+  --text:#fff;--muted:#a5a5af;--line:rgba(255,255,255,.09);
+  --red:#e50914;--green:#45d487;--amber:#f4bc56;--blue:#66a8ff;--violet:#9b78ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#070709;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button{font:inherit}
+body{min-height:100vh}
+.topbar{
+ position:fixed;z-index:1000;left:50%;top:15px;transform:translateX(-50%);
+ display:flex;gap:7px;padding:6px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
+ background:rgba(10,10,13,.8);backdrop-filter:blur(20px);box-shadow:0 18px 55px rgba(0,0,0,.45)
+}
+.topbar button{border:0;background:transparent;color:#aaaab4;border-radius:999px;padding:10px 15px;font-weight:900;cursor:pointer}
+.topbar button.active{background:#fff;color:#08080a}
+.page{padding:92px 25px 60px;min-height:100vh;background:
+ radial-gradient(circle at 85% 8%,rgba(72,83,133,.18),transparent 30%),
+ radial-gradient(circle at 10% 85%,rgba(229,9,20,.07),transparent 25%),#070709}
+.shell{max-width:1480px;margin:auto}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:end;margin-bottom:22px}
+.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#8c8c96;font-weight:950}
+h1{font-size:clamp(42px,6vw,82px);line-height:.92;letter-spacing:-.055em;margin:8px 0 13px}
+.hero p{color:#aaaab4;line-height:1.55;max-width:820px;margin:0;font-size:16px}
+.release-card{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#191920,#101014);padding:18px}
+.release-top{display:flex;justify-content:space-between;align-items:center}
+.release-version{font-size:24px;font-weight:950}.badge{padding:6px 9px;border-radius:999px;font-size:10px;font-weight:950}
+.badge.warn{background:rgba(244,188,86,.13);color:#ffd27d;border:1px solid rgba(244,188,86,.2)}
+.badge.ok{background:rgba(69,212,135,.12);color:#8be8b5;border:1px solid rgba(69,212,135,.2)}
+.release-list{display:grid;gap:9px;margin-top:15px}
+.release-row{display:flex;justify-content:space-between;font-size:12px;color:#a3a3ad}.release-row strong{color:#fff}
+.progress{height:6px;background:#292930;border-radius:99px;overflow:hidden;margin-top:16px}
+.progress i{height:100%;display:block;background:linear-gradient(90deg,var(--amber),var(--green));width:54%;border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.stat{border:1px solid var(--line);border-radius:16px;background:#111116;padding:15px;min-height:112px}
+.stat-label{font-size:10px;letter-spacing:.1em;color:#85858f;font-weight:950;text-transform:uppercase}
+.stat-value{font-size:30px;font-weight:950;margin-top:10px;letter-spacing:-.035em}
+.stat-target{font-size:11px;color:#a2a2ac;margin-top:6px}.down{color:#7ee5ad}.up{color:#8dbbff}.risk{color:#ffd07b}
+
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px}
+.sidebar{border:1px solid var(--line);border-radius:18px;background:#101014;padding:12px;height:max-content;position:sticky;top:86px}
+.side-title{padding:10px 11px 13px;color:#82828c;font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+.nav-btn{
+ width:100%;border:0;background:transparent;color:#a8a8b1;border-radius:11px;padding:13px 12px;
+ display:flex;align-items:center;justify-content:space-between;text-align:left;font-weight:850;cursor:pointer
+}
+.nav-btn span:first-child{display:flex;gap:11px;align-items:center}
+.nav-btn.active{background:#fff;color:#08080a}
+.count{min-width:25px;height:22px;border-radius:999px;background:rgba(255,255,255,.1);display:grid;place-items:center;font-size:10px}
+.nav-btn.active .count{background:#dfdfe4}
+.content{min-width:0}
+.panel{display:none}.panel.active{display:block}
+.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:13px}
+.section-head h2{font-size:27px;margin:0;letter-spacing:-.025em}.section-head p{margin:5px 0 0;color:#94949e;font-size:13px}
+.action-btn{border:1px solid var(--line);background:#1a1a20;color:#fff;border-radius:10px;padding:11px 14px;font-weight:900;cursor:pointer}
+.action-btn.primary{background:#fff;color:#08080a}
+
+.card-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:13px}
+.card{border:1px solid var(--line);background:linear-gradient(155deg,#17171d,#101014);border-radius:18px;padding:17px;position:relative;overflow:hidden}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+.card h3{margin:0;font-size:17px}.card-sub{font-size:11px;color:#90909a;margin-top:5px}
+.metric-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.055)}
+.metric-row:last-child{border-bottom:0}.metric-name{font-weight:850}.metric-detail{font-size:11px;color:#92929c;margin-top:4px}
+.metric-value{font-size:14px;font-weight:950;text-align:right}.metric-value.bad{color:#ffcf79}.metric-value.good{color:#83e6b0}
+
+.hotspot{display:grid;grid-template-columns:1fr 95px 115px;gap:12px;align-items:center;padding:12px;border-radius:12px;background:#19191f;margin-top:9px;transition:.18s}
+.hotspot:hover{transform:translateX(4px);background:#202027}
+.file{font-weight:900;font-size:13px}.path{font-size:10px;color:#85858f;margin-top:3px}
+.lines{text-align:right;font-weight:950}.plan{text-align:center;padding:6px 8px;border-radius:999px;background:rgba(102,168,255,.12);color:#8dbbff;font-size:10px;font-weight:950}
+.severity{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}.sev-high{background:#ff6d72;box-shadow:0 0 12px #ff6d72}.sev-med{background:#ffc65f}.sev-low{background:#55d891}
+
+.arch-tree{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.7;color:#bcbcc5;background:#0b0b0e;border-radius:14px;padding:17px;overflow:auto;min-height:325px}
+.arch-tree .folder{color:#fff;font-weight:800}.arch-tree .new{color:#83e6b0}.arch-tree .move{color:#82b7ff}.arch-tree .remove{color:#ff8a8f;text-decoration:line-through}
+.scope-banner{display:flex;gap:12px;align-items:flex-start;border:1px solid rgba(102,168,255,.17);background:rgba(102,168,255,.07);border-radius:14px;padding:13px;margin-bottom:13px}
+.scope-icon{width:34px;height:34px;border-radius:10px;background:rgba(102,168,255,.15);display:grid;place-items:center;flex:none}
+.scope-banner b{display:block}.scope-banner span{font-size:11px;color:#aeb5c2;line-height:1.45;display:block;margin-top:4px}
+
+.wave-list{display:grid;gap:10px;margin-top:13px}
+.wave{display:grid;grid-template-columns:62px 1fr auto;gap:13px;align-items:center;border:1px solid var(--line);background:#15151a;border-radius:14px;padding:13px;cursor:pointer;transition:.18s}
+.wave:hover,.wave.active{background:#202027;transform:translateY(-2px)}
+.wave-id{width:51px;height:51px;border-radius:13px;background:#292930;display:grid;place-items:center;font-weight:950}
+.wave.active .wave-id{background:#fff;color:#08080a}.wave-title{font-weight:950}.wave-desc{font-size:11px;color:#9696a0;margin-top:4px}
+.wave-state{font-size:10px;font-weight:950;padding:6px 8px;border-radius:999px;background:#27272e;color:#b9b9c2}
+.wave.active .wave-state{background:rgba(69,212,135,.12);color:#83e6b0}
+.detail-box{margin-top:12px;border-radius:14px;background:#0d0d11;border:1px solid var(--line);padding:16px;min-height:150px}
+.detail-box h4{margin:0 0 10px}.detail-box ul{margin:0;padding-left:18px;color:#aaaab4;font-size:12px;line-height:1.7}
+
+.qa-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.filter{border:1px solid var(--line);background:#19191f;color:#aaaab4;border-radius:999px;padding:9px 12px;font-size:11px;font-weight:900;cursor:pointer}
+.filter.active{background:#fff;color:#08080a}
+.matrix{width:100%;border-collapse:separate;border-spacing:0;background:#111116;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.matrix th,.matrix td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px;text-align:left}
+.matrix th{color:#85858f;text-transform:uppercase;letter-spacing:.08em;font-size:9px;background:#15151a}
+.matrix tr:last-child td{border-bottom:0}.device{font-weight:900;font-size:12px}
+.status-btn{border:0;border-radius:999px;padding:6px 9px;font-size:9px;font-weight:950;cursor:pointer}
+.status-pending{background:#26262d;color:#aaaab4}.status-pass{background:rgba(69,212,135,.13);color:#83e6b0}.status-fail{background:rgba(229,9,20,.13);color:#ff8a8f}
+.qa-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:13px}
+.qa-box{background:#17171c;border-radius:13px;padding:13px}.qa-box strong{font-size:23px;display:block}.qa-box span{font-size:10px;color:#92929c}
+
+.gate-list{display:grid;gap:9px}
+.gate{display:grid;grid-template-columns:38px 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);border-radius:13px;background:#15151a;padding:12px}
+.gate-icon{width:34px;height:34px;border-radius:10px;background:#27272e;display:grid;place-items:center}
+.gate-title{font-weight:900}.gate-sub{font-size:10px;color:#8e8e98;margin-top:4px}
+.gate-status{font-size:10px;font-weight:950;color:#aaaab4}.gate.running .gate-icon{animation:pulse 800ms infinite alternate;background:rgba(102,168,255,.16);color:#8dbbff}
+.gate.pass .gate-icon{background:rgba(69,212,135,.14);color:#83e6b0}.gate.pass .gate-status{color:#83e6b0}
+.gate.fail .gate-icon{background:rgba(229,9,20,.14);color:#ff8a8f}.gate.fail .gate-status{color:#ff8a8f}
+@keyframes pulse{to{transform:scale(1.08);filter:brightness(1.2)}}
+.release-note{border:1px solid rgba(244,188,86,.2);background:rgba(244,188,86,.07);border-radius:14px;padding:13px;margin-top:13px;color:#d4bea0;font-size:11px;line-height:1.55}
+
+.perf-chart{height:225px;display:flex;align-items:end;gap:13px;padding:18px 8px 4px}
+.bar-col{flex:1;display:grid;justify-items:center;gap:8px}
+.bar-wrap{height:165px;width:48px;border-radius:11px;background:#222229;position:relative;overflow:hidden;display:flex;align-items:end}
+.bar-fill{width:100%;background:linear-gradient(180deg,#7baeff,#35578e);border-radius:11px 11px 0 0;transition:height .7s cubic-bezier(.2,.8,.2,1)}
+.bar-fill.target{background:linear-gradient(180deg,#72e2a6,#26784c)}
+.bar-label{font-size:10px;color:#90909a;text-align:center}.bar-value{font-size:11px;font-weight:950}
+
+.checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.check{
+ display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:#15151a;border-radius:12px;padding:12px;cursor:pointer
+}
+.checkbox{width:20px;height:20px;border-radius:6px;border:1px solid #4b4b54;display:grid;place-items:center;flex:none}
+.check.done .checkbox{background:var(--green);border-color:var(--green);color:#07130d}.check-title{font-weight:850;font-size:12px}.check-sub{font-size:10px;color:#8d8d97;margin-top:3px}
+.check.done{filter:brightness(.82)}.check.done .check-title{text-decoration:line-through;color:#aaaab4}
+
+.toast{position:fixed;z-index:2000;left:50%;bottom:28px;transform:translate(-50%,20px);background:#fff;color:#08080a;padding:11px 16px;border-radius:999px;font-weight:900;opacity:0;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1100px){
+ .stats{grid-template-columns:repeat(3,1fr)}.hero{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.sidebar{position:static;display:flex;overflow:auto}.side-title{display:none}.nav-btn{min-width:170px}.span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}
+}
+@media(max-width:650px){
+ .page{padding-left:13px;padding-right:13px}.stats{grid-template-columns:repeat(2,1fr)}.checklist{grid-template-columns:1fr}.qa-summary{grid-template-columns:repeat(2,1fr)}
+ .hotspot{grid-template-columns:1fr auto}.plan{display:none}.matrix{display:block;overflow:auto}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+ <button id="currentBtn" class="active">Current Baseline</button>
+ <button id="targetBtn">Target v1.40</button>
+ <button id="gateBtn">Run Release Gate</button>
+</div>
+
+<main class="page">
+<div class="shell">
+ <section class="hero">
+  <div>
+   <div class="kicker">PHASE 13 · PRODUCTION REFACTOR</div>
+   <h1>Architecture, Quality & Release Readiness</h1>
+   <p>Το τελικό pass δεν αλλάζει repositories, parsers ή playback behavior. Καθαρίζει τα UI boundaries, μειώνει τα monolith files, προσθέτει stability/performance contracts και δημιουργεί πραγματικό release gate για Mobile και Android TV.</p>
+  </div>
+  <div class="release-card">
+   <div class="release-top"><div><div class="kicker">CURRENT BUILD</div><div class="release-version">v1.39.0 · code 42</div></div><span class="badge warn" id="readinessBadge">54% READY</span></div>
+   <div class="release-list">
+    <div class="release-row"><span>UI redesign</span><strong>7/7 screens</strong></div>
+    <div class="release-row"><span>Shared motion</span><strong>Implemented</strong></div>
+    <div class="release-row"><span>Production architecture</span><strong id="archState">Pending</strong></div>
+    <div class="release-row"><span>Release hardening</span><strong id="releaseState">Pending</strong></div>
+   </div>
+   <div class="progress"><i id="readinessBar"></i></div>
+  </div>
+ </section>
+
+ <section class="stats" id="stats"></section>
+
+ <div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <section class="content">
+   <div class="panel active" id="panel-overview">
+    <div class="section-head"><div><h2>Production baseline</h2><p>Μετρήσεις από το πραγματικό project v1.39.</p></div><button class="action-btn" onclick="toggleBaseline()">Current ↔ Target</button></div>
+    <div class="scope-banner"><div class="scope-icon">⌁</div><div><b>Scope lock</b><span>Δεν αλλάζουν Data, Repositories, M3U/Xtream/Stalker parsing, TMDB, EPG, History, Favorites, Search Engine, ExoPlayer ή VLC behavior. Το refactor περιορίζεται σε UI orchestration, state boundaries, performance, QA και release configuration.</span></div></div>
+    <div class="card-grid">
+     <div class="card span-7">
+      <h3>Top architecture hotspots</h3><div class="card-sub">Αρχεία που μπλοκάρουν maintainability, previews και isolated testing.</div>
+      <div id="hotspots"></div>
+     </div>
+     <div class="card span-5">
+      <h3>Quality gaps</h3><div class="card-sub">Σημερινό baseline έναντι Definition of Done.</div>
+      <div class="metric-row"><div><div class="metric-name">Compose previews</div><div class="metric-detail">Reusable screens/components</div></div><div class="metric-value bad">0</div></div>
+      <div class="metric-row"><div><div class="metric-name">Instrumentation/UI tests</div><div class="metric-detail">DPAD, touch, accessibility</div></div><div class="metric-value bad">0</div></div>
+      <div class="metric-row"><div><div class="metric-name">UI files with inline colors</div><div class="metric-detail">Ad-hoc styles outside design layer</div></div><div class="metric-value bad">26</div></div>
+      <div class="metric-row"><div><div class="metric-name">Files over 300 lines</div><div class="metric-detail">Production Kotlin sources</div></div><div class="metric-value bad">7</div></div>
+      <div class="metric-row"><div><div class="metric-name">JVM policy tests</div><div class="metric-detail">Existing fast unit coverage</div></div><div class="metric-value good">15</div></div>
+      <div class="metric-row"><div><div class="metric-name">Hardcoded motion timings</div><div class="metric-detail">After Phase 12 migration</div></div><div class="metric-value good">0</div></div>
+     </div>
+     <div class="card span-6">
+      <h3>Current architecture</h3><div class="card-sub">Monolithic orchestration around otherwise reusable premium screens.</div>
+      <pre class="arch-tree" id="currentTree"></pre>
+     </div>
+     <div class="card span-6">
+      <h3>Target architecture</h3><div class="card-sub">Same data contracts, cleaner UI ownership.</div>
+      <pre class="arch-tree" id="targetTree"></pre>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel" id="panel-waves">
+    <div class="section-head"><div><h2>Refactor waves</h2><p>Η υλοποίηση γίνεται σε ελεγχόμενα βήματα ώστε να παραμένει λειτουργικό το app.</p></div><button class="action-btn primary" onclick="selectWave(0)">Start with 13A</button></div>
+    <div class="card-grid">
+     <div class="card span-7">
+      <h3>Execution plan</h3>
+      <div class="wave-list" id="waveList"></div>
+     </div>
+     <div class="card span-5">
+      <h3>Selected wave</h3><div class="card-sub">Ακριβές scope και exit criteria.</div>
+      <div class="detail-box" id="waveDetail"></div>
+     </div>
+     <div class="card span-12">
+      <h3>Non-negotiable exit criteria</h3>
+      <div class="checklist" id="exitChecklist"></div>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel" id="panel-performance">
+    <div class="section-head"><div><h2>Performance & stability</h2><p>Targets για startup, recomposition, focus latency και scrolling.</p></div><button class="action-btn" onclick="animateCharts()">Replay targets</button></div>
+    <div class="card-grid">
+     <div class="card span-7">
+      <h3>Current risk → target</h3><div class="card-sub">Relative index: χαμηλότερο είναι καλύτερο.</div>
+      <div class="perf-chart" id="perfChart"></div>
+     </div>
+     <div class="card span-5">
+      <h3>Compose stability plan</h3>
+      <div class="metric-row"><div><div class="metric-name">Immutable UI models</div><div class="metric-detail">Hero, cards, EPG cells, search results</div></div><div class="metric-value">13 → audited</div></div>
+      <div class="metric-row"><div><div class="metric-name">derivedStateOf</div><div class="metric-detail">Only for derived filters/progress</div></div><div class="metric-value">0 → targeted</div></div>
+      <div class="metric-row"><div><div class="metric-name">State collection</div><div class="metric-detail">Lifecycle-aware collection at route boundaries</div></div><div class="metric-value">centralize</div></div>
+      <div class="metric-row"><div><div class="metric-name">Image loading</div><div class="metric-detail">Shared Coil requests, cache keys, sizing</div></div><div class="metric-value">audit</div></div>
+      <div class="metric-row"><div><div class="metric-name">TV focus restore</div><div class="metric-detail">Route, rail and selected-item restoration</div></div><div class="metric-value">contract</div></div>
+     </div>
+     <div class="card span-6">
+      <h3>Player isolation</h3><div class="card-sub">Το playback stack δεν ξαναγράφεται.</div>
+      <div class="wave-list">
+       <div class="wave"><div class="wave-id">UI</div><div><div class="wave-title">Overlay renderers</div><div class="wave-desc">Mobile/TV controls, sheets και panels σε ξεχωριστά αρχεία.</div></div><span class="wave-state">split</span></div>
+       <div class="wave"><div class="wave-id">CTL</div><div><div class="wave-title">Interaction controller</div><div class="wave-desc">DPAD, gestures, auto-hide και keys χωρίς αλλαγή engine.</div></div><span class="wave-state">extract</span></div>
+       <div class="wave"><div class="wave-id">TRK</div><div><div class="wave-title">Track presentation</div><div class="wave-desc">Audio/subtitle/quality UI models πάνω στα υπάρχοντα tracks.</div></div><span class="wave-state">model</span></div>
+      </div>
+     </div>
+     <div class="card span-6">
+      <h3>Startup & package size</h3>
+      <div class="metric-row"><div><div class="metric-name">Baseline Profile</div><div class="metric-detail">Startup + Home + Player journey</div></div><div class="metric-value bad">Missing</div></div>
+      <div class="metric-row"><div><div class="metric-name">R8 release minification</div><div class="metric-detail">Currently isMinifyEnabled = false</div></div><div class="metric-value bad">Disabled</div></div>
+      <div class="metric-row"><div><div class="metric-name">ABI splits</div><div class="metric-detail">arm64, armeabi-v7a, x86_64 + universal</div></div><div class="metric-value good">Present</div></div>
+      <div class="metric-row"><div><div class="metric-name">Image/cache policy</div><div class="metric-detail">TMDB, logos, backdrops, EPG</div></div><div class="metric-value">measure</div></div>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel" id="panel-qa">
+    <div class="section-head"><div><h2>Device & accessibility QA</h2><p>Interactive matrix για το τελικό validation pass.</p></div><button class="action-btn" onclick="markAllPass()">Demo: mark all pass</button></div>
+    <div class="qa-toolbar" id="qaFilters"></div>
+    <table class="matrix">
+     <thead><tr><th>Device</th><th>Navigation</th><th>Playback</th><th>EPG</th><th>Insets / Layout</th><th>Accessibility</th></tr></thead>
+     <tbody id="qaBody"></tbody>
+    </table>
+    <div class="qa-summary" id="qaSummary"></div>
+   </div>
+
+   <div class="panel" id="panel-release">
+    <div class="section-head"><div><h2>Release gate</h2><p>Το build δεν θεωρείται production-ready μέχρι να περάσουν όλα τα gates.</p></div><button class="action-btn primary" onclick="runGate()">Run checks</button></div>
+    <div class="card-grid">
+     <div class="card span-7"><h3>Automated gates</h3><div class="card-sub">Το demo αναδεικνύει και blockers, δεν τα κρύβει.</div><div class="gate-list" id="gateList"></div></div>
+     <div class="card span-5">
+      <h3>Current blockers</h3>
+      <div class="metric-row"><div><div class="metric-name">Gradle wrapper JAR</div><div class="metric-detail">Το repository έχει μόνο properties</div></div><div class="metric-value bad">Missing</div></div>
+      <div class="metric-row"><div><div class="metric-name">Full Android build</div><div class="metric-detail">Δεν μπορεί να πιστοποιηθεί χωρίς SDK/wrapper</div></div><div class="metric-value bad">Blocked</div></div>
+      <div class="metric-row"><div><div class="metric-name">R8</div><div class="metric-detail">Release minification disabled</div></div><div class="metric-value bad">Off</div></div>
+      <div class="metric-row"><div><div class="metric-name">UI device tests</div><div class="metric-detail">androidTest suite</div></div><div class="metric-value bad">0</div></div>
+      <div class="release-note">Το Phase 13 πρέπει να επιστρέψει project που κάνει πραγματικό `clean assembleDebug`, `test`, lint και release smoke build. Στατικό validation μόνο δεν αρκεί για Definition of Done.</div>
+     </div>
+     <div class="card span-12">
+      <h3>Final delivery contents</h3>
+      <div class="checklist" id="deliveryChecklist"></div>
+     </div>
+    </div>
+   </div>
+  </section>
+ </div>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const nav=[
+ {id:"overview",icon:"◫",label:"Baseline",count:"7"},
+ {id:"waves",icon:"≋",label:"Refactor waves",count:"4"},
+ {id:"performance",icon:"↗",label:"Performance",count:"5"},
+ {id:"qa",icon:"✓",label:"QA matrix",count:"8"},
+ {id:"release",icon:"⬡",label:"Release gate",count:"9"}
+];
+const currentStats=[
+ ["Kotlin files","113","Target: modular ownership","up"],
+ ["Compose files","78","Target: previews + contracts","up"],
+ ["Files >300 lines","7","Target: 0 UI monoliths","risk"],
+ ["Compose previews","0","Target: critical components","risk"],
+ ["JVM tests","15","Target: preserve + expand","down"],
+ ["UI tests","0","Target: device journeys","risk"]
+];
+const targetStats=[
+ ["Kotlin modules","structured","Route-owned files","down"],
+ ["UI monoliths","0","≤300 lines per UI file","down"],
+ ["Compose previews","25+","Core states & devices","up"],
+ ["UI journeys","12+","Mobile + TV smoke paths","up"],
+ ["R8 release","On","Rules verified","down"],
+ ["Release gate","Green","Build + tests + lint","down"]
+];
+const hotspots=[
+ ["PlayerActivity.kt","2,950","Split 6–8 files","high","app/player UI + engine bridge"],
+ ["MainActivity.kt","2,801","Route orchestration","high","app shell + navigation + effects"],
+ ["MainViewModel.kt","1,317","Feature UI states","high","UI coordinator"],
+ ["Shell.kt","523","Mobile/TV shells","med","adaptive navigation"],
+ ["AddPlaylistScreen.kt","490","Reusable source wizard","med","source UI"],
+ ["StalkerClient.kt","394","Out of UI scope","low","source/data layer"],
+ ["PlaylistStore.kt","325","Out of UI scope","low","data layer"]
+];
+const currentTree=`app/
+├── MainActivity.kt                    2,801 lines
+│   ├── navigation
+│   ├── screen orchestration
+│   ├── state collection
+│   └── UI effects
+├── PlayerActivity.kt                  2,950 lines
+│   ├── ExoPlayer / VLC bridge
+│   ├── Mobile overlay
+│   ├── TV overlay
+│   ├── gestures / DPAD
+│   └── track selection
+└── ui/
+    ├── MainViewModel.kt               1,317 lines
+    ├── Shell.kt                         523 lines
+    ├── components/*
+    ├── mobile/*
+    ├── tv/*
+    └── design/Motion.kt`;
+const targetTree=`app/
+├── navigation/
+│   ├── AppRoute.kt                    new
+│   ├── AppNavigator.kt                new
+│   └── AppRouteHost.kt                new
+├── shell/
+│   ├── AdaptiveAppShell.kt            move
+│   ├── MobileAppShell.kt              new
+│   └── TvAppShell.kt                  new
+├── feature/
+│   ├── home/       route + state
+│   ├── details/    route + state
+│   ├── search/     route + state
+│   ├── library/    route + state
+│   ├── live/       route + state
+│   └── settings/   route + state
+├── player/ui/
+│   ├── PremiumPlayerHost.kt           new
+│   ├── MobilePlayerOverlay.kt         new
+│   ├── TvPlayerOverlay.kt             new
+│   ├── PlayerInteractionController.kt new
+│   └── PlayerTrackUiMapper.kt         new
+└── ui/
+    ├── design/*
+    ├── components/*
+    ├── mobile/*
+    └── tv/*`;
+
+const waves=[
+ {id:"13A",title:"Architecture split",state:"First",desc:"Σπάσιμο MainActivity, PlayerActivity, MainViewModel και Shell χωρίς αλλαγή behavior.",items:["Route host και typed navigation state","Feature-owned UI state holders","Mobile/TV shell separation","Player overlays και interaction controller","Source wizard decomposition","Κάθε νέο UI αρχείο ≤300 γραμμές"]},
+ {id:"13B",title:"Stability & performance",state:"Second",desc:"Compose stability, lifecycle collection, focus restore, image/cache policy και smooth scrolling.",items:["Immutable UI models audit","Lifecycle-aware state collection","derivedStateOf μόνο όπου έχει αξία","Stable keys και content types στα lazy lists","TV focus restoration contract","Coil sizing/cache keys και TMDB/EPG cache audit"]},
+ {id:"13C",title:"Accessibility & device QA",state:"Third",desc:"Phones, tablets, foldables, TV, remote, keyboard, TalkBack και font scaling.",items:["TalkBack semantics και content descriptions","Font scaling 100–200%","Contrast and reduced motion","Landscape/tablet/foldable layouts","DPAD, keyboard και remote journeys","Chromecast / Google TV / Fire TV matrix"]},
+ {id:"13D",title:"Release hardening",state:"Final",desc:"Real build pipeline, R8, baseline profiles, startup and crash-free launch.",items:["Restore valid Gradle wrapper","Debug/release clean builds","R8 + ProGuard verification","Baseline Profile module/journeys","Lint + unit + UI smoke tests","APK/AAB size report and startup trace"]}
+];
+const exits=[
+ ["No UI file over 300 lines","MainActivity/PlayerActivity orchestration split"],
+ ["No duplicated premium composables","Shared components used by Mobile/TV where appropriate"],
+ ["No ad-hoc design tokens","Colors, typography, shape and motion centralized"],
+ ["Critical Compose previews","Loading, empty, content, focus and error states"],
+ ["Lifecycle-safe state collection","No route-wide unnecessary recomposition"],
+ ["Focus and scroll restoration","TV rails and screen return paths"],
+ ["Accessibility smoke suite","TalkBack, keyboard, remote and font scale"],
+ ["Real clean build pipeline","Debug + tests + lint + release smoke"]
+];
+const perf=[
+ ["Startup",82,48],["Home compose",72,42],["Rail scroll",60,34],["TV focus",46,20],["Player UI",76,38],["Memory",67,45]
+];
+const devices=[
+ {type:"phone",name:"Phone · compact",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"phone",name:"Phone · landscape",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"tablet",name:"Tablet · 10–12″",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"foldable",name:"Foldable · unfolded",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"tv",name:"Android TV",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"tv",name:"Google TV / Chromecast",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"tv",name:"Fire TV",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"},
+ {type:"input",name:"Keyboard / Remote",nav:"pending",play:"pending",epg:"pending",layout:"pending",a11y:"pending"}
+];
+const gates=[
+ ["Source policy","Kotlin files, size limits, duplicated tokens","pending"],
+ ["Unit tests","15 existing JVM suites + new policies","pending"],
+ ["Compose UI smoke","Mobile and TV route journeys","pending"],
+ ["Lint","Compose, accessibility and manifest checks","pending"],
+ ["Debug build","clean assembleDebug","pending"],
+ ["Release build","R8 enabled smoke build","pending"],
+ ["Baseline profile","Startup, Home, Details, Player journeys","pending"],
+ ["Startup trace","Cold/warm startup measurement","pending"],
+ ["Package report","ABI APKs, universal APK and size budget","pending"]
+];
+const delivery=[
+ ["Refactored source ZIP","Full project with version bump"],
+ ["Architecture map","Route, state and component ownership"],
+ ["Validation report","Commands, results and known limitations"],
+ ["QA matrix","Device/accessibility outcomes"],
+ ["Performance report","Startup, focus and scrolling measurements"],
+ ["R8 configuration","Verified keep rules for VLC, Gson and Media3"],
+ ["Baseline Profiles","Generated profile and benchmark journey"],
+ ["Migration changelog","Files moved, removed and compatibility notes"]
+];
+
+let activePanel="overview",targetMode=false,selectedWave=0,qaFilter="all";
+
+function renderSidebar(){
+ sidebar.innerHTML='<div class="side-title">Production areas</div>'+nav.map(n=>`<button class="nav-btn ${n.id===activePanel?'active':''}" onclick="showPanel('${n.id}')"><span><b>${n.icon}</b>${n.label}</span><span class="count">${n.count}</span></button>`).join("");
+}
+function renderStats(){
+ const data=targetMode?targetStats:currentStats;
+ stats.innerHTML=data.map(s=>`<div class="stat"><div class="stat-label">${s[0]}</div><div class="stat-value">${s[1]}</div><div class="stat-target ${s[3]}">${s[2]}</div></div>`).join("");
+ currentBtn.classList.toggle("active",!targetMode);targetBtn.classList.toggle("active",targetMode);
+ readinessBar.style.width=targetMode?"100%":"54%";readinessBadge.textContent=targetMode?"100% DEFINITION OF DONE":"54% READY";
+ readinessBadge.className="badge "+(targetMode?"ok":"warn");
+ archState.textContent=targetMode?"Complete":"Pending";releaseState.textContent=targetMode?"Green":"Pending";
+}
+function renderHotspots(){
+ hotspotsEl=document.getElementById("hotspots");
+ hotspotsEl.innerHTML=hotspots.map(h=>`<div class="hotspot"><div><div class="file"><span class="severity sev-${h[3]}"></span>${h[0]}</div><div class="path">${h[4]}</div></div><div class="lines">${h[1]}<div class="path">lines</div></div><div class="plan">${h[2]}</div></div>`).join("");
+}
+function showPanel(id){
+ activePanel=id;document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+ document.getElementById("panel-"+id).classList.add("active");renderSidebar();
+}
+function toggleBaseline(){targetMode=!targetMode;renderStats();toast(targetMode?"Προβολή Definition of Done":"Προβολή σημερινού baseline")}
+currentBtn.onclick=()=>{targetMode=false;renderStats()}
+targetBtn.onclick=()=>{targetMode=true;renderStats()}
+gateBtn.onclick=()=>{showPanel("release");runGate()}
+
+function renderWaves(){
+ waveList.innerHTML=waves.map((w,i)=>`<div class="wave ${i===selectedWave?'active':''}" onclick="selectWave(${i})"><div class="wave-id">${w.id}</div><div><div class="wave-title">${w.title}</div><div class="wave-desc">${w.desc}</div></div><span class="wave-state">${w.state}</span></div>`).join("");
+ const w=waves[selectedWave];
+ waveDetail.innerHTML=`<h4>${w.id} · ${w.title}</h4><ul>${w.items.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+ exitChecklist.innerHTML=exits.map((x,i)=>`<div class="check" onclick="this.classList.toggle('done');this.querySelector('.checkbox').textContent=this.classList.contains('done')?'✓':''"><div class="checkbox"></div><div><div class="check-title">${x[0]}</div><div class="check-sub">${x[1]}</div></div></div>`).join("");
+}
+function selectWave(i){selectedWave=i;renderWaves()}
+
+function renderPerf(){
+ perfChart.innerHTML=perf.map(p=>`<div class="bar-col"><div class="bar-value">${p[1]} → ${p[2]}</div><div style="display:flex;gap:5px;align-items:end"><div class="bar-wrap"><div class="bar-fill current-bar" style="height:${p[1]}%"></div></div><div class="bar-wrap"><div class="bar-fill target target-bar" style="height:${p[2]}%"></div></div></div><div class="bar-label">${p[0]}</div></div>`).join("");
+}
+function animateCharts(){
+ document.querySelectorAll(".bar-fill").forEach(x=>x.style.height="0");
+ setTimeout(()=>renderPerf(),120);
+}
+
+function statusButton(status,index,key){
+ const text=status==="pass"?"PASS":status==="fail"?"FAIL":"PENDING";
+ return `<button class="status-btn status-${status}" onclick="cycleStatus(${index},'${key}')">${text}</button>`;
+}
+function renderQA(){
+ qaFilters.innerHTML=["all","phone","tablet","foldable","tv","input"].map(f=>`<button class="filter ${f===qaFilter?'active':''}" onclick="qaFilter='${f}';renderQA()">${f==="all"?"Όλα":f}</button>`).join("");
+ const filtered=devices.map((d,i)=>({...d,original:i})).filter(d=>qaFilter==="all"||d.type===qaFilter);
+ qaBody.innerHTML=filtered.map(d=>`<tr><td class="device">${d.name}</td><td>${statusButton(d.nav,d.original,"nav")}</td><td>${statusButton(d.play,d.original,"play")}</td><td>${statusButton(d.epg,d.original,"epg")}</td><td>${statusButton(d.layout,d.original,"layout")}</td><td>${statusButton(d.a11y,d.original,"a11y")}</td></tr>`).join("");
+ const statuses=devices.flatMap(d=>[d.nav,d.play,d.epg,d.layout,d.a11y]);
+ const pass=statuses.filter(x=>x==="pass").length,fail=statuses.filter(x=>x==="fail").length,pending=statuses.filter(x=>x==="pending").length;
+ qaSummary.innerHTML=`<div class="qa-box"><strong>${devices.length}</strong><span>Device profiles</span></div><div class="qa-box"><strong>${pass}</strong><span>Passed checks</span></div><div class="qa-box"><strong>${fail}</strong><span>Failed checks</span></div><div class="qa-box"><strong>${pending}</strong><span>Pending checks</span></div>`;
+}
+function cycleStatus(i,key){
+ const order=["pending","pass","fail"];devices[i][key]=order[(order.indexOf(devices[i][key])+1)%3];renderQA();
+}
+function markAllPass(){devices.forEach(d=>["nav","play","epg","layout","a11y"].forEach(k=>d[k]="pass"));renderQA();toast("Demo matrix marked PASS")}
+
+function renderGates(){
+ gateList.innerHTML=gates.map((g,i)=>`<div class="gate ${g[2]}" id="gate-${i}"><div class="gate-icon">${g[2]==="pass"?"✓":g[2]==="fail"?"!":"·"}</div><div><div class="gate-title">${g[0]}</div><div class="gate-sub">${g[1]}</div></div><div class="gate-status">${g[2].toUpperCase()}</div></div>`).join("");
+ deliveryChecklist.innerHTML=delivery.map(x=>`<div class="check" onclick="this.classList.toggle('done');this.querySelector('.checkbox').textContent=this.classList.contains('done')?'✓':''"><div class="checkbox"></div><div><div class="check-title">${x[0]}</div><div class="check-sub">${x[1]}</div></div></div>`).join("");
+}
+function runGate(){
+ showPanel("release");
+ gates.forEach(g=>g[2]="pending");renderGates();
+ gates.forEach((g,i)=>setTimeout(()=>{
+   g[2]="running";renderGates();
+   setTimeout(()=>{
+     // The current baseline intentionally fails real-build dependent gates.
+     g[2]=[0,1].includes(i)?"pass":"fail";
+     renderGates();
+     if(i===gates.length-1)toast("Gate complete: blockers found — όπως πρέπει πριν το Phase 13");
+   },420);
+ },i*230));
+}
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1700)}
+
+currentTreeEl=document.getElementById("currentTree");targetTreeEl=document.getElementById("targetTree");
+currentTreeEl.textContent=currentTree;targetTreeEl.textContent=targetTree;
+renderSidebar();renderStats();renderHotspots();renderWaves();renderPerf();renderQA();renderGates();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+VERSION CONTRACT v1.40.42
+versionCode=86
+versionName=1.40.42
+RESULT: PASS

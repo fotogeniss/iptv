@@ -1,0 +1,11 @@
+tmp/tmp.hBRpGiXoRe/src/com/prelude/iptv/tvhome/Stubs.kt:4:32: warning: parameter 'context' is never used
+object TvHomeDevice { fun isTv(context: Context) = true }
+                               ^
+tmp/tmp.hBRpGiXoRe/src/com/prelude/iptv/tvhome/Stubs.kt:5:39: warning: parameter 'entry' is never used
+class TvHomeEntryStore { fun suppress(entry: TvHomeEntry) {} }
+                                      ^
+Focused Kotlin compile with WatchNext ASPECT_RATIO_* absent: PASS
+com/prelude/iptv/tvhome/LegacyWatchNextPublisher.class
+com/prelude/iptv/tvhome/LegacyWatchNextPublisher$ExistingRow.class
+com/prelude/iptv/tvhome/LegacyWatchNextPublisher$Companion.class
+WatchNext aspect namespace scan: PASS

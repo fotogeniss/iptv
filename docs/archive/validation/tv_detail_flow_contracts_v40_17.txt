@@ -1,0 +1,8 @@
+PASS: sticky TV detail tabs
+PASS: compact tab component
+PASS: tab indicator fixed width
+PASS: old full-width tab indicator removed
+PASS: opaque lower content background
+PASS: structured about card
+PASS: hero reduced from 500dp
+PASS: movie/series behavior preserved

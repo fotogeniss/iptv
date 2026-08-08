@@ -1,0 +1,71 @@
+STALKER CLIENT SEMANTIC COMPILE v1.40.43
+actual_sources=Models.kt,SourceLoadProgress.kt,StalkerClient.kt
+dependency_stubs=Http,org.json
+result=PASS
+
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:6:29: warning: parameter 'body' is never used
+    fun looksLikeCloudflare(body: String): Boolean = false
+                            ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:7:21: warning: parameter 'url' is never used
+    fun providerGet(url: String, headers: Map<String, String>): String = ""
+                    ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:7:34: warning: parameter 'headers' is never used
+    fun providerGet(url: String, headers: Map<String, String>): String = ""
+                                 ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:8:25: warning: parameter 'url' is never used
+    fun providerGetFull(url: String, headers: Map<String, String>): Resp = Resp(200, "")
+                        ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:8:38: warning: parameter 'headers' is never used
+    fun providerGetFull(url: String, headers: Map<String, String>): Resp = Resp(200, "")
+                                     ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:10:9: warning: parameter 'url' is never used
+        url: String,
+        ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:11:9: warning: parameter 'headers' is never used
+        headers: Map<String, String>,
+        ^
+/mnt/data/upl_v14043_stalker_semantic/src/com/prelude/iptv/net/Http.kt:12:9: warning: parameter 'onProgress' is never used
+        onProgress: ((Long, Long?) -> Unit)?
+        ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:5:17: warning: parameter 'value' is never used
+    constructor(value: String)
+                ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:6:13: warning: parameter 'key' is never used
+    fun put(key: String, value: Any?): JSONObject = this
+            ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:6:26: warning: parameter 'value' is never used
+    fun put(key: String, value: Any?): JSONObject = this
+                         ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:7:19: warning: parameter 'key' is never used
+    fun optString(key: String): String = ""
+                  ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:8:19: warning: parameter 'key' is never used
+    fun optString(key: String, fallback: String): String = fallback
+                  ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:9:16: warning: parameter 'key' is never used
+    fun optInt(key: String): Int = 0
+               ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:10:20: warning: parameter 'key' is never used
+    fun optBoolean(key: String, fallback: Boolean): Boolean = fallback
+                   ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:11:16: warning: parameter 'key' is never used
+    fun optInt(key: String, fallback: Int): Int = fallback
+               ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:12:23: warning: parameter 'key' is never used
+    fun optJSONObject(key: String): JSONObject? = null
+                      ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:13:22: warning: parameter 'key' is never used
+    fun optJSONArray(key: String): JSONArray? = null
+                     ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:14:13: warning: parameter 'key' is never used
+    fun opt(key: String): Any? = null
+            ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:19:23: warning: parameter 'index' is never used
+    fun getJSONObject(index: Int): JSONObject = JSONObject()
+                      ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:20:23: warning: parameter 'index' is never used
+    fun optJSONObject(index: Int): JSONObject? = null
+                      ^
+/mnt/data/upl_v14043_stalker_semantic/src/org/json/JSONObject.kt:21:13: warning: parameter 'index' is never used
+    fun get(index: Int): Any? = null
+            ^

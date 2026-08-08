@@ -1,0 +1,57 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Verify wrapper permissions
+        run: chmod +x gradlew
+
+      - name: Static compatibility and architecture contracts
+        run: |
+          python3 scripts/documentation_contracts.py
+          python3 scripts/compatibility_contracts.py
+          python3 scripts/architecture_audit.py
+          python3 scripts/deep_validation_audit.py
+          python3 scripts/risk_inventory.py
+
+      - name: Unit tests, lint and APK builds
+        run: >-
+          ./gradlew
+          :app:testDebugUnitTest
+          :app:lintDebug
+          :app:assembleDebug
+          :app:assembleRelease
+          --stacktrace
+          --no-daemon

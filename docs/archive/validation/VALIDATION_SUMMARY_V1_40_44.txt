@@ -1,0 +1,11 @@
+Ultimate Playlist Loader v1.40.44 controlled PlayerChromeController extraction
+versionCode=88
+focused_player_chrome_tests=9 pass / 0 fail
+compatibility_contracts=15 pass / 0 fail
+architecture_audit=31 pass / 2 known size warnings / 0 fail
+deep_validation_audit=47 pass / 1 documented cleartext warning / 0 fail
+xml_validation=24 files / 0 errors
+player_activity_syntax_diagnostics=0
+production_critical_risk_categories_failed=0
+gradle_gate=attempted; blocked before startup by unavailable Gradle 8.9 download
+RESULT=PASS for checks available in this environment

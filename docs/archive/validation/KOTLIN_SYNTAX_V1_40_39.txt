@@ -1,0 +1,4 @@
+Raw standalone compiler exit is expected to be non-zero without Android/Compose dependencies.
+Parser/syntax diagnostics: 0
+
+Standalone kotlinc exit code (expected unresolved dependencies): 1

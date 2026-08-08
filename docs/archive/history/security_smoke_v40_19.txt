@@ -1,0 +1,6 @@
+Security smoke tests: PASS
+PIN hash/verify: PASS
+Wrong PIN rejection: PASS
+Encrypted payload round-trip: PASS
+Wrong backup password rejection: PASS
+Short backup password rejection: PASS

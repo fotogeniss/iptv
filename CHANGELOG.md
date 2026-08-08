@@ -1,0 +1,78 @@
+# Changelog
+
+All notable user-visible changes are recorded here. The detailed historical
+implementation notes are preserved in `docs/archive/changelog`.
+
+## Unreleased
+
+- No unreleased changes recorded yet.
+
+## 1.46.0 — versionCode 115
+
+- Added bounded parallel Stalker/MAC category loading for Live TV, movies and
+  series while preserving provider category order.
+- Kept page loading and category loading on separate executor pools to avoid
+  thread starvation and nested-pool deadlocks.
+- Added cancellation propagation for outstanding category work and category-based
+  progress reporting.
+- Preserved the detailed per-version implementation notes under
+  `docs/archive/changelog`.
+
+## Product changes delivered through 1.45.2
+
+- Extracted series/episode provider loading from `MainViewModel` into a tested,
+  cancellation-aware coordinator without changing its public UI contract.
+- Added privacy-first mobile crash diagnostics: collection defaults off,
+  Firebase starts only after consent, one redacted local pending report can be
+  sent or deleted, Analytics is excluded, and publisher setup remains external.
+- Updated the Billing 9.1 integration for nullable one-time offer tokens and
+  removed the contradictory minified-plus-debuggable QA build configuration.
+- Replaced the short mobile legal bottom sheet with a full Privacy, Terms and
+  Third-party Services center, including local-data, HTTP transport and release
+  identity disclosures.
+- Added an owner-only QA variant with release-like shrinking and full Premium
+  access. It currently replaces the locally installed release build to preserve
+  owner test data; a distinct application ID remains a public-release gate.
+- Added Google Play Billing 9.1 with a single non-consumable Prelude+ Premium
+  product, Play-provided pricing, purchase/restore UI on mobile and TV, pending
+  purchase handling, acknowledgement, reactive entitlement state and tests.
+- Removed the old local `FULL` premium default and the writable local tier bypass;
+  without a verified owned purchase, premium features now resolve to the free tier.
+- Fixed downloaded OpenSubtitles files not appearing and made switching between
+  embedded and downloaded captions seamless, without reloading or pausing the
+  active video.
+- Changed the mobile player collapse gesture so the complete player page follows
+  the swipe and settles into the docked mini player, rather than moving only the
+  video rectangle.
+- Fixed a mobile playback crash caused by applying an unsupported background
+  drawable to the TextureView, and tied video-surface detachment to its UI
+  lifecycle.
+- Fixed the mobile subtitle/audio panel so its final settings scroll fully above
+  the Android navigation bar and keyboard.
+- Changed Home recommendations to a stable random, cross-category mix instead of
+  duplicating the currently selected provider group.
+- Added the unified mobile navigation menu and compact collapsed behavior.
+- Reworked mobile Live TV around provider categories, search, EPG and list/grid
+  switching.
+- Added sticky player context for live channels, movies, series and episodes.
+- Added the combined subtitle/audio panel, embedded-track listing, editable
+  OpenSubtitles search, match percentage and global subtitle styling.
+- Added TMDB episode stills, titles and summaries with one cached request per
+  season.
+- Added quality hints to details, episode cards and recommendations when the
+  provider exposes reliable metadata.
+- Added functional mobile settings for sources, EPG, player preferences, Home and
+  category layouts.
+
+## 1.42.0 — versionCode 97
+
+- Replaced the old mobile Live TV preview with category-first browsing.
+- Removed redundant Live/Movies/Series tiles from Home.
+- Added functional search, category navigation and EPG routing for large channel
+  catalogs.
+- Improved source switching, controlled loading and session restoration.
+
+## Earlier releases
+
+See [`docs/archive/changelog`](docs/archive/changelog) for the original detailed
+release and phase notes.

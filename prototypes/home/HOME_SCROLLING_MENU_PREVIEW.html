@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>OPUS — Scrolling menu preview</title>
+  <style>
+    :root{
+      --bg:#080808;--surface:#181818;--raised:#222;--selected:#2a2a2a;
+      --text:#f5f5f5;--secondary:#b3b3b3;--muted:#7a7a7a;
+      --accent:#e50914;--line:rgba(255,255,255,.14);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:#111;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button{font:inherit;color:inherit}
+    .phone{
+      position:relative;width:min(100%,430px);height:100dvh;margin:auto;
+      overflow:hidden;background:var(--bg);box-shadow:0 0 60px #000;
+    }
+    .content{
+      height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+      padding:env(safe-area-inset-top,0) 0 140px;
+    }
+    .content::-webkit-scrollbar{display:none}
+    header{
+      height:112px;padding:28px 22px 18px;display:flex;align-items:center;justify-content:space-between;
+    }
+    .premium{font-weight:900;letter-spacing:.04em;color:#83101a;font-size:16px}
+    .brand{display:flex;align-items:center;gap:9px;font-size:27px;font-weight:900}
+    .brand-mark{width:0;height:0;border-top:14px solid transparent;border-bottom:14px solid transparent;border-left:23px solid var(--accent);filter:drop-shadow(-12px 0 var(--accent))}
+    .quick{font-weight:750;font-size:16px;display:flex;gap:8px;align-items:center}
+    .chevron{width:12px;height:12px;border-right:2px solid;border-bottom:2px solid;transform:rotate(45deg) translateY(-3px)}
+    .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:8px 18px 0}
+    .tile{height:142px;border-radius:20px;background:var(--surface);padding:10px;text-align:center}
+    .tile-icon{height:72px;border-radius:15px;background:#111;display:grid;place-items:center;font-size:35px}
+    .tile-title{font-size:17px;margin-top:10px}.tile-count{font-size:15px;color:var(--secondary);margin-top:3px}
+    .offer{margin:24px 18px 0;height:82px;border-radius:17px;border:1px solid #36363b;background:linear-gradient(110deg,#092541,#1a0d13 46%,#0d080e);display:flex;align-items:center;overflow:hidden}
+    .offer-art{height:100%;width:32%;background:radial-gradient(circle at 30% 55%,#36bdff,transparent 40%),linear-gradient(140deg,#193d9d,#15152d)}
+    .offer-copy{flex:1;text-align:center;font-weight:900}.offer-copy b{display:block;font-size:25px;letter-spacing:.06em;background:linear-gradient(90deg,#4b9cff,#e445da);color:transparent;background-clip:text}.offer-copy span{font-size:15px;letter-spacing:.22em}
+    .section{padding:24px 18px 0}.section-title{font-size:17px;color:#d7d7d7;margin-bottom:13px}
+    .ai-title{color:#ff9ba1}.ai-title b{font-size:24px;margin-right:8px;color:var(--accent)}
+    .suggestions{display:flex;gap:10px;overflow:hidden}
+    .suggestion{flex:0 0 31%;height:154px;border-radius:14px;background:var(--raised);filter:blur(2px);opacity:.88}
+    .suggestion-copy{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+    .suggestion-wrap{position:relative}
+    .suggestion-copy strong{font-size:21px}.suggestion-copy p{font-size:14px;line-height:1.6;color:var(--secondary);margin:15px 18px}
+    .rail{display:flex;gap:13px;overflow-x:auto;scrollbar-width:none;padding-bottom:5px}.rail::-webkit-scrollbar{display:none}
+    .poster{flex:0 0 116px}.poster-art{height:165px;border-radius:12px;background:linear-gradient(145deg,#294b4b,#181820 55%,#3b1717);display:grid;place-items:center;color:#ddd;font-size:28px}.poster:nth-child(2) .poster-art{background:linear-gradient(145deg,#503d35,#181818)}.poster:nth-child(3) .poster-art{background:linear-gradient(145deg,#1e3550,#171717)}
+    .poster-name{text-align:center;font-size:13px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .spacer{height:120px}
+
+    .full-nav{
+      position:absolute;z-index:20;left:14px;right:14px;bottom:max(15px,env(safe-area-inset-bottom));
+      height:82px;border-radius:25px;background:rgba(24,24,24,.94);border:1px solid var(--line);
+      backdrop-filter:blur(20px);display:grid;grid-template-columns:repeat(4,1fr);padding:8px;
+      box-shadow:0 14px 45px rgba(0,0,0,.55);
+      transition:opacity .22s ease,transform .28s cubic-bezier(.2,.8,.2,1),visibility .22s;
+    }
+    .nav-item{border:0;background:transparent;border-radius:18px;display:grid;place-items:center;gap:2px;padding:5px;color:var(--secondary);cursor:pointer}
+    .nav-item.active{background:var(--text);color:var(--accent);font-weight:800}
+    .nav-icon{height:26px;font-size:23px;line-height:1}.nav-label{font-size:12px}
+    .menu-fab{
+      position:absolute;z-index:21;left:18px;bottom:max(20px,env(safe-area-inset-bottom));
+      width:62px;height:62px;border:0;border-radius:50%;background:var(--text);color:#171717;
+      box-shadow:0 12px 35px rgba(0,0,0,.65);display:grid;place-items:center;cursor:pointer;
+      opacity:0;transform:translateY(28px) scale(.72);visibility:hidden;
+      transition:opacity .2s ease,transform .3s cubic-bezier(.2,.9,.2,1),visibility .2s;
+    }
+    .hamburger,.hamburger::before,.hamburger::after{width:27px;height:4px;border-radius:3px;background:var(--accent);display:block}
+    .hamburger{position:relative}.hamburger::before,.hamburger::after{content:"";position:absolute;left:0}.hamburger::before{top:-9px}.hamburger::after{top:9px}
+    .phone.compact .full-nav{opacity:0;transform:translateY(110px) scale(.82);visibility:hidden}
+    .phone.compact .menu-fab{opacity:1;transform:none;visibility:visible}
+    .hint{position:absolute;z-index:30;top:12px;left:50%;transform:translateX(-50%);background:#2a2a2a;border:1px solid var(--line);border-radius:99px;padding:7px 13px;font-size:12px;color:var(--secondary);opacity:0;transition:.2s;pointer-events:none}
+    .hint.show{opacity:1}
+  </style>
+</head>
+<body>
+  <main class="phone" id="phone">
+    <div class="hint" id="hint">Scroll για compact menu</div>
+    <div class="content" id="content">
+      <header>
+        <span class="premium">PREMIUM</span>
+        <div class="brand"><i class="brand-mark"></i>OPUS</div>
+        <div class="quick">Quick <i class="chevron"></i></div>
+      </header>
+
+      <section class="tiles">
+        <div class="tile"><div class="tile-icon">◉</div><div class="tile-title">Live TV</div><div class="tile-count">1888</div></div>
+        <div class="tile"><div class="tile-icon">▤</div><div class="tile-title">Movies</div><div class="tile-count">10791</div></div>
+        <div class="tile"><div class="tile-icon">▭</div><div class="tile-title">Series</div><div class="tile-count">1955</div></div>
+      </section>
+
+      <section class="offer"><div class="offer-art"></div><div class="offer-copy"><b>CHAMPIONS</b><span>SPECIAL OFFER</span></div></section>
+
+      <section class="section">
+        <div class="section-title ai-title"><b>✦</b>AI Suggestions</div>
+        <div class="suggestion-wrap">
+          <div class="suggestions"><div class="suggestion"></div><div class="suggestion"></div><div class="suggestion"></div></div>
+          <div class="suggestion-copy"><strong>Personalized Picks</strong><p>Start watching content or add items to favorites for suggestions…</p></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Recently Watched Channels</div>
+        <div class="rail">
+          <article class="poster"><div class="poster-art">▶</div><div class="poster-name">NOVA CINEMA 2 SD</div></article>
+          <article class="poster"><div class="poster-art">▶</div><div class="poster-name">ERT WORLD</div></article>
+          <article class="poster"><div class="poster-art">▶</div><div class="poster-name">INFO CHANNEL</div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Recently Added Movies</div>
+        <div class="rail">
+          <article class="poster"><div class="poster-art">THE<br>CRASH</div><div class="poster-name">THE CRASH</div></article>
+          <article class="poster"><div class="poster-art">PRO</div><div class="poster-name">THE DEVIL</div></article>
+          <article class="poster"><div class="poster-art">PRO</div><div class="poster-name">KILL TRIP</div></article>
+        </div>
+      </section>
+      <div class="spacer"></div>
+    </div>
+
+    <nav class="full-nav" aria-label="Κύριο μενού">
+      <button class="nav-item active"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></button>
+      <button class="nav-item"><span class="nav-icon">☆</span><span class="nav-label">Favorites</span></button>
+      <button class="nav-item"><span class="nav-icon">⌕</span><span class="nav-label">Search</span></button>
+      <button class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></button>
+    </nav>
+    <button class="menu-fab" id="menuFab" aria-label="Άνοιγμα μενού"><span class="hamburger"></span></button>
+  </main>
+  <script>
+    const phone = document.getElementById('phone');
+    const content = document.getElementById('content');
+    const fab = document.getElementById('menuFab');
+    const hint = document.getElementById('hint');
+    let manuallyExpanded = false;
+
+    const updateMenu = () => {
+      if (content.scrollTop > 28 && !manuallyExpanded) phone.classList.add('compact');
+      if (content.scrollTop <= 28) {
+        phone.classList.remove('compact');
+        manuallyExpanded = false;
+      }
+    };
+    content.addEventListener('scroll', updateMenu, {passive:true});
+    fab.addEventListener('click', () => {
+      manuallyExpanded = true;
+      phone.classList.remove('compact');
+    });
+    document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+      item.classList.add('active');
+    }));
+    setTimeout(() => hint.classList.add('show'), 500);
+    setTimeout(() => hint.classList.remove('show'), 2600);
+  </script>
+</body>
+</html>

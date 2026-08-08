@@ -1,0 +1,10 @@
+fun onConfigurationChanged
+fun onCreate
+fun onDestroy
+fun onKeyDown
+fun onPictureInPictureModeChanged
+fun onResume
+fun onStart
+fun onStop
+fun onUserInteraction
+fun onUserLeaveHint

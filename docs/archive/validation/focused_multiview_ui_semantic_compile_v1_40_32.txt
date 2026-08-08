@@ -1,0 +1,339 @@
+mnt/data/v14032_ui_semantic/stubs/activity.kt:3:29: warning: parameter 'enabled' is never used
+@Composable fun BackHandler(enabled:Boolean=true, onBack:()->Unit) {}
+                            ^
+mnt/data/v14032_ui_semantic/stubs/activity.kt:3:51: warning: parameter 'onBack' is never used
+@Composable fun BackHandler(enabled:Boolean=true, onBack:()->Unit) {}
+                                                  ^
+mnt/data/v14032_ui_semantic/stubs/animation.kt:4:44: warning: parameter 'animationSpec' is never used
+fun animateFloatAsState(targetValue:Float, animationSpec:Any?=null, label:String="")=SimpleState(targetValue)
+                                           ^
+mnt/data/v14032_ui_semantic/stubs/animation.kt:4:69: warning: parameter 'label' is never used
+fun animateFloatAsState(targetValue:Float, animationSpec:Any?=null, label:String="")=SimpleState(targetValue)
+                                                                    ^
+mnt/data/v14032_ui_semantic/stubs/animation.kt:5:11: warning: parameter 'durationMillis' is never used
+fun tween(durationMillis:Int=0, easing:Any?=null):Any=Any()
+          ^
+mnt/data/v14032_ui_semantic/stubs/animation.kt:5:33: warning: parameter 'easing' is never used
+fun tween(durationMillis:Int=0, easing:Any?=null):Any=Any()
+                                ^
+mnt/data/v14032_ui_semantic/stubs/app_ui.kt:8:38: warning: parameter 'enabled' is never used
+@Composable fun rememberInitialFocus(enabled:Boolean=true,key:Any?=Unit)=FocusRequester()
+                                     ^
+mnt/data/v14032_ui_semantic/stubs/app_ui.kt:8:59: warning: parameter 'key' is never used
+@Composable fun rememberInitialFocus(enabled:Boolean=true,key:Any?=Unit)=FocusRequester()
+                                                          ^
+mnt/data/v14032_ui_semantic/stubs/draw.kt:3:19: warning: parameter 'shape' is never used
+fun Modifier.clip(shape:Any)=this
+                  ^
+mnt/data/v14032_ui_semantic/stubs/focus.kt:5:29: warning: parameter 'fr' is never used
+fun Modifier.focusRequester(fr:FocusRequester)=this
+                            ^
+mnt/data/v14032_ui_semantic/stubs/focus.kt:6:29: warning: parameter 'block' is never used
+fun Modifier.onFocusChanged(block:(FocusState)->Unit)=this
+                            ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:4:25: warning: parameter 'color' is never used
+fun Modifier.background(color:Color, shape:Any?=null)=this
+                        ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:4:38: warning: parameter 'shape' is never used
+fun Modifier.background(color:Color, shape:Any?=null)=this
+                                     ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:5:21: warning: parameter 'width' is never used
+fun Modifier.border(width:androidx.compose.ui.unit.Dp, color:Color, shape:Any?=null)=this
+                    ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:5:56: warning: parameter 'color' is never used
+fun Modifier.border(width:androidx.compose.ui.unit.Dp, color:Color, shape:Any?=null)=this
+                                                       ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:5:69: warning: parameter 'shape' is never used
+fun Modifier.border(width:androidx.compose.ui.unit.Dp, color:Color, shape:Any?=null)=this
+                                                                    ^
+mnt/data/v14032_ui_semantic/stubs/foundation.kt:6:24: warning: parameter 'onClick' is never used
+fun Modifier.clickable(onClick:()->Unit)=this
+                       ^
+mnt/data/v14032_ui_semantic/stubs/graphics.kt:4:14: warning: parameter 'alpha' is never used
+    fun copy(alpha:Float=1f)=this
+             ^
+mnt/data/v14032_ui_semantic/stubs/graphics_layer.kt:3:28: warning: parameter 'block' is never used
+fun Modifier.graphicsLayer(block:GraphicsLayerScope.()->Unit)=this
+                           ^
+mnt/data/v14032_ui_semantic/stubs/key.kt:5:32: warning: parameter 'block' is never used
+fun Modifier.onPreviewKeyEvent(block:(KeyEvent)->Boolean)=this
+                               ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:10:35: warning: parameter 'dp' is never used
+object Arrangement { fun spacedBy(dp:Dp):Any=Any(); object SpaceBetween; object Center }
+                                  ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:11:21: warning: parameter 'modifier' is never used
+@Composable fun Box(modifier:Modifier=Modifier, contentAlignment:Any?=null, content:@Composable BoxScope.()->Unit={}){}
+                    ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:11:49: warning: parameter 'contentAlignment' is never used
+@Composable fun Box(modifier:Modifier=Modifier, contentAlignment:Any?=null, content:@Composable BoxScope.()->Unit={}){}
+                                                ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:11:77: warning: parameter 'content' is never used
+@Composable fun Box(modifier:Modifier=Modifier, contentAlignment:Any?=null, content:@Composable BoxScope.()->Unit={}){}
+                                                                            ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:12:21: warning: parameter 'modifier' is never used
+@Composable fun Row(modifier:Modifier=Modifier, horizontalArrangement:Any?=null, verticalAlignment:Any?=null, content:@Composable RowScope.()->Unit={}){}
+                    ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:12:49: warning: parameter 'horizontalArrangement' is never used
+@Composable fun Row(modifier:Modifier=Modifier, horizontalArrangement:Any?=null, verticalAlignment:Any?=null, content:@Composable RowScope.()->Unit={}){}
+                                                ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:12:82: warning: parameter 'verticalAlignment' is never used
+@Composable fun Row(modifier:Modifier=Modifier, horizontalArrangement:Any?=null, verticalAlignment:Any?=null, content:@Composable RowScope.()->Unit={}){}
+                                                                                 ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:12:111: warning: parameter 'content' is never used
+@Composable fun Row(modifier:Modifier=Modifier, horizontalArrangement:Any?=null, verticalAlignment:Any?=null, content:@Composable RowScope.()->Unit={}){}
+                                                                                                              ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:13:24: warning: parameter 'modifier' is never used
+@Composable fun Column(modifier:Modifier=Modifier, verticalArrangement:Any?=null, content:@Composable ColumnScope.()->Unit={}){}
+                       ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:13:52: warning: parameter 'verticalArrangement' is never used
+@Composable fun Column(modifier:Modifier=Modifier, verticalArrangement:Any?=null, content:@Composable ColumnScope.()->Unit={}){}
+                                                   ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:13:83: warning: parameter 'content' is never used
+@Composable fun Column(modifier:Modifier=Modifier, verticalArrangement:Any?=null, content:@Composable ColumnScope.()->Unit={}){}
+                                                                                  ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:14:24: warning: parameter 'modifier' is never used
+@Composable fun Spacer(modifier:Modifier=Modifier){}
+                       ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:16:20: warning: parameter 'v' is never used
+fun Modifier.width(v:Dp)=this; fun Modifier.height(v:Dp)=this
+                   ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:16:52: warning: parameter 'v' is never used
+fun Modifier.width(v:Dp)=this; fun Modifier.height(v:Dp)=this
+                                                   ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:17:19: warning: parameter 'v' is never used
+fun Modifier.size(v:Dp)=this; fun Modifier.size(width:Dp,height:Dp)=this
+                  ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:17:49: warning: parameter 'width' is never used
+fun Modifier.size(v:Dp)=this; fun Modifier.size(width:Dp,height:Dp)=this
+                                                ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:17:58: warning: parameter 'height' is never used
+fun Modifier.size(v:Dp)=this; fun Modifier.size(width:Dp,height:Dp)=this
+                                                         ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:18:22: warning: parameter 'all' is never used
+fun Modifier.padding(all:Dp)=this
+                     ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:19:22: warning: parameter 'horizontal' is never used
+fun Modifier.padding(horizontal:Dp=Dp(0f), vertical:Dp=Dp(0f))=this
+                     ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:19:44: warning: parameter 'vertical' is never used
+fun Modifier.padding(horizontal:Dp=Dp(0f), vertical:Dp=Dp(0f))=this
+                                           ^
+mnt/data/v14032_ui_semantic/stubs/layout.kt:20:22: warning: parameter 'values' is never used
+fun Modifier.padding(values:PaddingValues)=this
+                     ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:6:25: warning: parameter 'modifier' is never used
+@Composable fun LazyRow(modifier:Modifier=Modifier, contentPadding:PaddingValues=PaddingValues(), horizontalArrangement:Any?=null, content:LazyListScope.()->Unit) { LazyListScope().content() }
+                        ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:6:53: warning: parameter 'contentPadding' is never used
+@Composable fun LazyRow(modifier:Modifier=Modifier, contentPadding:PaddingValues=PaddingValues(), horizontalArrangement:Any?=null, content:LazyListScope.()->Unit) { LazyListScope().content() }
+                                                    ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:6:99: warning: parameter 'horizontalArrangement' is never used
+@Composable fun LazyRow(modifier:Modifier=Modifier, contentPadding:PaddingValues=PaddingValues(), horizontalArrangement:Any?=null, content:LazyListScope.()->Unit) { LazyListScope().content() }
+                                                                                                  ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:7:36: warning: parameter 'items' is never used
+fun <T> LazyListScope.itemsIndexed(items:List<T>, key:((Int,T)->Any)?=null, itemContent:@Composable (Int,T)->Unit) {}
+                                   ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:7:51: warning: parameter 'key' is never used
+fun <T> LazyListScope.itemsIndexed(items:List<T>, key:((Int,T)->Any)?=null, itemContent:@Composable (Int,T)->Unit) {}
+                                                  ^
+mnt/data/v14032_ui_semantic/stubs/lazy.kt:7:77: warning: parameter 'itemContent' is never used
+fun <T> LazyListScope.itemsIndexed(items:List<T>, key:((Int,T)->Any)?=null, itemContent:@Composable (Int,T)->Unit) {}
+                                                                            ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:7:23: warning: parameter 'channels' is never used
+fun liveFilterOptions(channels:List<Channel>)=listOf(LiveFilterOption("all","All"))
+                      ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:8:48: warning: parameter 'favoriteKeys' is never used
+fun liveVisibleChannels(channels:List<Channel>,favoriteKeys:Set<String>,recentKeys:Set<String>,keyOf:(Channel)->String,filterId:String)=channels
+                                               ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:8:73: warning: parameter 'recentKeys' is never used
+fun liveVisibleChannels(channels:List<Channel>,favoriteKeys:Set<String>,recentKeys:Set<String>,keyOf:(Channel)->String,filterId:String)=channels
+                                                                        ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:8:96: warning: parameter 'keyOf' is never used
+fun liveVisibleChannels(channels:List<Channel>,favoriteKeys:Set<String>,recentKeys:Set<String>,keyOf:(Channel)->String,filterId:String)=channels
+                                                                                               ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:8:120: warning: parameter 'filterId' is never used
+fun liveVisibleChannels(channels:List<Channel>,favoriteKeys:Set<String>,recentKeys:Set<String>,keyOf:(Channel)->String,filterId:String)=channels
+                                                                                                                       ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:10:39: warning: parameter 'channel' is never used
+@Composable fun LiveCinematicBackdrop(channel:Channel,mobile:Boolean,modifier:Modifier=Modifier){}
+                                      ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:10:55: warning: parameter 'mobile' is never used
+@Composable fun LiveCinematicBackdrop(channel:Channel,mobile:Boolean,modifier:Modifier=Modifier){}
+                                                      ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:10:70: warning: parameter 'modifier' is never used
+@Composable fun LiveCinematicBackdrop(channel:Channel,mobile:Boolean,modifier:Modifier=Modifier){}
+                                                                     ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:11:36: warning: parameter 'channel' is never used
+@Composable fun LiveChannelArtwork(channel:Channel,modifier:Modifier=Modifier,selected:Boolean=false){}
+                                   ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:11:52: warning: parameter 'modifier' is never used
+@Composable fun LiveChannelArtwork(channel:Channel,modifier:Modifier=Modifier,selected:Boolean=false){}
+                                                   ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:11:79: warning: parameter 'selected' is never used
+@Composable fun LiveChannelArtwork(channel:Channel,modifier:Modifier=Modifier,selected:Boolean=false){}
+                                                                              ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:12:33: warning: parameter 'progress' is never used
+@Composable fun LiveProgressBar(progress:Float,modifier:Modifier=Modifier,height:Int=0){}
+                                ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:12:48: warning: parameter 'modifier' is never used
+@Composable fun LiveProgressBar(progress:Float,modifier:Modifier=Modifier,height:Int=0){}
+                                               ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:12:75: warning: parameter 'height' is never used
+@Composable fun LiveProgressBar(progress:Float,modifier:Modifier=Modifier,height:Int=0){}
+                                                                          ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:13:17: warning: parameter 'channel' is never used
+fun liveNowNext(channel:Channel,nowMs:Long):Pair<Prog?,Prog?> = null to null
+                ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:13:33: warning: parameter 'nowMs' is never used
+fun liveNowNext(channel:Channel,nowMs:Long):Pair<Prog?,Prog?> = null to null
+                                ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:14:18: warning: parameter 'p' is never used
+fun liveProgress(p:Prog?,nowMs:Long)=0f
+                 ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:14:26: warning: parameter 'nowMs' is never used
+fun liveProgress(p:Prog?,nowMs:Long)=0f
+                         ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:15:19: warning: parameter 'p' is never used
+fun liveRemaining(p:Prog?,nowMs:Long)=""
+                  ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:15:27: warning: parameter 'nowMs' is never used
+fun liveRemaining(p:Prog?,nowMs:Long)=""
+                          ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:16:14: warning: parameter 'ms' is never used
+fun liveTime(ms:Long)=""
+             ^
+mnt/data/v14032_ui_semantic/stubs/live_components.kt:17:19: warning: parameter 'p' is never used
+fun liveTimeRange(p:Prog)=""
+                  ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:22: warning: parameter 'text' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                     ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:35: warning: parameter 'color' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                  ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:56: warning: parameter 'fontSize' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                       ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:88: warning: parameter 'fontWeight' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                                                       ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:117: warning: parameter 'maxLines' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                                                                                    ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:145: warning: parameter 'overflow' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                                                                                                                ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:174: warning: parameter 'letterSpacing' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                                                                                                                                             ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:8:211: warning: parameter 'modifier' is never used
+@Composable fun Text(text:String, color:Color=Color(), fontSize:TextUnit=TextUnit(0f), fontWeight:FontWeight?=null, maxLines:Int=Int.MAX_VALUE, overflow:TextOverflow?=null, letterSpacing:TextUnit=TextUnit(0f), modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                  ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:9:22: warning: parameter 'imageVector' is never used
+@Composable fun Icon(imageVector:Any, contentDescription:String?, tint:Color=Color(), modifier:Modifier=Modifier){}
+                     ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:9:39: warning: parameter 'contentDescription' is never used
+@Composable fun Icon(imageVector:Any, contentDescription:String?, tint:Color=Color(), modifier:Modifier=Modifier){}
+                                      ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:9:67: warning: parameter 'tint' is never used
+@Composable fun Icon(imageVector:Any, contentDescription:String?, tint:Color=Color(), modifier:Modifier=Modifier){}
+                                                                  ^
+mnt/data/v14032_ui_semantic/stubs/material.kt:9:87: warning: parameter 'modifier' is never used
+@Composable fun Icon(imageVector:Any, contentDescription:String?, tint:Color=Color(), modifier:Modifier=Modifier){}
+                                                                                      ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:41: warning: parameter 'channels' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                        ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:65: warning: parameter 'allChannels' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:92: warning: parameter 'selected' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                           ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:110: warning: parameter 'filters' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                             ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:142: warning: parameter 'selectedFilterId' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                             ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:167: warning: parameter 'favoriteKeys' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                      ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:193: warning: parameter 'nowMs' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:205: warning: parameter 'keyOf' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                            ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:230: warning: parameter 'onSelect' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                     ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:256: warning: parameter 'onFilter' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                               ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:281: warning: parameter 'onPlay' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                        ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:305: warning: parameter 'onEpg' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:328: warning: parameter 'onToggleFavorite' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                       ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:362: warning: parameter 'onOpenHome' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                         ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:383: warning: parameter 'onOpenMovies' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                              ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:406: warning: parameter 'onOpenSeries' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                                                     ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:429: warning: parameter 'onOpenSearch' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                                                                            ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:452: warning: parameter 'onOpenMyList' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:475: warning: parameter 'onOpenSettings' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^
+mnt/data/v14032_ui_semantic/stubs/mobile.kt:6:500: warning: parameter 'modifier' is never used
+@Composable fun MobilePremiumLiveScreen(channels:List<Channel>, allChannels:List<Channel>, selected:Channel, filters:List<LiveFilterOption>, selectedFilterId:String, favoriteKeys:Set<String>, nowMs:Long, keyOf:(Channel)->String, onSelect:(Channel)->Unit, onFilter:(String)->Unit, onPlay:(Channel)->Unit, onEpg:(Channel)->Unit, onToggleFavorite:(Channel)->Unit, onOpenHome:()->Unit, onOpenMovies:()->Unit, onOpenSeries:()->Unit, onOpenSearch:()->Unit, onOpenMyList:()->Unit, onOpenSettings:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+mnt/data/v14032_ui_semantic/stubs/motion.kt:3:20: warning: parameter 'v' is never used
+fun motionDuration(v:Int)=0
+                   ^
+mnt/data/v14032_ui_semantic/stubs/motion.kt:4:17: warning: parameter 'v' is never used
+fun motionScale(v:Int)=1.1f
+                ^
+mnt/data/v14032_ui_semantic/stubs/runtime.kt:10:25: warning: parameter 'keys' is never used
+fun <T> remember(vararg keys:Any?, calculation:()->T):T=calculation()
+                        ^
+mnt/data/v14032_ui_semantic/stubs/runtime.kt:12:27: warning: parameter 'keys' is never used
+fun LaunchedEffect(vararg keys:Any?, block:suspend CoroutineScope.()->Unit) {}
+                          ^
+mnt/data/v14032_ui_semantic/stubs/runtime.kt:12:38: warning: parameter 'block' is never used
+fun LaunchedEffect(vararg keys:Any?, block:suspend CoroutineScope.()->Unit) {}
+                                     ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:28: warning: parameter 'channel' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                           ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:45: warning: parameter 'nowMs' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                            ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:57: warning: parameter 'favorite' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                                        ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:75: warning: parameter 'onPlay' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                                                          ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:92: warning: parameter 'onEpg' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                                                                           ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:108: warning: parameter 'onFavorite' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                           ^
+mnt/data/v14032_ui_semantic/stubs/tv_hero.kt:5:129: warning: parameter 'modifier' is never used
+@Composable fun TvLiveHero(channel:Channel, nowMs:Long, favorite:Boolean, onPlay:()->Unit, onEpg:()->Unit, onFavorite:()->Unit, modifier:Modifier=Modifier){}
+                                                                                                                                ^

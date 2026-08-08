@@ -1,0 +1,27 @@
+ARCHITECTURE AUDIT
+PASS  MainViewModel stays below 2,000 lines
+PASS  MainViewModel has one catalog key boundary
+PASS  PlayerActivity reads launch data only through PlayerLaunchRequest
+PASS  No raw PlayerActivity extras outside PlayerLaunchRequest
+PASS  Compose TV input avoids nativeKeyEvent internals
+PASS  Profile routing never kills the new task/process
+PASS  Profile-gate extra is centralized in AppRouteContract
+PASS  TV focus boundary: TvPremiumHomeScreen.kt
+PASS  TV focus boundary: TvEpgScreen.kt
+PASS  TV focus boundary: TvPremiumSearchScreen.kt
+PASS  TV focus boundary: TvPremiumSettingsScreen.kt
+PASS  TV focus boundary: TvPremiumDetailScreen.kt
+PASS  TV focus boundary: TvLiveRail.kt
+PASS  TV focus boundary: TvLibraryComponents.kt
+PASS  Initial focus retries across lazy-layout frames
+PASS  Player overlay focus retries after resume/dialog/lazy layout changes
+PASS  PlayerActivity delegates TV shortcut behavior to the tested input policy
+PASS  PlayerActivity delegates session/generation ownership to PlayerSessionController
+PASS  Resume persistence follows committed playback during pending zaps
+PASS  Player launch metadata requests preserve coroutine cancellation
+PASS  EPG directory cancellation cannot publish late empty results
+PASS  Profile list is observable instead of a stale remembered snapshot
+PASS  App-shell route state survives recreation
+WARN  large file: app/src/main/java/com/prelude/iptv/PlayerActivity.kt = 3214 lines
+WARN  large file: app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt = 1821 lines
+SUMMARY pass=23 warn=2 fail=0

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>OPUS · Ενιαίες κατηγορίες</title>
+  <style>
+    :root{
+      --bg:#080808;
+      --surface:#181818;
+      --raised:#222;
+      --line:rgba(255,255,255,.13);
+      --text:#f5f5f5;
+      --sub:#b3b3b3;
+      --muted:#777;
+      --red:#e50914;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#101010;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button{font:inherit;color:inherit}
+    .phone{position:relative;width:min(100%,430px);height:100dvh;margin:auto;overflow:hidden;background:var(--bg);box-shadow:0 0 70px #000}
+    .scroll{height:100%;overflow-y:auto;overflow-x:hidden;padding-bottom:128px;scrollbar-width:none}
+    .scroll::-webkit-scrollbar,.category-strip::-webkit-scrollbar,.rail::-webkit-scrollbar{display:none}
+
+    /* Το επάνω switch υπάρχει μόνο για να δεις τις τρεις εκδοχές στο ίδιο HTML. */
+    .demo-switch{
+      position:sticky;z-index:20;top:0;height:39px;display:flex;align-items:center;gap:5px;
+      padding:5px 12px;background:rgba(8,8,8,.93);border-bottom:1px solid rgba(255,255,255,.07);
+      backdrop-filter:blur(18px)
+    }
+    .demo-label{margin-right:auto;color:#686868;font-size:8px;font-weight:900;letter-spacing:1.2px}
+    .demo-tab{height:27px;padding:0 10px;border:0;border-radius:99px;background:#191919;color:#8d8d8d;font-size:10px;font-weight:800;cursor:pointer}
+    .demo-tab.active{background:#f3f3f3;color:#090909}
+
+    .header{height:68px;display:grid;grid-template-columns:80px 1fr 80px;align-items:center;padding:0 17px}
+    .brand{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:950;letter-spacing:.4px}
+    .brand-mark{position:relative;width:20px;height:20px}
+    .brand-mark:before{content:"";position:absolute;inset:2px 0 2px 5px;background:var(--red);clip-path:polygon(0 0,100% 50%,0 100%);border-radius:3px}
+    .screen-title{text-align:center;font-size:15px;font-weight:850}
+    .header-actions{display:flex;justify-content:flex-end;gap:4px}
+    .icon-button{width:38px;height:38px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer}
+    .icon-button svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    .hero{position:relative;height:183px;margin:0 15px;overflow:hidden;border-radius:18px;background:linear-gradient(145deg,#282828,#111 62%)}
+    .hero:before{content:"";position:absolute;inset:0;background:
+      radial-gradient(circle at 78% 28%,rgba(229,9,20,.36),transparent 37%),
+      linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.06))}
+    .hero-art{position:absolute;right:-4px;top:-13px;width:174px;height:210px;transform:rotate(8deg);border-radius:30px;background:linear-gradient(145deg,#502329,#191919 52%,#0d0d0d);opacity:.88}
+    .hero-copy{position:absolute;z-index:1;left:17px;right:130px;bottom:17px}
+    .eyebrow{color:#ddd;font-size:9px;font-weight:900;letter-spacing:1.5px}
+    .hero h1{margin:7px 0 6px;font-size:25px;line-height:1.04;letter-spacing:-.6px}
+    .hero p{margin:0;color:var(--sub);font-size:10px;line-height:1.4}
+
+    .explore{padding:22px 0 2px}
+    .section-head{display:flex;align-items:end;padding:0 16px 11px}
+    .section-head h2{flex:1;margin:0;font-size:17px;letter-spacing:-.2px}
+    .section-head small{display:block;margin-top:3px;color:var(--muted);font-size:9px;font-weight:600}
+    .all-categories{display:flex;align-items:center;gap:6px;padding:5px 1px 5px 8px;border:0;background:transparent;color:var(--sub);font-size:10px;font-weight:800;cursor:pointer}
+    .all-categories svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+    .category-strip{display:flex;gap:9px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x proximity;scrollbar-width:none}
+    .category{
+      position:relative;width:112px;height:66px;flex:0 0 112px;overflow:hidden;padding:10px;
+      border:1px solid var(--line);border-radius:14px;background:#171717;text-align:left;cursor:pointer;
+      scroll-snap-align:start;transition:.18s ease
+    }
+    .category:before{content:"";position:absolute;right:-19px;bottom:-29px;width:71px;height:71px;border-radius:50%;background:rgba(255,255,255,.055)}
+    .category.active{border-color:#fff;background:#f1f1f1;color:#080808;transform:translateY(-1px)}
+    .category.active:after{content:"";position:absolute;right:9px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--red)}
+    .category-name{position:relative;display:block;max-width:82px;overflow:hidden;font-size:12px;font-weight:900;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}
+    .category-count{position:absolute;left:10px;bottom:9px;color:#777;font-size:9px;font-weight:750}
+    .category.active .category-count{color:#505050}
+
+    .results{padding-top:22px}
+    .result-head{display:flex;align-items:center;padding:0 16px 12px}
+    .result-head h2{flex:1;margin:0;font-size:17px}
+    .result-count{color:var(--muted);font-size:10px}
+    .rail{display:flex;gap:10px;overflow-x:auto;padding:0 16px 8px;scrollbar-width:none}
+    .media{width:116px;flex:0 0 116px}
+    .poster{position:relative;height:166px;overflow:hidden;border-radius:12px;background:linear-gradient(145deg,#353535,#171717 58%,#4b171b)}
+    .media:nth-child(2) .poster{background:linear-gradient(145deg,#3e4c5d,#171717 64%)}
+    .media:nth-child(3) .poster{background:linear-gradient(145deg,#594232,#171717 58%)}
+    .media:nth-child(4) .poster{background:linear-gradient(145deg,#353057,#171717 62%)}
+    .poster:after{content:attr(data-code);position:absolute;left:9px;right:9px;bottom:11px;color:white;font-size:22px;font-weight:950;line-height:.92;letter-spacing:-1px}
+    .media-title{margin:8px 2px 0;overflow:hidden;color:#e7e7e7;font-size:11px;font-weight:750;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
+    .media-meta{margin:3px 2px 0;color:#777;font-size:8px}
+
+    .live-list{display:none;padding:0 16px}
+    .live-row{height:67px;display:flex;align-items:center;gap:11px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .channel-logo{width:45px;height:45px;display:grid;place-items:center;border-radius:11px;background:#1c1c1c;color:#ddd;font-size:10px;font-weight:950}
+    .live-copy{min-width:0;flex:1}
+    .live-copy b{display:block;overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+    .live-copy span{display:block;margin-top:4px;overflow:hidden;color:#808080;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(229,9,20,.15)}
+    .is-live .rail{display:none}.is-live .live-list{display:block}
+
+    .nav{position:absolute;z-index:18;left:14px;right:14px;bottom:max(13px,env(safe-area-inset-bottom));height:76px;display:grid;grid-template-columns:repeat(4,1fr);padding:7px;border:1px solid rgba(255,255,255,.10);border-radius:24px;background:rgba(0,0,0,.91);box-shadow:0 18px 48px #000;backdrop-filter:blur(20px)}
+    .nav-item{display:grid;place-items:center;gap:2px;padding:5px;border:0;border-radius:17px;background:transparent;color:#929292;font-size:9px;font-weight:750}
+    .nav-item.active{background:#f3f3f3;color:#111}
+    .nav-icon{font-size:18px;line-height:1}.nav-item.active .nav-icon{color:var(--red)}
+
+    .backdrop{position:absolute;z-index:40;inset:0;display:flex;align-items:end;background:rgba(0,0,0,.68);opacity:0;visibility:hidden;transition:.2s}
+    .backdrop.open{opacity:1;visibility:visible}
+    .sheet{width:100%;max-height:76%;overflow-y:auto;padding:10px 16px 28px;border:1px solid rgba(255,255,255,.12);border-bottom:0;border-radius:25px 25px 0 0;background:#131313;transform:translateY(25px);transition:.22s}
+    .backdrop.open .sheet{transform:none}
+    .handle{width:41px;height:4px;margin:0 auto 16px;border-radius:99px;background:#4b4b4b}
+    .sheet-title{display:flex;align-items:center;margin-bottom:15px}
+    .sheet-title div{flex:1}.sheet-title h2{margin:0;font-size:21px}.sheet-title p{margin:4px 0 0;color:#777;font-size:10px}
+    .close{width:38px;height:38px;border:0;border-radius:50%;background:#242424;font-size:20px;cursor:pointer}
+    .category-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .grid-category{height:65px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#1b1b1b;text-align:left;cursor:pointer}
+    .grid-category.active{border-color:#fff;background:#f1f1f1;color:#080808}
+    .grid-category b{display:block;overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+    .grid-category span{display:block;margin-top:6px;color:#777;font-size:9px}
+
+    .toast{position:absolute;z-index:60;left:50%;top:50px;max-width:82%;padding:8px 13px;border:1px solid rgba(255,255,255,.15);border-radius:99px;transform:translate(-50%,-12px);background:#252525;color:#eee;font-size:10px;opacity:0;transition:.2s;white-space:nowrap}
+    .toast.show{transform:translate(-50%,0);opacity:1}
+  </style>
+</head>
+<body>
+  <main class="phone" id="phone">
+    <div class="toast" id="toast"></div>
+    <div class="scroll">
+      <div class="demo-switch">
+        <span class="demo-label">DEMO ΟΘΟΝΗΣ</span>
+        <button class="demo-tab" data-screen="live">Live</button>
+        <button class="demo-tab active" data-screen="movies">Ταινίες</button>
+        <button class="demo-tab" data-screen="series">Σειρές</button>
+      </div>
+
+      <header class="header">
+        <div class="brand"><i class="brand-mark"></i>OPUS</div>
+        <div class="screen-title" id="screenTitle">Ταινίες</div>
+        <div class="header-actions">
+          <button class="icon-button" aria-label="Αναζήτηση">
+            <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-art"></div>
+        <div class="hero-copy">
+          <div class="eyebrow" id="heroEyebrow">ΝΕΑ ΚΥΚΛΟΦΟΡΙΑ</div>
+          <h1 id="heroTitle">THE LAST<br>HORIZON</h1>
+          <p id="heroText">Μια ιστορία επιβίωσης πέρα από κάθε όριο.</p>
+        </div>
+      </section>
+
+      <section class="explore">
+        <div class="section-head">
+          <div>
+            <h2>Εξερεύνησε</h2>
+            <small id="categoryHint">Βρες γρήγορα αυτό που θέλεις</small>
+          </div>
+          <button class="all-categories" id="openSheet">
+            Όλες
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+        </div>
+        <div class="category-strip" id="categoryStrip"></div>
+      </section>
+
+      <section class="results">
+        <div class="result-head">
+          <h2 id="resultTitle">Δημοφιλείς ταινίες</h2>
+          <span class="result-count" id="resultCount">10.791 τίτλοι</span>
+        </div>
+        <div class="rail" id="mediaRail"></div>
+        <div class="live-list" id="liveList"></div>
+      </section>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active"><span class="nav-icon">⌂</span><span>Home</span></button>
+      <button class="nav-item"><span class="nav-icon">▦</span><span>Browse</span></button>
+      <button class="nav-item"><span class="nav-icon">⌕</span><span>Search</span></button>
+      <button class="nav-item"><span class="nav-icon">⚙</span><span>Settings</span></button>
+    </nav>
+
+    <div class="backdrop" id="backdrop">
+      <section class="sheet">
+        <div class="handle"></div>
+        <div class="sheet-title">
+          <div>
+            <h2 id="sheetHeading">Κατηγορίες ταινιών</h2>
+            <p>Διάλεξε μία κατηγορία για άμεσο φιλτράρισμα</p>
+          </div>
+          <button class="close" id="closeSheet" aria-label="Κλείσιμο">×</button>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const screens = {
+      movies: {
+        title: "Ταινίες", count: "10.791 τίτλοι", result: "Δημοφιλείς ταινίες",
+        eyebrow: "ΝΕΑ ΚΥΚΛΟΦΟΡΙΑ", hero: "THE LAST<br>HORIZON", text: "Μια ιστορία επιβίωσης πέρα από κάθε όριο.",
+        categories: [["Όλες",10791],["Δράση",1842],["Κωμωδία",1260],["Θρίλερ",934],["Sci-Fi",518],["Οικογενειακές",647],["Ελληνικές",389],["Ντοκιμαντέρ",425]],
+        items: [["THE LAST HORIZON","2026 · Δράση"],["DARK SIGNAL","2025 · Θρίλερ"],["NORTH LINE","2026 · Περιπέτεια"],["ORBIT","2025 · Sci-Fi"]]
+      },
+      series: {
+        title: "Σειρές", count: "1.955 σειρές", result: "Σειρές που ξεχωρίζουν",
+        eyebrow: "ΝΕΟΣ ΚΥΚΛΟΣ", hero: "BLACK<br>HARBOR", text: "Κάθε μυστικό αφήνει πίσω του ένα ίχνος.",
+        categories: [["Όλες",1955],["Δημοφιλή",312],["Δράμα",428],["Αστυνομικές",286],["Κωμωδία",251],["Sci-Fi",173],["Ελληνικές",119],["Ντοκιμαντέρ",95]],
+        items: [["BLACK HARBOR","S02 · 8 επεισόδια"],["THE DIVIDE","S01 · Δράμα"],["NIGHT SHIFT","S03 · Αστυνομική"],["ECHOES","S01 · Sci-Fi"]]
+      },
+      live: {
+        title: "Live TV", count: "1.888 κανάλια", result: "Ζωντανά τώρα",
+        eyebrow: "ΤΩΡΑ ΣΤΟ OPUS", hero: "LIVE<br>WITHOUT LIMITS", text: "Κανάλια, αθλητικά και ενημέρωση σε ένα σημείο.",
+        categories: [["Όλα",1888],["Αθλητικά",214],["Ελληνικά",96],["Ειδήσεις",143],["Ταινίες",188],["Παιδικά",74],["Μουσική",91],["Διεθνή",356]],
+        items: [["SPORT 1","Champions League · Ζωντανά"],["MEGA HD","Κεντρικό δελτίο ειδήσεων"],["CINEMA 1","The Last Horizon"],["KIDS TV","Cartoon Planet"]]
+      }
+    };
+
+    let currentScreen = "movies";
+    let selectedCategory = 0;
+    const phone = document.getElementById("phone");
+    const strip = document.getElementById("categoryStrip");
+    const grid = document.getElementById("categoryGrid");
+    const backdrop = document.getElementById("backdrop");
+    const toast = document.getElementById("toast");
+
+    function showToast(message){
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1200);
+    }
+
+    function selectCategory(index){
+      selectedCategory = index;
+      backdrop.classList.remove("open");
+      renderCategories();
+      const label = screens[currentScreen].categories[index][0];
+      document.getElementById("resultTitle").textContent =
+        index === 0 ? screens[currentScreen].result : label;
+      showToast(`Κατηγορία: ${label}`);
+    }
+
+    function renderCategories(){
+      const categories = screens[currentScreen].categories;
+      strip.innerHTML = categories.slice(0,6).map(([name,count],index) => `
+        <button class="category ${index === selectedCategory ? "active" : ""}" data-index="${index}">
+          <span class="category-name">${name}</span>
+          <span class="category-count">${count.toLocaleString("el-GR")}</span>
+        </button>`).join("");
+      grid.innerHTML = categories.map(([name,count],index) => `
+        <button class="grid-category ${index === selectedCategory ? "active" : ""}" data-index="${index}">
+          <b>${name}</b><span>${count.toLocaleString("el-GR")} ${currentScreen === "live" ? "κανάλια" : "τίτλοι"}</span>
+        </button>`).join("");
+      document.querySelectorAll("[data-index]").forEach(button => {
+        button.onclick = () => selectCategory(Number(button.dataset.index));
+      });
+    }
+
+    function renderItems(){
+      const data = screens[currentScreen];
+      document.getElementById("mediaRail").innerHTML = data.items.map(([name,meta]) => `
+        <article class="media">
+          <div class="poster" data-code="${name.replace(" ","<br>")}"></div>
+          <div class="media-title">${name}</div><div class="media-meta">${meta}</div>
+        </article>`).join("");
+      document.getElementById("liveList").innerHTML = data.items.map(([name,meta],index) => `
+        <article class="live-row">
+          <div class="channel-logo">${name.split(" ")[0]}</div>
+          <div class="live-copy"><b>${name}</b><span>${meta}</span></div>
+          ${index < 2 ? '<i class="live-dot"></i>' : ""}
+        </article>`).join("");
+    }
+
+    function renderScreen(){
+      const data = screens[currentScreen];
+      selectedCategory = 0;
+      phone.classList.toggle("is-live", currentScreen === "live");
+      document.getElementById("screenTitle").textContent = data.title;
+      document.getElementById("heroEyebrow").textContent = data.eyebrow;
+      document.getElementById("heroTitle").innerHTML = data.hero;
+      document.getElementById("heroText").textContent = data.text;
+      document.getElementById("resultTitle").textContent = data.result;
+      document.getElementById("resultCount").textContent = data.count;
+      document.getElementById("sheetHeading").textContent = `Κατηγορίες ${currentScreen === "live" ? "Live TV" : currentScreen === "movies" ? "ταινιών" : "σειρών"}`;
+      document.querySelectorAll(".demo-tab").forEach(tab => tab.classList.toggle("active", tab.dataset.screen === currentScreen));
+      renderCategories();
+      renderItems();
+    }
+
+    document.querySelectorAll(".demo-tab").forEach(tab => {
+      tab.onclick = () => { currentScreen = tab.dataset.screen; renderScreen(); };
+    });
+    document.getElementById("openSheet").onclick = () => backdrop.classList.add("open");
+    document.getElementById("closeSheet").onclick = () => backdrop.classList.remove("open");
+    backdrop.onclick = event => { if(event.target === backdrop) backdrop.classList.remove("open"); };
+    renderScreen();
+  </script>
+</body>
+</html>

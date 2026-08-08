@@ -1,0 +1,5 @@
+KOTLIN SYNTAX-RISK SCAN v1.40.42
+scope=PlayerActivity.kt raw parser diagnostics plus semantic PlayerSessionController compile
+syntax_findings=0
+NOTE: unresolved Android/Media3 symbols are expected without the Android SDK classpath.
+RESULT: PASS

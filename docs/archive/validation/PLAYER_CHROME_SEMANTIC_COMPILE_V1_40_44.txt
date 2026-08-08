@@ -1,0 +1,2 @@
+PlayerChromeController semantic compile with real test source and minimal JUnit stubs
+RESULT: PASS

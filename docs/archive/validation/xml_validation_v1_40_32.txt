@@ -1,0 +1,2 @@
+XML files parsed: 23
+Parse errors: 0

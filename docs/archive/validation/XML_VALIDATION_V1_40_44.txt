@@ -1,0 +1,3 @@
+xml_files=24
+xml_errors=0
+RESULT: PASS

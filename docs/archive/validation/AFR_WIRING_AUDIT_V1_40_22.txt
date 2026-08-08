@@ -1,0 +1,52 @@
+Auto Frame Rate v1.40.22 wiring audit
+======================================
+Version:
+15:        versionCode = 66
+16:        versionName = "1.40.22"
+
+Persistence:
+225:    var autoFrameRateMode: String
+226:        get() = prefs.getString("auto_frame_rate_mode", "off") ?: "off"
+228:            "auto_frame_rate_mode",
+
+Settings route/dialog/TV row:
+app/src/main/java/com/prelude/iptv/ui/components/settings/SettingsFoundation.kt:71:fun autoFrameRateLabel(mode: String): String = when (mode) {
+app/src/main/java/com/prelude/iptv/ui/tv/settings/TvPremiumSettingsScreen.kt:69:    autoFrameRateLabel: String,
+app/src/main/java/com/prelude/iptv/ui/tv/settings/TvPremiumSettingsScreen.kt:154:                SettingsPage.Playback -> TvPlaybackPage(playerLabel, autoFrameRateLabel, epgEnabled, tmdbConfigured, subtitlesConfigured, onDialog, onToggleEpg, onClearTmdbCache)
+app/src/main/java/com/prelude/iptv/ui/tv/settings/TvPremiumSettingsScreen.kt:252:        TvRowData("Auto Frame Rate", "Αντιστοίχιση 24/25/30/50/60 Hz στη συχνότητα του περιεχομένου", Icons.Default.Settings, autoFrameRate) { onDialog("afr") },
+app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt:29:    autoFrameRateMode: String,
+app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt:49:    val autoFrameRateLabel = com.prelude.iptv.ui.components.settings.autoFrameRateLabel(autoFrameRateMode)
+app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt:55:            autoFrameRateLabel = autoFrameRateLabel,
+app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt:58:    val autoFrameRateModeState = remember { mutableStateOf(store.autoFrameRateMode) }
+app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt:59:    var autoFrameRateMode by autoFrameRateModeState
+app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt:109:        autoFrameRateMode = autoFrameRateMode,
+app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt:154:        autoFrameRateModeState = autoFrameRateModeState,
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:47:    autoFrameRateModeState: MutableState<String>,
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:55:    var autoFrameRateMode by autoFrameRateModeState
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:108:        "afr" -> AlertDialog(
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:124:                                    autoFrameRateMode = key
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:125:                                    store.autoFrameRateMode = key
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:131:                                selected = autoFrameRateMode == key,
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:133:                                    autoFrameRateMode = key
+app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt:134:                                    store.autoFrameRateMode = key
+
+Player engines/lifecycle:
+109:    private val displayFrameRateController by lazy { DisplayFrameRateController(this) }
+1823:        if (isTv()) displayFrameRateController.release()
+2357:    private fun requestAutoFrameRate(frameRate: Float?) {
+2359:        displayFrameRateController.request(autoFrameRateMode, frameRate)
+2362:    private fun selectedExoFrameRate(tracks: androidx.media3.common.Tracks): Float? {
+2395:                    C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_ONLY_IF_SEAMLESS
+2397:                    C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF
+2426:                requestAutoFrameRate(selectedExoFrameRate(tracks))
+2561:                        val frameRate = if (vt.frameRateNum > 0 && vt.frameRateDen > 0) {
+2562:                            vt.frameRateNum.toFloat() / vt.frameRateDen.toFloat()
+2566:                            requestAutoFrameRate(frameRate)
+3266:        if (isTv()) displayFrameRateController.reapply()
+3280:        if (isTv()) displayFrameRateController.suspendForBackground()
+3315:        if (isTv()) displayFrameRateController.release()
+
+Policy/controller/tests:
+app/src/main/java/com/prelude/iptv/player/FrameRateMatchPolicy.kt
+app/src/main/java/com/prelude/iptv/player/DisplayFrameRateController.kt
+app/src/test/java/com/prelude/iptv/player/FrameRateMatchPolicyTest.kt

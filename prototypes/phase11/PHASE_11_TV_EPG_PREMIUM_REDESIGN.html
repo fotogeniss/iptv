@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Phase 11 — TV EPG Premium Redesign</title>
+<style>
+:root{
+  --bg:#050505;
+  --text:#f7f7f7;
+  --muted:#aaaab0;
+  --dim:#74747c;
+  --red:#e50914;
+  --green:#46d369;
+  --row-h:94px;
+  --channel-w:184px;
+  --minute:6.2px;
+  --dock-h:490px;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--text)}
+button{font:inherit}
+.app{position:relative;width:100vw;height:100vh;min-width:1180px;min-height:680px;overflow:hidden;background:#050505;isolation:isolate}
+
+/* CINEMATIC BACKDROP */
+.backdrop{position:absolute;inset:0;overflow:hidden;z-index:-3;background:#080808}
+.backdrop-layer{position:absolute;inset:-5%;opacity:0;transform:scale(1.03);transition:opacity 600ms ease,transform 7s ease;filter:saturate(.96)}
+.backdrop-layer.active{opacity:1;transform:scale(1.09)}
+.backdrop-layer::before,.backdrop-layer::after{content:"";position:absolute;border-radius:50%;filter:blur(6px);mix-blend-mode:screen;opacity:.42}
+.backdrop-layer::before{width:40vw;height:40vw;right:5vw;top:4vh;background:radial-gradient(circle,var(--glow-a),transparent 67%)}
+.backdrop-layer::after{width:34vw;height:34vw;right:28vw;top:14vh;background:radial-gradient(circle,var(--glow-b),transparent 67%)}
+.cinema-shape{position:absolute;right:9vw;top:7vh;width:48vw;height:55vh;border-radius:42% 58% 50% 50%/47% 42% 58% 53%;background:linear-gradient(135deg,var(--shape-a),var(--shape-b));box-shadow:inset 0 0 90px rgba(255,255,255,.12),0 80px 160px rgba(0,0,0,.58);transform:rotate(-7deg);overflow:hidden}
+.cinema-shape::before{content:"";position:absolute;width:56%;height:130%;left:11%;top:-16%;border-radius:50%;background:linear-gradient(100deg,rgba(255,255,255,.32),rgba(255,255,255,.015) 55%,transparent);filter:blur(2px);transform:rotate(14deg)}
+.cinema-shape::after{content:"";position:absolute;inset:18% 13%;border-radius:46%;border:2px solid rgba(255,255,255,.14);box-shadow:0 0 50px rgba(255,255,255,.06)}
+.backdrop-vignette{position:absolute;inset:0;z-index:-1;background:
+ linear-gradient(90deg,#050505 0%,rgba(5,5,5,.93) 22%,rgba(5,5,5,.45) 52%,rgba(5,5,5,.22) 72%,rgba(5,5,5,.72) 100%),
+ linear-gradient(180deg,rgba(0,0,0,.25),transparent 28%,rgba(0,0,0,.35) 55%,#050505 82%,#050505 100%)}
+.backdrop-noise{position:absolute;inset:0;opacity:.075;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
+
+/* TOP NAV */
+.topbar{height:86px;display:flex;align-items:center;padding:0 48px;gap:34px;position:relative;z-index:30;background:linear-gradient(180deg,rgba(0,0,0,.72),transparent)}
+.brand{font-size:28px;font-weight:1000;letter-spacing:-1.4px;color:var(--red)}
+.brand span{color:#fff}
+.nav{display:flex;align-items:center;gap:27px;font-size:13px;font-weight:650;color:#c3c3c7}
+.nav b{color:#fff;position:relative}.nav b::after{content:"";position:absolute;left:0;right:0;bottom:-13px;height:2px;border-radius:99px;background:#fff}
+.status{margin-left:auto;display:flex;align-items:center;gap:18px;color:#d1d1d4;font-size:12px}
+.live-dot{display:inline-flex;align-items:center;gap:8px;font-weight:800}.live-dot i{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 14px rgba(229,9,20,.85)}
+.clock{font-size:20px;font-weight:750;letter-spacing:.02em}
+.avatar{width:34px;height:34px;border-radius:7px;background:linear-gradient(145deg,#dedede,#83838a);display:grid;place-items:center;color:#111;font-weight:950}
+
+/* HERO INFO */
+.hero{position:absolute;left:48px;right:48px;top:100px;height:calc(100vh - var(--dock-h) - 105px);min-height:205px;display:flex;align-items:center;z-index:4;pointer-events:none}
+.hero-copy{width:min(660px,52vw);transition:opacity 180ms ease,transform 240ms ease}.hero-copy.changing{opacity:0;transform:translateY(10px)}
+.kicker{display:flex;align-items:center;gap:10px;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:.19em;color:#fff;margin-bottom:13px}.kicker::before{content:"";width:21px;height:3px;border-radius:99px;background:var(--red);box-shadow:0 0 14px rgba(229,9,20,.65)}
+.hero h1{font-size:clamp(36px,4.1vw,68px);line-height:.96;letter-spacing:-2.5px;margin:0 0 16px;font-weight:900;text-shadow:0 7px 35px rgba(0,0,0,.52)}
+.meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#ededee;font-size:13px;font-weight:620}
+.match{color:#52d273;font-weight:850}.rating{padding:3px 7px;border:1px solid rgba(255,255,255,.35);font-size:10px;font-weight:800}
+.hero p{margin:16px 0 0;max-width:590px;color:#d0d0d4;font-size:14px;line-height:1.58;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hero-actions{display:flex;align-items:center;gap:10px;margin-top:20px}
+.hero-btn{height:42px;border:0;border-radius:6px;padding:0 18px;font-weight:850;font-size:12px;display:flex;align-items:center;gap:9px}.hero-btn.primary{background:#fff;color:#0a0a0a}.hero-btn.secondary{background:rgba(109,109,110,.55);color:#fff;backdrop-filter:blur(10px)}
+.preview-note{position:absolute;right:28px;bottom:20px;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.82);font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.preview-note i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 16px rgba(70,211,105,.9)}
+.poster-card{position:absolute;right:4vw;top:50%;transform:translateY(-48%) rotate(2deg);width:170px;height:245px;border-radius:12px;background:linear-gradient(150deg,var(--poster-a),var(--poster-b));box-shadow:0 35px 80px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.12);overflow:hidden;opacity:.95}
+.poster-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 65% 25%,rgba(255,255,255,.3),transparent 21%),linear-gradient(160deg,transparent 45%,rgba(0,0,0,.78));mix-blend-mode:screen}
+.poster-title{position:absolute;left:14px;right:14px;bottom:15px;font-size:18px;line-height:1;font-weight:1000;letter-spacing:-.7px;text-transform:uppercase;text-shadow:0 3px 15px #000}
+
+/* EPG DOCK */
+.epg-dock{position:absolute;left:0;right:0;bottom:0;height:var(--dock-h);z-index:20;padding-top:36px;background:linear-gradient(180deg,transparent 0,rgba(5,5,5,.78) 9%,rgba(5,5,5,.94) 22%,#050505 45%)}
+.dock-head{height:50px;display:flex;align-items:flex-start;padding:0 48px 0 48px;position:relative;z-index:12}
+.dock-title{font-size:20px;font-weight:850;letter-spacing:-.4px}.dock-sub{font-size:10px;color:var(--dim);margin-top:5px;font-weight:650;letter-spacing:.06em}
+.dock-tools{margin-left:auto;display:flex;align-items:center;gap:9px}.tool-pill{height:29px;padding:0 11px;border-radius:99px;background:rgba(255,255,255,.075);display:flex;align-items:center;gap:7px;font-size:9px;color:#c8c8cc;font-weight:750}.tool-pill.live{background:rgba(229,9,20,.15);color:#fff}.tool-pill.live i{width:5px;height:5px;border-radius:50%;background:var(--red)}
+.epg-shell{height:calc(100% - 50px);display:grid;grid-template-columns:var(--channel-w) minmax(0,1fr);position:relative}
+.channel-side{padding-left:36px;overflow:hidden;position:relative;z-index:10}
+.channel-track{will-change:transform;transition:transform 260ms cubic-bezier(.2,.75,.2,1)}
+.channel{height:var(--row-h);display:flex;align-items:center;gap:13px;opacity:.48;transform:scale(.94);transform-origin:left center;transition:opacity 180ms ease,transform 220ms ease}
+.channel.active{opacity:1;transform:scale(1)}
+.channel-logo{width:50px;height:50px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#39393f,#17171a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 10px 24px rgba(0,0,0,.3);font-size:11px;font-weight:950;letter-spacing:-.2px}
+.channel.active .channel-logo{background:linear-gradient(145deg,#f4f4f4,#a8a8ae);color:#101012;box-shadow:0 13px 28px rgba(0,0,0,.5)}
+.channel-copy{min-width:0}.channel-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-type{font-size:9px;color:var(--dim);margin-top:5px}
+.grid-area{position:relative;overflow:hidden;padding-right:36px}
+.timeline{position:absolute;left:0;right:36px;top:0;height:34px;overflow:hidden;z-index:8;pointer-events:none}
+.timeline-track{height:100%;width:max-content;display:flex;will-change:transform;transition:transform 260ms cubic-bezier(.2,.75,.2,1)}
+.time-label{width:calc(30 * var(--minute));font-size:10px;font-weight:780;color:#77777f;padding-left:12px;position:relative}.time-label.major{color:#d3d3d6}.time-label::before{content:"";position:absolute;left:0;top:20px;width:1px;height:9px;background:rgba(255,255,255,.12)}
+.rows-viewport{position:absolute;left:0;right:0;top:34px;bottom:0;overflow:hidden;padding-top:7px}
+.rows-track{position:relative;width:max-content;will-change:transform;transition:transform 260ms cubic-bezier(.2,.75,.2,1)}
+.program-row{height:var(--row-h);display:flex;align-items:center;position:relative}
+.program-card{height:72px;margin-right:8px;border-radius:9px;position:relative;overflow:hidden;flex:none;padding:11px 13px;background:linear-gradient(135deg,rgba(47,47,52,.92),rgba(21,21,24,.94));box-shadow:inset 0 0 0 1px rgba(255,255,255,.055);opacity:.66;transition:transform 170ms cubic-bezier(.2,.75,.2,1),opacity 150ms ease,filter 150ms ease,box-shadow 180ms ease,height 180ms ease,background 180ms ease;transform-origin:center center}
+.program-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 18%,var(--card-glow,rgba(255,255,255,.16)),transparent 45%);opacity:.85}
+.program-card::after{content:"";position:absolute;inset:-60% -30%;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.15),transparent 59%);transform:translateX(-110%);transition:transform 520ms ease}
+.program-card.live{background:linear-gradient(135deg,rgba(83,24,29,.96),rgba(29,16,18,.96))}.program-card.live .card-meta{color:#d8afb2}
+.program-card.focused{height:82px;transform:scale(1.055);opacity:1;filter:brightness(1.18) saturate(1.08);z-index:5;background:linear-gradient(135deg,#4d4d54,#29292e);box-shadow:0 22px 50px rgba(0,0,0,.68),0 7px 20px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.12)}
+.program-card.live.focused{background:linear-gradient(135deg,#7a2027,#35171b)}
+.program-card.focused::after{transform:translateX(120%)}
+.card-title{position:relative;z-index:2;font-size:13px;font-weight:820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:22px}.card-meta{position:relative;z-index:2;color:#929299;font-size:9px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card-badge{position:absolute;right:9px;top:9px;z-index:3;font-size:8px;font-weight:950;letter-spacing:.08em;color:#fff}.selected-check{position:absolute;right:9px;bottom:8px;z-index:3;width:17px;height:17px;border-radius:50%;background:#fff;color:#111;display:none;place-items:center;font-size:10px;font-weight:1000}.program-card.selected .selected-check{display:grid}
+.now-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:9;pointer-events:none;box-shadow:0 0 10px rgba(229,9,20,.8),0 0 30px rgba(229,9,20,.48);transition:transform 260ms cubic-bezier(.2,.75,.2,1)}
+.now-line::before{content:attr(data-time);position:absolute;left:50%;top:-29px;transform:translateX(-50%);font-size:9px;font-weight:950;background:var(--red);padding:5px 7px;border-radius:4px;box-shadow:0 10px 24px rgba(229,9,20,.35)}
+.now-line::after{content:"";position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:var(--red)}
+.fade-left,.fade-right{position:absolute;top:0;bottom:0;width:55px;z-index:11;pointer-events:none}.fade-left{left:0;background:linear-gradient(90deg,#050505,transparent)}.fade-right{right:0;background:linear-gradient(-90deg,#050505,transparent)}
+
+.remote-hints{position:absolute;right:44px;bottom:20px;z-index:35;display:flex;gap:14px;align-items:center;font-size:9px;color:#85858c}.remote-hints span{display:flex;align-items:center;gap:6px}.key{min-width:22px;height:20px;padding:0 5px;border:1px solid rgba(255,255,255,.25);border-bottom-width:2px;border-radius:4px;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.04);font-size:8px;font-weight:850}
+.toast{position:absolute;left:50%;bottom:34px;z-index:60;transform:translate(-50%,18px);opacity:0;background:#f5f5f5;color:#111;padding:11px 15px;border-radius:6px;font-size:11px;font-weight:850;box-shadow:0 18px 48px rgba(0,0,0,.55);transition:opacity 180ms ease,transform 180ms ease}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:1360px){:root{--channel-w:166px;--minute:5.25px;--dock-h:450px;--row-h:85px}.topbar{padding:0 36px}.hero{left:36px;right:36px}.poster-card{width:140px;height:205px}.hero p{-webkit-line-clamp:2}.channel-side{padding-left:26px}.program-card{height:66px}.program-card.focused{height:76px}.dock-head{padding-left:36px;padding-right:36px}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="backdrop">
+    <div class="backdrop-layer active" id="backdropA"><div class="cinema-shape"></div></div>
+    <div class="backdrop-layer" id="backdropB"><div class="cinema-shape"></div></div>
+    <div class="backdrop-vignette"></div>
+    <div class="backdrop-noise"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">PRELUDE<span>+</span></div>
+    <nav class="nav"><span>Αρχική</span><b>Ζωντανά</b><span>Ταινίες</span><span>Σειρές</span><span>Η λίστα μου</span></nav>
+    <div class="status"><span class="live-dot"><i></i> LIVE</span><span class="clock">21:12</span><span class="avatar">K</span></div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy" id="heroCopy">
+      <div class="kicker" id="kicker">Τώρα παίζει · COSMOTE CINEMA 1</div>
+      <h1 id="heroTitle">Hell on the Border</h1>
+      <div class="meta"><span class="match" id="match">96% match</span><span id="heroTime">20:45–22:35</span><span id="heroGenre">Western · Adventure</span><span class="rating" id="heroRating">16+</span></div>
+      <p id="heroDescription">Αρκάνσας, 1875. Ένας πρώην σκλάβος γίνεται ο πρώτος Αφροαμερικανός βοηθός σερίφη στην Άγρια Δύση και καταδιώκει έναν αδίστακτο εγκληματία.</p>
+      <div class="hero-actions"><button class="hero-btn primary">▶ Παρακολούθηση</button><button class="hero-btn secondary">ⓘ Περισσότερα</button></div>
+    </div>
+    <div class="poster-card" id="poster"><div class="poster-title" id="posterTitle">HELL ON<br>THE BORDER</div></div>
+    <div class="preview-note"><i></i> Το mini preview συνεχίζει στο background</div>
+  </section>
+
+  <section class="epg-dock">
+    <div class="dock-head">
+      <div><div class="dock-title">Τηλεοπτικό πρόγραμμα</div><div class="dock-sub">Πλοήγηση ανά κανάλι και ώρα χωρίς διακοπή της προβολής</div></div>
+      <div class="dock-tools"><div class="tool-pill live"><i></i> ΤΩΡΑ</div><div class="tool-pill">Παρασκευή 19 Ιουλίου</div><div class="tool-pill">Όλα τα κανάλια</div></div>
+    </div>
+    <div class="epg-shell">
+      <aside class="channel-side"><div class="channel-track" id="channelTrack"></div></aside>
+      <main class="grid-area">
+        <div class="timeline"><div class="timeline-track" id="timelineTrack"></div></div>
+        <div class="rows-viewport">
+          <div class="rows-track" id="rowsTrack"></div>
+          <div class="now-line" id="nowLine" data-time="21:12"></div>
+          <div class="fade-left"></div><div class="fade-right"></div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <div class="remote-hints"><span><i class="key">←↑↓→</i> πλοήγηση</span><span><i class="key">OK</i> επιλογή</span><span><i class="key">Back</i> πίσω</span></div>
+  <div class="toast" id="toast">Προστέθηκε στην επιλογή σου</div>
+</div>
+<script>
+const channels=[
+ {name:'COSMOTE CINEMA 1',logo:'CC1',type:'Ταινίες',programs:[
+  p('The Last Duel',45,'Historical drama','20:00–20:45',0),
+  p('Hell on the Border',110,'Western · Adventure','20:45–22:35',1,true,'96% match','16+','Αρκάνσας, 1875. Ένας πρώην σκλάβος γίνεται ο πρώτος Αφροαμερικανός βοηθός σερίφη στην Άγρια Δύση και καταδιώκει έναν αδίστακτο εγκληματία.'),
+  p('The Last Son',95,'Drama · Western','22:35–00:10',2),
+  p('No Country for Old Men',120,'Crime · Thriller','00:10–02:10',3)
+ ]},
+ {name:'MEGA',logo:'MEGA',type:'Εθνικό',programs:[
+  p('Κεντρικό Δελτίο',60,'Ειδήσεις','20:00–21:00',4,true,'Live ενημέρωση','Όλων','Οι σημαντικότερες ειδήσεις της ημέρας από την Ελλάδα και τον κόσμο, με αναλύσεις και ζωντανές συνδέσεις.'),
+  p('Η Γη της Ελιάς',70,'Δραματική σειρά','21:00–22:10',5,true,'93% match','12+','Οι ισορροπίες ανατρέπονται όταν ένα μυστικό επιστρέφει από το παρελθόν και απειλεί δύο οικογένειες.'),
+  p('Famagusta',65,'Κοινωνικό δράμα','22:10–23:15',6),
+  p('Mega Stories',60,'Ντοκιμαντέρ','23:15–00:15',7)
+ ]},
+ {name:'ERT 1',logo:'ERT1',type:'Δημόσιο',programs:[
+  p('Switch',55,'Τηλεπαιχνίδι','20:05–21:00',8,true,'Live','Όλων','Ένα γρήγορο τηλεπαιχνίδι γνώσεων με ανατροπές, στρατηγική και δυνατές μονομαχίες.'),
+  p('Το Προξενιό της Ιουλίας',65,'Δραματική σειρά','21:00–22:05',9,true,'91% match','12+','Ένας απαγορευμένος έρωτας συγκρούεται με τις παραδόσεις και τις αποφάσεις δύο ισχυρών οικογενειών.'),
+  p('Η Παραλία',60,'Δραματική σειρά','22:05–23:05',10),
+  p('Μουσικό Κουτί',90,'Μουσική','23:05–00:35',11)
+ ]},
+ {name:'NOVASPORTS PRIME',logo:'NSP',type:'Αθλητικά',programs:[
+  p('Pre Game',30,'Αθλητική εκπομπή','20:30–21:00',12,true,'Live studio','Όλων','Όλα τα τελευταία νέα, οι ενδεκάδες και η ανάλυση πριν από τη μεγάλη αναμέτρηση.'),
+  p('Champions League Live',120,'Ποδόσφαιρο','21:00–23:00',13,true,'LIVE','Όλων','Ζωντανή μετάδοση μεγάλης ευρωπαϊκής αναμέτρησης με ελληνική περιγραφή και στατιστικά.'),
+  p('Post Game',45,'Αθλητική εκπομπή','23:00–23:45',14),
+  p('Match Highlights',45,'Highlights','23:45–00:30',15)
+ ]},
+ {name:'DISCOVERY',logo:'DISC',type:'Ντοκιμαντέρ',programs:[
+  p('Gold Rush',60,'Reality · Adventure','20:00–21:00',16,true,'89% match','12+','Οι ομάδες των χρυσοθήρων ρισκάρουν τα πάντα σε μια νέα τοποθεσία με δύσκολες συνθήκες.'),
+  p('Deadliest Catch',60,'Reality · Sea','21:00–22:00',17,true,'92% match','12+','Οι καπετάνιοι παλεύουν με ακραία κύματα και βλάβες στην πιο επικίνδυνη περίοδο της σεζόν.'),
+  p('Expedition Unknown',60,'Adventure','22:00–23:00',18),
+  p('Alaska: The Last Frontier',60,'Reality','23:00–00:00',19)
+ ]},
+ {name:'STAR',logo:'STAR',type:'Εθνικό',programs:[
+  p('Τροχός της Τύχης',55,'Τηλεπαιχνίδι','20:05–21:00',20,true,'Live','Όλων','Το κλασικό τηλεπαιχνίδι λέξεων με νέους παίκτες, ανατροπές και μεγάλα δώρα.'),
+  p('MasterChef',105,'Reality cooking','21:00–22:45',21,true,'95% match','Όλων','Οι διαγωνιζόμενοι αντιμετωπίζουν ένα απαιτητικό τεστ δημιουργικότητας και έναν καλεσμένο chef.'),
+  p('First Dates',75,'Reality','22:45–00:00',22),
+  p('NCIS',60,'Crime series','00:00–01:00',23)
+ ]},
+ {name:'NATIONAL GEOGRAPHIC',logo:'NG',type:'Ντοκιμαντέρ',programs:[
+  p('Air Crash Investigation',60,'Documentary','20:00–21:00',24,true,'90% match','12+','Ερευνητές αναλύουν τα στοιχεία μιας αεροπορικής τραγωδίας για να εντοπίσουν την αλληλουχία των γεγονότων.'),
+  p('Drain the Oceans',60,'Science','21:00–22:00',25,true,'94% match','Όλων','Ψηφιακή χαρτογράφηση αποκαλύπτει χαμένα πλοία και ιστορικά μυστικά κάτω από την επιφάνεια.'),
+  p('Europe from Above',60,'Travel','22:00–23:00',26),
+  p('Gordon Ramsay: Uncharted',60,'Travel · Food','23:00–00:00',27)
+ ]}
+];
+function p(title,duration,genre,time,theme,live=false,match='88% match',rating='12+',description='Μια premium τηλεοπτική εμπειρία με ιστορίες, ένταση και εικόνες που αξίζει να ανακαλύψεις.'){
+ return{title,duration,genre,time,theme,live,match,rating,description};
+}
+const themes=[
+ ['#151c24','#304f68','#94c7df','#e9ab69','#1c3446','#121b22','#f4b65d','#45201a'],
+ ['#1a0e0d','#68241d','#e3664d','#78a3bb','#441512','#150d0c','#f2573e','#54130f'],
+ ['#10151e','#263a57','#90a7d8','#efc66f','#172842','#0d131b','#6f8fd1','#1f2847'],
+ ['#15100c','#6f4620','#e0a34e','#758d61','#4b2b13','#17100b','#e5b158','#4a270f'],
+ ['#07191b','#166070','#64d7db','#efb35b','#0c3f47','#061619','#49b7ca','#16353d'],
+ ['#180b16','#692b59','#da68be','#7b8bd1','#45153a','#160a14','#bd55a0','#4c153e'],
+ ['#12150b','#546429','#b6ce62','#d89d57','#354419','#101309','#a8c058','#3d451b'],
+ ['#17100f','#754031','#d58368','#7a94ae','#4d281f','#160e0d','#c96d54','#4d2e25']
+];
+const timelineStart=20*60;
+const nowMinute=21*60+12;
+const pxPerMinute=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--minute'))||6.2;
+const rowHeight=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--row-h'))||94;
+let row=0,col=1,selected=null,xOffset=0,yOffset=0,activeLayer=0;
+const channelTrack=document.getElementById('channelTrack');
+const rowsTrack=document.getElementById('rowsTrack');
+const timelineTrack=document.getElementById('timelineTrack');
+const nowLine=document.getElementById('nowLine');
+const heroCopy=document.getElementById('heroCopy');
+
+function build(){
+ channelTrack.innerHTML=channels.map((c,i)=>`<div class="channel" data-row="${i}"><div class="channel-logo">${c.logo}</div><div class="channel-copy"><div class="channel-name">${c.name}</div><div class="channel-type">${c.type}</div></div></div>`).join('');
+ let times='';for(let m=timelineStart;m<=timelineStart+300;m+=30){const h=Math.floor(m/60)%24,mm=m%60;times+=`<div class="time-label ${mm===0?'major':''}">${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}</div>`}timelineTrack.innerHTML=times;
+ rowsTrack.innerHTML=channels.map((c,r)=>`<div class="program-row">${c.programs.map((pr,i)=>`<div class="program-card ${pr.live?'live':''}" data-row="${r}" data-col="${i}" style="width:calc(${pr.duration} * var(--minute));--card-glow:${themes[pr.theme%themes.length][2]}55"><div class="card-title">${pr.title}</div><div class="card-meta">${pr.time} · ${pr.genre}</div>${pr.live?'<div class="card-badge">LIVE</div>':''}<div class="selected-check">✓</div></div>`).join('')}</div>`).join('');
+ focus(true);
+}
+function focusedProgram(){return channels[row].programs[col]}
+function focus(initial=false){
+ document.querySelectorAll('.program-card').forEach(el=>el.classList.remove('focused'));
+ document.querySelectorAll('.channel').forEach(el=>el.classList.remove('active'));
+ const card=document.querySelector(`.program-card[data-row="${row}"][data-col="${col}"]`);
+ const channel=document.querySelector(`.channel[data-row="${row}"]`);
+ if(card)card.classList.add('focused');if(channel)channel.classList.add('active');
+ const viewport=document.querySelector('.rows-viewport').clientWidth;
+ const left=card.offsetLeft,right=left+card.offsetWidth;
+ const safeLeft=90,safeRight=viewport-120;
+ if(left-xOffset<safeLeft)xOffset=Math.max(0,left-safeLeft);
+ if(right-xOffset>safeRight)xOffset=Math.max(0,right-safeRight);
+ const visibleRows=3.55;const targetTop=row*rowHeight();const maxY=Math.max(0,channels.length*rowHeight()-visibleRows*rowHeight());
+ yOffset=Math.min(maxY,Math.max(0,targetTop-rowHeight()*1.1));
+ rowsTrack.style.transform=`translate(${-xOffset}px,${-yOffset}px)`;
+ channelTrack.style.transform=`translateY(${-yOffset}px)`;
+ timelineTrack.style.transform=`translateX(${-xOffset}px)`;
+ nowLine.style.transform=`translateX(${(nowMinute-timelineStart)*pxPerMinute()-xOffset}px)`;
+ updateHero(initial);
+}
+function updateHero(initial){
+ const c=channels[row],pr=focusedProgram();
+ if(!initial)heroCopy.classList.add('changing');
+ setTimeout(()=>{
+  document.getElementById('kicker').textContent=`${pr.live?'Τώρα παίζει':'Πρόγραμμα'} · ${c.name}`;
+  document.getElementById('heroTitle').textContent=pr.title;
+  document.getElementById('heroTime').textContent=pr.time;
+  document.getElementById('heroGenre').textContent=pr.genre;
+  document.getElementById('match').textContent=pr.match;
+  document.getElementById('heroRating').textContent=pr.rating;
+  document.getElementById('heroDescription').textContent=pr.description;
+  document.getElementById('posterTitle').innerHTML=pr.title.toUpperCase().split(' ').slice(0,5).join('<br>');
+  applyTheme(pr.theme);
+  heroCopy.classList.remove('changing');
+ },initial?0:150);
+}
+function applyTheme(index){
+ const t=themes[index%themes.length];
+ activeLayer=1-activeLayer;const target=document.getElementById(activeLayer?'backdropB':'backdropA');const other=document.getElementById(activeLayer?'backdropA':'backdropB');
+ target.style.background=`radial-gradient(circle at 78% 24%,${t[2]}44,transparent 19%),radial-gradient(circle at 63% 35%,${t[3]}38,transparent 27%),linear-gradient(125deg,${t[0]},${t[1]} 54%,#080808)`;
+ target.style.setProperty('--glow-a',t[2]);target.style.setProperty('--glow-b',t[3]);target.style.setProperty('--shape-a',t[4]);target.style.setProperty('--shape-b',t[5]);
+ target.classList.add('active');other.classList.remove('active');
+ const poster=document.getElementById('poster');poster.style.setProperty('--poster-a',t[6]);poster.style.setProperty('--poster-b',t[7]);
+}
+function choose(){
+ const key=`${row}:${col}`;selected=selected===key?null:key;
+ document.querySelectorAll('.program-card').forEach(el=>el.classList.remove('selected'));
+ if(selected)document.querySelector(`.program-card[data-row="${row}"][data-col="${col}"]`).classList.add('selected');
+ const toast=document.getElementById('toast');toast.textContent=selected?'Επιλέχθηκε το πρόγραμμα':'Η επιλογή αφαιρέθηκε';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300);
+}
+window.addEventListener('keydown',e=>{
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(e.key))e.preventDefault();
+ if(e.key==='ArrowLeft')col=Math.max(0,col-1);
+ if(e.key==='ArrowRight')col=Math.min(channels[row].programs.length-1,col+1);
+ if(e.key==='ArrowUp'){row=Math.max(0,row-1);col=Math.min(col,channels[row].programs.length-1)}
+ if(e.key==='ArrowDown'){row=Math.min(channels.length-1,row+1);col=Math.min(col,channels[row].programs.length-1)}
+ if(e.key==='Enter'||e.key===' ')choose();
+ focus();
+});
+window.addEventListener('resize',()=>focus(true));
+build();
+</script>
+</body>
+</html>

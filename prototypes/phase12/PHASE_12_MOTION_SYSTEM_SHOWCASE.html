@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHASE 12 — Premium Motion System</title>
+<style>
+:root{
+  --bg:#050507;
+  --surface:#121217;
+  --surface2:#1b1b22;
+  --text:#fff;
+  --muted:#aaaab4;
+  --red:#e50914;
+  --line:rgba(255,255,255,.10);
+
+  --fast:160ms;
+  --medium:280ms;
+  --slow:460ms;
+  --hero:680ms;
+  --focus:180ms;
+  --overlay:320ms;
+
+  --ease-standard:cubic-bezier(.2,.8,.2,1);
+  --ease-emphasized:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#070709;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}
+body{min-height:100vh;overflow-x:hidden}
+.topbar{
+ position:fixed;z-index:1000;top:16px;left:50%;transform:translateX(-50%);
+ display:flex;gap:8px;padding:6px;border:1px solid rgba(255,255,255,.14);
+ background:rgba(10,10,13,.78);backdrop-filter:blur(20px);border-radius:999px;
+ box-shadow:0 18px 60px rgba(0,0,0,.45)
+}
+.topbar button{
+ border:0;background:transparent;color:#b9b9c2;padding:10px 16px;border-radius:999px;
+ font-weight:900;cursor:pointer
+}
+.topbar button.active{background:#fff;color:#08080a}
+.mode-switch{display:flex;gap:8px}
+.page{min-height:100vh;padding:96px 26px 60px}
+.shell{max-width:1420px;margin:auto}
+.header{
+ display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:24px
+}
+.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#8f8f99;font-weight:950}
+h1{font-size:clamp(36px,5vw,72px);line-height:.95;letter-spacing:-.05em;margin:8px 0 10px}
+.header p{max-width:760px;color:#aaaab4;line-height:1.55;margin:0}
+.token-panel{
+ min-width:330px;border:1px solid var(--line);border-radius:18px;background:#111116;padding:16px
+}
+.token-row{display:grid;grid-template-columns:90px 1fr 55px;gap:10px;align-items:center;margin:9px 0}
+.token-name{font-size:12px;font-weight:900}.token-bar{height:6px;background:#292930;border-radius:99px;overflow:hidden}
+.token-bar i{display:block;height:100%;background:#fff;border-radius:99px}.token-value{font-size:11px;color:#aaaab4;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.demo{
+ border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,#17171d,#0f0f13);
+ overflow:hidden;position:relative;min-height:300px
+}
+.demo-head{display:flex;justify-content:space-between;align-items:center;padding:17px 18px;border-bottom:1px solid var(--line)}
+.demo-title{font-weight:950}.demo-sub{font-size:11px;color:#92929c;margin-top:4px}
+.demo-actions{display:flex;gap:8px}
+.icon-btn{
+ width:37px;height:37px;border-radius:10px;border:1px solid var(--line);background:#222229;color:#fff
+}
+.stage{position:relative;min-height:245px;padding:18px}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+
+/* Hero */
+.hero-stage{padding:0;min-height:390px}
+.hero{
+ position:absolute;inset:0;background-size:cover;background-position:center;
+ transition:opacity var(--hero) var(--ease-emphasized),transform var(--hero) var(--ease-emphasized),filter var(--hero) var(--ease-emphasized)
+}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.34) 58%,rgba(0,0,0,.48)),linear-gradient(0deg,#111116,transparent 60%)}
+.hero.alt{opacity:0;transform:scale(1.06);filter:blur(5px)}
+.hero-stage.alt-active .hero.main{opacity:0;transform:scale(1.04);filter:blur(3px)}
+.hero-stage.alt-active .hero.alt{opacity:1;transform:scale(1);filter:blur(0)}
+.hero-copy{position:absolute;z-index:2;left:28px;bottom:26px;max-width:520px;transition:opacity var(--medium),transform var(--medium)}
+.hero-stage.alt-active .hero-copy{animation:copySwap var(--hero) var(--ease-emphasized)}
+@keyframes copySwap{0%{opacity:1;transform:translateY(0)}40%{opacity:0;transform:translateY(14px)}70%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:translateY(0)}}
+.hero-copy h2{font-size:38px;margin:8px 0}.hero-copy p{color:#c2c2cb;max-width:440px}.hero-btn{border:0;background:#fff;color:#08080a;border-radius:9px;padding:12px 16px;font-weight:950}
+
+/* Focus rail */
+.rail-stage{display:flex;align-items:center;gap:12px;overflow:hidden}
+.card{
+ width:180px;height:112px;border-radius:14px;background-size:cover;background-position:center;flex:none;
+ position:relative;transition:transform var(--focus) var(--ease-standard),filter var(--focus),box-shadow var(--focus);
+ transform-origin:center bottom;box-shadow:0 12px 30px rgba(0,0,0,.25)
+}
+.card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.84),transparent 70%);border-radius:inherit}
+.card span{position:absolute;z-index:2;left:12px;bottom:10px;font-size:13px;font-weight:950}
+.card.focused{transform:scale(1.075) translateY(-5px);filter:brightness(1.14);box-shadow:0 26px 65px rgba(0,0,0,.62);z-index:3}
+.parallax-bg{position:absolute;inset:-20px;background:radial-gradient(circle at 70% 40%,rgba(92,100,160,.22),transparent 36%);transition:transform var(--slow) var(--ease-emphasized);pointer-events:none}
+.rail-stage.shift .parallax-bg{transform:translateX(-22px) scale(1.05)}
+
+/* Press */
+.press-card{
+ width:180px;height:240px;border-radius:16px;background-size:cover;background-position:center;margin:auto;
+ transition:transform var(--fast) var(--ease-standard),filter var(--fast),box-shadow var(--fast);
+ box-shadow:0 20px 50px rgba(0,0,0,.4)
+}
+.press-card.pressed{transform:scale(.965);filter:brightness(.88);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.press-card.release{animation:releaseSpring 420ms var(--ease-emphasized)}
+@keyframes releaseSpring{0%{transform:scale(.965)}55%{transform:scale(1.025)}100%{transform:scale(1)}}
+
+/* Sidebar */
+.sidebar-stage{display:grid;grid-template-columns:88px 1fr;gap:14px;transition:grid-template-columns var(--medium) var(--ease-emphasized)}
+.sidebar-stage.open{grid-template-columns:240px 1fr}
+.sidebar{
+ border-radius:16px;background:#141419;border:1px solid var(--line);padding:12px;overflow:hidden;
+ transition:box-shadow var(--medium),transform var(--medium)
+}
+.sidebar-stage.open .sidebar{box-shadow:18px 0 50px rgba(0,0,0,.3)}
+.nav-row{height:46px;border-radius:10px;display:flex;align-items:center;gap:12px;padding:0 13px;color:#aaaab4;white-space:nowrap}
+.nav-row.active{background:#fff;color:#08080a}.nav-label{opacity:0;transform:translateX(-8px);transition:opacity var(--fast),transform var(--medium)}
+.sidebar-stage.open .nav-label{opacity:1;transform:translateX(0)}
+.mock-content{border-radius:16px;background:linear-gradient(145deg,#252532,#141419);border:1px solid var(--line);position:relative;overflow:hidden}
+.mock-content:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(100,110,190,.28),transparent 42%)}
+
+/* Bottom sheet */
+.phone-stage{display:grid;place-items:center;background:radial-gradient(circle at 50% 10%,rgba(80,88,140,.2),transparent 36%)}
+.phone{
+ width:270px;height:470px;border-radius:28px;background:#09090b;border:1px solid rgba(255,255,255,.12);
+ overflow:hidden;position:relative;box-shadow:0 30px 75px rgba(0,0,0,.5)
+}
+.phone-hero{height:270px;background-size:cover;background-position:center;position:relative}
+.phone-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#09090b,transparent 70%)}
+.sheet{
+ position:absolute;left:0;right:0;bottom:-220px;height:300px;border-radius:24px 24px 0 0;background:rgba(22,22,27,.96);
+ backdrop-filter:blur(18px);border-top:1px solid var(--line);transition:transform var(--overlay) var(--ease-emphasized);
+ padding:12px 16px
+}
+.sheet.open{transform:translateY(-220px)}
+.handle{width:42px;height:4px;background:#4a4a52;border-radius:99px;margin:auto}
+.sheet h3{margin:18px 0 10px}.sheet p{font-size:12px;color:#aaaab4;line-height:1.45}
+.sheet-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.sheet-actions div{height:58px;border-radius:12px;background:#24242a;display:grid;place-items:center;font-size:11px}
+
+/* Player fade */
+.player-stage{padding:0;min-height:310px;background-size:cover;background-position:center}
+.player-stage:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4),transparent 45%,rgba(0,0,0,.82))}
+.player-controls{position:absolute;z-index:2;inset:0;display:grid;place-items:center;transition:opacity var(--overlay),transform var(--overlay)}
+.player-controls.hidden{opacity:0;transform:scale(.985)}
+.play-circle{width:70px;height:70px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(14px);display:grid;place-items:center;font-size:26px}
+.timeline-demo{position:absolute;left:20px;right:20px;bottom:22px;height:5px;background:rgba(255,255,255,.25);border-radius:99px}
+.timeline-demo i{display:block;width:48%;height:100%;background:#fff;border-radius:99px}
+
+/* Search */
+.search-stage{overflow:hidden}
+.search-panel{
+ position:absolute;inset:18px;border-radius:16px;background:#15151a;border:1px solid var(--line);
+ padding:18px;transform:translateY(-22px);opacity:0;transition:transform var(--overlay) var(--ease-emphasized),opacity var(--overlay)
+}
+.search-panel.open{transform:translateY(0);opacity:1}
+.search-box{height:48px;border-radius:12px;background:#24242b;display:flex;align-items:center;padding:0 15px;color:#aaaab4}
+.search-results{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}
+.search-results div{height:95px;border-radius:10px;background:linear-gradient(145deg,#3a3a48,#1b1b22);opacity:0;transform:translateY(12px)}
+.search-panel.open .search-results div{animation:resultIn var(--medium) var(--ease-emphasized) forwards}
+.search-panel.open .search-results div:nth-child(2){animation-delay:45ms}
+.search-panel.open .search-results div:nth-child(3){animation-delay:90ms}
+.search-panel.open .search-results div:nth-child(4){animation-delay:135ms}
+@keyframes resultIn{to{opacity:1;transform:translateY(0)}}
+
+/* Skeleton */
+.skeleton-stage{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.skeleton-card{height:180px;border-radius:14px;background:#1c1c22;overflow:hidden;position:relative}
+.skeleton-card:after{
+ content:"";position:absolute;inset:0;transform:translateX(-100%);
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);
+ animation:shimmer 1.35s infinite
+}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+.skeleton-lines{position:absolute;left:12px;right:12px;bottom:12px;display:grid;gap:7px}
+.skeleton-lines i{height:8px;border-radius:99px;background:#2a2a31}.skeleton-lines i:last-child{width:62%}
+
+/* Overlay */
+.overlay-stage{background:linear-gradient(145deg,#22222b,#101015)}
+.overlay{
+ position:absolute;left:18px;right:18px;bottom:18px;border-radius:16px;background:rgba(15,15,19,.88);
+ backdrop-filter:blur(18px);border:1px solid var(--line);padding:15px;
+ opacity:0;transform:translateY(18px) scale(.985);transition:opacity var(--overlay),transform var(--overlay) var(--ease-emphasized)
+}
+.overlay.open{opacity:1;transform:translateY(0) scale(1)}
+.overlay h3{margin:0 0 6px}.overlay p{margin:0;color:#aaaab4;font-size:12px}
+
+.legend{
+ margin-top:18px;border:1px solid var(--line);border-radius:18px;background:#111116;padding:18px;
+ display:grid;grid-template-columns:repeat(3,1fr);gap:14px
+}
+.legend-item{background:#17171c;border-radius:13px;padding:14px}.legend-item b{display:block}.legend-item span{font-size:11px;color:#9999a3;line-height:1.4;display:block;margin-top:6px}
+
+/* Reduced motion */
+body.reduced{
+ --fast:1ms;--medium:1ms;--slow:1ms;--hero:1ms;--focus:1ms;--overlay:1ms;
+}
+body.reduced *{animation-duration:1ms!important;animation-iteration-count:1!important}
+body.reduced .card.focused,
+body.reduced .press-card.pressed,
+body.reduced .sidebar-stage.open .sidebar{transform:none!important}
+body.reduced .parallax-bg{transform:none!important}
+
+@media(max-width:980px){
+ .header{display:block}.token-panel{margin-top:20px;min-width:0}
+ .span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}
+ .legend{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="mode-switch">
+    <button id="tvBtn" class="active">TV Motion</button>
+    <button id="mobileBtn">Mobile Motion</button>
+  </div>
+  <button id="reducedBtn">Reduced Motion: Off</button>
+  <button id="replayAllBtn">Replay All</button>
+</div>
+
+<main class="page">
+<div class="shell">
+  <header class="header">
+    <div>
+      <div class="kicker">PHASE 12 · COMMON MOTION LANGUAGE</div>
+      <h1>Premium Motion System</h1>
+      <p>Κοινός ρυθμός για Mobile και Android TV. Οι κινήσεις προσθέτουν κατεύθυνση, βάθος και αίσθηση ποιότητας χωρίς να καθυστερούν το DPAD, το touch ή την αναπαραγωγή.</p>
+    </div>
+    <div class="token-panel">
+      <div class="token-row"><span class="token-name">Fast</span><span class="token-bar"><i style="width:28%"></i></span><span class="token-value">160ms</span></div>
+      <div class="token-row"><span class="token-name">Focus</span><span class="token-bar"><i style="width:32%"></i></span><span class="token-value">180ms</span></div>
+      <div class="token-row"><span class="token-name">Medium</span><span class="token-bar"><i style="width:48%"></i></span><span class="token-value">280ms</span></div>
+      <div class="token-row"><span class="token-name">Overlay</span><span class="token-bar"><i style="width:55%"></i></span><span class="token-value">320ms</span></div>
+      <div class="token-row"><span class="token-name">Slow</span><span class="token-bar"><i style="width:76%"></i></span><span class="token-value">460ms</span></div>
+      <div class="token-row"><span class="token-name">Hero</span><span class="token-bar"><i style="width:100%"></i></span><span class="token-value">680ms</span></div>
+    </div>
+  </header>
+
+  <section class="grid">
+    <article class="demo span-12">
+      <div class="demo-head">
+        <div><div class="demo-title">Hero Crossfade + Zoom + Text Fade</div><div class="demo-sub">Home, Details, EPG, Live TV</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="toggleHero()">↻</button></div>
+      </div>
+      <div class="stage hero-stage" id="heroStage">
+        <div class="hero main" style="background-image:url('https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1800&q=86')"></div>
+        <div class="hero alt" style="background-image:url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1800&q=86')"></div>
+        <div class="hero-copy"><div class="kicker">PRELUDE ORIGINAL</div><h2 id="heroTitle">Dune: Part Two</h2><p id="heroText">Το background αλλάζει με crossfade, ελαφρύ zoom και ξεχωριστό text transition.</p><button class="hero-btn">▶ Παρακολούθηση</button></div>
+      </div>
+    </article>
+
+    <article class="demo span-7" id="focusDemo">
+      <div class="demo-head">
+        <div><div class="demo-title">TV Focus + Rail Parallax</div><div class="demo-sub">Scale 1.04–1.075, brightness, shadow, background drift</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="moveFocus(-1)">←</button><button class="icon-btn" onclick="moveFocus(1)">→</button></div>
+      </div>
+      <div class="stage rail-stage" id="railStage">
+        <div class="parallax-bg"></div>
+      </div>
+    </article>
+
+    <article class="demo span-5">
+      <div class="demo-head">
+        <div><div class="demo-title">Mobile Card Press + Release</div><div class="demo-sub">Άμεση απόκριση και ελαφρύ spring στο release</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="pressCard()">Tap</button></div>
+      </div>
+      <div class="stage" style="display:grid;place-items:center">
+        <div class="press-card" id="pressCard" style="background-image:url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=84')"></div>
+      </div>
+    </article>
+
+    <article class="demo span-6">
+      <div class="demo-head">
+        <div><div class="demo-title">TV Sidebar Collapse / Expand</div><div class="demo-sub">Label reveal, width transition, no layout jump</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="toggleSidebar()">☰</button></div>
+      </div>
+      <div class="stage sidebar-stage" id="sidebarStage">
+        <div class="sidebar">
+          <div class="nav-row active"><span>⌂</span><span class="nav-label">Αρχική</span></div>
+          <div class="nav-row"><span>◉</span><span class="nav-label">Live TV</span></div>
+          <div class="nav-row"><span>⌕</span><span class="nav-label">Αναζήτηση</span></div>
+          <div class="nav-row"><span>♡</span><span class="nav-label">Η λίστα μου</span></div>
+          <div class="nav-row"><span>⚙</span><span class="nav-label">Ρυθμίσεις</span></div>
+        </div>
+        <div class="mock-content"></div>
+      </div>
+    </article>
+
+    <article class="demo span-6 mobile-only">
+      <div class="demo-head">
+        <div><div class="demo-title">Bottom Sheet Drag / Snap</div><div class="demo-sub">Touch overlay, blur και snap state</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="toggleSheet()">↕</button></div>
+      </div>
+      <div class="stage phone-stage">
+        <div class="phone">
+          <div class="phone-hero" style="background-image:url('https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=84')"></div>
+          <div class="sheet" id="sheetDemo">
+            <div class="handle"></div><h3>Επιλογές αναπαραγωγής</h3><p>Ήχος, υπότιτλοι και ποιότητα εμφανίζονται χωρίς απότομη αλλαγή context.</p>
+            <div class="sheet-actions"><div>♫<br>Ήχος</div><div>CC<br>Υπότιτλοι</div><div>⚙<br>Ποιότητα</div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="demo span-6">
+      <div class="demo-head">
+        <div><div class="demo-title">Player Controls Fade</div><div class="demo-sub">Overlay fade in/out χωρίς να διακόπτεται το video</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="togglePlayer()">◉</button></div>
+      </div>
+      <div class="stage player-stage" id="playerStage" style="background-image:url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1400&q=84')">
+        <div class="player-controls" id="playerControls"><div class="play-circle">▶</div><div class="timeline-demo"><i></i></div></div>
+      </div>
+    </article>
+
+    <article class="demo span-6">
+      <div class="demo-head">
+        <div><div class="demo-title">Search Slide + Result Stagger</div><div class="demo-sub">Μικρό directional slide και διαδοχική εμφάνιση αποτελεσμάτων</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="toggleSearch()">⌕</button></div>
+      </div>
+      <div class="stage search-stage">
+        <div class="search-panel" id="searchPanel">
+          <div class="search-box">⌕ Αναζήτηση ταινιών, σειρών και καναλιών</div>
+          <div class="search-results"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="demo span-6">
+      <div class="demo-head">
+        <div><div class="demo-title">Skeleton Loading</div><div class="demo-sub">Shimmer μόνο όσο φορτώνει πραγματικό περιεχόμενο</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="restartSkeleton()">↻</button></div>
+      </div>
+      <div class="stage skeleton-stage" id="skeletonStage">
+        <div class="skeleton-card"><div class="skeleton-lines"><i></i><i></i></div></div>
+        <div class="skeleton-card"><div class="skeleton-lines"><i></i><i></i></div></div>
+        <div class="skeleton-card"><div class="skeleton-lines"><i></i><i></i></div></div>
+        <div class="skeleton-card"><div class="skeleton-lines"><i></i><i></i></div></div>
+      </div>
+    </article>
+
+    <article class="demo span-6">
+      <div class="demo-head">
+        <div><div class="demo-title">Overlay Enter / Exit</div><div class="demo-sub">EPG info, up-next, confirmations και contextual panels</div></div>
+        <div class="demo-actions"><button class="icon-btn" onclick="toggleOverlay()">▣</button></div>
+      </div>
+      <div class="stage overlay-stage">
+        <div class="overlay" id="overlayDemo"><h3>Επόμενο επεισόδιο</h3><p>Το panel εμφανίζεται με μικρό translate και scale, χωρίς να τραβάει απότομα την προσοχή.</p></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="legend">
+    <div class="legend-item"><b>TV principle</b><span>Το focus πρέπει να αντιδρά σε λιγότερο από 200ms. Η πλοήγηση προηγείται του θεάματος.</span></div>
+    <div class="legend-item"><b>Mobile principle</b><span>Το press state είναι άμεσο, ενώ hero και sheets μπορούν να είναι πιο εκφραστικά.</span></div>
+    <div class="legend-item"><b>Reduced motion</b><span>Αφαιρεί zoom, parallax και spring. Διατηρεί μόνο απαραίτητα fades και state changes.</span></div>
+  </section>
+</div>
+</main>
+
+<script>
+const imgs=[
+ "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=82",
+ "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=700&q=82",
+ "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=700&q=82",
+ "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=700&q=82",
+ "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=700&q=82"
+];
+let focus=1,heroAlt=false,sidebarOpen=false,sheetOpen=false,playerHidden=false,searchOpen=false,overlayOpen=false,reduced=false,mode="tv";
+
+function renderRail(){
+ railStage.querySelectorAll(".card").forEach(x=>x.remove());
+ imgs.forEach((img,i)=>{
+  const c=document.createElement("div");
+  c.className="card "+(i===focus?"focused":"");
+  c.style.backgroundImage=`url('${img}')`;
+  c.innerHTML=`<span>${["The Signal","Dune","Champions Live","Newsroom","Planet Earth"][i]}</span>`;
+  railStage.appendChild(c);
+ });
+ railStage.classList.toggle("shift",focus>2);
+}
+function moveFocus(d){focus=Math.max(0,Math.min(imgs.length-1,focus+d));renderRail()}
+function toggleHero(){
+ heroAlt=!heroAlt;heroStage.classList.toggle("alt-active",heroAlt);
+ heroTitle.textContent=heroAlt?"The Signal":"Dune: Part Two";
+ heroText.textContent=heroAlt?"Το νέο hero έρχεται με καθαρό crossfade και controlled zoom.":"Το background αλλάζει με crossfade, ελαφρύ zoom και ξεχωριστό text transition.";
+}
+function pressCard(){
+ const c=document.getElementById("pressCard");
+ c.classList.remove("release");c.classList.add("pressed");
+ setTimeout(()=>{c.classList.remove("pressed");c.classList.add("release")},150);
+ setTimeout(()=>c.classList.remove("release"),600);
+}
+function toggleSidebar(){sidebarOpen=!sidebarOpen;sidebarStage.classList.toggle("open",sidebarOpen)}
+function toggleSheet(){sheetOpen=!sheetOpen;sheetDemo.classList.toggle("open",sheetOpen)}
+function togglePlayer(){playerHidden=!playerHidden;playerControls.classList.toggle("hidden",playerHidden)}
+function toggleSearch(){searchOpen=!searchOpen;searchPanel.classList.toggle("open",searchOpen)}
+function toggleOverlay(){overlayOpen=!overlayOpen;overlayDemo.classList.toggle("open",overlayOpen)}
+function restartSkeleton(){
+ const cards=[...skeletonStage.children];
+ cards.forEach(c=>{const n=c.cloneNode(true);c.replaceWith(n)});
+}
+function setMode(next){
+ mode=next;tvBtn.classList.toggle("active",mode==="tv");mobileBtn.classList.toggle("active",mode==="mobile");
+ document.querySelectorAll(".mobile-only").forEach(x=>x.style.display=mode==="mobile"?"block":"none");
+ document.getElementById("focusDemo").style.opacity=mode==="tv"?"1":".55";
+}
+function replayAll(){
+ toggleHero();moveFocus(focus===imgs.length-1?-2:1);pressCard();toggleSidebar();toggleSheet();togglePlayer();toggleSearch();toggleOverlay();restartSkeleton();
+}
+tvBtn.onclick=()=>setMode("tv");
+mobileBtn.onclick=()=>setMode("mobile");
+reducedBtn.onclick=()=>{
+ reduced=!reduced;document.body.classList.toggle("reduced",reduced);
+ reducedBtn.textContent="Reduced Motion: "+(reduced?"On":"Off");
+ reducedBtn.classList.toggle("active",reduced);
+};
+replayAllBtn.onclick=replayAll;
+renderRail();setMode("tv");
+</script>
+</body>
+</html>

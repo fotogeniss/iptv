@@ -1,0 +1,12 @@
+PASS: Version is 1.40.19 / 63
+PASS: Release R8 enabled
+PASS: PiP enabled
+PASS: System backup disabled
+PASS: Playlist storage uses SecureStorage
+PASS: PIN uses PBKDF2 verifier
+PASS: Stable playlist identity wired
+PASS: Backup API requires password
+PASS: Settings route forwards password
+PASS: Settings dialog callbacks are password-aware
+PASS: v40.18 settings slice preserved
+PASS: v40.18 export state preserved

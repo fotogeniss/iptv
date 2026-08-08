@@ -1,0 +1,8 @@
+Focused Kotlin semantic compile: PASS
+Production files compiled:
+- MultiviewSelectionPolicy.kt
+- PremiumLiveTvScreen.kt
+- TvPremiumLiveScreen.kt
+- TvLiveRail.kt
+Method: kotlinc against focused Android/Compose API stubs and kotlinx-coroutines core.
+Output JAR emitted successfully.

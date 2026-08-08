@@ -1,0 +1,50 @@
+DEEP VALIDATION AUDIT
+PASS  version is 1.40.45 / 89
+PASS  AndroidJUnitRunner is configured
+PASS  Compose instrumentation dependency is configured
+PASS  instrumentation animations are disabled for deterministic focus tests
+PASS  androidTest suite exists
+PASS  TV dialog focus instrumentation suite exists
+PASS  TV Home deep links require one canonical UUID segment
+PASS  TV Home exported activity delegates to strict route policy
+PASS  TV Home playback preserves cancellation
+PASS  CoroutineWorker preserves cancellation
+PASS  TV Provider mutations require an owned canonical token
+PASS  TV Provider rows are deleted only after app ownership and store resolution
+PASS  invalid playlist index cannot be persisted or routed
+PASS  deleting a background playlist preserves the active load while active deletion cancels first
+PASS  duplicate source references protect shared history/favorites/files
+PASS  editing a background playlist does not restart the active source
+PASS  final source cleanup clears in-memory group selections
+PASS  dialogs have a reusable visible TV focus action
+PASS  visible dialog focus action: MainActivity.kt
+PASS  visible dialog focus action: AdaptiveSettingsScreen.kt
+PASS  visible dialog focus action: TextEntryDialog.kt
+PASS  visible dialog focus action: BrowseStateComponents.kt
+PASS  visible dialog focus action: BrowseRoute.kt
+PASS  visible dialog focus action: SettingsPlaybackDialogs.kt
+PASS  visible dialog focus action: TvPremiumSettingsScreen.kt
+PASS  source deletion policy tests exist
+PASS  source deletion exhaustive matrix exists
+PASS  large-catalog stress tests exist
+PASS  strict TV Home route tests exist
+PASS  TV Provider ownership tests exist
+PASS  broad policy regression suite result exists
+PASS  production Kotlin contains no non-null assertions
+PASS  Stalker session races fail explicitly instead of throwing NPE
+PASS  provider cancellation behavior is centralized and tested
+PASS  network fallback preserves cancellation: TmdbClient.kt
+PASS  network fallback preserves cancellation: SubtitleClient.kt
+PASS  network fallback preserves cancellation: Repository.kt
+PASS  network fallback preserves cancellation: XtreamClient.kt
+PASS  SAF import/export handles providers that return null streams
+PASS  CI uses valid pinned major action versions
+PASS  static release contracts run before Gradle build jobs
+PASS  TV focus instrumentation suite covers at least five routes/transitions
+PASS  inherited broad pure-policy regression suite passes 179 assertions
+PASS  PlayerChromeController focused regression suite passes 9 assertions
+PASS  Player chrome behavior has focused unit tests
+PASS  XML parse (24 files)
+PASS  no obvious credential-bearing values are logged
+WARN  global cleartext remains enabled for arbitrary user-provided IPTV HTTP endpoints; documented compatibility exception
+SUMMARY pass=47 warn=1 fail=0

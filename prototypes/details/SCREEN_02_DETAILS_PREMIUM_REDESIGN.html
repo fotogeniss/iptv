@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Prelude+ · Details Premium Redesign</title>
+<style>
+:root{
+  --bg:#030405;--surface:#0a0c0f;--surface2:#12151a;--surface3:#191d23;
+  --text:#f7f8fa;--muted:#a9afb9;--dim:#737b87;--line:rgba(255,255,255,.11);
+  --red:#e50914;--green:#54d47d;--gold:#f4c65d;--blue:#6ba5ff;
+  --ease:cubic-bezier(.2,.8,.2,1);--shadow:0 30px 90px rgba(0,0,0,.62)
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#020304;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}body{overflow-x:hidden;background:
+ radial-gradient(900px 560px at 12% -10%,rgba(229,9,20,.12),transparent 60%),
+ radial-gradient(760px 500px at 88% 0%,rgba(54,83,130,.13),transparent 62%),#030405}
+.prototype{min-height:100vh;padding:20px;display:flex;flex-direction:column;gap:16px}
+.proto-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1500px;width:100%;margin:auto}
+.proto-brand{display:flex;align-items:center;gap:12px;min-width:0}.mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#ff3140,#9c0009);display:grid;place-items:center;font-weight:950;box-shadow:0 12px 34px rgba(229,9,20,.34)}
+.proto-title{font-weight:850;letter-spacing:-.02em}.proto-sub{color:var(--muted);font-size:12px;margin-top:2px}.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.segment{display:flex;padding:4px;border:1px solid var(--line);background:rgba(10,12,15,.82);backdrop-filter:blur(16px);border-radius:999px}
+.segment button{border:0;background:transparent;color:var(--muted);padding:8px 13px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:750;transition:.25s var(--ease)}
+.segment button.active{background:#f7f7f8;color:#08090a;box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.hint{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.key{min-width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);display:grid;place-items:center;color:#fff;font-weight:800;padding:0 6px}
+.device-wrap{width:100%;max-width:1500px;margin:auto;display:grid;place-items:center;flex:1}.view{display:none;width:100%}.view.active{display:block}
+/* TV */
+.tv-shell{position:relative;width:100%;aspect-ratio:16/9;min-height:600px;max-height:calc(100vh - 110px);overflow:hidden;border-radius:20px;background:#050607;box-shadow:0 50px 130px rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.08)}
+.tv-art{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(3,4,5,.98) 0%,rgba(3,4,5,.86) 33%,rgba(3,4,5,.23) 70%,rgba(3,4,5,.06)),linear-gradient(0deg,#050607 0%,rgba(5,6,7,.76) 22%,transparent 54%),var(--hero);background-size:cover;background-position:center;transition:background-image .6s var(--ease),filter .45s var(--ease),transform 1.2s var(--ease);transform:scale(1.015)}
+.tv-art.switching{filter:brightness(.58) blur(2px);transform:scale(1.035)}.tv-noise{position:absolute;inset:0;opacity:.035;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E")}
+.tv-top{position:absolute;z-index:4;left:34px;right:34px;top:24px;display:flex;align-items:center;justify-content:space-between}.tv-back{height:42px;padding:0 16px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(7,8,10,.48);backdrop-filter:blur(16px);display:flex;align-items:center;gap:9px;font-weight:750;font-size:13px}.tv-brand{font-weight:950;letter-spacing:.12em;font-size:13px}.tv-brand b{color:var(--red)}
+.tv-main{position:absolute;z-index:3;left:5.4%;top:15%;width:47%;transition:.35s var(--ease)}.tv-kicker{display:flex;align-items:center;gap:9px;color:#fff;font-weight:850;font-size:12px;letter-spacing:.13em}.tv-kicker i{width:4px;height:19px;border-radius:10px;background:var(--red);box-shadow:0 0 20px rgba(229,9,20,.75)}
+.tv-title{font-size:clamp(42px,5.2vw,78px);line-height:.92;letter-spacing:-.055em;margin:15px 0 14px;font-weight:950;text-wrap:balance;text-shadow:0 12px 34px rgba(0,0,0,.42)}
+.tv-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:720}.match{color:var(--green)}.pill{border:1px solid rgba(255,255,255,.25);padding:2px 7px;border-radius:4px}.quality{font-size:10px;border:1px solid rgba(255,255,255,.3);padding:2px 5px;border-radius:3px;letter-spacing:.06em}.dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.55)}
+.tv-genres{margin-top:10px;color:#d4d7dc;font-size:13px}.tv-description{margin:14px 0 0;color:#d3d6dc;line-height:1.52;font-size:15px;max-width:660px;text-shadow:0 2px 12px rgba(0,0,0,.72);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tv-credits{margin-top:13px;color:var(--muted);font-size:12px;line-height:1.55}.tv-credits b{color:#e8eaed}
+.tv-actions{display:flex;gap:10px;margin-top:21px}.action{height:48px;padding:0 20px;border-radius:8px;border:1px solid transparent;display:flex;align-items:center;gap:10px;font-weight:850;font-size:13px;cursor:pointer;transition:.2s var(--ease);outline:0}.action.primary{background:#f5f6f7;color:#070809}.action.secondary{background:rgba(40,43,48,.72);border-color:rgba(255,255,255,.13);backdrop-filter:blur(14px)}.action.icon{width:48px;padding:0;justify-content:center;border-radius:50%}.action.focused{transform:scale(1.065);box-shadow:0 0 0 3px rgba(255,255,255,.88),0 20px 46px rgba(0,0,0,.55);filter:brightness(1.08)}
+.tv-progress-wrap{margin-top:14px;width:420px}.progress-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:7px}.progress{height:4px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden}.progress>i{display:block;height:100%;width:68%;background:var(--red);border-radius:inherit}
+.tv-bottom{position:absolute;z-index:5;left:0;right:0;bottom:0;height:38%;background:linear-gradient(180deg,transparent 0%,rgba(3,4,5,.78) 13%,#050607 38%);padding:8.5% 5.4% 0}.tv-tabs{display:flex;align-items:center;gap:28px;border-bottom:1px solid rgba(255,255,255,.11);height:44px}.tv-tab{position:relative;border:0;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:0 0 13px;cursor:pointer}.tv-tab.active{color:#fff}.tv-tab.active:after{content:"";position:absolute;height:3px;border-radius:8px;left:0;right:0;bottom:-1px;background:var(--red)}.season-btn{margin-left:auto;height:34px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);font-weight:750;font-size:12px;display:flex;align-items:center;gap:8px}.season-btn.focused{transform:scale(1.05);box-shadow:0 0 0 3px #fff;background:#fff;color:#050607}
+.tv-content{height:calc(100% - 47px);padding-top:14px;overflow:hidden}.episode-row,.similar-row,.trailer-row{display:flex;gap:14px;transition:transform .35s var(--ease);will-change:transform}.ep-card{position:relative;flex:0 0 245px;height:138px;border-radius:10px;overflow:hidden;background:#12151a;cursor:pointer;transform-origin:center;transition:.22s var(--ease);border:1px solid rgba(255,255,255,.09);box-shadow:0 16px 35px rgba(0,0,0,.22)}.ep-card:before{content:"";position:absolute;inset:0;background-image:linear-gradient(0deg,rgba(3,4,5,.94),rgba(3,4,5,.08) 68%),var(--img);background-size:cover;background-position:center;transition:.3s var(--ease)}.ep-card .ep-copy{position:absolute;left:12px;right:12px;bottom:10px}.ep-no{font-size:10px;color:#d0d3d8;font-weight:850;letter-spacing:.08em}.ep-name{font-size:13px;font-weight:850;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep-time{font-size:10px;color:var(--muted);margin-top:3px}.ep-card.focused{transform:scale(1.065) translateY(-4px);z-index:4;border-color:transparent;box-shadow:0 0 0 3px rgba(255,255,255,.96),0 26px 55px rgba(0,0,0,.62);filter:brightness(1.12)}.ep-card.focused:before{transform:scale(1.04)}.ep-play{position:absolute;top:11px;right:11px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#050607;opacity:0;transform:scale(.72);transition:.2s var(--ease)}.ep-card.focused .ep-play{opacity:1;transform:scale(1)}.ep-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.22)}.ep-progress i{display:block;height:100%;background:var(--red);width:var(--p)}
+.info-flyout{position:absolute;right:4.5%;top:16%;z-index:4;width:290px;padding:18px;border-radius:15px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,rgba(18,21,26,.86),rgba(8,10,13,.66));backdrop-filter:blur(24px);box-shadow:var(--shadow);opacity:0;transform:translateX(20px);transition:.32s var(--ease);pointer-events:none}.info-flyout.show{opacity:1;transform:translateX(0)}.fly-kicker{color:var(--red);font-size:10px;font-weight:900;letter-spacing:.12em}.fly-title{font-size:19px;font-weight:900;margin:7px 0}.fly-meta{color:var(--muted);font-size:11px}.fly-desc{color:#d2d5da;font-size:12px;line-height:1.48;margin-top:10px}.fly-next{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.tv-toast,.m-toast{position:absolute;z-index:20;left:50%;bottom:28px;transform:translate(-50%,20px);padding:11px 16px;border-radius:999px;background:rgba(248,249,250,.96);color:#08090a;font-size:12px;font-weight:850;opacity:0;transition:.25s var(--ease);pointer-events:none;white-space:nowrap}.tv-toast.show,.m-toast.show{opacity:1;transform:translate(-50%,0)}
+/* Mobile */
+.mobile-stage{display:grid;place-items:center}.phone{position:relative;width:min(420px,100%);height:min(860px,calc(100vh - 106px));min-height:690px;border-radius:38px;overflow:hidden;background:#040506;border:1px solid rgba(255,255,255,.12);box-shadow:0 44px 120px rgba(0,0,0,.7)}.mobile-scroll{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;background:#050607}.mobile-scroll::-webkit-scrollbar{display:none}
+.m-hero{position:relative;height:530px;background:#08090a}.m-art{position:absolute;inset:0;background-image:linear-gradient(0deg,#050607 1%,rgba(5,6,7,.72) 23%,rgba(5,6,7,.08) 60%),linear-gradient(90deg,rgba(4,5,6,.44),transparent 65%),var(--hero);background-size:cover;background-position:center;transition:.45s var(--ease)}.m-art.switching{filter:brightness(.55);transform:scale(1.025)}.m-top{position:sticky;top:0;z-index:12;height:66px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(3,4,5,.68),transparent);pointer-events:none}.m-top button{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(3,4,5,.52);backdrop-filter:blur(13px);display:grid;place-items:center}.m-brand{font-weight:950;letter-spacing:.08em;font-size:11px}.m-brand b{color:var(--red)}
+.m-copy{position:absolute;left:18px;right:18px;bottom:17px;transition:.3s var(--ease)}.m-kicker{font-size:10px;font-weight:900;letter-spacing:.12em;display:flex;align-items:center;gap:7px}.m-kicker i{width:3px;height:16px;background:var(--red);border-radius:5px}.m-title{font-size:39px;line-height:.94;letter-spacing:-.052em;font-weight:950;margin:11px 0}.m-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;font-weight:750}.m-desc{font-size:12px;line-height:1.5;color:#d3d6dc;margin-top:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.m-actions{display:grid;grid-template-columns:1fr 46px 46px;gap:9px;margin-top:15px}.m-action{height:46px;border-radius:8px;border:1px solid rgba(255,255,255,.13);background:rgba(39,42,47,.72);backdrop-filter:blur(12px);font-weight:850;display:flex;align-items:center;justify-content:center;gap:8px}.m-action.primary{background:#f7f8f9;color:#070809}.m-progress{margin-top:12px}.m-progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-bottom:6px}.m-progress-track{height:3px;background:rgba(255,255,255,.22);border-radius:8px;overflow:hidden}.m-progress-track i{display:block;height:100%;background:var(--red);width:68%}
+.m-body{position:relative;margin-top:-1px;padding:8px 0 96px;background:#050607}.m-tabs-wrap{position:sticky;top:0;z-index:10;padding:7px 16px 0;background:rgba(5,6,7,.94);backdrop-filter:blur(16px)}.m-tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}.m-tab{position:relative;flex:0 0 auto;padding:12px 0;border:0;background:transparent;color:var(--muted);font-weight:850;font-size:12px}.m-tab.active{color:#fff}.m-tab.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:5px;background:var(--red)}
+.m-section{padding:18px 16px 0}.m-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.m-head h3{margin:0;font-size:17px;letter-spacing:-.02em}.season-chip{height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.13);border-radius:7px;background:#12151a;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:780}.m-episode{display:grid;grid-template-columns:128px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.085);cursor:pointer}.m-thumb{position:relative;height:76px;border-radius:9px;overflow:hidden;background-image:linear-gradient(0deg,rgba(0,0,0,.58),transparent 62%),var(--img);background-size:cover;background-position:center}.m-thumb .play{position:absolute;inset:0;display:grid;place-items:center}.m-thumb .play span{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.9);color:#050607;display:grid;place-items:center;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.34)}.m-thumb .num{position:absolute;left:7px;bottom:6px;font-size:9px;font-weight:900}.m-thumb .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.3)}.m-thumb .bar i{display:block;height:100%;background:var(--red);width:var(--p)}.m-ep-title{font-size:12px;font-weight:850;line-height:1.25}.m-ep-meta{color:var(--muted);font-size:9px;margin-top:3px}.m-ep-desc{color:#aeb3bc;font-size:10px;line-height:1.4;margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.m-about{color:#c8ccd2;font-size:12px;line-height:1.58}.m-credit{color:var(--muted);font-size:10px;line-height:1.55;margin-top:10px}.m-credit b{color:#e6e8eb}.m-cast{display:flex;gap:12px;overflow-x:auto;padding:12px 0 3px;scrollbar-width:none}.cast-card{flex:0 0 92px}.cast-photo{height:116px;border-radius:10px;background-image:linear-gradient(0deg,rgba(0,0,0,.3),transparent),var(--img);background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1)}.cast-name{font-size:10px;font-weight:800;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cast-role{font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.m-similar{display:flex;gap:10px;overflow-x:auto;padding-top:12px;scrollbar-width:none}.m-sim-card{flex:0 0 118px;height:168px;border-radius:10px;background-image:linear-gradient(0deg,rgba(0,0,0,.72),transparent 52%),var(--img);background-size:cover;background-position:center;position:relative;border:1px solid rgba(255,255,255,.09)}.m-sim-card span{position:absolute;left:9px;right:9px;bottom:9px;font-size:10px;font-weight:850}.mobile-home{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:120px;height:4px;border-radius:6px;background:rgba(255,255,255,.7);z-index:30}.m-toast{position:fixed;bottom:34px}
+.movie-only{display:none}.is-movie .series-only{display:none!important}.is-movie .movie-only{display:block}.is-movie .movie-flex{display:flex}.is-movie .movie-grid{display:grid}
+@media(max-width:850px){.prototype{padding:12px}.proto-bar{align-items:flex-start;flex-direction:column}.controls{justify-content:flex-start}.tv-shell{min-height:520px}.hint{display:none}}
+</style>
+</head>
+<body>
+<div class="prototype">
+  <header class="proto-bar">
+    <div class="proto-brand"><div class="mark">P</div><div><div class="proto-title">SCREEN 02 · Details / Episodes</div><div class="proto-sub">Cinematic detail deck · independent TV & Mobile compositions</div></div></div>
+    <div class="controls">
+      <div class="segment"><button id="seriesType" class="active">Series</button><button id="movieType">Movie</button></div>
+      <div class="segment"><button id="tvMode" class="active">Android TV</button><button id="mobileMode">Mobile</button></div>
+      <div class="hint" id="hint"><span class="key">←</span><span class="key">↑</span><span class="key">↓</span><span class="key">→</span><span class="key">↵</span><span>DPAD preview</span></div>
+    </div>
+  </header>
+  <main class="device-wrap">
+    <section id="tvView" class="view active">
+      <div class="tv-shell" id="tvShell">
+        <div class="tv-art" id="tvArt" style="--hero:url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=88')"></div><div class="tv-noise"></div>
+        <div class="tv-top"><button class="tv-back">← <span>Πίσω</span></button><div class="tv-brand">PRELUDE<b>+</b></div></div>
+        <section class="tv-main">
+          <div class="tv-kicker"><i></i><span id="tvKicker">PRELUDE+ ORIGINAL SERIES</span></div>
+          <h1 class="tv-title" id="tvTitle">The Last<br>Signal</h1>
+          <div class="tv-meta"><span class="match">98% Match</span><span>2026</span><span class="pill">16+</span><span>1 Season</span><span class="quality">4K</span><span class="quality">HDR</span></div>
+          <div class="tv-genres">Sci‑Fi · Mystery · Thriller</div>
+          <p class="tv-description" id="tvDesc">Όταν ένας ξεχασμένος δορυφόρος αρχίζει να εκπέμπει ξανά, μια μηχανικός σημάτων ανακαλύπτει ότι το μήνυμα προβλέπει γεγονότα πριν συμβούν.</p>
+          <div class="tv-credits"><b>Πρωταγωνιστούν:</b> Elena Ward, Marcus Vale, Daria Lin<br><b>Δημιουργός:</b> Alex Raines</div>
+          <div class="tv-actions" id="tvActions">
+            <button class="action primary focused" data-tv-action="play">▶ <span class="series-only">ΣΥΝΕΧΕΙΑ S1:E3</span><span class="movie-only">ΑΝΑΠΑΡΑΓΩΓΗ</span></button>
+            <button class="action secondary" data-tv-action="list">✓ Η ΛΙΣΤΑ ΜΟΥ</button>
+            <button class="action secondary icon" data-tv-action="trailer">▶</button>
+            <button class="action secondary icon" data-tv-action="share">↗</button>
+          </div>
+          <div class="tv-progress-wrap series-only"><div class="progress-labels"><span>Episode 3 · 34:12</span><span>18 λεπτά απομένουν</span></div><div class="progress"><i></i></div></div>
+        </section>
+        <aside class="info-flyout" id="flyout"><div class="fly-kicker">FOCUSED EPISODE</div><div class="fly-title" id="flyTitle">3. Dead Air</div><div class="fly-meta" id="flyMeta">52 min · 16+ · 4K</div><div class="fly-desc" id="flyDesc">Η ομάδα ακολουθεί το σήμα σε μια εγκαταλελειμμένη βάση και βρίσκει κάτι που δεν θα έπρεπε να λειτουργεί.</div><div class="fly-next">Επόμενο: <b id="flyNext">The Echo Room</b></div></aside>
+        <section class="tv-bottom">
+          <div class="tv-tabs">
+            <button class="tv-tab active" data-tab="episodes">ΕΠΕΙΣΟΔΙΑ</button>
+            <button class="tv-tab" data-tab="trailers">TRAILERS & MORE</button>
+            <button class="tv-tab" data-tab="similar">ΠΑΡΟΜΟΙΑ</button>
+            <button class="season-btn series-only" id="seasonBtn">SEASON 1⌄</button>
+          </div>
+          <div class="tv-content" id="tvContent"></div>
+        </section>
+        <div class="tv-toast" id="tvToast"></div>
+      </div>
+    </section>
+    <section id="mobileView" class="view">
+      <div class="mobile-stage"><div class="phone" id="phone">
+        <div class="mobile-scroll" id="mobileScroll">
+          <section class="m-hero"><div class="m-art" id="mArt" style="--hero:url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=88')"></div>
+            <div class="m-top"><button>←</button><div class="m-brand">PRELUDE<b>+</b></div><button>↗</button></div>
+            <div class="m-copy"><div class="m-kicker"><i></i><span id="mKicker">PRELUDE+ ORIGINAL SERIES</span></div><h1 class="m-title" id="mTitle">The Last<br>Signal</h1><div class="m-meta"><span class="match">98% Match</span><span>2026</span><span class="pill">16+</span><span class="series-only">1 Season</span><span class="movie-only">2h 08m</span><span class="quality">4K</span></div><p class="m-desc" id="mDesc">Όταν ένας ξεχασμένος δορυφόρος αρχίζει να εκπέμπει ξανά, μια μηχανικός σημάτων ανακαλύπτει ότι το μήνυμα προβλέπει γεγονότα πριν συμβούν.</p>
+              <div class="m-actions"><button class="m-action primary" data-m-action="play">▶ <span class="series-only">Συνέχεια S1:E3</span><span class="movie-only">Αναπαραγωγή</span></button><button class="m-action" data-m-action="list">✓</button><button class="m-action" data-m-action="trailer">▶</button></div>
+              <div class="m-progress series-only"><div class="m-progress-label"><span>34:12</span><span>18 λεπτά απομένουν</span></div><div class="m-progress-track"><i></i></div></div>
+            </div>
+          </section>
+          <section class="m-body">
+            <div class="m-tabs-wrap"><div class="m-tabs"><button class="m-tab active" data-mtab="episodes">Επεισόδια</button><button class="m-tab" data-mtab="about">Σχετικά</button><button class="m-tab" data-mtab="cast">Ηθοποιοί</button><button class="m-tab" data-mtab="similar">Παρόμοια</button></div></div>
+            <div id="mobileContent"></div>
+          </section>
+        </div>
+        <div class="m-toast" id="mToast"></div><div class="mobile-home"></div>
+      </div></div>
+    </section>
+  </main>
+</div>
+<script>
+const episodes=[
+ {n:1,title:'A Voice in the Dark',time:'49 min',p:100,desc:'Ένα ασθενές σήμα οδηγεί την Elena σε έναν δορυφόρο που θεωρείται νεκρός εδώ και δεκαετίες.',img:"url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=84')"},
+ {n:2,title:'Orbit Zero',time:'51 min',p:100,desc:'Η προέλευση του σήματος αλλάζει τροχιά και η ομάδα συνειδητοποιεί ότι κάποιος το καθοδηγεί.',img:"url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=84')"},
+ {n:3,title:'Dead Air',time:'52 min',p:68,desc:'Η ομάδα ακολουθεί το σήμα σε μια εγκαταλελειμμένη βάση και βρίσκει κάτι που δεν θα έπρεπε να λειτουργεί.',img:"url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=84')"},
+ {n:4,title:'The Echo Room',time:'47 min',p:0,desc:'Μια ηχογράφηση από το μέλλον θέτει την Elena απέναντι σε μια απόφαση χωρίς επιστροφή.',img:"url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=900&q=84')"},
+ {n:5,title:'Black Sky',time:'55 min',p:0,desc:'Καθώς το δίκτυο καταρρέει, το τελευταίο μήνυμα αποκαλύπτει τον πραγματικό αποστολέα.',img:"url('https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=900&q=84')"}
+];
+const similar=[
+ {title:'Orbit',img:"url('https://images.unsplash.com/photo-1454789548928-9efd52dc4031?auto=format&fit=crop&w=700&q=82')"},
+ {title:'Dark Matter',img:"url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=700&q=82')"},
+ {title:'The Colony',img:"url('https://images.unsplash.com/photo-1476610182048-b716b8518aae?auto=format&fit=crop&w=700&q=82')"},
+ {title:'Silent Earth',img:"url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=82')"},
+ {title:'Signal Lost',img:"url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=700&q=82')"}
+];
+const cast=[
+ {name:'Elena Ward',role:'Dr. Mira Cole',img:"url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=82')"},
+ {name:'Marcus Vale',role:'Jonas Reed',img:"url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=82')"},
+ {name:'Daria Lin',role:'Aya Chen',img:"url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=82')"},
+ {name:'Theo Grant',role:'Commander Hale',img:"url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=82')"}
+];
+let mode='tv',kind='series',tvZone='actions',actionIndex=0,tabIndex=0,cardIndex=0,activeTab='episodes',mobileTab='episodes',season=1;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function toast(id,text){const t=$(id);t.textContent=text;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500)}
+function renderTv(){
+ const content=$('#tvContent');
+ if(activeTab==='episodes'&&kind==='series') content.innerHTML=`<div class="episode-row" id="tvRow">${episodes.map((e,i)=>`<article class="ep-card ${tvZone==='cards'&&i===cardIndex?'focused':''}" data-i="${i}" style="--img:${e.img}"><div class="ep-play">▶</div><div class="ep-copy"><div class="ep-no">EPISODE ${e.n}</div><div class="ep-name">${e.title}</div><div class="ep-time">${e.time}${e.p>0&&e.p<100?' · Continue watching':''}</div></div>${e.p?`<div class="ep-progress"><i style="--p:${e.p}%"></i></div>`:''}</article>`).join('')}</div>`;
+ else if(activeTab==='trailers'||(activeTab==='episodes'&&kind==='movie')) content.innerHTML=`<div class="trailer-row" id="tvRow">${['Official Trailer','Behind the Signal','Creating the World','Cast Interview'].map((x,i)=>`<article class="ep-card ${tvZone==='cards'&&i===cardIndex?'focused':''}" data-i="${i}" style="--img:${episodes[(i+1)%episodes.length].img}"><div class="ep-play">▶</div><div class="ep-copy"><div class="ep-no">VIDEO ${i+1}</div><div class="ep-name">${x}</div><div class="ep-time">${2+i*3} min</div></div></article>`).join('')}</div>`;
+ else content.innerHTML=`<div class="similar-row" id="tvRow">${similar.map((e,i)=>`<article class="ep-card ${tvZone==='cards'&&i===cardIndex?'focused':''}" data-i="${i}" style="--img:${e.img}"><div class="ep-play">＋</div><div class="ep-copy"><div class="ep-no">96% MATCH</div><div class="ep-name">${e.title}</div><div class="ep-time">2025 · 16+ · 4K</div></div></article>`).join('')}</div>`;
+ $$('.ep-card').forEach(c=>c.onclick=()=>{cardIndex=+c.dataset.i;tvZone='cards';renderTvFocus();tvEnter()});renderTvFocus();
+}
+function maxCards(){return activeTab==='similar'?similar.length:(activeTab==='trailers'||kind==='movie'?4:episodes.length)}
+function updateFly(){const f=$('#flyout');if(tvZone!=='cards'||activeTab!=='episodes'||kind!=='series'){f.classList.remove('show');return}const e=episodes[cardIndex];$('#flyTitle').textContent=`${e.n}. ${e.title}`;$('#flyMeta').textContent=`${e.time} · 16+ · 4K`;$('#flyDesc').textContent=e.desc;$('#flyNext').textContent=episodes[cardIndex+1]?.title||'Season Finale';f.classList.add('show')}
+function renderTvFocus(){
+ $$('.action').forEach((b,i)=>b.classList.toggle('focused',tvZone==='actions'&&i===actionIndex));
+ $$('.tv-tab').forEach((b,i)=>b.classList.toggle('active',i===tabIndex));
+ $('#seasonBtn')?.classList.toggle('focused',tvZone==='season');
+ $$('.ep-card').forEach((c,i)=>c.classList.toggle('focused',tvZone==='cards'&&i===cardIndex));
+ const row=$('#tvRow');if(row)row.style.transform=`translateX(${-Math.max(0,cardIndex-3)*190}px)`;updateFly();
+}
+function setTab(i){tabIndex=Math.max(0,Math.min(2,i));activeTab=['episodes','trailers','similar'][tabIndex];cardIndex=0;renderTv()}
+function tvEnter(){if(tvZone==='actions')toast('#tvToast',['Έναρξη αναπαραγωγής','Η λίστα ενημερώθηκε','Αναπαραγωγή trailer','Κοινοποίηση'][actionIndex]);else if(tvZone==='season'){season=season===1?2:1;$('#seasonBtn').textContent=`SEASON ${season}⌄`;toast('#tvToast',`Επιλέχθηκε Season ${season}`)}else if(tvZone==='cards'){const name=activeTab==='episodes'&&kind==='series'?episodes[cardIndex].title:activeTab==='similar'?similar[cardIndex].title:['Official Trailer','Behind the Signal','Creating the World','Cast Interview'][cardIndex];toast('#tvToast',activeTab==='similar'?`Άνοιγμα: ${name}`:`Αναπαραγωγή: ${name}`)}}
+function handleTv(e){if(mode!=='tv')return;const k=e.key;if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(k))return;e.preventDefault();
+ if(tvZone==='actions'){if(k==='ArrowLeft')actionIndex=Math.max(0,actionIndex-1);if(k==='ArrowRight')actionIndex=Math.min(3,actionIndex+1);if(k==='ArrowDown'){tvZone=kind==='series'?'tabs':'tabs'}}
+ else if(tvZone==='tabs'){if(k==='ArrowLeft')setTab(tabIndex-1);if(k==='ArrowRight')setTab(tabIndex+1);if(k==='ArrowUp')tvZone='actions';if(k==='ArrowDown')tvZone=(kind==='series'&&activeTab==='episodes')?'season':'cards'}
+ else if(tvZone==='season'){if(k==='ArrowUp')tvZone='tabs';if(k==='ArrowDown')tvZone='cards';if(k==='ArrowLeft'||k==='ArrowRight'){season=season===1?2:1;$('#seasonBtn').textContent=`SEASON ${season}⌄`}}
+ else if(tvZone==='cards'){if(k==='ArrowLeft')cardIndex=Math.max(0,cardIndex-1);if(k==='ArrowRight')cardIndex=Math.min(maxCards()-1,cardIndex+1);if(k==='ArrowUp')tvZone=(kind==='series'&&activeTab==='episodes')?'season':'tabs'}
+ if(k==='Enter'||k===' ')tvEnter();renderTvFocus();}
+function renderMobile(){
+ const c=$('#mobileContent');
+ if(mobileTab==='episodes'&&kind==='series')c.innerHTML=`<section class="m-section"><div class="m-head"><h3>Επεισόδια</h3><button class="season-chip" id="mSeason">Season ${season}⌄</button></div>${episodes.map(e=>`<article class="m-episode" data-ep="${e.title}"><div class="m-thumb" style="--img:${e.img}"><div class="play"><span>▶</span></div><div class="num">EP ${e.n}</div>${e.p?`<div class="bar"><i style="--p:${e.p}%"></i></div>`:''}</div><div><div class="m-ep-title">${e.n}. ${e.title}</div><div class="m-ep-meta">${e.time}${e.p>0&&e.p<100?' · 18 λεπτά απομένουν':''}</div><div class="m-ep-desc">${e.desc}</div></div></article>`).join('')}</section>`;
+ else if(mobileTab==='about'||(mobileTab==='episodes'&&kind==='movie'))c.innerHTML=`<section class="m-section"><div class="m-head"><h3>Σχετικά</h3></div><p class="m-about">Όταν ένας ξεχασμένος δορυφόρος αρχίζει να εκπέμπει ξανά, μια μηχανικός σημάτων ανακαλύπτει ότι το μήνυμα προβλέπει γεγονότα πριν συμβούν. Καθώς η ομάδα πλησιάζει την πηγή, κάθε νέα μετάδοση αλλάζει όσα θεωρούσαν δεδομένα.</p><div class="m-credit"><b>Δημιουργός:</b> Alex Raines<br><b>Πρωταγωνιστούν:</b> Elena Ward, Marcus Vale, Daria Lin<br><b>Είδη:</b> Sci‑Fi, Mystery, Thriller<br><b>Ήχος:</b> Dolby Atmos · <b>Υπότιτλοι:</b> Ελληνικά, English</div></section><section class="m-section movie-only"><div class="m-head"><h3>Trailers & More</h3></div><div class="m-similar">${episodes.slice(0,3).map((e,i)=>`<article class="m-sim-card" data-video="${i}" style="--img:${e.img}"><span>${['Official Trailer','Behind the Signal','Creating the World'][i]}</span></article>`).join('')}</div></section>`;
+ else if(mobileTab==='cast')c.innerHTML=`<section class="m-section"><div class="m-head"><h3>Ηθοποιοί</h3></div><div class="m-cast">${cast.map(x=>`<article class="cast-card"><div class="cast-photo" style="--img:${x.img}"></div><div class="cast-name">${x.name}</div><div class="cast-role">${x.role}</div></article>`).join('')}</div></section>`;
+ else c.innerHTML=`<section class="m-section"><div class="m-head"><h3>Παρόμοια για εσένα</h3></div><div class="m-similar">${similar.map(x=>`<article class="m-sim-card" data-sim="${x.title}" style="--img:${x.img}"><span>${x.title}</span></article>`).join('')}</div></section>`;
+ $('#mSeason')?.addEventListener('click',()=>{season=season===1?2:1;renderMobile();toast('#mToast',`Season ${season}`)});$$('.m-episode').forEach(e=>e.onclick=()=>toast('#mToast',`Αναπαραγωγή: ${e.dataset.ep}`));$$('[data-sim]').forEach(e=>e.onclick=()=>toast('#mToast',`Άνοιγμα: ${e.dataset.sim}`));$$('[data-video]').forEach(e=>e.onclick=()=>toast('#mToast','Αναπαραγωγή video'));
+}
+function setMobileTab(name){mobileTab=name;$$('.m-tab').forEach(b=>b.classList.toggle('active',b.dataset.mtab===name));renderMobile();$('#mobileScroll').scrollTo({top:500,behavior:'smooth'})}
+function setMode(next){mode=next;$('#tvMode').classList.toggle('active',next==='tv');$('#mobileMode').classList.toggle('active',next==='mobile');$('#tvView').classList.toggle('active',next==='tv');$('#mobileView').classList.toggle('active',next==='mobile');$('#hint').innerHTML=next==='tv'?'<span class="key">←</span><span class="key">↑</span><span class="key">↓</span><span class="key">→</span><span class="key">↵</span><span>DPAD preview</span>':'<span class="key">tap</span><span>Touch preview · scroll</span>'}
+function setKind(next){kind=next;document.body.classList.toggle('is-movie',next==='movie');$('#seriesType').classList.toggle('active',next==='series');$('#movieType').classList.toggle('active',next==='movie');
+ if(next==='movie'){activeTab='trailers';tabIndex=1;mobileTab='about';$('#tvKicker').textContent='PRELUDE+ FEATURE FILM';$('#mKicker').textContent='PRELUDE+ FEATURE FILM';$('#tvTitle').innerHTML='The Silent<br>Horizon';$('#mTitle').innerHTML='The Silent<br>Horizon';$('#tvDesc').textContent='Ένας πιλότος επιστρέφει στην τελευταία κατοικημένη βάση της Γης και ανακαλύπτει ότι η αποστολή του είχε σχεδιαστεί για να αποτύχει.';$('#mDesc').textContent=$('#tvDesc').textContent;$('#tvArt').style.setProperty('--hero',"url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=88')");$('#mArt').style.setProperty('--hero',"url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=88')")}
+ else{activeTab='episodes';tabIndex=0;mobileTab='episodes';$('#tvKicker').textContent='PRELUDE+ ORIGINAL SERIES';$('#mKicker').textContent='PRELUDE+ ORIGINAL SERIES';$('#tvTitle').innerHTML='The Last<br>Signal';$('#mTitle').innerHTML='The Last<br>Signal';$('#tvDesc').textContent='Όταν ένας ξεχασμένος δορυφόρος αρχίζει να εκπέμπει ξανά, μια μηχανικός σημάτων ανακαλύπτει ότι το μήνυμα προβλέπει γεγονότα πριν συμβούν.';$('#mDesc').textContent=$('#tvDesc').textContent;$('#tvArt').style.setProperty('--hero',"url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=88')");$('#mArt').style.setProperty('--hero',"url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=88')")}
+ $$('.tv-tab').forEach((b,i)=>b.classList.toggle('active',i===tabIndex));$$('.m-tab').forEach(b=>b.classList.toggle('active',b.dataset.mtab===mobileTab));cardIndex=0;tvZone='actions';actionIndex=0;renderTv();renderMobile()}
+$('#tvMode').onclick=()=>setMode('tv');$('#mobileMode').onclick=()=>setMode('mobile');$('#seriesType').onclick=()=>setKind('series');$('#movieType').onclick=()=>setKind('movie');document.addEventListener('keydown',handleTv);
+$$('.tv-tab').forEach((b,i)=>b.onclick=()=>{setTab(i);tvZone='cards';renderTvFocus()});$$('.action').forEach((b,i)=>b.onclick=()=>{actionIndex=i;tvZone='actions';renderTvFocus();tvEnter()});$('#seasonBtn').onclick=()=>{tvZone='season';tvEnter();renderTvFocus()};
+$$('.m-tab').forEach(b=>b.onclick=()=>setMobileTab(b.dataset.mtab));$$('[data-m-action]').forEach(b=>b.onclick=()=>toast('#mToast',b.dataset.mAction==='play'?'Έναρξη αναπαραγωγής':b.dataset.mAction==='list'?'Η λίστα ενημερώθηκε':'Αναπαραγωγή trailer'));
+renderTv();renderMobile();
+</script>
+</body>
+</html>

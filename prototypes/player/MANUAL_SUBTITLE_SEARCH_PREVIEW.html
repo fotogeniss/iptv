@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prelude+ — Χειροκίνητη αναζήτηση υποτίτλων</title>
+  <style>
+    :root { --bg:#000; --surface:#15151d; --surface2:#20202a; --line:#30303c; --text:#fff; --muted:#aaaab5; --accent:#e00078; --green:#48ce82; }
+    * { box-sizing:border-box; } body { margin:0; background:#101014; color:var(--text); font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; }
+    .phone { min-height:100vh; max-width:430px; margin:auto; background:var(--bg); overflow:hidden; }
+    .player { height:238px; padding:18px; display:flex; justify-content:flex-end; align-items:flex-end; background:radial-gradient(circle at 68% 20%,#421538 0,#13131a 37%,#050507 73%); }
+    .cc { border:1px solid #ffffff9c; color:white; background:#111116bb; padding:8px 11px; border-radius:9px; font-weight:800; font-size:13px; }
+    .sheet { min-height:calc(100vh - 210px); margin-top:-28px; padding:18px 18px 42px; border-radius:25px 25px 0 0; background:#0b0b0e; position:relative; }
+    .handle { width:38px; height:4px; margin:0 auto 20px; border-radius:9px; background:#646470; }
+    .head { display:flex; align-items:center; gap:14px; margin-bottom:22px; } .back { width:38px; height:38px; border:0; border-radius:50%; background:var(--surface); color:white; font-size:27px; line-height:30px; cursor:pointer; }
+    h1 { margin:0; font-size:21px; letter-spacing:-.3px; } .hint { color:var(--muted); font-size:13px; line-height:1.4; margin:0 0 17px; } .section-title { color:#d8d8df; font-size:13px; font-weight:800; margin:2px 2px 9px; }
+    .track { width:100%; border:1px solid transparent; border-radius:14px; padding:13px; background:var(--surface); color:white; cursor:pointer; display:flex; align-items:center; gap:12px; text-align:left; margin-bottom:8px; } .track.selected { border-color:var(--accent); background:#28131f; } .track-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:#292933; font-weight:900; font-size:11px; } .track .check { margin-left:auto; color:var(--accent); font-size:20px; font-weight:900; }
+    .mode { display:flex; gap:10px; margin:17px 0 20px; } .mode button { flex:1; border:1px solid var(--line); border-radius:14px; padding:13px 8px; background:var(--surface); color:white; font-weight:800; font-size:13px; cursor:pointer; } .mode button.active { border-color:var(--accent); background:#351224; color:#fff; }
+    .appearance { margin-top:21px; padding:14px; background:#111116; border-radius:17px; } .appearance-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; } .appearance-head small { color:#9d9da8; } .setting { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #292932; } .setting:first-of-type { border-top:0; } .setting-label { font-size:13px; font-weight:750; } .segmented { display:flex; gap:4px; background:#25252e; padding:3px; border-radius:9px; } .segmented button { border:0; background:transparent; color:#bcbcc6; border-radius:7px; padding:6px 9px; font-size:11px; cursor:pointer; } .segmented button.active { background:#f2f2f5; color:#111; font-weight:850; } .toggle { width:42px; height:25px; padding:3px; border:0; border-radius:20px; background:#4a4a56; cursor:pointer; } .toggle i { display:block; width:19px; height:19px; border-radius:50%; background:white; transition:.2s; } .toggle.on { background:var(--accent); } .toggle.on i { transform:translateX(17px); } .preview { margin-top:12px; border-radius:10px; background:linear-gradient(110deg,#1f202a,#08080d); min-height:62px; display:grid; place-items:end center; padding:8px; } .caption { color:white; font-size:15px; font-weight:500; background:#070709d9; padding:3px 7px; border-radius:3px; }
+    label { display:block; color:#d8d8df; font-size:13px; font-weight:750; margin:0 0 8px 2px; }
+    .search { display:flex; gap:9px; margin-bottom:11px; } input { min-width:0; width:100%; border:1px solid var(--line); border-radius:13px; padding:15px 13px; background:var(--surface); color:white; font-size:15px; outline:none; } input:focus { border-color:var(--accent); }
+    .go { border:0; min-width:52px; border-radius:13px; background:var(--accent); color:white; font-size:21px; cursor:pointer; }
+    .meta { display:flex; gap:8px; margin:0 0 20px; } .chip { padding:7px 10px; border-radius:99px; background:#20202a; color:#c9c9d1; font-size:12px; } .chip.active { background:#ffe6f3; color:#a40051; font-weight:800; }
+    .manual { display:none; } .manual.open { display:block; } .status { display:flex; align-items:center; gap:8px; color:#cfcfd7; margin:0 1px 13px; font-size:13px; } .dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+    .results { display:grid; gap:9px; } .result { width:100%; text-align:left; border:1px solid transparent; border-radius:16px; padding:14px; background:var(--surface); color:white; cursor:pointer; display:flex; gap:12px; align-items:center; } .result:hover,.result.selected { border-color:var(--accent); background:#28131f; }
+    .lang { width:39px; height:39px; border-radius:11px; display:grid; place-items:center; flex:none; background:#293a52; color:#dceaff; font-weight:900; font-size:11px; } .result h2 { margin:0 0 4px; font-size:14px; } .result p { margin:0; color:var(--muted); font-size:12px; } .right { margin-left:auto; color:#bdbdc8; text-align:right; font-size:11px; line-height:1.45; }
+    .empty { display:none; padding:30px 8px; text-align:center; color:var(--muted); } .empty strong { display:block; color:white; margin-bottom:8px; }
+    .footer { position:sticky; bottom:-1px; padding-top:19px; background:linear-gradient(transparent,#0b0b0e 24%); } .apply { width:100%; padding:16px; border:0; border-radius:14px; background:#393943; color:#8d8d99; font-size:16px; font-weight:850; } .apply.ready { background:var(--accent); color:white; cursor:pointer; }
+    .toast { position:fixed; left:50%; bottom:30px; transform:translate(-50%,80px); transition:.25s; background:#f6f6f8; color:#111; border-radius:20px; padding:11px 16px; font-size:13px; font-weight:750; box-shadow:0 8px 28px #0008; } .toast.show { transform:translate(-50%,0); }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <section class="player"><button class="cc">CC&nbsp; Υπότιτλοι</button></section>
+    <section class="sheet">
+      <div class="handle"></div>
+      <div class="head"><button class="back" aria-label="Πίσω">‹</button><h1>Υπότιτλοι</h1></div>
+      <p class="section-title">Ενσωματωμένοι υπότιτλοι</p>
+      <button class="track selected"><span class="track-icon">EL</span><span><strong>Ελληνικά</strong><br><small>Ενσωματωμένος · UTF-8</small></span><span class="check">✓</span></button>
+      <button class="track"><span class="track-icon">EN</span><span><strong>English</strong><br><small>Embedded · SDH</small></span></button>
+      <button class="track"><span class="track-icon">×</span><span><strong>Απενεργοποίηση</strong><br><small>Χωρίς υπότιτλους</small></span></button>
+      <section class="appearance">
+        <div class="appearance-head"><strong>Εμφάνιση υποτίτλων</strong><small>Για όλους τους υπότιτλους</small></div>
+        <div class="setting"><span class="setting-label">Μέγεθος</span><span class="segmented" data-setting="size"><button>Μικρό</button><button class="active">Μεσαίο</button><button>Μεγάλο</button></span></div>
+        <div class="setting"><span class="setting-label">Έντονα γράμματα</span><button class="toggle" id="bold"><i></i></button></div>
+        <div class="setting"><span class="setting-label">Φόντο υποτίτλων</span><button class="toggle on" id="background"><i></i></button></div>
+        <div class="preview"><span class="caption" id="caption">Παράδειγμα υποτίτλου</span></div>
+      </section>
+      <p class="section-title" style="margin-top:20px">Αναζήτηση OpenSubtitles</p>
+      <div class="mode"><button class="active" id="auto">✦ Αυτόματη</button><button id="manualBtn">⌕ Χειροκίνητη</button></div>
+      <p class="hint" id="autoHint">Θα αναζητήσουμε αυτόματα τον καλύτερο ελληνικό υπότιτλο για τον τίτλο που παίζει.</p>
+      <div class="manual" id="manual">
+      <label for="title">Τίτλος αναζήτησης</label>
+      <div class="search"><input id="title" value="The Last Voyage of the Demeter" autocomplete="off"><button class="go" aria-label="Αναζήτηση">⌕</button></div>
+      <div class="meta"><span class="chip active">Ελληνικά</span><span class="chip">2023</span><span class="chip">Ταινία</span></div>
+      <div class="status" id="status"><i class="dot"></i><span>Βρέθηκαν 4 υπότιτλοι για “The Last Voyage of the Demeter”</span></div>
+      <div class="results" id="results">
+        <button class="result"><span class="lang">EL</span><span><h2>The Last Voyage of the Demeter</h2><p>Ελληνικά · SRT · Ελληνική απόδοση</p></span><span class="right">★★★★★<br>1.104 λήψεις</span></button>
+        <button class="result"><span class="lang">EL</span><span><h2>The Last Voyage of the Demeter</h2><p>Ελληνικά · SRT · WEB-DL / BluRay</p></span><span class="right">★★★★☆<br>684 λήψεις</span></button>
+        <button class="result"><span class="lang">EL</span><span><h2>Last Voyage of the Demeter</h2><p>Ελληνικά · SRT · Συγχρονισμένοι</p></span><span class="right">★★★★☆<br>302 λήψεις</span></button>
+        <button class="result"><span class="lang">EN</span><span><h2>The Last Voyage of the Demeter</h2><p>English · SRT · HI / SDH</p></span><span class="right">★★★★★<br>4.287 λήψεις</span></button>
+      </div>
+      <div class="empty" id="empty"><strong>Δεν βρέθηκαν υπότιτλοι</strong>Δοκίμασε να αλλάξεις τον τίτλο ή το έτος.</div>
+      </div>
+      <div class="footer"><button class="apply ready" id="apply">Αυτόματη αναζήτηση</button></div>
+    </section>
+  </main>
+  <div class="toast" id="toast">Ο υπότιτλος προστέθηκε στον player</div>
+  <script>
+    const input=document.querySelector('#title'), results=document.querySelector('#results'), status=document.querySelector('#status'), empty=document.querySelector('#empty'), apply=document.querySelector('#apply'), toast=document.querySelector('#toast'), manual=document.querySelector('#manual'), auto=document.querySelector('#auto'), manualBtn=document.querySelector('#manualBtn'), autoHint=document.querySelector('#autoHint');
+    let chosen=null;
+    function search(){ const q=input.value.trim(); const none=q.toLowerCase().includes('xyz'); results.style.display=none?'none':'grid'; empty.style.display=none?'block':'none'; status.innerHTML=none?'':'<i class="dot"></i><span>Βρέθηκαν 4 υπότιτλοι για “'+(q||'τον τίτλο')+'”</span>'; chosen=null; apply.className='apply'; apply.textContent='Επίλεξε έναν υπότιτλο'; document.querySelectorAll('.result').forEach(x=>x.classList.remove('selected')); }
+    document.querySelector('.go').onclick=search; input.addEventListener('keydown',e=>{if(e.key==='Enter')search()});
+    auto.onclick=()=>{manual.classList.remove('open');auto.classList.add('active');manualBtn.classList.remove('active');autoHint.style.display='block';apply.className='apply ready';apply.textContent='Αυτόματη αναζήτηση';chosen=null};
+    manualBtn.onclick=()=>{manual.classList.add('open');manualBtn.classList.add('active');auto.classList.remove('active');autoHint.style.display='none';apply.className='apply';apply.textContent='Επίλεξε έναν υπότιτλο'};
+    document.querySelectorAll('.track').forEach(track=>track.onclick=()=>{document.querySelectorAll('.track').forEach(x=>{x.classList.remove('selected');x.querySelector('.check')?.remove()});track.classList.add('selected');track.insertAdjacentHTML('beforeend','<span class="check">✓</span>')});
+    const caption=document.querySelector('#caption');
+    document.querySelectorAll('.segmented button').forEach(button=>button.onclick=()=>{const group=button.parentElement;group.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');caption.style.fontSize=button.textContent==='Μικρό'?'12px':button.textContent==='Μεγάλο'?'19px':'15px'});
+    document.querySelector('#bold').onclick=function(){this.classList.toggle('on');caption.style.fontWeight=this.classList.contains('on')?'800':'500'};
+    document.querySelector('#background').onclick=function(){this.classList.toggle('on');caption.style.background=this.classList.contains('on')?'#070709d9':'transparent'};
+    document.querySelectorAll('.result').forEach((item)=>item.onclick=()=>{ document.querySelectorAll('.result').forEach(x=>x.classList.remove('selected')); item.classList.add('selected'); chosen=item.querySelector('h2').textContent; apply.className='apply ready'; apply.textContent='Χρήση αυτού του υπότιτλου'; });
+    apply.onclick=()=>{
+      if (!manual.classList.contains('open') || chosen) {
+        toast.textContent = manual.classList.contains('open') ? 'Ο υπότιτλος προστέθηκε στον player' : 'Βρέθηκε και προστέθηκε ο καλύτερος ελληνικός υπότιτλος';
+        toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2400);
+      }
+    };
+  </script>
+</body>
+</html>

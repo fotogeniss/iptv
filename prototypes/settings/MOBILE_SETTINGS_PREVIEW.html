@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ · Ρυθμίσεις Mobile</title>
+  <style>
+    :root{
+      --bg:#080808;
+      --surface:#181818;
+      --raised:#222;
+      --selected:#2a2a2a;
+      --line:rgba(255,255,255,.11);
+      --text:#f5f5f5;
+      --secondary:#b3b3b3;
+      --muted:#777;
+      --red:#e50914;
+      --red-dark:#79070d;
+      --green:#48c875;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#101010;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button{font:inherit;color:inherit}
+    svg{display:block}
+    .phone{
+      position:relative;width:min(100%,430px);height:100dvh;margin:auto;overflow:hidden;
+      background:var(--bg);box-shadow:0 0 70px #000
+    }
+    .page{
+      height:100%;overflow-y:auto;overflow-x:hidden;padding-bottom:122px;
+      scrollbar-width:none;scroll-behavior:smooth
+    }
+    .page::-webkit-scrollbar{display:none}
+
+    .topbar{
+      position:relative;height:94px;display:grid;grid-template-columns:54px 1fr 54px;
+      align-items:end;padding:0 17px 19px;border-bottom:1px solid rgba(255,255,255,.09);
+      background:linear-gradient(180deg,#080808 0%,rgba(8,8,8,.97) 100%)
+    }
+    .screen-title{text-align:center;font-size:20px;font-weight:900;letter-spacing:-.35px}
+    .bell{
+      position:relative;width:40px;height:40px;display:grid;place-items:center;margin-left:auto;
+      padding:0;border:0;background:transparent;cursor:pointer
+    }
+    .bell svg{width:24px;height:24px;fill:none;stroke:#f5f5f5;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .bell:after{
+      content:"";position:absolute;right:5px;top:4px;width:8px;height:8px;border-radius:50%;
+      background:var(--red);box-shadow:0 0 0 3px #080808
+    }
+
+    .account{
+      position:relative;min-height:160px;overflow:hidden;padding:24px 20px 22px;
+      background:
+        radial-gradient(circle at 92% 42%,rgba(229,9,20,.20),transparent 28%),
+        linear-gradient(180deg,#0c0c0c,var(--bg))
+    }
+    .account:after{
+      content:"";position:absolute;right:-25px;top:12px;width:130px;height:130px;border:1px solid rgba(255,255,255,.07);
+      border-radius:50%;box-shadow:0 0 0 18px rgba(255,255,255,.022),0 0 0 38px rgba(255,255,255,.014)
+    }
+    .account-copy{position:relative;z-index:1;max-width:275px}
+    .account h1{margin:0;font-size:26px;line-height:1.08;letter-spacing:-.75px}
+    .account p{margin:8px 0 17px;color:var(--secondary);font-size:12px;line-height:1.45}
+    .profile-button{
+      display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px;border:0;border-radius:11px;
+      background:#f5f5f5;color:#080808;font-size:12px;font-weight:900;cursor:pointer
+    }
+    .avatar{
+      width:21px;height:21px;display:grid;place-items:center;border-radius:7px;
+      background:linear-gradient(145deg,var(--red),var(--red-dark));color:white;font-size:10px
+    }
+
+    .premium-card{
+      position:relative;overflow:hidden;margin:2px 16px 12px;padding:20px;border:1px solid rgba(255,255,255,.13);
+      border-radius:20px;background:
+        radial-gradient(circle at 88% 16%,rgba(229,9,20,.34),transparent 34%),
+        radial-gradient(circle at 10% 100%,rgba(122,7,13,.28),transparent 42%),
+        linear-gradient(145deg,#222 0%,#111 65%);
+      box-shadow:0 18px 45px rgba(0,0,0,.26)
+    }
+    .premium-card:before{
+      content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.055) 45%,transparent 68%);
+      transform:translateX(-80%);animation:shine 5s ease-in-out infinite
+    }
+    @keyframes shine{0%,55%{transform:translateX(-85%)}80%,100%{transform:translateX(95%)}}
+    .premium-brand{position:relative;display:flex;align-items:center;gap:9px;font-size:17px;font-weight:950;letter-spacing:.2px}
+    .brand-mark{position:relative;width:23px;height:23px}
+    .brand-mark:before{content:"";position:absolute;inset:1px 0 1px 5px;background:var(--red);clip-path:polygon(0 0,100% 50%,0 100%);border-radius:3px}
+    .premium-chip{padding:4px 7px;border-radius:6px;background:rgba(229,9,20,.16);color:#ff626a;font-size:8px;font-weight:950;letter-spacing:1px}
+    .premium-card h2{position:relative;margin:18px 0 5px;font-size:22px;letter-spacing:-.5px}
+    .premium-card p{position:relative;margin:0;color:#b9b9b9;font-size:11px;line-height:1.45}
+    .premium-action{
+      position:relative;width:100%;height:46px;margin-top:17px;border:0;border-radius:13px;
+      background:var(--red);color:white;font-size:13px;font-weight:950;cursor:pointer
+    }
+
+    .content{padding:2px 16px 30px}
+    .group{margin-top:26px}
+    .group-title{margin:0 4px 11px;color:#c8c8c8;font-size:14px;font-weight:900;letter-spacing:.1px}
+    .row-list{display:grid;gap:9px}
+    .setting-row{
+      position:relative;width:100%;min-height:68px;display:grid;grid-template-columns:42px minmax(0,1fr) 26px;
+      align-items:center;gap:12px;padding:12px 13px;border:1px solid rgba(255,255,255,.055);
+      border-radius:16px;background:var(--surface);text-align:left;cursor:pointer;transition:.17s ease
+    }
+    .setting-row:active{transform:scale(.985);background:var(--selected)}
+    .setting-icon{
+      width:42px;height:42px;display:grid;place-items:center;border-radius:12px;
+      background:var(--raised);color:#f2f2f2
+    }
+    .setting-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .setting-row.primary .setting-icon{background:rgba(229,9,20,.14);color:#ff5059}
+    .setting-copy{min-width:0}
+    .setting-name{display:block;overflow:hidden;font-size:14px;font-weight:820;text-overflow:ellipsis;white-space:nowrap}
+    .setting-sub{display:block;margin-top:4px;overflow:hidden;color:#858585;font-size:9px;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
+    .row-end{display:flex;align-items:center;justify-content:flex-end;color:#777}
+    .chevron{width:9px;height:9px;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg);margin-right:4px}
+    .value{margin-right:7px;color:#999;font-size:9px;font-weight:850;white-space:nowrap}
+    .switch{position:relative;width:38px;height:22px;border-radius:99px;background:#383838}
+    .switch:after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#aaa;transition:.18s}
+    .switch.on{background:rgba(229,9,20,.38)}
+    .switch.on:after{left:19px;background:var(--red)}
+
+    .status{
+      display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px
+    }
+    .status-card{padding:13px;border:1px solid rgba(255,255,255,.06);border-radius:15px;background:#141414}
+    .status-label{color:#7c7c7c;font-size:9px}
+    .status-value{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:13px;font-weight:900}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(72,200,117,.11)}
+
+    .footer{padding:32px 4px 10px;text-align:center}
+    .version{color:#777;font-size:10px}
+    .version strong{color:#cfcfcf}
+    .restore{
+      height:40px;margin-top:13px;padding:0 17px;border:1px solid var(--line);border-radius:11px;
+      background:#151515;color:#bbb;font-size:11px;font-weight:850;cursor:pointer
+    }
+
+    .bottom-nav{
+      position:absolute;z-index:30;left:14px;right:14px;bottom:max(13px,env(safe-area-inset-bottom));
+      height:72px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border:1px solid rgba(255,255,255,.10);
+      border-radius:23px;background:rgba(0,0,0,.91);box-shadow:0 18px 48px #000;backdrop-filter:blur(20px);
+      transition:width .22s ease,height .22s ease,left .22s ease,right .22s ease,border-radius .22s ease
+    }
+    .nav-item{display:grid;place-items:center;gap:2px;padding:4px;border:0;border-radius:17px;background:transparent;color:#929292;font-size:8px;font-weight:750;cursor:pointer}
+    .nav-item svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .nav-item.active{background:#f3f3f3;color:#111}
+    .nav-item.active svg{color:var(--red)}
+    .menu-button{display:none;width:100%;height:100%;place-items:center;border:0;border-radius:50%;background:#101010;cursor:pointer}
+    .menu-button svg{width:25px;height:25px;stroke:white;stroke-width:2.2;stroke-linecap:round}
+    .bottom-nav.collapsed{left:18px;right:auto;width:58px;height:58px;padding:0;border-radius:50%}
+    .bottom-nav.collapsed .nav-item{display:none}
+    .bottom-nav.collapsed .menu-button{display:grid}
+
+    .overlay{position:absolute;z-index:50;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;transition:.2s}
+    .overlay.open{opacity:1;visibility:visible}
+    .sheet{
+      width:100%;padding:10px 16px 24px;border:1px solid rgba(255,255,255,.12);border-bottom:0;
+      border-radius:25px 25px 0 0;background:#121212;transform:translateY(24px);transition:.22s
+    }
+    .overlay.open .sheet{transform:none}
+    .handle{width:40px;height:4px;margin:0 auto 19px;border-radius:99px;background:#4a4a4a}
+    .sheet h2{margin:0 0 14px;font-size:20px}
+    .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .sheet-destination{height:75px;padding:13px;border:1px solid var(--line);border-radius:15px;background:#1b1b1b;text-align:left;font-weight:900;cursor:pointer}
+    .sheet-destination span{display:block;margin-top:5px;color:#777;font-size:9px;font-weight:600}
+    .sheet-destination.active{border-color:rgba(229,9,20,.55);background:rgba(229,9,20,.10)}
+
+    .account-flow{
+      position:absolute;z-index:100;inset:0;display:flex;flex-direction:column;overflow:hidden;
+      background:#050505;opacity:0;visibility:hidden;transform:translateY(18px);transition:.24s ease
+    }
+    .account-flow.open{opacity:1;visibility:visible;transform:none}
+    .account-logo{height:105px;display:flex;align-items:center;justify-content:center;margin-top:12px}
+    .account-logo img{width:230px;height:86px;object-fit:contain}
+    .account-heading{text-align:center;padding:4px 22px 12px}
+    .account-heading strong{display:block;font-size:24px;line-height:1.15;letter-spacing:-.6px}
+    .account-heading span{display:block;margin-top:5px;color:#ddd;font-size:20px;font-weight:400}
+    .account-carousel{position:relative;min-height:0;flex:1;overflow:hidden}
+    .account-track{height:100%;display:flex;transition:transform .35s cubic-bezier(.22,.8,.25,1)}
+    .account-slide{width:100%;height:100%;flex:0 0 100%;display:flex;flex-direction:column;align-items:center;padding:14px 20px 0}
+    .slide-art{
+      position:relative;width:100%;height:280px;flex:0 0 280px;display:grid;place-items:center;overflow:hidden;
+      background:
+        radial-gradient(circle at 51% 52%,rgba(115,35,91,.26),transparent 31%),
+        radial-gradient(circle at 15% 70%,rgba(158,73,17,.18),transparent 30%),
+        radial-gradient(circle at 87% 57%,rgba(26,76,112,.19),transparent 32%)
+    }
+    .slide-art:before,.slide-art:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.06)}
+    .slide-art:before{width:175px;height:175px}.slide-art:after{width:220px;height:220px}
+    .account-avatar{
+      position:relative;z-index:2;width:118px;height:118px;border:3px solid #f5f5f5;border-radius:50%;
+      background:linear-gradient(180deg,#ededf7 0 45%,#bca7d8 46% 100%);box-shadow:0 0 0 13px rgba(255,255,255,.035)
+    }
+    .account-avatar:before{content:"";position:absolute;left:38px;top:21px;width:40px;height:48px;border-radius:48% 48% 44% 44%;background:#4b4858}
+    .account-avatar:after{content:"";position:absolute;left:22px;bottom:12px;width:72px;height:42px;border-radius:55% 55% 40% 40%;background:#4b4858}
+    .avatar-label{position:absolute;z-index:3;top:207px;color:#ff565f;font-size:15px;font-weight:950;letter-spacing:.7px;text-align:center}
+    .slide-copy{max-width:355px;margin:7px auto 0;color:#f2f2f2;font-size:14px;line-height:1.55;text-align:center}
+    .device-stage{position:relative;z-index:2;width:300px;height:185px}
+    .device-tv{position:absolute;left:46px;top:25px;width:210px;height:125px;border:2px solid #56565d;border-radius:7px;background:#121218;box-shadow:0 18px 45px #000}
+    .device-tv:after{content:"";position:absolute;left:84px;bottom:-20px;width:42px;height:20px;border-bottom:4px solid #555}
+    .device-phone{position:absolute;z-index:2;left:5px;bottom:6px;width:54px;height:105px;border:2px solid #5e5e65;border-radius:10px;background:#101017}
+    .device-tablet{position:absolute;z-index:2;right:2px;bottom:6px;width:82px;height:105px;border:2px solid #5e5e65;border-radius:8px;background:#101017}
+    .device-brand{position:absolute;inset:0;display:grid;place-items:center;color:white;font-size:13px;font-weight:950;text-align:center}
+    .device-brand b{color:var(--red)}
+    .device-checks{position:absolute;z-index:3;right:0;top:3px;display:grid;gap:6px}
+    .device-checks span{padding:5px 9px;border-radius:99px;background:#24242b;color:#eee;font-size:10px;font-weight:750}
+    .data-tag{position:absolute;z-index:3;padding:7px 11px;border-radius:9px;background:rgba(10,10,10,.8);color:#eee;font-size:11px;border:1px solid rgba(255,255,255,.04)}
+    .data-tag.t1{left:126px;top:17px}.data-tag.t2{left:47px;top:62px}.data-tag.t3{left:28px;top:112px}.data-tag.t4{left:45px;top:163px}.data-tag.t5{right:38px;top:205px}
+    .data-avatar{position:absolute;z-index:2;right:42px;top:88px;transform:scale(.78)}
+    .account-dots{height:24px;display:flex;align-items:center;justify-content:center;gap:20px}
+    .account-dot{width:6px;height:6px;padding:0;border:0;border-radius:50%;background:#333;cursor:pointer;transition:.2s}
+    .account-dot.active{width:9px;height:9px;background:white}
+    .account-actions{padding:8px 16px max(13px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#050505 13%)}
+    .account-cta{width:100%;height:48px;border:0;border-radius:13px;background:var(--red);color:white;font-size:13px;font-weight:950;cursor:pointer}
+    .account-login{width:100%;height:48px;margin-top:9px;border:1px solid rgba(255,255,255,.06);border-radius:13px;background:#171717;color:white;font-size:13px;font-weight:850;cursor:pointer}
+    .account-back{display:block;height:33px;margin:8px auto 0;padding:0 19px;border:0;background:transparent;color:#ddd;font-size:12px;font-weight:800;cursor:pointer}
+
+    .playlist-screen{
+      position:absolute;z-index:115;inset:0;display:flex;flex-direction:column;overflow:hidden;
+      background:#050505;opacity:0;visibility:hidden;transform:translateX(18px);transition:.23s ease
+    }
+    .playlist-screen.open{opacity:1;visibility:visible;transform:none}
+    .playlist-header{
+      position:relative;height:94px;flex:0 0 94px;display:grid;grid-template-columns:52px 1fr 52px;
+      align-items:end;padding:0 16px 18px;border-bottom:1px solid rgba(255,255,255,.1);background:#050505
+    }
+    .playlist-header h2{margin:0 0 4px;text-align:center;font-size:20px;letter-spacing:-.3px}
+    .back-button{width:42px;height:42px;padding:0;border:0;background:transparent;cursor:pointer}
+    .back-button:before{content:"";display:block;width:17px;height:17px;margin-left:10px;border-left:2px solid #eee;border-bottom:2px solid #eee;transform:rotate(45deg)}
+    .playlist-scroll{min-height:0;flex:1;overflow-y:auto;padding:25px 16px 42px;scrollbar-width:none}
+    .playlist-scroll::-webkit-scrollbar{display:none}
+    .playlist-section-title{margin:0 2px 14px;color:#d4d4d4;font-size:14px;font-weight:900}
+    .source-card{padding:19px;border:1px solid rgba(255,255,255,.07);border-radius:18px;background:#131313}
+    .source-title{display:flex;align-items:center;gap:9px;margin-bottom:22px;font-size:18px;font-weight:900}
+    .source-badge{padding:5px 9px;border-radius:8px;background:#292929;color:#aaa;font-size:10px;font-weight:750}
+    .source-stats{display:grid;gap:10px;color:#858585;font-size:12px}
+    .source-stats strong{color:#f1f1f1;font-weight:700}
+    .source-spacer{height:10px}
+    .source-actions{display:flex;justify-content:flex-end;gap:10px;margin:12px 0 24px}
+    .outline-action,.danger-action{height:42px;padding:0 18px;border-radius:12px;font-size:12px;font-weight:900;cursor:pointer}
+    .outline-action{border:1px solid rgba(255,255,255,.17);background:#101010}
+    .danger-action{border:0;background:var(--red)}
+    .update-meta{display:flex;justify-content:space-between;gap:12px;margin:0 2px 12px;font-size:11px}
+    .update-meta span:last-child{color:#858585;text-align:right}
+    .light-action{width:100%;height:48px;border:0;border-radius:13px;background:#f3f3f3;color:#090909;font-size:13px;font-weight:950;cursor:pointer}
+    .preference-title{margin-top:26px}
+    .preference-row{width:100%;min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 17px;border:1px solid rgba(255,255,255,.06);border-radius:15px;background:#171717;text-align:left;cursor:pointer}
+    .preference-row b{font-size:13px}
+    .preference-note{margin:12px 8px 22px;color:#8d8d8d;font-size:11px;line-height:1.5}
+    .frequency-value{color:#aaa;font-size:12px;white-space:nowrap}
+
+    .edit-form{display:grid;gap:18px}
+    .source-mode{display:grid;gap:9px}
+    .mode-card{
+      width:100%;min-height:68px;display:grid;grid-template-columns:34px minmax(0,1fr) auto 22px;align-items:center;gap:12px;
+      padding:12px 14px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:#0d0d0d;text-align:left;cursor:pointer
+    }
+    .mode-card.active{border:2px solid var(--red);background:#121212}
+    .mode-icon{font-size:24px;color:#eee}.mode-label{font-size:14px;font-weight:850;white-space:nowrap}
+    .mode-tags{display:flex;gap:5px}.mode-tags span{padding:5px 7px;border-radius:7px;background:#292929;color:#aaa;font-size:9px;font-weight:800}
+    .mode-radio{width:18px;height:18px;border:2px solid #4b4b58;border-radius:50%}
+    .mode-card.active .mode-radio{border:5px solid var(--red)}
+    .field-group{display:grid;gap:8px}.field-group label{font-size:13px;font-weight:800}
+    .field-input,.field-textarea{
+      width:100%;border:1px solid rgba(255,255,255,.13);border-radius:12px;outline:0;background:#090909;color:#f4f4f4;font:inherit
+    }
+    .field-input{height:48px;padding:0 13px}.field-textarea{min-height:92px;padding:13px;resize:none;line-height:1.4}
+    .field-input:focus,.field-textarea:focus{border-color:rgba(229,9,20,.8)}
+    .credentials-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .edit-fields[hidden]{display:none}
+    .save-source{position:sticky;bottom:0;width:100%;height:50px;margin-top:32px;border:0;border-radius:13px;background:var(--red);font-size:13px;font-weight:950;cursor:pointer;box-shadow:0 -18px 35px #050505}
+
+    .player-group-title{margin:0 2px 13px;color:#e4e4e4;font-size:14px;font-weight:850}
+    .player-setting{width:100%;min-height:62px;display:flex;align-items:center;gap:14px;padding:15px 17px;border:1px solid rgba(255,255,255,.06);border-radius:15px;background:#171717;text-align:left;cursor:pointer}
+    .player-setting + .player-setting{margin-top:9px}
+    .player-setting-label{min-width:0;flex:1;color:#f5f5f5;font-size:13px;font-weight:750}
+    .player-setting-value{color:#aaa;font-size:12px;white-space:nowrap}
+    .player-help{margin:10px 8px 22px;color:#858585;font-size:11px;line-height:1.5}
+    .player-section-gap{height:24px}
+    .choice-overlay{position:absolute;z-index:135;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.78);opacity:0;visibility:hidden;transition:.2s}
+    .choice-overlay.open{opacity:1;visibility:visible}
+    .choice-sheet{width:100%;max-height:72%;display:flex;flex-direction:column;border-top:1px solid rgba(255,255,255,.12);border-radius:24px 24px 0 0;background:#080808;transform:translateY(20px);transition:.22s}
+    .choice-overlay.open .choice-sheet{transform:none}
+    .choice-head{height:70px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .choice-head h3{margin:0;text-align:center;font-size:17px}
+    .choice-close{width:36px;height:36px;border:0;border-radius:50%;background:#292929;font-size:20px;cursor:pointer}
+    .choice-list{min-height:0;overflow-y:auto;display:grid;gap:9px;padding:13px 16px max(20px,env(safe-area-inset-bottom));scrollbar-width:none}
+    .choice-list::-webkit-scrollbar{display:none}
+    .choice-option{width:100%;min-height:57px;display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid rgba(255,255,255,.055);border-radius:14px;background:#171717;text-align:left;cursor:pointer}
+    .choice-option span:first-child{flex:1;font-size:13px}
+    .choice-radio{width:20px;height:20px;border:2px solid #74747d;border-radius:50%}
+    .choice-option.selected .choice-radio{border:5px solid var(--red)}
+    .editor-toolbar{display:flex;align-items:center;gap:9px;margin-bottom:15px;overflow-x:auto;scrollbar-width:none}
+    .editor-toolbar::-webkit-scrollbar{display:none}
+    .editor-tab{height:39px;padding:0 18px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#1a1a1a;color:#bbb;font-size:12px;font-weight:850;white-space:nowrap;cursor:pointer}
+    .editor-tab.active{border-color:rgba(229,9,20,.7);background:var(--red);color:white}
+    .editor-actions{display:flex;justify-content:space-between;align-items:center;margin:0 2px 12px}
+    .editor-actions span{color:#a9a9a9;font-size:11px}.editor-link{border:0;background:transparent;color:#ff565f;font-size:11px;font-weight:850;cursor:pointer}
+    .editable-list{display:grid;gap:2px;overflow:hidden;border:1px solid rgba(255,255,255,.07);border-radius:17px;background:#101010}
+    .editable-row{min-height:65px;display:grid;grid-template-columns:38px minmax(0,1fr) auto 42px;align-items:center;gap:9px;padding:10px 12px;background:#131313;transition:.16s}
+    .editable-row[draggable="true"]{cursor:grab}.editable-row.dragging{opacity:.45;transform:scale(.985)}
+    .editable-row.hidden-row{opacity:.5}.visibility-button{width:36px;height:36px;border:0;background:transparent;color:white;font-size:19px;cursor:pointer}
+    .editable-copy{min-width:0}.editable-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:800}.editable-meta{display:block;margin-top:4px;color:#777;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .clear-row{border:0;background:transparent;color:#ff5961;font-size:9px;font-weight:900;cursor:pointer}
+    .delete-group{width:34px;height:34px;border:0;border-radius:10px;background:rgba(229,9,20,.12);color:#ff5961;font-size:16px;cursor:pointer}
+    .drag-handle{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:#aaa;font-size:22px;cursor:grab}
+    .save-editor{position:sticky;bottom:0;width:100%;height:50px;margin-top:18px;border:0;border-radius:13px;background:var(--red);font-size:13px;font-weight:950;cursor:pointer;box-shadow:0 -17px 35px #050505}
+    .editor-note{margin:11px 5px 0;color:#747474;font-size:9px;line-height:1.45}
+
+    .toast{
+      position:absolute;z-index:200;left:50%;top:55px;max-width:85%;padding:9px 14px;border:1px solid rgba(255,255,255,.14);
+      border-radius:99px;transform:translate(-50%,-12px);background:#f1f1f1;color:#090909;
+      font-size:10px;font-weight:800;opacity:0;transition:.2s;white-space:nowrap
+    }
+    .toast.show{transform:translate(-50%,0);opacity:1}
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="page" id="page">
+      <header class="topbar">
+        <span></span>
+        <div class="screen-title">Ρυθμίσεις</div>
+        <button class="bell" data-action="Δεν υπάρχουν νέες ειδοποιήσεις" aria-label="Ειδοποιήσεις">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+        </button>
+      </header>
+
+      <section class="account">
+        <div class="account-copy">
+          <h1>Το PRELUDE+<br>στα μέτρα σου</h1>
+          <p>Προφίλ, ασφάλεια και προσωπικές επιλογές σε ένα σημείο.</p>
+          <button class="profile-button" id="manageAccountButton">
+            <span class="avatar">K</span> Διαχείριση λογαριασμού
+          </button>
+        </div>
+      </section>
+
+      <section class="premium-card">
+        <div class="premium-brand">
+          <span class="brand-mark"></span>
+          <span>PRELUDE+</span>
+          <span class="premium-chip">PREMIUM</span>
+        </div>
+        <h2>Όλες οι δυνατότητες.<br>Χωρίς περιορισμούς.</h2>
+        <p>Πολλαπλές πηγές, Multiview, online υπότιτλοι, προφίλ και εξατομίκευση.</p>
+        <button class="premium-action" data-action="Προεπισκόπηση PRELUDE+ Premium">Ανακάλυψε το Premium</button>
+      </section>
+
+      <div class="content">
+        <section class="group">
+          <h2 class="group-title">Γενικά</h2>
+          <div class="row-list">
+            <button class="setting-row primary" id="manageSourcesButton">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Οι πηγές μου</b><span class="setting-sub">M3U, Xtream Codes και Stalker Portal</span></span>
+              <span class="row-end"><span class="value">1 ενεργή</span><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" id="playerSettingsButton">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="3"/><path d="m10 8 5 2.5-5 2.5zM5 20h14"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Player</b><span class="setting-sub">Αναπαραγωγή, ποιότητα και συμπεριφορά</span></span>
+              <span class="row-end"><span class="value">Αυτόματα</span><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Ρυθμίσεις οδηγού προγράμματος">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M8 3v4m8-4v4M7 11h3m4 0h3m-10 4h3m4 0h3"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Οδηγός προγράμματος</b><span class="setting-sub">EPG, XMLTV και αυτόματη ανανέωση</span></span>
+              <span class="row-end"><span class="switch on" data-switch></span></span>
+            </button>
+            <button class="setting-row" data-action="Ρυθμίσεις υποτίτλων">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 11h4m2 0h4M7 15h3m2 0h5"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Υπότιτλοι</b><span class="setting-sub">Γλώσσα, εμφάνιση και online αναζήτηση</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2 class="group-title">Εξατομίκευση</h2>
+          <div class="row-list">
+            <button class="setting-row" id="editHomeButton">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M8 10v4m8-4v4"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Επεξεργασία αρχικής</b><span class="setting-sub">Σειρά και ορατότητα ενοτήτων</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" id="editCategoriesButton">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="18" r="1"/><path d="M9 6h11M9 12h11M9 18h11"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Επεξεργασία κατηγοριών</b><span class="setting-sub">Live TV, ταινίες και σειρές</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Ρυθμίσεις εμφάνισης">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 20 9 4h2l5 16M6 14h8"/><path d="M17 9h4m-2-2v4"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Εμφάνιση</b><span class="setting-sub">Μέγεθος κειμένου και προσβασιμότητα</span></span>
+              <span class="row-end"><span class="value">100%</span><i class="chevron"></i></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2 class="group-title">Λογαριασμός & ασφάλεια</h2>
+          <div class="row-list">
+            <button class="setting-row" data-action="Διαχείριση προφίλ">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Προφίλ</b><span class="setting-sub">Αγαπημένα και ιστορικό ανά χρήστη</span></span>
+              <span class="row-end"><span class="value">Κύριο</span><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Γονικός έλεγχος και PIN">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Γονικός έλεγχος</b><span class="setting-sub">PIN και κλειδωμένες κατηγορίες</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Αντίγραφο ασφαλείας">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1 0-8 6 6 0 0 1 11-2 4 4 0 0 1-1 8H9"/><path d="m12 12-3 3m3-3 3 3m-3-3v8"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Backup & επαναφορά</b><span class="setting-sub">Ρυθμίσεις, προφίλ και πηγές</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2 class="group-title">Υποστήριξη</h2>
+          <div class="row-list">
+            <button class="setting-row" data-action="Κέντρο βοήθειας">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1.1.9-1.1 1.7M12 17h.01"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Κέντρο βοήθειας</b><span class="setting-sub">Οδηγοί και επικοινωνία</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Αξιολόγηση εφαρμογής">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.4-4.3 6.1-.9z"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Αξιολόγησε την εφαρμογή</b><span class="setting-sub">Η γνώμη σου μας βοηθά να βελτιωνόμαστε</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+            <button class="setting-row" data-action="Νομικά και απόρρητο">
+              <span class="setting-icon">
+                <svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6m-6 4h6"/></svg>
+              </span>
+              <span class="setting-copy"><b class="setting-name">Νομικά & απόρρητο</b><span class="setting-sub">Όροι χρήσης και πολιτική απορρήτου</span></span>
+              <span class="row-end"><i class="chevron"></i></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2 class="group-title">Κατάσταση εφαρμογής</h2>
+          <div class="status">
+            <div class="status-card"><span class="status-label">Πηγή</span><b class="status-value"><i class="status-dot"></i>Συνδεδεμένη</b></div>
+            <div class="status-card"><span class="status-label">EPG</span><b class="status-value"><i class="status-dot"></i>Ενεργό</b></div>
+            <div class="status-card"><span class="status-label">Player</span><b class="status-value">Αυτόματα</b></div>
+            <div class="status-card"><span class="status-label">Έκδοση</span><b class="status-value">1.0.0</b></div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="version">Χρησιμοποιείς το <strong>PRELUDE+ 1.0.0</strong></div>
+          <button class="restore" data-action="Έλεγχος προηγούμενων αγορών">Επαναφορά αγορών</button>
+        </footer>
+      </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-item" data-action="Αρχική">
+        <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3z"/></svg><span>Home</span>
+      </button>
+      <button class="nav-item" data-action="Αγαπημένα">
+        <svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.4-4.3 6.1-.9z"/></svg><span>Favorites</span>
+      </button>
+      <button class="nav-item" data-action="Αναζήτηση">
+        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Search</span>
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1-2.8 2.8-.1-.1a1.8 1.8 0 0 0-2-.4 1.8 1.8 0 0 0-1.1 1.7V21h-4v-.1A1.8 1.8 0 0 0 8.8 19a1.8 1.8 0 0 0-2 .4l-.1.1-2.8-2.8.1-.1a1.8 1.8 0 0 0 .4-2A1.8 1.8 0 0 0 2.7 14H2v-4h.7a1.8 1.8 0 0 0 1.7-1.1 1.8 1.8 0 0 0-.4-2l-.1-.1L6.7 4l.1.1a1.8 1.8 0 0 0 2 .4A1.8 1.8 0 0 0 10 2.8V2h4v.8a1.8 1.8 0 0 0 1.1 1.7 1.8 1.8 0 0 0 2-.4l.1-.1L20 6.8l-.1.1a1.8 1.8 0 0 0-.4 2 1.8 1.8 0 0 0 1.7 1.1h.8v4h-.8a1.8 1.8 0 0 0-1.8 1z"/></svg><span>Settings</span>
+      </button>
+      <button class="menu-button" id="menuButton" aria-label="Άνοιγμα menu">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </nav>
+
+    <div class="overlay" id="overlay">
+      <div class="sheet">
+        <div class="handle"></div>
+        <h2>Μενού</h2>
+        <div class="sheet-grid">
+          <button class="sheet-destination" data-action="Live TV">Live TV<span>Ζωντανά κανάλια</span></button>
+          <button class="sheet-destination" data-action="Ταινίες">Ταινίες<span>Όλος ο κινηματογράφος</span></button>
+          <button class="sheet-destination" data-action="Σειρές">Σειρές<span>Σεζόν και επεισόδια</span></button>
+          <button class="sheet-destination active" data-close>Ρυθμίσεις<span>Παραμετροποίηση εφαρμογής</span></button>
+        </div>
+      </div>
+    </div>
+
+    <section class="account-flow" id="accountFlow" aria-hidden="true">
+      <div class="account-logo"><img src="prelude_plus_logo.svg" alt="PRELUDE+"></div>
+      <div class="account-heading">
+        <strong>Ο καλύτερος media player</strong>
+        <span>Σε όλες τις συσκευές σου</span>
+      </div>
+
+      <div class="account-carousel" id="accountCarousel">
+        <div class="account-track" id="accountTrack">
+          <article class="account-slide">
+            <div class="slide-art">
+              <div class="account-avatar"></div>
+              <div class="avatar-label">PRELUDE+<br>ACCOUNT</div>
+            </div>
+            <p class="slide-copy">Ένας λογαριασμός για τις προσωπικές σου επιλογές και το Premium σε κάθε συσκευή.</p>
+          </article>
+
+          <article class="account-slide">
+            <div class="slide-art">
+              <div class="device-stage">
+                <div class="device-tv"><div class="device-brand">PRELUDE<b>+</b></div></div>
+                <div class="device-phone"><div class="device-brand">P<b>+</b></div></div>
+                <div class="device-tablet"><div class="device-brand">P<b>+</b></div></div>
+                <div class="device-checks"><span>✓ TV</span><span>✓ Tablet</span><span>✓ Κινητό</span></div>
+              </div>
+            </div>
+            <p class="slide-copy">Συνέχισε από εκεί που σταμάτησες σε TV, tablet και κινητό — μαζί με τη συνδρομή σου.</p>
+          </article>
+
+          <article class="account-slide">
+            <div class="slide-art">
+              <span class="data-tag t1">Πηγές</span>
+              <span class="data-tag t2">Premium</span>
+              <span class="data-tag t3">Συνέχισε να βλέπεις</span>
+              <span class="data-tag t4">Πρόσφατα</span>
+              <span class="data-tag t5">Αγαπημένα</span>
+              <div class="account-avatar data-avatar"></div>
+            </div>
+            <p class="slide-copy">Τα δεδομένα σου αποθηκεύονται με ασφάλεια στον λογαριασμό σου και σε ακολουθούν παντού.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="account-dots">
+        <button class="account-dot active" data-slide="0" aria-label="Slide 1"></button>
+        <button class="account-dot" data-slide="1" aria-label="Slide 2"></button>
+        <button class="account-dot" data-slide="2" aria-label="Slide 3"></button>
+      </div>
+      <div class="account-actions">
+        <button class="account-cta" data-account-action="Δημιουργία λογαριασμού για SYNC">Δημιουργία λογαριασμού για SYNC</button>
+        <button class="account-login" data-account-action="Σύνδεση σε λογαριασμό">Σύνδεση</button>
+        <button class="account-back" id="accountBack">Πίσω</button>
+      </div>
+    </section>
+
+    <section class="playlist-screen" id="playlistManager" aria-hidden="true">
+      <header class="playlist-header">
+        <button class="back-button" id="playlistBack" aria-label="Πίσω"></button>
+        <h2>Η λίστα μου</h2><span></span>
+      </header>
+      <div class="playlist-scroll">
+        <h3 class="playlist-section-title">Ενεργή λίστα</h3>
+        <article class="source-card">
+          <div class="source-title">Κύρια λίστα <span class="source-badge">Xtream</span></div>
+          <div class="source-stats">
+            <span>Συνολικό περιεχόμενο: <strong>14.634</strong></span>
+            <span>Κανάλια Live TV: <strong>1.888</strong></span>
+            <span>Ταινίες: <strong>10.791</strong></span>
+            <span>Σειρές: <strong>1.955</strong></span>
+            <div class="source-spacer"></div>
+            <span>Μέγιστες συνδέσεις: <strong>1</strong></span>
+            <span>Λήξη λίστας: <strong>31/12/2026</strong></span>
+          </div>
+        </article>
+        <div class="source-actions">
+          <button class="outline-action" id="editSourceButton">✎&nbsp; Επεξεργασία</button>
+          <button class="danger-action" data-playlist-action="Η διαγραφή απαιτεί επιβεβαίωση">▢&nbsp; Διαγραφή</button>
+        </div>
+
+        <div class="update-meta"><span>Χειροκίνητη ανανέωση</span><span>Τελευταία ενημέρωση: χθες</span></div>
+        <button class="light-action" data-playlist-action="Η ανανέωση περιεχομένου ξεκίνησε">↻&nbsp; Ανανέωση περιεχομένου</button>
+
+        <h3 class="playlist-section-title preference-title">Προτιμήσεις</h3>
+        <button class="preference-row" id="autoOpenPreference">
+          <b id="autoOpenLabel">Αυτόματο άνοιγμα: Ανενεργό</b><span class="switch" id="autoOpenSwitch"></span>
+        </button>
+        <p class="preference-note" id="autoOpenNote">Η λίστα δεν θα ανοίγει αυτόματα κατά την εκκίνηση. Θα την επιλέγεις χειροκίνητα.</p>
+        <button class="preference-row" id="frequencyPreference"><b>Συχνότητα ενημέρωσης</b><span class="frequency-value" id="frequencyValue">Κάθε 3 ημέρες</span></button>
+      </div>
+    </section>
+
+    <section class="playlist-screen" id="playlistEditor" aria-hidden="true">
+      <header class="playlist-header">
+        <button class="back-button" id="editorBack" aria-label="Πίσω"></button>
+        <h2>Επεξεργασία λίστας</h2><span></span>
+      </header>
+      <div class="playlist-scroll">
+        <form class="edit-form" id="playlistForm">
+          <div class="source-mode">
+            <button class="mode-card active" type="button" data-mode="url">
+              <span class="mode-icon">↗</span><span class="mode-label">URL</span>
+              <span class="mode-tags"><span>M3U</span><span>Xtream</span></span><span class="mode-radio"></span>
+            </button>
+            <button class="mode-card" type="button" data-mode="credentials">
+              <span class="mode-icon">♙</span><span class="mode-label">Username &amp; Password</span>
+              <span class="mode-tags"><span>Xtream</span></span><span class="mode-radio"></span>
+            </button>
+          </div>
+
+          <div class="field-group"><label for="playlistName">Όνομα λίστας (προαιρετικό)</label><input class="field-input" id="playlistName" placeholder="Η λίστα μου"></div>
+          <div class="edit-fields" id="urlFields">
+            <div class="field-group"><label for="playlistUrl">URL λίστας (M3U ή Xtream)</label><textarea class="field-textarea" id="playlistUrl" placeholder="https://demo.example.com/player_api.php?username=demo&amp;password=••••••"></textarea></div>
+          </div>
+          <div class="edit-fields" id="credentialFields" hidden>
+            <div class="field-group"><label for="playlistDomain">Domain (Xtream)</label><input class="field-input" id="playlistDomain" placeholder="https://demo.example.com"></div>
+            <div class="credentials-grid">
+              <div class="field-group"><label for="playlistUsername">Username</label><input class="field-input" id="playlistUsername" placeholder="demo_user"></div>
+              <div class="field-group"><label for="playlistPassword">Password</label><input class="field-input" id="playlistPassword" type="password" placeholder="••••••••"></div>
+            </div>
+          </div>
+          <button class="save-source" type="submit">Αποθήκευση αλλαγών</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="playlist-screen" id="playerSettings" aria-hidden="true">
+      <header class="playlist-header">
+        <button class="back-button" id="playerSettingsBack" aria-label="Πίσω"></button>
+        <h2>Ρυθμίσεις Player</h2><span></span>
+      </header>
+      <div class="playlist-scroll">
+        <h3 class="player-group-title">Γενικά</h3>
+        <button class="player-setting" data-choice="buffer">
+          <span class="player-setting-label">Buffer</span><span class="player-setting-value" id="bufferValue">2 δευτερόλεπτα</span><span class="chevron"></span>
+        </button>
+
+        <div class="player-section-gap"></div>
+        <h3 class="player-group-title">Βίντεο</h3>
+        <button class="player-setting" id="startSubtitlesSetting">
+          <span class="player-setting-label">Έναρξη με υπότιτλους</span><span class="switch on" id="startSubtitlesSwitch"></span>
+        </button>
+        <p class="player-help" id="startSubtitlesHelp">Οι υπότιτλοι ανοίγουν αυτόματα όταν υπάρχουν στο περιεχόμενο.</p>
+        <button class="player-setting" data-choice="subtitleSize">
+          <span class="player-setting-label">Μέγεθος υποτίτλων</span><span class="player-setting-value" id="subtitleSizeValue">Μεσαίο</span><span class="chevron"></span>
+        </button>
+        <button class="player-setting" data-choice="subtitleLanguage">
+          <span class="player-setting-label">Προεπιλεγμένη γλώσσα υποτίτλων</span><span class="player-setting-value" id="subtitleLanguageValue">Αυτόματα</span><span class="chevron"></span>
+        </button>
+
+        <div class="player-section-gap"></div>
+        <h3 class="player-group-title">Ήχος</h3>
+        <button class="player-setting" data-choice="audioLanguage">
+          <span class="player-setting-label">Προεπιλεγμένη γλώσσα ήχου</span><span class="player-setting-value" id="audioLanguageValue">Αυτόματα</span><span class="chevron"></span>
+        </button>
+      </div>
+    </section>
+
+    <div class="choice-overlay" id="choiceOverlay" aria-hidden="true">
+      <section class="choice-sheet">
+        <header class="choice-head"><span></span><h3 id="choiceTitle">Επιλογή</h3><button class="choice-close" id="choiceClose" aria-label="Κλείσιμο">×</button></header>
+        <div class="choice-list" id="choiceList"></div>
+      </section>
+    </div>
+
+    <section class="playlist-screen" id="editHomeScreen" aria-hidden="true">
+      <header class="playlist-header">
+        <button class="back-button" id="editHomeBack" aria-label="Πίσω"></button><h2>Επεξεργασία αρχικής</h2><span></span>
+      </header>
+      <div class="playlist-scroll">
+        <div class="editor-actions"><span>Σειρά και ορατότητα ενοτήτων</span><button class="editor-link" id="resetHome">Επαναφορά</button></div>
+        <div class="editable-list" id="homeSectionsList"></div>
+        <p class="editor-note">Σύρε μια γραμμή για αλλαγή σειράς. Πάτησε το εικονίδιο ματιού για εμφάνιση ή απόκρυψη.</p>
+        <button class="save-editor" id="saveHomeLayout">Αποθήκευση αρχικής</button>
+      </div>
+    </section>
+
+    <section class="playlist-screen" id="editCategoriesScreen" aria-hidden="true">
+      <header class="playlist-header">
+        <button class="back-button" id="editCategoriesBack" aria-label="Πίσω"></button><h2>Επεξεργασία κατηγοριών</h2><span></span>
+      </header>
+      <div class="playlist-scroll">
+        <div class="editor-toolbar" id="categoryTabs">
+          <button class="editor-tab active" data-category-tab="live">Live TV</button>
+          <button class="editor-tab" data-category-tab="movies">Ταινίες</button>
+          <button class="editor-tab" data-category-tab="series">Σειρές</button>
+        </div>
+        <div class="editor-actions"><span id="categoryCount">0 κατηγορίες</span><span><button class="editor-link" id="restoreCategories">+ Προσθήκη ομάδας</button><button class="editor-link" id="toggleAllCategories">Απόκρυψη όλων</button></span></div>
+        <div class="editable-list" id="categoriesList"></div>
+        <p class="editor-note">Το prototype εμφανίζει ολόκληρη τη λίστα. Στην εφαρμογή τα δεδομένα θα έρχονται δυναμικά από την ενεργή πηγή.</p>
+        <button class="save-editor" id="saveCategories">Αποθήκευση κατηγοριών</button>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </main>
+
+  <script>
+    const page = document.getElementById('page');
+    const nav = document.getElementById('bottomNav');
+    const overlay = document.getElementById('overlay');
+    const toast = document.getElementById('toast');
+    const accountFlow = document.getElementById('accountFlow');
+    const accountTrack = document.getElementById('accountTrack');
+    const accountCarousel = document.getElementById('accountCarousel');
+    const accountDots = [...document.querySelectorAll('.account-dot')];
+    const playlistManager = document.getElementById('playlistManager');
+    const playlistEditor = document.getElementById('playlistEditor');
+    const playerSettings = document.getElementById('playerSettings');
+    const choiceOverlay = document.getElementById('choiceOverlay');
+    const choiceList = document.getElementById('choiceList');
+    const choiceTitle = document.getElementById('choiceTitle');
+    const editHomeScreen = document.getElementById('editHomeScreen');
+    const editCategoriesScreen = document.getElementById('editCategoriesScreen');
+    let accountSlide = 0;
+    let accountTouchStart = 0;
+    let toastTimer;
+
+    function showToast(message){
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1500);
+    }
+
+    page.addEventListener('scroll', () => {
+      nav.classList.toggle('collapsed', page.scrollTop > 90);
+    }, {passive:true});
+
+    document.getElementById('menuButton').addEventListener('click', () => overlay.classList.add('open'));
+    overlay.addEventListener('click', event => {
+      if(event.target === overlay || event.target.closest('[data-close]')) overlay.classList.remove('open');
+    });
+
+    function setAccountSlide(index){
+      accountSlide = Math.max(0,Math.min(2,index));
+      accountTrack.style.transform = `translateX(-${accountSlide * 100}%)`;
+      accountDots.forEach((dot,i) => dot.classList.toggle('active',i === accountSlide));
+    }
+
+    function closeAccount(){
+      accountFlow.classList.remove('open');
+      accountFlow.setAttribute('aria-hidden','true');
+    }
+
+    document.getElementById('manageAccountButton').addEventListener('click',() => {
+      setAccountSlide(0);
+      accountFlow.classList.add('open');
+      accountFlow.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('accountBack').addEventListener('click',closeAccount);
+    accountDots.forEach(dot => dot.addEventListener('click',() => setAccountSlide(Number(dot.dataset.slide))));
+    document.querySelectorAll('[data-account-action]').forEach(button => {
+      button.addEventListener('click',() => showToast(button.dataset.accountAction));
+    });
+    accountCarousel.addEventListener('touchstart',event => {
+      accountTouchStart = event.changedTouches[0].clientX;
+    },{passive:true});
+    accountCarousel.addEventListener('touchend',event => {
+      const delta = event.changedTouches[0].clientX - accountTouchStart;
+      if(Math.abs(delta) > 45) setAccountSlide(accountSlide + (delta < 0 ? 1 : -1));
+    },{passive:true});
+
+    function setScreen(screen,open){
+      screen.classList.toggle('open',open);
+      screen.setAttribute('aria-hidden',String(!open));
+    }
+
+    document.getElementById('manageSourcesButton').addEventListener('click',() => setScreen(playlistManager,true));
+    document.getElementById('playlistBack').addEventListener('click',() => setScreen(playlistManager,false));
+    document.getElementById('editSourceButton').addEventListener('click',() => setScreen(playlistEditor,true));
+    document.getElementById('editorBack').addEventListener('click',() => setScreen(playlistEditor,false));
+
+    document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click',() => {
+      document.querySelectorAll('.mode-card').forEach(item => item.classList.toggle('active',item === card));
+      const credentials = card.dataset.mode === 'credentials';
+      document.getElementById('urlFields').hidden = credentials;
+      document.getElementById('credentialFields').hidden = !credentials;
+    }));
+
+    let autoOpen = false;
+    document.getElementById('autoOpenPreference').addEventListener('click',() => {
+      autoOpen = !autoOpen;
+      document.getElementById('autoOpenSwitch').classList.toggle('on',autoOpen);
+      document.getElementById('autoOpenLabel').textContent = `Αυτόματο άνοιγμα: ${autoOpen ? 'Ενεργό' : 'Ανενεργό'}`;
+      document.getElementById('autoOpenNote').textContent = autoOpen
+        ? 'Η ενεργή λίστα θα ανοίγει αυτόματα κατά την εκκίνηση.'
+        : 'Η λίστα δεν θα ανοίγει αυτόματα κατά την εκκίνηση. Θα την επιλέγεις χειροκίνητα.';
+    });
+
+    const frequencies = ['Καθημερινά','Κάθε 3 ημέρες','Εβδομαδιαία'];
+    let frequencyIndex = 1;
+    document.getElementById('frequencyPreference').addEventListener('click',() => {
+      frequencyIndex = (frequencyIndex + 1) % frequencies.length;
+      document.getElementById('frequencyValue').textContent = frequencies[frequencyIndex];
+    });
+
+    document.querySelectorAll('[data-playlist-action]').forEach(button => {
+      button.addEventListener('click',() => showToast(button.dataset.playlistAction));
+    });
+    document.getElementById('playlistForm').addEventListener('submit',event => {
+      event.preventDefault();
+      showToast('Οι αλλαγές αποθηκεύτηκαν');
+      setTimeout(() => setScreen(playlistEditor,false),650);
+    });
+
+    document.getElementById('playerSettingsButton').addEventListener('click',() => setScreen(playerSettings,true));
+    document.getElementById('playerSettingsBack').addEventListener('click',() => setScreen(playerSettings,false));
+
+    let startWithSubtitles = true;
+    document.getElementById('startSubtitlesSetting').addEventListener('click',() => {
+      startWithSubtitles = !startWithSubtitles;
+      document.getElementById('startSubtitlesSwitch').classList.toggle('on',startWithSubtitles);
+      document.getElementById('startSubtitlesHelp').textContent = startWithSubtitles
+        ? 'Οι υπότιτλοι ανοίγουν αυτόματα όταν υπάρχουν στο περιεχόμενο.'
+        : 'Οι υπότιτλοι παραμένουν κλειστοί μέχρι να τους ενεργοποιήσεις στον player.';
+    });
+
+    const playerChoices = {
+      buffer: { title:'Buffer', target:'bufferValue', selected:'2 δευτερόλεπτα', options:['Αυτόματο','2 δευτερόλεπτα','5 δευτερόλεπτα','10 δευτερόλεπτα'] },
+      subtitleSize: { title:'Μέγεθος υποτίτλων', target:'subtitleSizeValue', selected:'Μεσαίο', options:['Μικρό','Μεσαίο','Μεγάλο'] },
+      subtitleLanguage: { title:'Γλώσσα υποτίτλων', target:'subtitleLanguageValue', selected:'Αυτόματα', options:['Αυτόματα','Ελληνικά','Αγγλικά','Ισπανικά','Γαλλικά','Γερμανικά','Ιταλικά','Πορτογαλικά','Αραβικά'] },
+      audioLanguage: { title:'Γλώσσα ήχου', target:'audioLanguageValue', selected:'Αυτόματα', options:['Αυτόματα','Ελληνικά','Αγγλικά','Ισπανικά','Γαλλικά','Γερμανικά','Ιταλικά','Πορτογαλικά','Αραβικά'] }
+    };
+
+    function closeChoice(){
+      choiceOverlay.classList.remove('open');
+      choiceOverlay.setAttribute('aria-hidden','true');
+    }
+    function openChoice(key){
+      const choice = playerChoices[key];
+      choiceTitle.textContent = choice.title;
+      choiceList.innerHTML = '';
+      choice.options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = `choice-option${option === choice.selected ? ' selected' : ''}`;
+        button.innerHTML = `<span>${option}</span><span class="choice-radio"></span>`;
+        button.addEventListener('click',() => {
+          choice.selected = option;
+          document.getElementById(choice.target).textContent = option;
+          closeChoice();
+        });
+        choiceList.appendChild(button);
+      });
+      choiceOverlay.classList.add('open');
+      choiceOverlay.setAttribute('aria-hidden','false');
+    }
+    document.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click',() => openChoice(button.dataset.choice)));
+    document.getElementById('choiceClose').addEventListener('click',closeChoice);
+    choiceOverlay.addEventListener('click',event => { if(event.target === choiceOverlay) closeChoice(); });
+
+    const defaultHomeSections = [
+      {id:'ai',title:'Προτάσεις για εσένα',meta:'Εξατομικευμένες επιλογές',visible:true},
+      {id:'continue',title:'Συνέχισε να βλέπεις',meta:'Πρόοδος ταινιών και επεισοδίων',visible:true,clearable:true},
+      {id:'recent_channels',title:'Πρόσφατα κανάλια',meta:'Τα τελευταία Live TV κανάλια',visible:true,clearable:true},
+      {id:'new_live',title:'Νέα Live TV',meta:'Πρόσφατα κανάλια της λίστας',visible:true},
+      {id:'new_movies',title:'Νέες ταινίες',meta:'Πρόσφατες προσθήκες',visible:true},
+      {id:'new_episodes',title:'Νέα επεισόδια',meta:'Τελευταίες κυκλοφορίες σειρών',visible:true},
+      {id:'live',title:'Live TV',meta:'Επιλεγμένη κατηγορία: DIGEA',visible:true},
+      {id:'movies',title:'Ταινίες',meta:'Επιλεγμένη κατηγορία: Νέες ταινίες',visible:true},
+      {id:'series',title:'Σειρές',meta:'Επιλεγμένη κατηγορία: Ελληνικές σειρές',visible:true}
+    ];
+    let homeSections = JSON.parse(localStorage.getItem('preludeHomeLayout') || 'null') || structuredClone(defaultHomeSections);
+
+    const defaultCategories = {
+      live:['DIGEA','ΕΡΤ','Αθλητικά','Ειδήσεις','Ντοκιμαντέρ','Παιδικά','Μουσική','Διεθνή','Τοπικά','Cinema','Cinema Film+','Cinema Play+','Lifestyle','Θρησκευτικά','Ραδιόφωνο'],
+      movies:['Νέες ταινίες','Ελληνικές ταινίες','Δράση','Περιπέτεια','Κωμωδία','Δράμα','Θρίλερ','Τρόμου','Επιστημονική φαντασία','Οικογενειακές','Animation','Ντοκιμαντέρ','Κλασικός κινηματογράφος','Βραβευμένες','4K UHD'],
+      series:['Νέα επεισόδια','Ελληνικές σειρές','Δράμα','Κωμωδία','Έγκλημα','Μυστηρίου','Επιστημονική φαντασία','Fantasy','Ιστορικές','Ντοκιμαντέρ','Παιδικές','Reality','Anime','Mini Series']
+    };
+    let categories = JSON.parse(localStorage.getItem('preludeCategoryLayout') || 'null') || Object.fromEntries(
+      Object.entries(defaultCategories).map(([key,items]) => [key,items.map((title,index) => ({id:`${key}_${index}`,title,visible:true}))])
+    );
+    let activeCategoryTab = 'live';
+
+    function attachReorder(container,items,render){
+      let draggedId = null;
+      container.querySelectorAll('.editable-row').forEach(row => {
+        row.addEventListener('dragstart',() => { draggedId = row.dataset.id; row.classList.add('dragging'); });
+        row.addEventListener('dragend',() => row.classList.remove('dragging'));
+        row.addEventListener('dragover',event => event.preventDefault());
+        row.addEventListener('drop',event => {
+          event.preventDefault();
+          const from = items.findIndex(item => item.id === draggedId);
+          const to = items.findIndex(item => item.id === row.dataset.id);
+          if(from < 0 || to < 0 || from === to) return;
+          const [moved] = items.splice(from,1); items.splice(to,0,moved); render();
+        });
+      });
+    }
+
+    function renderHomeSections(){
+      const container = document.getElementById('homeSectionsList');
+      container.innerHTML = homeSections.map(item => `<div class="editable-row${item.visible ? '' : ' hidden-row'}" draggable="true" data-id="${item.id}">
+        <button class="visibility-button" data-home-visible="${item.id}">${item.visible ? '◉' : '○'}</button>
+        <span class="editable-copy"><b class="editable-title">${item.title}</b><span class="editable-meta">${item.meta}</span></span>
+        ${item.clearable ? `<button class="clear-row" data-home-clear="${item.id}">Καθαρισμός</button>` : '<span></span>'}
+        <button class="drag-handle" aria-label="Αλλαγή σειράς">☰</button></div>`).join('');
+      container.querySelectorAll('[data-home-visible]').forEach(button => button.addEventListener('click',() => {
+        const item = homeSections.find(entry => entry.id === button.dataset.homeVisible); item.visible = !item.visible; renderHomeSections();
+      }));
+      container.querySelectorAll('[data-home-clear]').forEach(button => button.addEventListener('click',() => showToast('Το ιστορικό της ενότητας καθαρίστηκε')));
+      attachReorder(container,homeSections,renderHomeSections);
+    }
+
+    function renderCategories(){
+      const items = categories[activeCategoryTab];
+      const container = document.getElementById('categoriesList');
+      document.getElementById('categoryCount').textContent = `${items.length} κατηγορίες`;
+      document.getElementById('toggleAllCategories').textContent = items.every(item => item.visible) ? 'Απόκρυψη όλων' : 'Εμφάνιση όλων';
+      container.innerHTML = items.map(item => `<div class="editable-row${item.visible ? '' : ' hidden-row'}" draggable="true" data-id="${item.id}">
+        <button class="visibility-button" data-category-visible="${item.id}">${item.visible ? '◉' : '○'}</button>
+        <span class="editable-copy"><b class="editable-title">${item.title}</b><span class="editable-meta">${item.visible ? 'Εμφανίζεται στην εφαρμογή' : 'Κρυφή κατηγορία'}</span></span><button class="delete-group" data-category-delete="${item.id}" aria-label="Διαγραφή">⌫</button>
+        <button class="drag-handle" aria-label="Αλλαγή σειράς">☰</button></div>`).join('');
+      container.querySelectorAll('[data-category-visible]').forEach(button => button.addEventListener('click',() => {
+        const item = items.find(entry => entry.id === button.dataset.categoryVisible); item.visible = !item.visible; renderCategories();
+      }));
+      container.querySelectorAll('[data-category-delete]').forEach(button => button.addEventListener('click',() => {
+        const index = items.findIndex(entry => entry.id === button.dataset.categoryDelete);
+        if(index < 0) return;
+        const [removed] = items.splice(index,1);
+        const deleted = JSON.parse(localStorage.getItem('preludeDeletedCategories') || '{}');
+        (deleted[activeCategoryTab] ||= []).push(removed);
+        localStorage.setItem('preludeDeletedCategories',JSON.stringify(deleted));
+        renderCategories(); showToast(`Η ομάδα «${removed.title}» διαγράφηκε`);
+      }));
+      attachReorder(container,items,renderCategories);
+    }
+
+    document.getElementById('editHomeButton').addEventListener('click',() => { renderHomeSections(); setScreen(editHomeScreen,true); });
+    document.getElementById('editHomeBack').addEventListener('click',() => setScreen(editHomeScreen,false));
+    document.getElementById('resetHome').addEventListener('click',() => { homeSections = structuredClone(defaultHomeSections); renderHomeSections(); });
+    document.getElementById('saveHomeLayout').addEventListener('click',() => { localStorage.setItem('preludeHomeLayout',JSON.stringify(homeSections)); showToast('Η αρχική ενημερώθηκε'); });
+
+    document.getElementById('editCategoriesButton').addEventListener('click',() => { renderCategories(); setScreen(editCategoriesScreen,true); });
+    document.getElementById('editCategoriesBack').addEventListener('click',() => setScreen(editCategoriesScreen,false));
+    document.querySelectorAll('[data-category-tab]').forEach(tab => tab.addEventListener('click',() => {
+      activeCategoryTab = tab.dataset.categoryTab;
+      document.querySelectorAll('[data-category-tab]').forEach(item => item.classList.toggle('active',item === tab)); renderCategories();
+    }));
+    document.getElementById('toggleAllCategories').addEventListener('click',() => {
+      const items = categories[activeCategoryTab]; const makeVisible = !items.every(item => item.visible); items.forEach(item => item.visible = makeVisible); renderCategories();
+    });
+    document.getElementById('restoreCategories').addEventListener('click',() => {
+      const deleted = JSON.parse(localStorage.getItem('preludeDeletedCategories') || '{}');
+      const removed = deleted[activeCategoryTab] || [];
+      if(!removed.length){ showToast('Δεν υπάρχουν διαγραμμένες ομάδες'); return; }
+      choiceTitle.textContent = 'Προσθήκη διαγραμμένης ομάδας'; choiceList.innerHTML = '';
+      removed.forEach(group => {
+        const button = document.createElement('button'); button.className = 'choice-option';
+        button.innerHTML = `<span>${group.title}</span><span class="choice-radio"></span>`;
+        button.addEventListener('click',() => {
+          categories[activeCategoryTab].push(group);
+          deleted[activeCategoryTab] = removed.filter(item => item.id !== group.id);
+          localStorage.setItem('preludeDeletedCategories',JSON.stringify(deleted));
+          closeChoice(); renderCategories(); showToast(`Η ομάδα «${group.title}» προστέθηκε`);
+        }); choiceList.appendChild(button);
+      });
+      choiceOverlay.classList.add('open'); choiceOverlay.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('saveCategories').addEventListener('click',() => { localStorage.setItem('preludeCategoryLayout',JSON.stringify(categories)); showToast('Οι κατηγορίες ενημερώθηκαν'); });
+
+    document.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', event => {
+        const switchEl = event.currentTarget.querySelector('[data-switch]');
+        if(switchEl){
+          switchEl.classList.toggle('on');
+          showToast(switchEl.classList.contains('on') ? 'Ο οδηγός προγράμματος ενεργοποιήθηκε' : 'Ο οδηγός προγράμματος απενεργοποιήθηκε');
+          return;
+        }
+        showToast(event.currentTarget.dataset.action);
+      });
+    });
+  </script>
+</body>
+</html>

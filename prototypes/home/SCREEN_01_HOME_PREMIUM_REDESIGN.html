@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Prelude+ · Home Premium Redesign</title>
+<style>
+:root{
+  --bg:#050607;--surface:#0c0e11;--surface2:#13161a;--text:#f6f7f8;--muted:#a4a9b0;
+  --line:rgba(255,255,255,.11);--red:#e50914;--green:#52d273;--shadow:0 28px 80px rgba(0,0,0,.55);
+  --ease:cubic-bezier(.2,.8,.2,1)
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#020304;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}body{overflow-x:hidden;background:
+radial-gradient(1000px 600px at 14% -10%,rgba(229,9,20,.14),transparent 58%),
+radial-gradient(900px 600px at 90% 10%,rgba(72,93,132,.14),transparent 60%),#030405}
+.prototype{min-height:100vh;padding:22px;display:flex;flex-direction:column;gap:18px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;max-width:1560px;width:100%;margin:auto}
+.brandline{display:flex;align-items:center;gap:14px}.brandmark{font-weight:950;letter-spacing:-1.7px;font-size:23px}.brandmark b{color:var(--red)}
+.context{border-left:1px solid var(--line);padding-left:14px}.context strong{display:block;font-size:13px}.context span{font-size:11px;color:var(--muted)}
+.mode-switch{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(18px)}
+.mode-switch button{border:0;background:transparent;padding:9px 16px;border-radius:999px;color:#adb2b9;font-weight:800;font-size:12px;cursor:pointer;transition:.25s var(--ease)}
+.mode-switch button.active{background:#fff;color:#090a0b;box-shadow:0 7px 22px rgba(0,0,0,.35)}
+.hints{display:flex;align-items:center;gap:7px;color:#9da2aa;font-size:11px}.key{min-width:25px;height:25px;border:1px solid rgba(255,255,255,.16);border-bottom-color:rgba(255,255,255,.3);border-radius:7px;display:grid;place-items:center;background:rgba(255,255,255,.06);color:#fff;font-weight:900}
+.stage{width:100%;max-width:1560px;margin:auto;display:grid;place-items:center;min-height:calc(100vh - 105px)}
+.device-wrap{position:relative;transition:width .55s var(--ease),max-width .55s var(--ease)}
+.device-wrap.tv{width:min(94vw,1420px)}.device-wrap.mobile{width:min(94vw,430px)}
+.device{position:relative;overflow:hidden;background:#050607;box-shadow:0 55px 140px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.08);isolation:isolate}
+.device-wrap.tv .device{aspect-ratio:16/9;border-radius:17px}.device-wrap.mobile .device{aspect-ratio:390/844;border-radius:42px;border:9px solid #090a0c}
+.device-wrap.mobile .device:before{content:"";position:absolute;z-index:100;top:7px;left:50%;transform:translateX(-50%);width:112px;height:25px;border-radius:20px;background:#020304}
+.view{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}.view.active{opacity:1;pointer-events:auto}
+/* artwork */
+.art{--image:none;--tone:#49311d;background-image:linear-gradient(90deg,rgba(2,3,4,.98) 0%,rgba(2,3,4,.75) 29%,rgba(2,3,4,.18) 66%,rgba(2,3,4,.22) 100%),linear-gradient(0deg,#050607 0%,transparent 45%),var(--image),radial-gradient(circle at 72% 24%,color-mix(in srgb,var(--tone),white 28%),transparent 20%),linear-gradient(125deg,#0a0d12 0%,var(--tone) 60%,#050607 100%);background-size:cover;background-position:center;transition:background-image .7s var(--ease),filter .7s var(--ease)}
+.art:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 75% 20%,transparent 0 30%,rgba(0,0,0,.14) 62%,rgba(0,0,0,.58) 100%)}
+/* TV */
+.tv-home{background:#050607}.tv-hero{position:absolute;inset:0 0 36%;overflow:hidden}.tv-art{position:absolute;inset:0;transform:scale(1.015);filter:saturate(1.04)}
+.tv-art.switching{filter:brightness(.58) saturate(.6);transform:scale(1.035)}
+.tv-top{position:absolute;z-index:15;left:5.2%;right:4%;top:4.7%;display:flex;align-items:center;justify-content:space-between}.app-logo{font-weight:1000;letter-spacing:-1.8px;font-size:22px}.app-logo em{font-style:normal;color:var(--red)}
+.tv-top-right{display:flex;align-items:center;gap:18px;color:#d9dcdf;font-size:11px}.live-pill{display:flex;gap:7px;align-items:center;background:rgba(9,11,14,.46);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 11px;backdrop-filter:blur(14px)}.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red)}
+.avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(145deg,#f5c29a,#5d2a22 58%,#16191d);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.tv-sidebar{position:absolute;z-index:30;left:0;top:0;bottom:0;width:62px;display:flex;flex-direction:column;justify-content:center;padding:16px 11px;background:linear-gradient(90deg,rgba(3,4,5,.94),rgba(3,4,5,.18),transparent);transition:width .28s var(--ease),background .28s var(--ease)}
+.tv-sidebar.open{width:176px;background:linear-gradient(90deg,rgba(3,4,5,.99) 0 70%,rgba(3,4,5,.5),transparent)}
+.navitem{height:42px;border-radius:9px;display:flex;align-items:center;gap:13px;padding:0 11px;margin:2px 0;color:#aeb3b9;white-space:nowrap;overflow:hidden;transition:.2s var(--ease)}.navitem .ico{width:20px;font-size:17px;text-align:center}.navitem span:last-child{opacity:0;transform:translateX(-8px);transition:.22s var(--ease);font-size:12px;font-weight:750}.tv-sidebar.open .navitem span:last-child{opacity:1;transform:none}.navitem.active{color:#fff;background:rgba(255,255,255,.105)}.navitem.focused{background:#fff;color:#090a0b;transform:scale(1.03);box-shadow:0 10px 25px rgba(0,0,0,.38)}
+.tv-copy{position:absolute;z-index:12;left:6.4%;top:16.5%;width:40%;transition:opacity .32s var(--ease),transform .32s var(--ease)}.tv-copy.switching{opacity:0;transform:translateY(9px)}
+.eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:900;letter-spacing:2.3px;text-transform:uppercase;color:#e4e7ea}.eyebrow:before{content:"";width:20px;height:2px;background:var(--red);box-shadow:0 0 9px rgba(229,9,20,.8)}
+.hero-title{font-size:clamp(29px,3.8vw,59px);line-height:.94;letter-spacing:-2.8px;font-weight:950;margin:14px 0 13px;text-shadow:0 9px 34px rgba(0,0,0,.6)}
+.meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;font-size:11px;font-weight:750;color:#d8dcdf}.match{color:var(--green)}.age{border:1px solid rgba(255,255,255,.45);padding:2px 5px;border-radius:3px}.quality{background:rgba(255,255,255,.15);padding:3px 6px;border-radius:4px;font-size:9px;letter-spacing:.7px}
+.hero-desc{font-size:clamp(11px,1.1vw,15px);line-height:1.52;color:#d2d5d8;max-width:580px;margin:14px 0 18px;text-shadow:0 3px 15px #000}.hero-actions{display:flex;gap:9px}.hero-btn{height:38px;border:0;border-radius:6px;padding:0 16px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.17);backdrop-filter:blur(14px);font-size:11px;font-weight:900;cursor:pointer;transition:.2s var(--ease)}.hero-btn.primary{background:#fff;color:#08090a}.hero-btn.focused{transform:scale(1.06);box-shadow:0 11px 28px rgba(0,0,0,.42),0 0 0 2px rgba(255,255,255,.3)}
+.rank{position:absolute;z-index:12;right:4.3%;top:48%;display:flex;align-items:center;gap:8px;color:#fff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px}.rank b{font-size:26px;color:var(--red)}
+.tv-content{position:absolute;z-index:20;left:0;right:0;bottom:0;height:47%;padding:1.5% 3.8% 2.2% 6.35%;background:linear-gradient(0deg,#050607 0 71%,rgba(5,6,7,.94) 81%,transparent);overflow:hidden}.rail{margin-bottom:18px;transition:transform .3s var(--ease),opacity .3s var(--ease)}.rail:not(.active-rail){opacity:.82}.rail-title{font-size:13px;font-weight:900;letter-spacing:-.2px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.rail-title small{font-size:9px;font-weight:700;color:#8e949b;letter-spacing:.2px}.rail-cards{display:flex;gap:10px;transform:translateX(var(--rail-x,0px));transition:transform .32s var(--ease)}
+.media-card{flex:0 0 18.4%;aspect-ratio:16/9;border-radius:7px;position:relative;overflow:hidden;background:linear-gradient(135deg,#16212d,#69422c);box-shadow:0 8px 22px rgba(0,0,0,.32);transform-origin:center;transition:transform .22s var(--ease),filter .22s var(--ease),box-shadow .22s var(--ease),opacity .22s;cursor:pointer}.media-card:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.88),transparent 62%),var(--card-image),linear-gradient(135deg,var(--c1,#1c2935),var(--c2,#724329));background-size:cover;background-position:center}.media-card:after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.media-card .card-info{position:absolute;z-index:2;left:9px;right:9px;bottom:8px}.card-name{display:block;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card-meta{display:none;color:#c8ccd0;font-size:8px;margin-top:3px}.media-card.focused{transform:scale(1.075) translateY(-2px);filter:brightness(1.14) saturate(1.08);z-index:7;box-shadow:0 18px 38px rgba(0,0,0,.65),0 0 24px rgba(255,255,255,.08)}.media-card.focused .card-meta{display:block}.progress-track{height:3px;background:rgba(255,255,255,.24);border-radius:9px;margin-top:6px;overflow:hidden}.progress-bar{height:100%;background:var(--red);width:var(--p,43%)}.live-tag{position:absolute;z-index:2;left:8px;top:8px;background:var(--red);border-radius:4px;padding:3px 6px;font-size:7px;font-weight:950;letter-spacing:.8px}
+.scrollfade{position:absolute;z-index:25;left:0;right:0;bottom:0;height:16%;pointer-events:none;background:linear-gradient(transparent,#050607)}
+/* Mobile */
+.mobile-home{overflow:hidden;background:#060708}.mobile-scroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:78px}.mobile-scroll::-webkit-scrollbar{display:none}.m-hero{height:59%;min-height:460px;position:relative;overflow:hidden}.m-art{position:absolute;inset:0;background-image:linear-gradient(0deg,#070809 0%,rgba(7,8,9,.83) 18%,rgba(7,8,9,.05) 58%),linear-gradient(90deg,rgba(5,6,7,.38),transparent 55%),var(--image),linear-gradient(145deg,#151c24,var(--tone,#4b271d));background-size:cover;background-position:center;transition:background-image .6s var(--ease),filter .45s var(--ease),transform .6s var(--ease)}.m-art.switching{filter:brightness(.58);transform:scale(1.035)}
+.m-top{position:absolute;z-index:12;left:17px;right:17px;top:23px;display:flex;align-items:center;justify-content:space-between}.m-logo{font-weight:1000;font-size:19px;letter-spacing:-1.2px}.m-logo em{font-style:normal;color:var(--red)}.m-top-actions{display:flex;gap:10px;align-items:center}.round{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:rgba(7,8,9,.42);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(12px);font-size:13px}
+.m-copy{position:absolute;z-index:11;left:19px;right:19px;bottom:27px;text-align:center;transition:opacity .3s var(--ease),transform .3s var(--ease)}.m-copy.switching{opacity:0;transform:translateY(8px)}.m-eyebrow{font-size:9px;letter-spacing:2px;font-weight:950;color:#eceff1}.m-title{font-size:35px;line-height:.94;letter-spacing:-2px;font-weight:950;margin:9px 0}.m-meta{font-size:10px;color:#d2d5d8;font-weight:750}.m-desc{font-size:11px;line-height:1.42;color:#c8ccd0;margin:9px auto 14px;max-width:340px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.m-actions{display:grid;grid-template-columns:1fr 46px 46px;gap:8px;max-width:310px;margin:auto}.m-btn{height:42px;border-radius:8px;border:0;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;gap:7px;font-weight:900;font-size:11px;backdrop-filter:blur(12px)}.m-btn.primary{background:#fff;color:#090a0b}.m-dots{display:flex;justify-content:center;gap:5px;margin-top:12px}.m-dot{width:5px;height:5px;border-radius:99px;background:rgba(255,255,255,.3);transition:.25s}.m-dot.active{width:17px;background:#fff}
+.m-content{position:relative;margin-top:-3px;padding:0 0 22px;background:#070809}.m-rail{padding-top:18px}.m-rail-head{display:flex;align-items:end;justify-content:space-between;padding:0 18px 9px}.m-rail-head h3{font-size:16px;letter-spacing:-.5px;margin:0}.m-rail-head button{border:0;background:none;color:#9ca2a9;font-size:9px;font-weight:850}.m-row{display:flex;gap:10px;overflow-x:auto;padding:0 18px 13px;scroll-snap-type:x proximity;scrollbar-width:none}.m-row::-webkit-scrollbar{display:none}.m-card{scroll-snap-align:start;flex:0 0 55%;aspect-ratio:16/10;border-radius:11px;overflow:hidden;position:relative;background:linear-gradient(135deg,var(--c1,#202c38),var(--c2,#6a3d28));box-shadow:0 10px 26px rgba(0,0,0,.3);transition:.2s var(--ease)}.m-card:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.93),transparent 66%),var(--card-image),linear-gradient(135deg,var(--c1),var(--c2));background-size:cover;background-position:center}.m-card:active{transform:scale(.975)}.m-card-copy{position:absolute;z-index:2;left:11px;right:11px;bottom:10px}.m-card-name{font-size:12px;font-weight:900}.m-card-meta{font-size:8px;color:#c6cad0;margin-top:3px}.m-progress{height:3px;background:rgba(255,255,255,.24);border-radius:9px;margin-top:7px;overflow:hidden}.m-progress i{display:block;height:100%;width:var(--p,52%);background:var(--red)}.m-live{position:absolute;z-index:2;left:9px;top:9px;padding:4px 6px;border-radius:4px;background:var(--red);font-size:7px;font-weight:950;letter-spacing:.7px}.m-poster{flex-basis:35%;aspect-ratio:2/3}.m-poster .m-card-copy{bottom:9px}.m-poster .m-card-name{font-size:10px}.m-poster .m-card-meta{display:none}.genre-row{display:flex;gap:8px;overflow:auto;padding:0 18px 8px;scrollbar-width:none}.genre{flex:none;border:1px solid rgba(255,255,255,.11);background:#101317;border-radius:999px;padding:9px 13px;font-size:10px;font-weight:800;color:#dce0e3}.genre.active{background:#fff;color:#090a0b}
+.mobile-nav{position:absolute;z-index:50;left:0;right:0;bottom:0;height:66px;display:grid;grid-template-columns:repeat(5,1fr);padding:7px 12px 8px;background:linear-gradient(0deg,rgba(6,7,8,.99) 45%,rgba(6,7,8,.87),transparent);backdrop-filter:blur(18px)}.m-navitem{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;color:#777e85;font-size:8px;font-weight:800}.m-navitem i{font-style:normal;font-size:16px}.m-navitem.active{color:#fff}.m-navitem.active:after{content:"";width:14px;height:2px;border-radius:9px;background:var(--red);box-shadow:0 0 8px rgba(229,9,20,.8)}
+.toast{position:absolute;z-index:80;left:50%;bottom:86px;transform:translate(-50%,18px);opacity:0;background:rgba(13,15,18,.93);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 14px;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;backdrop-filter:blur(14px);transition:.28s var(--ease)}.toast.show{opacity:1;transform:translate(-50%,0)}
+.note{max-width:1560px;width:100%;margin:0 auto;color:#868c94;font-size:11px;text-align:center}.note b{color:#d9dde1}
+@media(max-width:750px){.prototype{padding:12px}.toolbar{flex-wrap:wrap}.hints{display:none}.context{display:none}.stage{min-height:calc(100vh - 82px)}.device-wrap.mobile{width:min(96vw,430px)}}
+</style>
+</head>
+<body>
+<div class="prototype">
+  <header class="toolbar">
+    <div class="brandline"><div class="brandmark">PRELUDE<b>+</b></div><div class="context"><strong>SCREEN 01 · HOME</strong><span>Premium cinematic redesign · HTML approval</span></div></div>
+    <div class="mode-switch" role="tablist"><button id="tvMode" class="active">Android TV</button><button id="mobileMode">Mobile</button></div>
+    <div class="hints" id="hint"><span class="key">←</span><span class="key">↑</span><span class="key">↓</span><span class="key">→</span><span class="key">↵</span><span>DPAD preview</span></div>
+  </header>
+  <main class="stage">
+    <div class="device-wrap tv" id="deviceWrap">
+      <div class="device">
+        <section class="view tv-home active" id="tvView">
+          <div class="tv-hero"><div class="tv-art art" id="tvArt"></div></div>
+          <div class="tv-top"><div class="app-logo">PRELUDE<em>+</em></div><div class="tv-top-right"><div class="live-pill"><span class="live-dot"></span><span>4 κανάλια live τώρα</span></div><span>21:14</span><div class="avatar"></div></div></div>
+          <nav class="tv-sidebar" id="tvSidebar">
+            <div class="navitem active" data-nav="0"><span class="ico">⌂</span><span>Αρχική</span></div>
+            <div class="navitem" data-nav="1"><span class="ico">●</span><span>Live TV</span></div>
+            <div class="navitem" data-nav="2"><span class="ico">▦</span><span>TV Guide</span></div>
+            <div class="navitem" data-nav="3"><span class="ico">⌕</span><span>Αναζήτηση</span></div>
+            <div class="navitem" data-nav="4"><span class="ico">▤</span><span>Η λίστα μου</span></div>
+            <div class="navitem" data-nav="5"><span class="ico">⚙</span><span>Ρυθμίσεις</span></div>
+          </nav>
+          <div class="tv-copy" id="tvCopy">
+            <div class="eyebrow" id="tvEyebrow">PRELUDE SELECTS</div>
+            <div class="hero-title" id="tvTitle">The Last Horizon</div>
+            <div class="meta"><span class="match" id="tvMatch">98% Match</span><span id="tvYear">2026</span><span class="age">16+</span><span id="tvRuntime">2h 08m</span><span class="quality">4K HDR</span></div>
+            <div class="hero-desc" id="tvDesc">Μια αποστολή πέρα από τα όρια του γνωστού κόσμου μετατρέπεται σε αγώνα επιβίωσης. Κινηματογραφικό discovery με καθαρό hierarchy και χωρίς dashboard αισθητική.</div>
+            <div class="hero-actions"><button class="hero-btn primary focused" data-action="play">▶&nbsp; ΠΑΡΑΚΟΛΟΥΘΗΣΗ</button><button class="hero-btn" data-action="details">ⓘ&nbsp; ΠΛΗΡΟΦΟΡΙΕΣ</button><button class="hero-btn" data-action="list">＋</button></div>
+          </div>
+          <div class="rank"><b>1</b><span>Σήμερα<br>στην Ελλάδα</span></div>
+          <div class="tv-content" id="tvContent"></div><div class="scrollfade"></div><div class="toast" id="tvToast"></div>
+        </section>
+        <section class="view mobile-home" id="mobileView">
+          <div class="mobile-scroll" id="mobileScroll">
+            <section class="m-hero">
+              <div class="m-art" id="mArt"></div>
+              <div class="m-top"><div class="m-logo">PRELUDE<em>+</em></div><div class="m-top-actions"><div class="round">⌕</div><div class="avatar" style="width:31px;height:31px"></div></div></div>
+              <div class="m-copy" id="mCopy"><div class="m-eyebrow" id="mEyebrow">#1 ΣΤΗΝ ΕΛΛΑΔΑ ΣΗΜΕΡΑ</div><div class="m-title" id="mTitle">The Last Horizon</div><div class="m-meta"><span class="match" id="mMatch">98% Match</span> · <span id="mYear">2026</span> · 16+ · <span id="mRuntime">2h 08m</span></div><div class="m-desc" id="mDesc">Μια κινηματογραφική αποστολή πέρα από τα όρια του γνωστού κόσμου.</div><div class="m-actions"><button class="m-btn primary" data-maction="play">▶&nbsp; Αναπαραγωγή</button><button class="m-btn" data-maction="list">＋</button><button class="m-btn" data-maction="info">ⓘ</button></div><div class="m-dots" id="mDots"></div></div>
+            </section>
+            <div class="m-content" id="mContent"></div>
+          </div>
+          <nav class="mobile-nav"><div class="m-navitem active"><i>⌂</i><span>Αρχική</span></div><div class="m-navitem"><i>●</i><span>Live</span></div><div class="m-navitem"><i>⌕</i><span>Αναζήτηση</span></div><div class="m-navitem"><i>▤</i><span>Η λίστα μου</span></div><div class="m-navitem"><i>⚙</i><span>Ρυθμίσεις</span></div></nav>
+          <div class="toast" id="mToast"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div class="note"><b>HTML prototype μόνο.</b> Δεν έχει αλλάξει ακόμη κανένα αρχείο του Android project.</div>
+</div>
+<script>
+const items=[
+ {id:'horizon',title:'The Last Horizon',eyebrow:'PRELUDE SELECTS',match:'98% Match',year:'2026',runtime:'2h 08m',desc:'Μια αποστολή πέρα από τα όρια του γνωστού κόσμου μετατρέπεται σε αγώνα επιβίωσης.',tone:'#6f3a25',img:'url("https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1600&q=86")'},
+ {id:'signal',title:'Dark Signal',eyebrow:'PRELUDE ORIGINAL',match:'96% Match',year:'2026',runtime:'8 επεισόδια',desc:'Ένα χαμένο σήμα οδηγεί μια ομάδα επιστημόνων σε μια σκοτεινή ανακάλυψη.',tone:'#183147',img:'url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1600&q=86")'},
+ {id:'north',title:'North Sea',eyebrow:'ΝΕΑ ΚΥΚΛΟΦΟΡΙΑ',match:'94% Match',year:'2025',runtime:'1h 52m',desc:'Στην άκρη του βορρά, μια διάσωση μετατρέπεται σε προσωπική αποστολή.',tone:'#244451',img:'url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=86")'},
+ {id:'night',title:'The Night Shift',eyebrow:'TRENDING NOW',match:'91% Match',year:'2026',runtime:'10 επεισόδια',desc:'Κάθε νύχτα στο νοσοκομείο κρύβει μια ιστορία που δεν θα ειπωθεί το πρωί.',tone:'#4b271e',img:'url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1600&q=82")'},
+ {id:'stadium',title:'Champions Night',eyebrow:'LIVE NOW',match:'LIVE',year:'Sports One',runtime:'57% complete',desc:'Η μεγάλη ευρωπαϊκή βραδιά ζωντανά, με άμεση πρόσβαση στο κανάλι και στο EPG.',tone:'#243523',img:'url("https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=86")'},
+ {id:'coast',title:'The Silent Coast',eyebrow:'TOP 10 TODAY',match:'93% Match',year:'2025',runtime:'2h 01m',desc:'Ένα ήσυχο παραθαλάσσιο χωριό κρύβει ένα μυστικό δεκαετιών.',tone:'#18424b',img:'url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=86")'},
+ {id:'city',title:'Midnight City',eyebrow:'ONLY ON PRELUDE+',match:'95% Match',year:'2026',runtime:'6 επεισόδια',desc:'Μια πόλη που δεν κοιμάται και μια υπόθεση που δεν έπρεπε να ανοίξει.',tone:'#442853',img:'url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1600&q=80")'},
+ {id:'wild',title:'Wild Earth',eyebrow:'DOCUMENTARY',match:'99% Match',year:'2025',runtime:'4 επεισόδια',desc:'Η άγρια φύση όπως δεν την έχεις ξαναδεί, σε 4K HDR.',tone:'#29452a',img:'url("https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1600&q=86")'}
+];
+const rails=[
+ {id:'continue',title:'Συνέχισε να βλέπεις',sub:'Για εσένα',ids:['signal','north','night','horizon','coast'],progress:[68,42,23,81,35]},
+ {id:'live',title:'Ζωντανά τώρα',sub:'Άμεση μετάβαση στο κανάλι',ids:['stadium','night','wild','city','north'],live:true},
+ {id:'trending',title:'Δημοφιλή στο Prelude+',sub:'Top picks αυτή την εβδομάδα',ids:['horizon','coast','city','signal','wild']},
+ {id:'new',title:'Νέες κυκλοφορίες',sub:'Ταινίες και σειρές',ids:['north','city','wild','night','coast'],poster:true}
+];
+let mode='tv',heroIndex=0,tvZone='hero',heroAction=0,railIndex=0,cardIndex=0,navIndex=0,navOpen=false,autoTimer;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function itemById(id){return items.find(x=>x.id===id)}
+function bgVars(el,item){el.style.setProperty('--image',item.img);el.style.setProperty('--tone',item.tone)}
+function renderTvRails(){const root=$('#tvContent');root.innerHTML=rails.map((r,ri)=>`<section class="rail ${ri===railIndex?'active-rail':''}" data-ri="${ri}"><div class="rail-title">${r.title}<small>${r.sub}</small></div><div class="rail-cards">${r.ids.map((id,ci)=>{const x=itemById(id),p=r.progress?.[ci];return `<article class="media-card ${tvZone==='rails'&&ri===railIndex&&ci===cardIndex?'focused':''}" data-ri="${ri}" data-ci="${ci}" data-id="${id}" style="--card-image:${x.img};--c1:${x.tone};--c2:#111820">${r.live?'<span class="live-tag">LIVE</span>':''}<div class="card-info"><span class="card-name">${x.title}</span><span class="card-meta">${x.year} · ${x.runtime}</span>${p!=null?`<div class="progress-track"><div class="progress-bar" style="--p:${p}%"></div></div>`:''}</div></article>`}).join('')}</div></section>`).join('');
+ $$('.media-card').forEach(c=>c.onclick=()=>{railIndex=+c.dataset.ri;cardIndex=+c.dataset.ci;tvZone='rails';setHeroById(c.dataset.id);renderTvFocus()})}
+function renderTvFocus(){
+ $$('.hero-btn').forEach((b,i)=>b.classList.toggle('focused',tvZone==='hero'&&i===heroAction));
+ $$('.navitem').forEach((n,i)=>n.classList.toggle('focused',tvZone==='nav'&&i===navIndex));
+ $$('.rail').forEach((r,i)=>r.classList.toggle('active-rail',i===railIndex));
+ $$('.media-card').forEach(c=>c.classList.toggle('focused',tvZone==='rails'&&+c.dataset.ri===railIndex&&+c.dataset.ci===cardIndex));
+ const rail=$(`.rail[data-ri="${railIndex}"] .rail-cards`);if(rail){const x=Math.max(0,cardIndex-3)*150;rail.style.setProperty('--rail-x',`${-x}px`)}
+ $('#tvSidebar').classList.toggle('open',navOpen||tvZone==='nav')
+}
+function setHero(item,source='tv'){
+ const art=source==='tv'?$('#tvArt'):$('#mArt'),copy=source==='tv'?$('#tvCopy'):$('#mCopy');art.classList.add('switching');copy.classList.add('switching');
+ setTimeout(()=>{bgVars(art,item);if(source==='tv'){ $('#tvEyebrow').textContent=item.eyebrow;$('#tvTitle').textContent=item.title;$('#tvMatch').textContent=item.match;$('#tvYear').textContent=item.year;$('#tvRuntime').textContent=item.runtime;$('#tvDesc').textContent=item.desc }else{$('#mEyebrow').textContent=item.eyebrow;$('#mTitle').textContent=item.title;$('#mMatch').textContent=item.match;$('#mYear').textContent=item.year;$('#mRuntime').textContent=item.runtime;$('#mDesc').textContent=item.desc;heroIndex=items.indexOf(item);renderDots()}art.classList.remove('switching');copy.classList.remove('switching')},220)
+}
+function setHeroById(id){const item=itemById(id);setHero(item,'tv')}
+function toast(id,text){const t=$(id);t.textContent=text;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),1600)}
+function tvEnter(){if(tvZone==='hero'){toast('#tvToast',['Έναρξη αναπαραγωγής','Άνοιγμα λεπτομερειών','Προστέθηκε στη λίστα'][heroAction])}else if(tvZone==='rails'){const r=rails[railIndex],id=r.ids[cardIndex],x=itemById(id);toast('#tvToast',r.live?`Μετάβαση στο ${x.title}`:`Άνοιγμα: ${x.title}`)}else{toast('#tvToast','Navigation preview')}}
+function handleTvKey(e){if(mode!=='tv')return;const k=e.key;if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(k))return;e.preventDefault();clearInterval(autoTimer);
+ if(tvZone==='hero'){if(k==='ArrowLeft'){if(heroAction>0)heroAction--;else{tvZone='nav';navOpen=true}}if(k==='ArrowRight')heroAction=Math.min(2,heroAction+1);if(k==='ArrowDown'){tvZone='rails';railIndex=0;cardIndex=0}if(k==='Enter'||k===' ')tvEnter()}
+ else if(tvZone==='rails'){const r=rails[railIndex];if(k==='ArrowLeft'){if(cardIndex>0)cardIndex--;else{tvZone='nav';navOpen=true}}if(k==='ArrowRight')cardIndex=Math.min(r.ids.length-1,cardIndex+1);if(k==='ArrowUp'){if(railIndex===0){tvZone='hero';heroAction=0}else{railIndex--;cardIndex=Math.min(cardIndex,rails[railIndex].ids.length-1)}}if(k==='ArrowDown'){railIndex=Math.min(rails.length-1,railIndex+1);cardIndex=Math.min(cardIndex,rails[railIndex].ids.length-1)}if(k==='Enter'||k===' ')tvEnter();if(tvZone==='rails')setHeroById(rails[railIndex].ids[cardIndex])}
+ else if(tvZone==='nav'){if(k==='ArrowUp')navIndex=Math.max(0,navIndex-1);if(k==='ArrowDown')navIndex=Math.min(5,navIndex+1);if(k==='ArrowRight'){tvZone='hero';navOpen=false;heroAction=0}if(k==='Enter'||k===' ')tvEnter()}
+ renderTvFocus()}
+function renderDots(){$('#mDots').innerHTML=items.slice(0,5).map((_,i)=>`<span class="m-dot ${i===heroIndex?'active':''}" data-dot="${i}"></span>`).join('');$$('.m-dot').forEach(d=>d.onclick=()=>setHero(items[+d.dataset.dot],'mobile'))}
+function renderMobile(){const root=$('#mContent');root.innerHTML=`<section class="m-rail"><div class="genre-row"><span class="genre active">Για εσένα</span><span class="genre">Ταινίες</span><span class="genre">Σειρές</span><span class="genre">Live TV</span><span class="genre">Παιδικά</span></div></section>`+rails.map((r,ri)=>`<section class="m-rail"><div class="m-rail-head"><h3>${r.title}</h3><button>Προβολή όλων</button></div><div class="m-row">${r.ids.map((id,ci)=>{const x=itemById(id),p=r.progress?.[ci];return `<article class="m-card ${r.poster?'m-poster':''}" data-mid="${id}" style="--card-image:${x.img};--c1:${x.tone};--c2:#10161d">${r.live?'<span class="m-live">LIVE</span>':''}<div class="m-card-copy"><div class="m-card-name">${x.title}</div><div class="m-card-meta">${x.year} · ${x.runtime}</div>${p!=null?`<div class="m-progress"><i style="--p:${p}%"></i></div>`:''}</div></article>`}).join('')}</div></section>`).join('');
+ $$('.m-card').forEach(c=>c.onclick=()=>{setHero(itemById(c.dataset.mid),'mobile');$('#mobileScroll').scrollTo({top:0,behavior:'smooth'})});$$('.genre').forEach(g=>g.onclick=()=>{$$('.genre').forEach(x=>x.classList.remove('active'));g.classList.add('active');toast('#mToast',`${g.textContent} · φίλτρο preview`)})}
+function setMode(next){mode=next;$('#tvMode').classList.toggle('active',next==='tv');$('#mobileMode').classList.toggle('active',next==='mobile');$('#tvView').classList.toggle('active',next==='tv');$('#mobileView').classList.toggle('active',next==='mobile');$('#deviceWrap').className='device-wrap '+next;$('#hint').innerHTML=next==='tv'?'<span class="key">←</span><span class="key">↑</span><span class="key">↓</span><span class="key">→</span><span class="key">↵</span><span>DPAD preview</span>':'<span class="key">tap</span><span>Touch preview · scroll rails</span>';clearInterval(autoTimer);if(next==='tv')startAuto()}
+function startAuto(){clearInterval(autoTimer);autoTimer=setInterval(()=>{if(mode!=='tv'||tvZone!=='hero')return;heroIndex=(heroIndex+1)%4;setHero(items[heroIndex],'tv')},8000)}
+$('#tvMode').onclick=()=>setMode('tv');$('#mobileMode').onclick=()=>setMode('mobile');document.addEventListener('keydown',handleTvKey);
+$$('[data-action]').forEach(b=>b.onclick=()=>toast('#tvToast',b.dataset.action==='play'?'Έναρξη αναπαραγωγής':b.dataset.action==='details'?'Άνοιγμα λεπτομερειών':'Προστέθηκε στη λίστα'));
+$$('[data-maction]').forEach(b=>b.onclick=()=>toast('#mToast',b.dataset.maction==='play'?'Έναρξη αναπαραγωγής':b.dataset.maction==='list'?'Προστέθηκε στη λίστα':'Άνοιγμα πληροφοριών'));
+let touchX=0;$('#mArt').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});$('#mArt').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>38){heroIndex=(heroIndex+(dx<0?1:-1)+5)%5;setHero(items[heroIndex],'mobile')}},{passive:true});
+renderTvRails();renderMobile();bgVars($('#tvArt'),items[0]);bgVars($('#mArt'),items[0]);renderDots();renderTvFocus();startAuto();
+</script>
+</body>
+</html>

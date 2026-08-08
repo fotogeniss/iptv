@@ -1,0 +1,4 @@
+XML files: 22
+XML errors: 0
+YAML files: 1
+YAML errors: 0

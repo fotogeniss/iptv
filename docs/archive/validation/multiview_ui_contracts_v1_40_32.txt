@@ -1,0 +1,41 @@
+Version:
+15:        versionCode = 76
+16:        versionName = "1.40.32"
+
+Multiview route wiring:
+app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt:613:                    onMultiview = { primary, secondary ->
+app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt:614:                        openMultiview(ctx, scope, vm, primary, secondary) { errorMsg = it }
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:28:    onMultiview: (Channel, Channel) -> Unit = { _, _ -> },
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:65:                if (primary != null) onMultiview(primary, channel) else onPlay(channel)
+app/src/main/java/com/prelude/iptv/ui/route/PlaybackLaunchers.kt:128:internal fun openMultiview(
+
+DPAD/back contracts:
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:3:import androidx.activity.compose.BackHandler
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:41:    var multiviewPrimaryKey by remember(channels) { mutableStateOf<String?>(null) }
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:59:        when (val decision = MultiviewSelectionPolicy.onOpen(multiviewPrimaryKey, keyOf(channel))) {
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:64:                multiviewPrimaryKey = null
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:71:        multiviewPrimaryKey = keyOf(channel)
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:74:    BackHandler(enabled = isTv && multiviewPrimaryKey != null) {
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:75:        multiviewPrimaryKey = null
+app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt:97:            multiviewPrimaryKey = multiviewPrimaryKey,
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:43:import androidx.compose.ui.input.key.onPreviewKeyEvent
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:116:    multiviewPrimaryKey: String?,
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:141:                multiviewPrimary = keyOf(channel) == multiviewPrimaryKey,
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:190:            .onPreviewKeyEvent { event ->
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:192:                val isConfirm = native.keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:195:                if (!isConfirm) return@onPreviewKeyEvent false
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt:203:                                delay(android.view.ViewConfiguration.getLongPressTimeout().toLong())
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt:42:    multiviewPrimaryKey: String?,
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt:77:                    if (multiviewPrimaryKey != null) IptvColors.Primary.copy(alpha = .22f)
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt:83:                    if (multiviewPrimaryKey != null)
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt:87:                    color = if (multiviewPrimaryKey != null) Color.White else IptvColors.TextSecondary,
+app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt:118:                multiviewPrimaryKey = multiviewPrimaryKey,
+
+Secure launch extras:
+13:            val urls = com.prelude.iptv.source.ProviderResolutionGate.withSource(sourceId) {
+17:            if (urls.first.isBlank()) { toastFn("Το πρώτο stream δεν είναι διαθέσιμο"); return@launch }
+18:            if (urls.second.isBlank()) { toastFn("Το δεύτερο stream δεν είναι διαθέσιμο"); return@launch }
+19:            val token = MultiviewLaunchStore.put(
+21:                    primary = MultiviewLaunchStore.Stream(urls.first, primary.name, primary.logo, sourceId),
+22:                    secondary = MultiviewLaunchStore.Stream(urls.second, secondary.name, secondary.logo, sourceId)
+27:                    .putExtra(MultiviewActivity.EXTRA_LAUNCH_TOKEN, token)

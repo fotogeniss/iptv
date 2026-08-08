@@ -1,0 +1,5 @@
+Changed Kotlin syntax scan
+raw compiler diagnostics=1906
+compiler exit=1 (expected non-zero without Android/Gradle classpath)
+syntax findings=0
+PASS no parser/syntax diagnostics

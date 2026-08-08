@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ · Νομικά & απόρρητο</title>
+  <style>
+    :root{
+      --bg:#080808;--surface:#171717;--raised:#202020;--line:rgba(255,255,255,.10);
+      --text:#f5f5f5;--secondary:#aaa;--muted:#707070;--red:#e50914;--green:#48c875
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#101010;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,a{font:inherit;color:inherit}button{cursor:pointer}svg{display:block}
+    .phone{position:relative;width:min(100%,430px);height:100dvh;margin:auto;overflow:hidden;background:var(--bg);box-shadow:0 0 70px #000}
+    .page{height:100%;overflow:auto;scrollbar-width:none;padding-bottom:max(35px,env(safe-area-inset-bottom))}.page::-webkit-scrollbar{display:none}
+    .topbar{position:sticky;z-index:20;top:0;height:92px;display:grid;grid-template-columns:48px 1fr 48px;align-items:end;padding:0 16px 18px;border-bottom:1px solid var(--line);background:rgba(8,8,8,.94);backdrop-filter:blur(18px)}
+    .back{width:40px;height:40px;display:grid;place-items:center;border:0;background:transparent;border-radius:50%}.back:active{background:#222}.back svg{width:25px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .title{text-align:center;font-size:18px;font-weight:900;letter-spacing:-.3px}
+    .brand-mark{justify-self:end;width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(229,9,20,.13);color:#ff4e57}.brand-mark svg{width:20px;fill:currentColor}
+    .hero{padding:26px 20px 22px;background:radial-gradient(circle at 96% 10%,rgba(229,9,20,.20),transparent 36%)}
+    .eyebrow{display:flex;align-items:center;gap:8px;color:#ff5961;font-size:10px;font-weight:950;letter-spacing:1.7px;text-transform:uppercase}.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red)}
+    h1{margin:13px 0 9px;font-size:30px;line-height:1.04;letter-spacing:-1px}.hero p{max-width:350px;margin:0;color:var(--secondary);font-size:13px;line-height:1.55}
+    .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}.fact{min-height:88px;padding:12px 9px;border:1px solid var(--line);border-radius:16px;background:rgba(23,23,23,.88)}.fact-icon{width:27px;height:27px;display:grid;place-items:center;border-radius:9px;background:rgba(72,200,117,.12);color:var(--green);font-size:15px;font-weight:900}.fact strong{display:block;margin-top:9px;font-size:10px;line-height:1.2}.fact span{display:block;margin-top:4px;color:#797979;font-size:8px;line-height:1.3}
+    .tabs-wrap{position:sticky;z-index:19;top:92px;padding:10px 16px;background:linear-gradient(#080808 75%,rgba(8,8,8,0))}.tabs{display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border:1px solid var(--line);border-radius:16px;background:#111}.tab{height:42px;border:0;border-radius:12px;background:transparent;color:#858585;font-size:11px;font-weight:900}.tab.active{background:#f2f2f2;color:#111;box-shadow:0 5px 18px #000}.tab.active:after{content:"";display:block;width:18px;height:2px;margin:3px auto 0;border-radius:9px;background:var(--red)}
+    .content{padding:4px 16px 28px}.panel{display:none}.panel.active{display:block}.section{margin-top:20px}.section h2{margin:0 4px 9px;color:#d4d4d4;font-size:13px;letter-spacing:.1px}.card{overflow:hidden;border:1px solid rgba(255,255,255,.07);border-radius:17px;background:var(--surface)}
+    .row{display:grid;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;align-items:center;width:100%;min-height:72px;padding:13px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:transparent;text-align:left}.row:last-child{border-bottom:0}.row:active{background:#202020}.icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:var(--raised);color:#f2f2f2}.icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.copy{min-width:0}.copy strong{display:block;font-size:13px}.copy span{display:block;margin-top:4px;color:#888;font-size:9px;line-height:1.4}.chevron{width:8px;height:8px;border-top:2px solid #666;border-right:2px solid #666;transform:rotate(45deg)}
+    .detail{display:none;padding:0 14px 15px 67px;color:#b7b7b7;font-size:10px;line-height:1.55}.row.open+.detail{display:block}.row.open .chevron{transform:rotate(135deg)}
+    .notice{margin-top:20px;padding:15px;border:1px solid rgba(229,9,20,.28);border-radius:16px;background:rgba(229,9,20,.07)}.notice strong{display:block;color:#ff626a;font-size:12px}.notice p{margin:6px 0 0;color:#aaa;font-size:10px;line-height:1.5}
+    .service{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:15px;border-bottom:1px solid rgba(255,255,255,.07)}.service:last-child{border-bottom:0}.service-logo{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:#222;font-size:10px;font-weight:950}.service strong{font-size:13px}.service p{margin:5px 0 0;color:#898989;font-size:9px;line-height:1.45}.service small{display:inline-block;margin-top:7px;color:#ff5961;font-size:8px;font-weight:900}
+    .legal-text{padding:17px}.legal-text h3{margin:18px 0 7px;font-size:13px}.legal-text h3:first-child{margin-top:0}.legal-text p,.legal-text li{color:#aaa;font-size:10px;line-height:1.58}.legal-text ul{margin:7px 0;padding-left:18px}
+    .release-blocker{display:flex;gap:11px;align-items:flex-start;margin-top:20px;padding:14px;border:1px solid #5d4815;border-radius:16px;background:#211b0c}.release-blocker b{display:block;color:#ffd56a;font-size:11px}.release-blocker p{margin:5px 0 0;color:#b9a36b;font-size:9px;line-height:1.5}.release-blocker .warn{font-size:20px}
+    .footer{padding:24px 8px 12px;text-align:center;color:#6f6f6f;font-size:9px;line-height:1.6}.footer strong{color:#aaa}.footer a{color:#ff5961;text-decoration:none;font-weight:850}
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="page">
+      <header class="topbar">
+        <button class="back" aria-label="Πίσω" onclick="history.back()"><svg viewBox="0 0 24 24"><path d="m15 19-7-7 7-7"/></svg></button>
+        <div class="title">Νομικά & απόρρητο</div>
+        <div class="brand-mark" aria-label="PRELUDE+"><svg viewBox="0 0 24 24"><path d="M4 10.6a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8ZM8 3.7v16.6c0 .9 1 1.4 1.7.9l11.1-8.3a1.1 1.1 0 0 0 0-1.8L9.7 2.8A1 1 0 0 0 8 3.7Z"/></svg></div>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow">PRELUDE+ PRIVACY</div>
+        <h1>Τα δεδομένα σου,<br>υπό τον έλεγχό σου.</h1>
+        <p>Το PRELUDE+ λειτουργεί χωρίς λογαριασμό και χωρίς cloud συγχρονισμό. Οι λίστες, τα αγαπημένα και η πρόοδος προβολής αποθηκεύονται τοπικά στη συσκευή.</p>
+        <div class="facts">
+          <div class="fact"><div class="fact-icon">✓</div><strong>Χωρίς analytics</strong><span>Δεν υπάρχει SDK παρακολούθησης</span></div>
+          <div class="fact"><div class="fact-icon">✓</div><strong>Χωρίς διαφημίσεις</strong><span>Δεν δημιουργείται διαφημιστικό προφίλ</span></div>
+          <div class="fact"><div class="fact-icon">⌂</div><strong>Τοπική αποθήκευση</strong><span>Με κρυπτογράφηση ευαίσθητων στοιχείων</span></div>
+        </div>
+      </section>
+
+      <div class="tabs-wrap"><nav class="tabs" aria-label="Νομικές ενότητες">
+        <button class="tab active" data-panel="privacy">Απόρρητο</button>
+        <button class="tab" data-panel="terms">Όροι</button>
+        <button class="tab" data-panel="services">Υπηρεσίες</button>
+      </nav></div>
+
+      <div class="content">
+        <section class="panel active" id="privacy">
+          <div class="section"><h2>Τι αποθηκεύεται στη συσκευή</h2><div class="card">
+            <button class="row"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zM8 10h8M8 14h5"/></svg></span><span class="copy"><strong>Λίστες και πηγές</strong><span>URL, στοιχεία σύνδεσης και ρυθμίσεις παρόχου</span></span><i class="chevron"></i></button><div class="detail">Τα ευαίσθητα στοιχεία σύνδεσης αποθηκεύονται κρυπτογραφημένα με κλειδιά του Android Keystore. Δεν συγχρονίζονται σε δικό μας server.</div>
+            <button class="row"><span class="icon"><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg></span><span class="copy"><strong>Προτιμήσεις προβολής</strong><span>Αγαπημένα, ιστορικό, πρόοδος και ρυθμίσεις</span></span><i class="chevron"></i></button><div class="detail">Χρησιμοποιούνται για συνέχιση προβολής και εξατομίκευση μέσα στην ίδια συσκευή. Μπορούν να διαγραφούν από τις ρυθμίσεις ή με εκκαθάριση δεδομένων Android.</div>
+            <button class="row"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 19V5h14v14zM8 15l3-3 2 2 3-4 2 5"/></svg></span><span class="copy"><strong>Cache μεταδεδομένων</strong><span>Αφίσες, περιγραφές, EPG και προσωρινά αρχεία</span></span><i class="chevron"></i></button><div class="detail">Προσωρινά δεδομένα για ταχύτερη λειτουργία. Η cache μπορεί να καθαριστεί χωρίς να διαγραφούν οι λίστες.</div>
+          </div></div>
+
+          <div class="section"><h2>Τι αποστέλλεται εκτός συσκευής</h2><div class="card">
+            <button class="row"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 12h16M12 4v16M6.5 6.5a8 8 0 1 0 11 0M6.5 17.5a8 8 0 0 1 11 0"/></svg></span><span class="copy"><strong>Αιτήματα που ξεκινάς εσύ</strong><span>IPTV, TMDB, OpenSubtitles και Google Play</span></span><i class="chevron"></i></button><div class="detail">Η εφαρμογή συνδέεται απευθείας στις πηγές που προσθέτεις. Για μεταδεδομένα ή υπότιτλους αποστέλλονται στοιχεία αναζήτησης όπως τίτλος, έτος, σεζόν και επεισόδιο στις αντίστοιχες υπηρεσίες.</div>
+          </div></div>
+
+          <div class="notice"><strong>Σημαντικό για HTTP λίστες</strong><p>Ορισμένοι IPTV πάροχοι λειτουργούν μόνο με μη κρυπτογραφημένο HTTP. Σε αυτή την περίπτωση το δίκτυο μπορεί να δει τη διεύθυνση και την κίνηση προς τον πάροχο. Προτίμησε HTTPS όπου υποστηρίζεται.</p></div>
+        </section>
+
+        <section class="panel" id="terms">
+          <div class="section"><h2>Όροι χρήσης</h2><article class="card legal-text">
+            <h3>1. Ανεξάρτητος media player</h3><p>Το PRELUDE+ δεν παρέχει, δεν φιλοξενεί και δεν πωλεί τηλεοπτικά κανάλια, λίστες, συνδρομές ή οπτικοακουστικό περιεχόμενο.</p>
+            <h3>2. Πηγές του χρήστη</h3><p>Προσθέτεις μόνο πηγές και περιεχόμενο για τα οποία έχεις νόμιμη άδεια πρόσβασης. Εσύ ευθύνεσαι για τη νομιμότητα, τη διαθεσιμότητα και τους όρους του παρόχου σου.</p>
+            <h3>3. Διαθεσιμότητα</h3><p>Η αναπαραγωγή και τα μεταδεδομένα εξαρτώνται από τη συσκευή, το δίκτυο και εξωτερικούς παρόχους. Δεν εγγυόμαστε αδιάλειπτη πρόσβαση σε υπηρεσίες τρίτων.</p>
+            <h3>4. Αγορές</h3><p>Οι αγορές Premium διεκπεραιώνονται από το Google Play και υπόκεινται στους όρους και στους κανόνες επιστροφής χρημάτων της Google.</p>
+            <h3>5. Αλλαγές</h3><p>Οι ουσιώδεις αλλαγές στους όρους ή στις πρακτικές δεδομένων θα εμφανίζονται με νέα ημερομηνία ισχύος.</p>
+          </article></div>
+        </section>
+
+        <section class="panel" id="services">
+          <div class="section"><h2>Εξωτερικές υπηρεσίες</h2><div class="card">
+            <div class="service"><div class="service-logo">IPTV</div><div><strong>Ο πάροχος της λίστας σου</strong><p>Λήψη καταλόγου, EPG και ροής. Τα δεδομένα πηγαίνουν απευθείας στον server που επέλεξες.</p><small>ΕΛΕΓΧΕΤΑΙ ΑΠΟ ΤΟΝ ΧΡΗΣΤΗ</small></div></div>
+            <div class="service"><div class="service-logo">TMDB</div><div><strong>The Movie Database</strong><p>Αναζήτηση αφισών, βαθμολογιών, περιγραφών, ηθοποιών και στοιχείων επεισοδίων.</p><small>ΠΡΟΑΙΡΕΤΙΚΟ API KEY</small></div></div>
+            <div class="service"><div class="service-logo">OS</div><div><strong>OpenSubtitles</strong><p>Αυτόματη ή χειροκίνητη αναζήτηση και λήψη υποτίτλων με βάση την ταυτότητα του τίτλου.</p><small>ΠΡΟΑΙΡΕΤΙΚΗ ΣΥΝΔΕΣΗ</small></div></div>
+            <div class="service"><div class="service-logo">PLAY</div><div><strong>Google Play</strong><p>Διεκπεραίωση αγοράς, αποκατάσταση αγοράς και κατάσταση Premium.</p><small>ΜΟΝΟ ΓΙΑ ΑΓΟΡΕΣ</small></div></div>
+          </div></div>
+          <div class="notice"><strong>Αναφορά TMDB</strong><p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p></div>
+        </section>
+
+        <div class="release-blocker"><span class="warn">!</span><div><b>Χρειάζεται πριν τη δημοσίευση</b><p>Πραγματικό email επικοινωνίας και δημόσια, σταθερή URL της πολιτικής απορρήτου. Δεν θα βάλουμε ψεύτικα ή προσωρινά στοιχεία.</p></div></div>
+        <footer class="footer">Ισχύς: <strong>2 Αυγούστου 2026</strong> · Έκδοση πολιτικής 1.0<br><a href="#">Επικοινωνία απορρήτου: δεν έχει οριστεί ακόμη</a></footer>
+      </div>
+    </div>
+  </main>
+  <script>
+    const tabs=[...document.querySelectorAll('.tab')];
+    const panels=[...document.querySelectorAll('.panel')];
+    tabs.forEach(tab=>tab.addEventListener('click',()=>{
+      tabs.forEach(x=>x.classList.toggle('active',x===tab));
+      panels.forEach(x=>x.classList.toggle('active',x.id===tab.dataset.panel));
+      document.querySelector('.page').scrollTo({top:230,behavior:'smooth'});
+    }));
+    document.querySelectorAll('.row').forEach(row=>row.addEventListener('click',()=>row.classList.toggle('open')));
+  </script>
+</body>
+</html>

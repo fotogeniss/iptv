@@ -1,0 +1,14 @@
+Ultimate Playlist Loader v1.40.46 validation summary
+
+PASS SourceSwitchCoordinator focused runtime tests: 10/10
+PASS SourceSwitchCoordinator semantic compile with data/JUnit stubs
+PASS MainViewModel source-switch callback wiring semantic harness
+PASS Compatibility contracts: 29 pass, 0 fail
+PASS Architecture audit: 41 pass, 2 known size warnings, 0 fail
+PASS Deep validation audit: 53 pass, 1 documented cleartext warning, 0 fail
+PASS Production risk inventory: 0 critical categories failed
+PASS Changed Kotlin parser/syntax findings: 0
+PASS XML parse: 24 files, 0 errors
+PASS CI YAML parse
+PASS versionName 1.40.46 / versionCode 90
+BLOCKED Full Gradle/Android gate before startup: Gradle 8.9 distribution unavailable because services.gradle.org could not be resolved/reached

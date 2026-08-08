@@ -1,0 +1,193 @@
+@file:android.annotation.SuppressLint("ProduceStateDoesNotAssignValue")
+
+package com.prelude.iptv.ui.player
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.requestFocusWithRetry
+import kotlinx.coroutines.CancellationException
+
+/** Η χειροκίνητη αναζήτηση που αναπτύσσεται μέσα στο κοινό CC/audio panel. */
+@Composable
+internal fun PlayerSubtitleSearchContent(
+    initialQuery: String,
+    load: suspend (String) -> List<ExternalSubtitle>,
+    onSelect: (ExternalSubtitle) -> Unit,
+) {
+    val firstResultFocus = remember { FocusRequester() }
+    var query by remember(initialQuery) { mutableStateOf(initialQuery) }
+    var searchTick by remember { mutableStateOf(0) }
+    val results by produceState<List<ExternalSubtitle>?>(initialValue = null, searchTick) {
+        value = null
+        value = try {
+            load(query)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    LaunchedEffect(results) {
+        if (!results.isNullOrEmpty()) firstResultFocus.requestFocusWithRetry()
+    }
+
+    Box(Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("Τίτλος", color = IptvColors.TextSecondary) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().padding(end = 55.dp),
+        )
+        Box(
+            Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 8.dp)
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .clickable { searchTick++ },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Default.Search, "Αναζήτηση", tint = Color.Black)
+        }
+    }
+
+    val currentResults = results
+    when {
+        currentResults == null -> Text("Αναζήτηση…", color = IptvColors.TextSecondary, fontSize = 12.sp)
+        currentResults.isEmpty() -> Text(
+            "Δεν βρέθηκαν υπότιτλοι. Δοκίμασε να απλοποιήσεις τον τίτλο.",
+            color = IptvColors.TextSecondary,
+            fontSize = 12.sp,
+        )
+        else -> {
+            Text(
+                "${currentResults.size} αποτελέσματα · με πλήρες όνομα",
+                color = IptvColors.TextSecondary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                currentResults.take(MAX_VISIBLE_RESULTS).forEachIndexed { index, item ->
+                    SubtitleSearchResultRow(
+                        item = item,
+                        focusRequester = if (index == 0) firstResultFocus else null,
+                        onClick = { onSelect(item) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubtitleSearchResultRow(
+    item: ExternalSubtitle,
+    focusRequester: FocusRequester?,
+    onClick: () -> Unit,
+) {
+    var focused by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(14.dp)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .onFocusChanged { focused = it.isFocused }
+            .clip(shape)
+            .background(if (focused) Color(0xFF34343B) else Color(0xFF242429))
+            .border(1.dp, if (focused) Color.White.copy(alpha = .72f) else Color.Transparent, shape)
+            .clickable(onClick = onClick)
+            .focusable()
+            .padding(horizontal = 12.dp, vertical = 11.dp),
+    ) {
+        Box(
+            Modifier
+                .align(Alignment.CenterStart)
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF373740)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                item.language.uppercase().take(2),
+                color = Color.White,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+            )
+        }
+        Column(Modifier.fillMaxWidth().padding(start = 49.dp)) {
+            Text(
+                item.label,
+                color = Color.White,
+                fontSize = 13.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.size(3.dp))
+            Text(
+                "${subtitleLanguageName(item.language)} · OpenSubtitles",
+                color = IptvColors.TextSecondary,
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "${item.matchPercent}% match",
+                color = Color(0xFF4BD486),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+            )
+        }
+    }
+}
+
+private fun subtitleLanguageName(code: String): String = when (code.lowercase()) {
+    "el", "ell", "gre" -> "Ελληνικά"
+    "en", "eng" -> "English"
+    "es", "spa" -> "Español"
+    "de", "deu", "ger" -> "Deutsch"
+    "fr", "fra", "fre" -> "Français"
+    "it", "ita" -> "Italiano"
+    else -> code.uppercase().ifBlank { "Άγνωστη γλώσσα" }
+}
+
+private const val MAX_VISIBLE_RESULTS = 20

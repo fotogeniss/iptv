@@ -1,0 +1,6 @@
+Android XML parse: 23 files, 0 errors
+Version contract: 1.40.25 / 69
+Manifest contract: MultiviewActivity non-exported
+Launch contract: exactly one Multiview Intent extra, opaque token only
+Player contract: inactive audio renderer disabled; both players released on stop
+Failure contract: secondary error does not release primary player

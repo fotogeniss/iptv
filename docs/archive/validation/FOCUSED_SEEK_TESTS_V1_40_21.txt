@@ -1,0 +1,15 @@
+PASS com.prelude.iptv.player.TvSeekControllerTest.targetIsClampedAtBothEnds
+PASS com.prelude.iptv.player.TvSeekControllerTest.unknownDurationUsesImmediateRelativeSeekAndClearsPending
+PASS com.prelude.iptv.player.TvSeekControllerTest.cancelDropsPendingTarget
+PASS com.prelude.iptv.player.TvSeekControllerTest.repeatedNudgesAccumulateAndCommitOnce
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest.liveMobileAndUnrelatedKeysPassThrough
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest.keyUpIsConsumedToPreventFrameworkDoubleMove
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest.confirmOnlyFiresOnFirstDownEvent
+PASS com.prelude.iptv.player.TvSeekKeyPolicyTest.leftAndRightBecomeTenSecondNudges
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest.unknownDurationStillPreventsNegativeTargets
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest.relativeTargetClampsWithoutOverflow
+PASS com.prelude.iptv.player.PlaybackSeekPolicyTest.absoluteTargetHonoursKnownDuration
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest.normalDurationsMapOneToOne
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest.veryLongDurationsScaleWithoutIntOverflow
+PASS com.prelude.iptv.player.SeekBarPositionMapperTest.invalidDurationMapsToZero
+Focused JVM tests: 14 passed, 0 failed

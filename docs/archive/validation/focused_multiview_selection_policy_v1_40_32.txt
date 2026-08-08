@@ -1,0 +1,5 @@
+MultiviewSelectionPolicy focused assertions: PASS
+- no armed primary -> PlaySingle
+- same channel -> KeepPrimaryArmed
+- different channel -> Launch(primary, secondary)
+Assertions passed: 3

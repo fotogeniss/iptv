@@ -1,0 +1,9 @@
+PASS: storage parsing
+PASS: invalid rates
+PASS: 24 fps rejects 60 Hz
+PASS: exact cinema mode
+PASS: 25 fps chooses 50
+PASS: 29.97 chooses 59.94
+PASS: never changes resolution
+PASS: 120 Hz supports 24 fps
+AFR focused tests: 8 passed, 0 failed

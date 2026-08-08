@@ -1,0 +1,12 @@
+PASS category discovery delegated to CatalogLoadCoordinator
+PASS section loading delegated to CatalogLoadCoordinator
+PASS provider mutex removed from MainViewModel
+PASS legacy fetchChannels removed from MainViewModel
+PASS progressive snapshots normalized in coordinator
+PASS final snapshots normalized in coordinator
+PASS forced refresh captures visible rollback snapshot
+PASS refresh-and-select captures visible rollback snapshot
+PASS both refresh failure paths restore visible catalog
+PASS series detail requests use shared provider boundary
+PASS v1.40.41 MainViewModel API preserved 89/89
+PASS v1.40.41 PlayerActivity API preserved 10/10

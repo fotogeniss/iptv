@@ -1,0 +1,25 @@
+--- version ---
+15:        versionCode = 62
+16:        versionName = "1.40.18"
+--- obsolete names (expected none) ---
+--- export state wiring ---
+app/src/main/java/com/prelude/iptv/ExportScreen.kt:44:    val state by vm.exportState.collectAsStateWithLifecycle()
+app/src/main/java/com/prelude/iptv/ExportScreen.kt:188:                        if (state.relayRunning) {
+app/src/main/java/com/prelude/iptv/ExportScreen.kt:189:                            Text(state.relayUrl, color = AccSoft, fontWeight = FontWeight.SemiBold)
+app/src/main/java/com/prelude/iptv/ExportScreen.kt:193:                                    onClick = { copyToClipboard(ctx, state.relayUrl) },
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:62:data class ExportUiState(
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:64:    val relayRunning: Boolean = false,
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:65:    val relayUrl: String = ""
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:115:internal fun UiState.toExportUiState() = ExportUiState(
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:117:    relayRunning = relayRunning,
+app/src/main/java/com/prelude/iptv/ui/UiStateSlices.kt:118:    relayUrl = relayUrl
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:59:    val relayRunning: Boolean = false,
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:60:    val relayUrl: String = "",
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:378:    val exportState: StateFlow<ExportUiState> = _state
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:379:        .map(UiState::toExportUiState)
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:381:        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000), UiState().toExportUiState())
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:893:        _state.value = _state.value.copy(relayRunning = true, relayUrl = url)
+app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt:899:        _state.value = _state.value.copy(relayRunning = false, relayUrl = "")
+app/src/test/java/com/prelude/iptv/ui/UiStateSlicesTest.kt:55:        assertEquals(base.toExportUiState(), base.copy(status = "Other update").toExportUiState())
+app/src/test/java/com/prelude/iptv/ui/UiStateSlicesTest.kt:56:        assertNotEquals(base.toExportUiState(), base.copy(favorites = setOf("a", "b")).toExportUiState())
+app/src/test/java/com/prelude/iptv/ui/UiStateSlicesTest.kt:57:        assertNotEquals(base.toExportUiState(), base.copy(relayRunning = true, relayUrl = "http://127.0.0.1:8080/list.m3u").toExportUiState())

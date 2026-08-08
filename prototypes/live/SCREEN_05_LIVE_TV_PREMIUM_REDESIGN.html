@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SCREEN 05 — Premium Live TV Redesign</title>
+<style>
+:root{
+  --bg:#050507; --surface:rgba(20,20,24,.82); --surface2:rgba(33,33,39,.82);
+  --text:#fff; --muted:#aaaab4; --red:#e50914; --green:#44d17d;
+  --line:rgba(255,255,255,.10); --shadow:0 26px 80px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#09090b;color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{min-height:100vh;overflow-x:hidden}
+button,input{font:inherit}
+.topbar{
+ position:fixed;z-index:100;top:18px;left:50%;transform:translateX(-50%);
+ display:flex;gap:8px;padding:6px;border:1px solid rgba(255,255,255,.14);
+ border-radius:999px;background:rgba(12,12,15,.78);backdrop-filter:blur(20px);
+ box-shadow:0 16px 45px rgba(0,0,0,.35)
+}
+.topbar button{
+ border:0;background:transparent;color:#bcbcc5;padding:10px 18px;border-radius:999px;
+ cursor:pointer;font-weight:800;letter-spacing:.02em
+}
+.topbar button.active{background:#fff;color:#070709}
+.view{display:none;min-height:100vh}.view.active{display:block}
+
+/* TV */
+#tv{position:relative;overflow:hidden;background:#030304}
+.tv-backdrop{
+ position:absolute;inset:0;background-size:cover;background-position:center;
+ transition:background-image .45s ease,transform .7s ease;transform:scale(1.035)
+}
+.tv-backdrop:after{
+ content:"";position:absolute;inset:0;
+ background:
+ linear-gradient(90deg,rgba(3,3,4,.98) 0%,rgba(3,3,4,.76) 32%,rgba(3,3,4,.20) 62%,rgba(3,3,4,.48) 100%),
+ linear-gradient(0deg,#050507 0%,rgba(5,5,7,.9) 14%,transparent 50%,rgba(0,0,0,.28) 100%)
+}
+.tv-shell{position:relative;z-index:2;min-height:100vh;padding:92px 56px 40px 116px}
+.tv-brand{display:flex;align-items:center;gap:13px;font-size:19px;font-weight:950;letter-spacing:.13em}
+.tv-brand-mark{width:15px;height:31px;background:var(--red);box-shadow:7px 0 #8f050c;transform:skew(-4deg)}
+.tv-live-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(229,9,20,.16);border:1px solid rgba(229,9,20,.34);padding:7px 11px;border-radius:999px;color:#ff7077;font-size:12px;font-weight:900}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 16px var(--red);animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.tv-hero{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(420px,.96fr);gap:50px;align-items:end;min-height:47vh}
+.tv-copy{padding-top:34px;max-width:720px}
+.kicker{color:#d6d6dc;font-size:14px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
+.tv-title{font-size:clamp(42px,5vw,78px);line-height:.94;margin:13px 0 16px;font-weight:950;letter-spacing:-.045em}
+.tv-meta{display:flex;gap:11px;align-items:center;flex-wrap:wrap;color:#d2d2d8;font-weight:750}
+.rating{background:#f2c94c;color:#111;padding:4px 7px;border-radius:5px;font-weight:950}
+.tv-desc{font-size:18px;line-height:1.55;color:#c7c7cf;max-width:650px;margin:16px 0 20px}
+.tv-progress{max-width:650px}
+.progress-meta{display:flex;justify-content:space-between;color:#b8b8c1;font-size:13px;margin-bottom:8px}
+.bar{height:5px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden}
+.bar i{display:block;height:100%;width:64%;background:var(--red);box-shadow:0 0 15px rgba(229,9,20,.7)}
+.tv-actions{display:flex;gap:11px;margin-top:20px}
+.action{
+ border:0;border-radius:9px;padding:14px 21px;display:flex;align-items:center;gap:9px;
+ font-weight:900;cursor:pointer;color:#fff;background:rgba(255,255,255,.16);backdrop-filter:blur(10px)
+}
+.action.primary{background:#fff;color:#09090b}.action:focus,.tv-card:focus,.tv-filter:focus{outline:none}
+.tv-preview{
+ justify-self:end;width:min(48vw,760px);aspect-ratio:16/9;border-radius:22px;overflow:hidden;
+ border:1px solid rgba(255,255,255,.19);box-shadow:0 36px 100px rgba(0,0,0,.62);
+ background-size:cover;background-position:center;position:relative
+}
+.tv-preview:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent 55%)}
+.preview-top{position:absolute;z-index:2;top:17px;left:17px;display:flex;gap:8px}
+.preview-badge{padding:7px 10px;border-radius:7px;background:rgba(0,0,0,.65);font-size:12px;font-weight:900;backdrop-filter:blur(10px)}
+.preview-badge.live{background:var(--red)}
+.preview-bottom{position:absolute;z-index:2;left:20px;right:20px;bottom:17px;display:flex;justify-content:space-between;align-items:end}
+.preview-logo{font-size:23px;font-weight:950}.signal{color:#d3d3da;font-size:12px}
+.tv-dock{
+ margin-top:20px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(7,7,9,.58),rgba(7,7,9,.95));
+ backdrop-filter:blur(18px);padding:20px 0 10px
+}
+.tv-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tv-section-head h2{font-size:22px;margin:0}.hint{color:#8f8f98;font-size:12px}
+.tv-filters{display:flex;gap:9px;margin-bottom:16px}
+.tv-filter{
+ border:1px solid transparent;background:rgba(255,255,255,.09);color:#bdbdc6;
+ padding:10px 15px;border-radius:999px;font-weight:850
+}
+.tv-filter.active{background:#fff;color:#08080a}
+.tv-filter.focused{transform:scale(1.06);box-shadow:0 0 0 3px rgba(255,255,255,.12)}
+.tv-rail{display:flex;gap:13px;overflow:hidden;padding:9px 4px 26px}
+.tv-card{
+ min-width:250px;width:250px;height:142px;border:0;border-radius:15px;overflow:hidden;
+ position:relative;background-size:cover;background-position:center;cursor:pointer;
+ transform-origin:center bottom;transition:.18s ease;box-shadow:0 14px 35px rgba(0,0,0,.28)
+}
+.tv-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent 70%)}
+.tv-card.focused{transform:scale(1.075) translateY(-4px);filter:brightness(1.13);z-index:3;box-shadow:0 25px 65px rgba(0,0,0,.68)}
+.tv-card.active-channel{box-shadow:0 0 0 2px rgba(255,255,255,.82),0 28px 70px rgba(0,0,0,.62)}
+.card-live{position:absolute;z-index:2;top:10px;left:10px;background:var(--red);font-size:10px;font-weight:950;padding:5px 7px;border-radius:5px}
+.card-fav{position:absolute;z-index:2;top:10px;right:10px;background:rgba(0,0,0,.62);width:29px;height:29px;border-radius:50%;display:grid;place-items:center}
+.card-info{position:absolute;z-index:2;left:13px;right:13px;bottom:11px}
+.card-name{font-size:16px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-show{font-size:12px;color:#d2d2d8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-bar{height:3px;background:rgba(255,255,255,.24);margin-top:8px;border-radius:99px;overflow:hidden}
+.card-bar i{display:block;height:100%;background:var(--red)}
+.tv-now-next{display:grid;grid-template-columns:1.25fr .75fr;gap:13px;margin-top:-10px}
+.now-panel,.next-panel{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.055);padding:15px 17px}
+.panel-label{font-size:11px;color:#8e8e98;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.panel-title{font-size:17px;font-weight:900;margin-top:6px}.panel-sub{font-size:12px;color:#aaaab4;margin-top:4px}
+
+/* Mobile */
+#mobile{background:#060608;min-height:100vh;padding-bottom:92px}
+.phone{
+ width:min(100%,460px);min-height:100vh;margin:auto;background:#070709;position:relative;overflow:hidden;
+ box-shadow:0 0 90px rgba(0,0,0,.48)
+}
+.m-hero{height:530px;position:relative;background-size:cover;background-position:center;transition:background-image .35s}
+.m-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#070709 0%,rgba(7,7,9,.82) 28%,rgba(0,0,0,.08) 63%,rgba(0,0,0,.45) 100%)}
+.m-top{position:absolute;z-index:2;top:22px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center}
+.m-brand{font-weight:950;letter-spacing:.09em}.m-icon{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;background:rgba(0,0,0,.36);backdrop-filter:blur(10px)}
+.m-copy{position:absolute;z-index:2;left:20px;right:20px;bottom:20px}
+.m-live{display:inline-flex;align-items:center;gap:7px;background:var(--red);font-size:11px;font-weight:950;padding:6px 9px;border-radius:6px}
+.m-title{font-size:38px;line-height:1;margin:12px 0 8px;font-weight:950;letter-spacing:-.04em}
+.m-meta{font-size:13px;color:#d0d0d7;font-weight:700}
+.m-desc{font-size:14px;color:#bdbdc5;line-height:1.45;margin:11px 0 14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.m-actions{display:grid;grid-template-columns:1fr 48px 48px;gap:9px}
+.m-actions button{height:48px;border:0;border-radius:11px;background:rgba(255,255,255,.14);color:#fff;font-weight:900}
+.m-actions .primary{background:#fff;color:#08080a}
+.m-progress{margin-top:14px}.m-progress .progress-meta{font-size:11px}
+.m-content{padding:4px 0 24px}
+.m-tabs{display:flex;gap:8px;overflow:auto;padding:14px 18px 6px;scrollbar-width:none}
+.m-tabs::-webkit-scrollbar,.m-rail::-webkit-scrollbar{display:none}
+.m-chip{white-space:nowrap;border:1px solid rgba(255,255,255,.09);background:#151519;color:#a8a8b1;padding:10px 14px;border-radius:999px;font-weight:850}
+.m-chip.active{background:#fff;color:#070709}
+.m-section{padding-top:18px}.m-section-title{padding:0 18px 12px;font-size:20px;font-weight:950;display:flex;justify-content:space-between}
+.m-section-title span:last-child{font-size:12px;color:#92929c;align-self:center}
+.m-rail{display:flex;gap:11px;overflow:auto;padding:0 18px 10px;scroll-snap-type:x mandatory}
+.m-card{min-width:174px;width:174px;height:115px;border-radius:13px;overflow:hidden;position:relative;background-size:cover;background-position:center;scroll-snap-align:start;border:1px solid rgba(255,255,255,.08)}
+.m-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),transparent 72%)}
+.m-card .card-info{left:11px;right:11px;bottom:9px}.m-card .card-name{font-size:14px}.m-card .card-show{font-size:10px}
+.m-guide{margin:20px 18px 0;border:1px solid var(--line);border-radius:18px;background:#111115;overflow:hidden}
+.guide-head{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--line)}
+.guide-head strong{font-size:17px}.guide-head button{border:0;background:#24242a;color:#fff;border-radius:9px;padding:8px 10px}
+.guide-row{display:grid;grid-template-columns:56px 1fr auto;gap:11px;align-items:center;padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.065)}
+.guide-logo{width:48px;height:36px;border-radius:8px;background:#24242a;display:grid;place-items:center;font-weight:950;font-size:11px}
+.guide-title{font-weight:900;font-size:14px}.guide-show{font-size:11px;color:#9999a3;margin-top:3px}
+.guide-time{font-size:11px;color:#bdbdc6}
+.m-bottom{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,460px);height:78px;background:rgba(10,10,13,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-around;padding:10px 4px 8px}
+.nav-item{color:#7f7f89;font-size:10px;text-align:center;font-weight:800;min-width:58px}.nav-item b{display:block;font-size:20px;margin-bottom:5px}.nav-item.active{color:#fff}
+
+/* shared */
+.toast{position:fixed;z-index:200;left:50%;bottom:104px;transform:translate(-50%,20px);background:#fff;color:#070709;padding:11px 16px;border-radius:999px;font-weight:900;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:900px){
+ .topbar{top:10px}
+ #tv .tv-shell{padding:82px 24px 30px}
+ .tv-hero{grid-template-columns:1fr}.tv-preview{width:100%;justify-self:stretch}.tv-copy{padding-top:0}.tv-title{font-size:48px}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button id="tvBtn" class="active">Android TV</button>
+  <button id="mobileBtn">Mobile</button>
+</div>
+
+<section id="tv" class="view active">
+  <div class="tv-backdrop" id="tvBackdrop"></div>
+  <div class="tv-shell">
+    <div class="tv-brand"><span class="tv-brand-mark"></span> PRELUDE <span class="tv-live-pill"><span class="live-dot"></span> LIVE TV</span></div>
+    <div class="tv-hero">
+      <div class="tv-copy">
+        <div class="kicker" id="tvKicker">ΤΩΡΑ ΣΤΟ COSMOTE CINEMA 1</div>
+        <div class="tv-title" id="tvTitle">Dune: Part Two</div>
+        <div class="tv-meta"><span class="rating" id="tvRating">8.7</span><span id="tvGenre">Επιστημονικής Φαντασίας</span><span>•</span><span id="tvTime">21:00–23:45</span><span>•</span><span>4K</span></div>
+        <div class="tv-desc" id="tvDesc">Ο Paul Atreides ενώνεται με τη Chani και τους Fremen, ακολουθώντας ένα μονοπάτι εκδίκησης και πεπρωμένου.</div>
+        <div class="tv-progress">
+          <div class="progress-meta"><span id="tvElapsed">Παίζει τώρα · 1ω 22λ απομένουν</span><span id="tvPct">64%</span></div>
+          <div class="bar"><i id="tvBar"></i></div>
+        </div>
+        <div class="tv-actions">
+          <button class="action primary" onclick="toast('Άνοιγμα ζωντανής αναπαραγωγής')">▶ Παρακολούθηση</button>
+          <button class="action" onclick="toast('Άνοιγμα πλήρους οδηγού EPG')">▦ Οδηγός</button>
+          <button class="action" onclick="toggleFav()">♡ Αγαπημένο</button>
+        </div>
+      </div>
+      <div class="tv-preview" id="tvPreview">
+        <div class="preview-top"><span class="preview-badge live">LIVE</span><span class="preview-badge">4K UHD</span></div>
+        <div class="preview-bottom"><div class="preview-logo" id="previewLogo">COSMOTE CINEMA 1</div><div class="signal">● Σταθερό σήμα · 18 Mbps</div></div>
+      </div>
+    </div>
+
+    <div class="tv-dock">
+      <div class="tv-section-head"><h2>Ζωντανά τώρα</h2><div class="hint">← → αλλαγή καναλιού · ↑ φίλτρα · Enter αναπαραγωγή</div></div>
+      <div class="tv-filters" id="tvFilters"></div>
+      <div class="tv-rail" id="tvRail"></div>
+      <div class="tv-now-next">
+        <div class="now-panel"><div class="panel-label">Τώρα</div><div class="panel-title" id="panelNow">Dune: Part Two</div><div class="panel-sub" id="panelNowSub">21:00–23:45 · 1ω 22λ απομένουν</div></div>
+        <div class="next-panel"><div class="panel-label">Επόμενο</div><div class="panel-title" id="panelNext">The Batman</div><div class="panel-sub" id="panelNextSub">23:45–02:30</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="mobile" class="view">
+  <div class="phone">
+    <div class="m-hero" id="mHero">
+      <div class="m-top"><div class="m-brand">PRELUDE</div><div style="display:flex;gap:8px"><div class="m-icon">⌕</div><div class="m-icon">⋮</div></div></div>
+      <div class="m-copy">
+        <span class="m-live"><span class="live-dot"></span> LIVE</span>
+        <div class="m-title" id="mTitle">Dune: Part Two</div>
+        <div class="m-meta" id="mMeta">COSMOTE CINEMA 1 · 21:00–23:45 · 4K</div>
+        <div class="m-desc" id="mDesc">Ο Paul Atreides ενώνεται με τη Chani και τους Fremen, ακολουθώντας ένα μονοπάτι εκδίκησης και πεπρωμένου.</div>
+        <div class="m-actions">
+          <button class="primary" onclick="toast('Άνοιγμα ζωντανής αναπαραγωγής')">▶ Παρακολούθηση</button>
+          <button onclick="toggleFav()">♡</button>
+          <button onclick="toast('Άνοιγμα EPG')">▦</button>
+        </div>
+        <div class="m-progress"><div class="progress-meta"><span id="mElapsed">1ω 22λ απομένουν</span><span id="mPct">64%</span></div><div class="bar"><i id="mBar"></i></div></div>
+      </div>
+    </div>
+    <div class="m-content">
+      <div class="m-tabs" id="mTabs"></div>
+      <div class="m-section">
+        <div class="m-section-title"><span>Ζωντανά τώρα</span><span>Όλα τα κανάλια ›</span></div>
+        <div class="m-rail" id="mRail"></div>
+      </div>
+      <div class="m-section">
+        <div class="m-section-title"><span>Αθλητικά Live</span><span>4 μεταδόσεις</span></div>
+        <div class="m-rail" id="sportsRail"></div>
+      </div>
+      <div class="m-guide">
+        <div class="guide-head"><strong>Σύντομος οδηγός</strong><button onclick="toast('Άνοιγμα πλήρους EPG')">Πλήρες EPG</button></div>
+        <div id="guideRows"></div>
+      </div>
+    </div>
+  </div>
+  <div class="m-bottom">
+    <div class="nav-item"><b>⌂</b>Αρχική</div>
+    <div class="nav-item active"><b>◉</b>Live</div>
+    <div class="nav-item"><b>⌕</b>Αναζήτηση</div>
+    <div class="nav-item"><b>♡</b>Η λίστα μου</div>
+    <div class="nav-item"><b>⚙</b>Ρυθμίσεις</div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const channels=[
+ {name:"COSMOTE CINEMA 1",show:"Dune: Part Two",next:"The Batman",time:"21:00–23:45",nextTime:"23:45–02:30",genre:"Επιστημονικής Φαντασίας",rating:"8.7",pct:64,remain:"1ω 22λ απομένουν",cat:"Ταινίες",img:"https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1800&q=85",desc:"Ο Paul Atreides ενώνεται με τη Chani και τους Fremen, ακολουθώντας ένα μονοπάτι εκδίκησης και πεπρωμένου."},
+ {name:"NOVASPORTS PRIME",show:"Champions League Live",next:"Match Center",time:"21:45–23:55",nextTime:"23:55–00:40",genre:"Ποδόσφαιρο",rating:"LIVE",pct:38,remain:"1ω 20λ απομένουν",cat:"Αθλητικά",img:"https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",desc:"Ζωντανή μετάδοση της μεγάλης ευρωπαϊκής βραδιάς με pre-game ανάλυση και πλήρη σχολιασμό."},
+ {name:"ERT 1",show:"Κεντρικό Δελτίο Ειδήσεων",next:"Καιρός",time:"20:45–21:50",nextTime:"21:50–22:00",genre:"Ενημέρωση",rating:"LIVE",pct:72,remain:"18λ απομένουν",cat:"Ειδήσεις",img:"https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1800&q=85",desc:"Όλες οι σημαντικές ειδήσεις από την Ελλάδα και τον κόσμο, με ζωντανές συνδέσεις και αναλύσεις."},
+ {name:"MEGA",show:"Η Γη της Ελιάς",next:"Μεγάλη Εικόνα",time:"21:00–22:30",nextTime:"22:30–00:00",genre:"Δραματική σειρά",rating:"7.9",pct:51,remain:"44λ απομένουν",cat:"Σειρές",img:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1800&q=85",desc:"Οι ισορροπίες αλλάζουν και οι ήρωες καλούνται να πάρουν αποφάσεις που θα καθορίσουν το μέλλον τους."},
+ {name:"DISCOVERY",show:"Planet Earth: Oceans",next:"Wild Europe",time:"20:30–21:30",nextTime:"21:30–22:30",genre:"Ντοκιμαντέρ",rating:"9.1",pct:83,remain:"10λ απομένουν",cat:"Ντοκιμαντέρ",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1800&q=85",desc:"Ένα κινηματογραφικό ταξίδι στους ωκεανούς και στα πιο εντυπωσιακά οικοσυστήματα του πλανήτη."},
+ {name:"KIDS TV",show:"Bluey",next:"Paw Patrol",time:"21:10–21:35",nextTime:"21:35–22:00",genre:"Παιδικά",rating:"8.9",pct:44,remain:"14λ απομένουν",cat:"Παιδικά",img:"https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?auto=format&fit=crop&w=1800&q=85",desc:"Διασκεδαστικές ιστορίες για όλη την οικογένεια, γεμάτες φαντασία, παιχνίδι και μικρές καθημερινές περιπέτειες."}
+];
+const filters=["Όλα","Αγαπημένα","Πρόσφατα","Ταινίες","Αθλητικά","Ειδήσεις","Παιδικά"];
+let selected=0, focusArea="cards", filterIndex=0, activeFilter="Όλα", favorite=false;
+
+function filteredChannels(){
+ return channels.filter(c=>activeFilter==="Όλα" || (activeFilter==="Αγαπημένα" ? favorite && c===channels[selected] : c.cat===activeFilter));
+}
+function setHero(ch){
+ const bg=`url("${ch.img}")`;
+ document.getElementById("tvBackdrop").style.backgroundImage=bg;
+ document.getElementById("tvPreview").style.backgroundImage=bg;
+ document.getElementById("tvKicker").textContent=`ΤΩΡΑ ΣΤΟ ${ch.name}`;
+ document.getElementById("tvTitle").textContent=ch.show;
+ document.getElementById("tvGenre").textContent=ch.genre;
+ document.getElementById("tvRating").textContent=ch.rating;
+ document.getElementById("tvTime").textContent=ch.time;
+ document.getElementById("tvDesc").textContent=ch.desc;
+ document.getElementById("tvElapsed").textContent=`Παίζει τώρα · ${ch.remain}`;
+ document.getElementById("tvPct").textContent=ch.pct+"%";
+ document.getElementById("tvBar").style.width=ch.pct+"%";
+ document.getElementById("previewLogo").textContent=ch.name;
+ document.getElementById("panelNow").textContent=ch.show;
+ document.getElementById("panelNowSub").textContent=`${ch.time} · ${ch.remain}`;
+ document.getElementById("panelNext").textContent=ch.next;
+ document.getElementById("panelNextSub").textContent=ch.nextTime;
+ document.getElementById("mHero").style.backgroundImage=bg;
+ document.getElementById("mTitle").textContent=ch.show;
+ document.getElementById("mMeta").textContent=`${ch.name} · ${ch.time} · ${ch.rating==="LIVE"?"HD":"4K"}`;
+ document.getElementById("mDesc").textContent=ch.desc;
+ document.getElementById("mElapsed").textContent=ch.remain;
+ document.getElementById("mPct").textContent=ch.pct+"%";
+ document.getElementById("mBar").style.width=ch.pct+"%";
+}
+function renderFilters(){
+ const tf=document.getElementById("tvFilters"), mt=document.getElementById("mTabs");
+ tf.innerHTML=filters.map((f,i)=>`<button class="tv-filter ${f===activeFilter?'active':''} ${focusArea==='filters'&&i===filterIndex?'focused':''}" onclick="chooseFilter('${f}')">${f}</button>`).join("");
+ mt.innerHTML=filters.map(f=>`<button class="m-chip ${f===activeFilter?'active':''}" onclick="chooseFilter('${f}')">${f}</button>`).join("");
+}
+function renderCards(){
+ const list=filteredChannels(); if(!list.length){activeFilter="Όλα";return renderAll()}
+ if(selected>=channels.length) selected=0;
+ const tv=document.getElementById("tvRail"), mr=document.getElementById("mRail");
+ tv.innerHTML=list.map(ch=>{
+   const idx=channels.indexOf(ch);
+   return `<button class="tv-card ${idx===selected?'active-channel':''} ${focusArea==='cards'&&idx===selected?'focused':''}" style="background-image:url('${ch.img}')" onclick="selectChannel(${idx})">
+    <span class="card-live">LIVE</span><span class="card-fav">${idx===selected&&favorite?'♥':'♡'}</span>
+    <div class="card-info"><div class="card-name">${ch.name}</div><div class="card-show">${ch.show}</div><div class="card-bar"><i style="width:${ch.pct}%"></i></div></div></button>`;
+ }).join("");
+ mr.innerHTML=list.map(ch=>{
+   const idx=channels.indexOf(ch);
+   return `<div class="m-card" style="background-image:url('${ch.img}')" onclick="selectChannel(${idx})"><span class="card-live">LIVE</span><div class="card-info"><div class="card-name">${ch.name}</div><div class="card-show">${ch.show}</div><div class="card-bar"><i style="width:${ch.pct}%"></i></div></div></div>`;
+ }).join("");
+ const sports=channels.filter(c=>c.cat==="Αθλητικά").concat(channels.slice(0,3));
+ document.getElementById("sportsRail").innerHTML=sports.map(ch=>{
+   const idx=channels.indexOf(ch);
+   return `<div class="m-card" style="background-image:url('${ch.img}')" onclick="selectChannel(${idx})"><span class="card-live">LIVE</span><div class="card-info"><div class="card-name">${ch.name}</div><div class="card-show">${ch.show}</div></div></div>`;
+ }).join("");
+ document.getElementById("guideRows").innerHTML=channels.slice(0,4).map((ch,i)=>`<div class="guide-row" onclick="selectChannel(${i})"><div class="guide-logo">${ch.name.split(" ")[0]}</div><div><div class="guide-title">${ch.show}</div><div class="guide-show">${ch.name}</div></div><div class="guide-time">${ch.time.split("–")[0]}</div></div>`).join("");
+}
+function renderAll(){renderFilters();renderCards();setHero(channels[selected])}
+function chooseFilter(f){activeFilter=f;filterIndex=filters.indexOf(f);focusArea="cards";const l=filteredChannels();if(l.length)selected=channels.indexOf(l[0]);renderAll()}
+function selectChannel(i){selected=i;focusArea="cards";setHero(channels[i]);renderCards()}
+function toggleFav(){favorite=!favorite;toast(favorite?"Προστέθηκε στα αγαπημένα":"Αφαιρέθηκε από τα αγαπημένα");renderAll()}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500)}
+
+document.addEventListener("keydown",e=>{
+ if(!document.getElementById("tv").classList.contains("active"))return;
+ const list=filteredChannels();
+ if(e.key==="ArrowUp"){focusArea="filters";filterIndex=Math.max(0,filterIndex)}
+ if(e.key==="ArrowDown"){focusArea="cards"}
+ if(e.key==="ArrowLeft"){
+   if(focusArea==="filters")filterIndex=(filterIndex-1+filters.length)%filters.length;
+   else {let p=list.findIndex(c=>channels.indexOf(c)===selected);p=(p-1+list.length)%list.length;selected=channels.indexOf(list[p]);}
+ }
+ if(e.key==="ArrowRight"){
+   if(focusArea==="filters")filterIndex=(filterIndex+1)%filters.length;
+   else {let p=list.findIndex(c=>channels.indexOf(c)===selected);p=(p+1)%list.length;selected=channels.indexOf(list[p]);}
+ }
+ if(e.key==="Enter"){
+   if(focusArea==="filters")chooseFilter(filters[filterIndex]);
+   else toast("Άνοιγμα "+channels[selected].name);
+ }
+ setHero(channels[selected]);renderFilters();renderCards();
+});
+
+document.getElementById("tvBtn").onclick=()=>{document.getElementById("tv").classList.add("active");document.getElementById("mobile").classList.remove("active");tvBtn.classList.add("active");mobileBtn.classList.remove("active")}
+document.getElementById("mobileBtn").onclick=()=>{document.getElementById("mobile").classList.add("active");document.getElementById("tv").classList.remove("active");mobileBtn.classList.add("active");tvBtn.classList.remove("active")}
+renderAll();
+</script>
+</body>
+</html>

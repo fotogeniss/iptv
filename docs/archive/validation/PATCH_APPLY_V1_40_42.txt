@@ -1,0 +1,4 @@
+PATCH APPLY v1.40.42
+baseline=UltimatePlaylistLoaderAndroid_v1_40_41_architecture_safety.zip
+command=git apply --check + git apply + recursive tree comparison
+RESULT: PASS

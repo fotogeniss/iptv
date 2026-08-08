@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ · Minimal Seasons in Player</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#050505;--surface:#121212;--line:#292929;
+      --text:#f7f7f7;--muted:#8f8f94;--red:#ef1018;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#111;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button{font:inherit;color:inherit}
+    .phone{width:min(100%,430px);height:100dvh;margin:auto;overflow-y:auto;background:var(--bg);scrollbar-width:none;box-shadow:0 0 60px #000}
+    .phone::-webkit-scrollbar,.seasons::-webkit-scrollbar,.episodes::-webkit-scrollbar{display:none}
+
+    .player{position:sticky;z-index:10;top:0;aspect-ratio:16/9;background:
+      radial-gradient(circle at 68% 40%,rgba(239,16,24,.28),transparent 29%),
+      linear-gradient(145deg,#17202a,#050505 68%);overflow:hidden;box-shadow:0 8px 25px #000b}
+    .player:after{content:"PRELUDE+";position:absolute;inset:0;display:grid;place-items:center;font-size:27px;font-weight:950;letter-spacing:-1px}
+    .player-top{position:absolute;z-index:2;left:12px;right:12px;top:12px;display:flex;justify-content:space-between}
+    .round{width:36px;height:36px;border:0;border-radius:50%;background:#090909b8;font-size:20px}
+    .play{position:absolute;z-index:2;left:50%;top:50%;width:44px;height:44px;translate:-50% -50%;border:0;border-radius:50%;background:#090909c7;padding-left:4px}
+    .timeline{position:absolute;z-index:2;left:16px;right:16px;bottom:12px;height:3px;border-radius:8px;background:#616161}
+    .timeline i{display:block;width:42%;height:100%;border-radius:inherit;background:var(--red)}
+
+    main{padding:18px 18px 48px}
+    h1{margin:0;font-size:23px;letter-spacing:-.5px}
+    .meta{display:flex;gap:9px;align-items:center;margin-top:8px;color:#aaa;font-size:12px}.match{color:#49d36d;font-weight:850}.quality{padding:2px 5px;border:1px solid #aaa;border-radius:4px;color:#eee;font-size:9px;font-weight:900}
+    .summary{margin:13px 0 0;color:#bdbdbd;font-size:13px;line-height:1.55;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+    .more{padding:6px 0;border:0;background:none;font-size:11px;font-weight:900}
+
+    .section-head{display:flex;align-items:end;margin-top:27px;margin-bottom:7px}
+    .section-head h2{flex:1;margin:0;font-size:21px}.section-head span{color:#696969;font-size:10px}
+
+    /* Η μόνη αλλαγή που προτείνεται για την εφαρμογή: text tabs αντί για μεγάλο pill. */
+    .seasons{display:flex;gap:27px;overflow-x:auto;margin:0 -18px;padding:5px 18px 0;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+    .season{position:relative;flex:0 0 auto;height:44px;padding:0 1px 12px;border:0;background:transparent;color:#777;font-size:13px;font-weight:750;white-space:nowrap;scroll-snap-align:start}
+    .season.active{color:#fff}
+    .season.active:after{content:"";position:absolute;left:0;right:0;bottom:3px;height:3px;border-radius:3px;background:var(--red)}
+    .order{margin:10px 0 9px;padding:0;border:0;background:none;color:#d1d1d1;font-size:11px;font-weight:800}
+
+    .episode-shell{position:relative;border:1px solid var(--line);border-radius:17px;background:var(--surface);overflow:hidden}
+    .episodes{height:426px;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory}
+    .episode{height:142px;display:grid;grid-template-columns:132px minmax(0,1fr);gap:12px;align-items:center;padding:10px;border-bottom:1px solid #262626;scroll-snap-align:start}
+    .episode:last-child{border:0}
+    .still{position:relative;height:82px;border-radius:11px;overflow:hidden;background:linear-gradient(145deg,#474747,#141414)}
+    .still:before{content:"▶";position:absolute;left:50%;top:50%;translate:-50% -50%;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#080808ad;font-size:11px;padding-left:2px}
+    .still b{position:absolute;left:7px;bottom:6px;padding:3px 5px;border-radius:4px;background:#090909d9;font-size:8px}.still em{position:absolute;right:7px;top:6px;padding:3px 4px;border:1px solid #eee;border-radius:4px;background:#090909b8;font-size:7px;font-style:normal;font-weight:900}
+    .copy{min-width:0}.copy h3{margin:0;font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.copy p{margin:7px 0 0;color:#929292;font-size:10px;line-height:1.4;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+    .hint{text-align:center;margin-top:7px;color:#666;font-size:9px}
+
+    .toast{position:fixed;z-index:30;left:50%;bottom:20px;translate:-50% 0;width:max-content;max-width:calc(100% - 32px);padding:9px 13px;border:1px solid #333;border-radius:99px;background:#151515ed;color:#ddd;font-size:10px;opacity:0;pointer-events:none;transition:.2s}
+    .toast.show{opacity:1;translate:-50% -4px}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <header class="player">
+      <div class="player-top"><button class="round" aria-label="Πίσω">⌄</button><button class="round" aria-label="Ρυθμίσεις">⋮</button></div>
+      <button class="play" aria-label="Αναπαραγωγή">▶</button>
+      <div class="timeline"><i></i></div>
+    </header>
+
+    <main>
+      <h1 id="playingTitle">Hometown Cha-Cha-Cha · S1 E1</h1>
+      <div class="meta"><span class="match">98% Match</span><span>2021</span><span class="quality">FHD</span></div>
+      <p class="summary">Μια οδοντίατρος ανοίγει ιατρείο σε ένα παραθαλάσσιο χωριό και γνωρίζει έναν πολυπράγμονα κάτοικο που είναι το ακριβώς αντίθετό της.</p>
+      <button class="more">Περισσότερα</button>
+
+      <div class="section-head"><h2>Επεισόδια</h2><span>6 σεζόν</span></div>
+      <nav class="seasons" aria-label="Επιλογή σεζόν">
+        <button class="season active" data-season="1">Σεζόν 1</button>
+        <button class="season" data-season="2">Σεζόν 2</button>
+        <button class="season" data-season="3">Σεζόν 3</button>
+        <button class="season" data-season="4">Σεζόν 4</button>
+        <button class="season" data-season="5">Σεζόν 5</button>
+        <button class="season" data-season="6">Σεζόν 6</button>
+      </nav>
+      <button class="order">⇅ Από το πρώτο</button>
+
+      <section class="episode-shell">
+        <div class="episodes" id="episodes">
+          <article class="episode"><div class="still"><b>EP 1</b><em>FHD</em></div><div class="copy"><h3>1. Επεισόδιο 1</h3><p>Η Χε-τζιν εγκαθίσταται στο Γκονγκτζίν και μια απρόσμενη γνωριμία αλλάζει τα σχέδιά της.</p></div></article>
+          <article class="episode"><div class="still"><b>EP 2</b><em>FHD</em></div><div class="copy"><h3>2. Επεισόδιο 2</h3><p>Η πρώτη ημέρα στο νέο ιατρείο φέρνει εντάσεις, αλλά και μια αναπάντεχη βοήθεια.</p></div></article>
+          <article class="episode"><div class="still"><b>EP 3</b><em>HD</em></div><div class="copy"><h3>3. Επεισόδιο 3</h3><p>Ένα περιστατικό στο χωριό αποκαλύπτει μια διαφορετική πλευρά των δύο πρωταγωνιστών.</p></div></article>
+          <article class="episode"><div class="still"><b>EP 4</b><em>FHD</em></div><div class="copy"><h3>4. Επεισόδιο 4</h3><p>Οι κάτοικοι οργανώνουν μια γιορτή και οι ισορροπίες αρχίζουν να αλλάζουν.</p></div></article>
+          <article class="episode"><div class="still"><b>EP 5</b><em>4K</em></div><div class="copy"><h3>5. Επεισόδιο 5</h3><p>Μια παρεξήγηση δοκιμάζει τη νέα σχέση, ενώ το παρελθόν επιστρέφει.</p></div></article>
+        </div>
+      </section>
+      <div class="hint">Σύρε οριζόντια τις σεζόν · κάθετα μόνο μέσα στα επεισόδια</div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const toast = document.getElementById('toast');
+    const episodes = document.getElementById('episodes');
+    let toastTimer;
+
+    document.querySelectorAll('.season').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.season').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        button.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+        const season = button.dataset.season;
+        document.getElementById('playingTitle').textContent = `Hometown Cha-Cha-Cha · Σεζόν ${season}`;
+        document.querySelectorAll('.still b').forEach((item,index) => item.textContent = `EP ${index + 1}`);
+        episodes.scrollTo({top:0,behavior:'smooth'});
+        toast.textContent = `Φορτώθηκε η Σεζόν ${season}`;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1100);
+      });
+    });
+  </script>
+</body>
+</html>

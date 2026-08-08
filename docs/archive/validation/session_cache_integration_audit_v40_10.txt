@@ -1,0 +1,11 @@
+bounded catalog cache: PASS
+bounded M3U payload cache: PASS
+tab restore before network: PASS
+loadCurrent restore before network: PASS
+manual refresh invalidates source: PASS
+network loads populate cache: PASS
+category changes invalidate only on confirmation: PASS
+Stalker URL resolved at play: PASS
+no persistent catalog reads: PASS
+legacy disk cache still cleared: PASS
+CHECKS=10 FAILURES=0

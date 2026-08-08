@@ -1,0 +1,4 @@
+BROAD POLICY SEMANTIC COMPILE v1.40.43
+actual production policy sources + actual JVM test sources
+compiler diagnostics: 0
+RESULT: PASS

@@ -1,0 +1,21 @@
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:4:17: warning: parameter 'value' is never used
+    constructor(value: String)
+                ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:5:13: warning: parameter 'key' is never used
+    fun put(key: String, value: Any?): JSONObject = this
+            ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:5:26: warning: parameter 'value' is never used
+    fun put(key: String, value: Any?): JSONObject = this
+                         ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:6:19: warning: parameter 'key' is never used
+    fun optString(key: String): String = ""
+                  ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:7:19: warning: parameter 'key' is never used
+    fun optString(key: String, fallback: String): String = fallback
+                  ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:8:20: warning: parameter 'key' is never used
+    fun optBoolean(key: String, fallback: Boolean): Boolean = fallback
+                   ^
+mnt/data/upl_v14043_semantic/src/org/json/JSONObject.kt:9:16: warning: parameter 'key' is never used
+    fun optInt(key: String, fallback: Int): Int = fallback
+               ^

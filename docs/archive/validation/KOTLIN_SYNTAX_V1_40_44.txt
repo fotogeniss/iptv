@@ -1,0 +1,4 @@
+kotlinc_exit_code=1
+syntax_diagnostics=0
+NOTE: unresolved Android/Media3/project symbols are expected without the Android SDK/project classpath.
+RESULT: PASS
