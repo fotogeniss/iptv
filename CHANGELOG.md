@@ -5,6 +5,16 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Rebuilt source onboarding on mobile and Android TV around plain-language source
+  choices, premium iconography, mobile smart credential detection, field-level
+  errors, one atomic provider-test-and-add action, clear progress and confirmed
+  success before saving; successful additions now continue directly to Live TV,
+  and the dead account-login promise and misleading "maybe later" action are gone.
+- Added a functional mobile/TV source-onboarding prototype covering plain-language
+  method selection, smart credential detection, inline validation, one-step
+  connection testing and saving, clear progress, success counts, direct Live TV
+  entry and the proposed TV-to-phone pairing path. Pairing remains a design proposal
+  pending a separate security and architecture decision.
 - Added a maintained next-chat engineering handoff covering the verified project
   state, working constraints, delivered capabilities, release gates and the next
   approved design task.

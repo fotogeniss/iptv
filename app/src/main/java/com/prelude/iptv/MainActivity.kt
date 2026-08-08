@@ -210,6 +210,7 @@ private fun Root(vm: MainViewModel = viewModel()) {
             onAdd = { playlist ->
                 openFirstPlaylistAfterAdd = true
                 vm.addPlaylist(playlist)
+                vm.setContentType("live")
             },
         )
         return
@@ -368,7 +369,12 @@ private fun Root(vm: MainViewModel = viewModel()) {
             AddPlaylistScreen(
                 initialTab = addTab,
                 onDismiss = { showAdd = false },
-                onAdd = { showAdd = false; vm.addPlaylist(it); browsing = true }
+                onAdd = {
+                    showAdd = false
+                    vm.addPlaylist(it)
+                    vm.setContentType("live")
+                    browsing = true
+                }
             )
         }
     }

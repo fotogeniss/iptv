@@ -30,6 +30,9 @@ testing steps that cannot be completed from source code alone.
 - Xtream Codes live TV, movies, series, seasons and episodes.
 - Stalker/MAC portals with handshake and stream-link resolution.
 - Multiple saved sources, source editing, deletion and controlled refresh.
+- Guided mobile/TV source onboarding with plain-language choices, smart mobile
+  credential detection, field-level validation and provider verification before
+  a source can be saved.
 - Large-catalog normalization, session cache and progressive loading.
 - Search, favorites, watch history and continue watching.
 - User-controlled Home and category visibility/order on mobile.

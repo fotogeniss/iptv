@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ — Εύκολη προσθήκη πηγής</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050506;
+      --surface: #151518;
+      --surface-2: #202024;
+      --surface-3: #29292e;
+      --text: #f8f8f9;
+      --muted: #a6a6ad;
+      --subtle: #777780;
+      --line: rgba(255,255,255,.13);
+      --line-strong: rgba(255,255,255,.48);
+      --red: #e50914;
+      --red-dark: #a9060e;
+      --green: #51d68a;
+      --green-soft: rgba(81,214,138,.12);
+      --danger: #ff6d78;
+      --warning: #f0bd64;
+      --radius: 18px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #09090b; }
+    body {
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .52; }
+    .icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .icon.small { width: 17px; height: 17px; }
+    .icon.large { width: 30px; height: 30px; stroke-width: 1.65; }
+    .icon-sprite { position: fixed; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+
+    .prototype-bar {
+      position: fixed;
+      z-index: 100;
+      inset: 14px 14px auto auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(17,17,20,.9);
+      box-shadow: 0 16px 45px rgba(0,0,0,.36);
+      backdrop-filter: blur(16px);
+    }
+    .prototype-bar button {
+      min-height: 36px;
+      padding: 0 12px;
+      color: var(--muted);
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .prototype-bar button.active { color: #080809; background: #fff; }
+    .prototype-bar .reset { color: #ddd; border-left: 1px solid var(--line); border-radius: 0 9px 9px 0; }
+
+    .device-stage {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background:
+        radial-gradient(circle at 10% 90%, rgba(229,9,20,.09), transparent 35%),
+        radial-gradient(circle at 90% 8%, rgba(80,95,130,.09), transparent 28%),
+        #08080a;
+    }
+    .app {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 2% 42%, rgba(229,9,20,.14), transparent 31%),
+        radial-gradient(circle at 98% 12%, rgba(67,81,116,.14), transparent 27%),
+        linear-gradient(145deg,#030304,#080507 57%,#030304);
+    }
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1180px,100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: auto;
+      padding: max(22px,env(safe-area-inset-top)) 28px max(24px,env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      min-height: 54px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      white-space: nowrap;
+      font-size: 23px;
+      font-weight: 950;
+      letter-spacing: -.045em;
+    }
+    .brand-mark { position: relative; width: 30px; height: 27px; }
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      inset: 1px 0 1px 7px;
+      border-radius: 5px;
+      background: var(--red);
+      clip-path: polygon(0 0,100% 50%,0 100%);
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      left: 0;
+      top: 11px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .brand b { color: var(--red); }
+    .top-action {
+      width: max-content;
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      color: #d4d4d8;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(25,25,29,.82);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .top-action.back { justify-self: start; visibility: hidden; }
+    .top-action.back.visible { visibility: visible; }
+    .top-action.help { justify-self: end; }
+
+    .progress-rail {
+      width: min(540px,100%);
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 7px;
+      margin: 22px auto 0;
+    }
+    .progress-segment { height: 4px; border-radius: 99px; background: rgba(255,255,255,.11); overflow: hidden; }
+    .progress-segment::after { content: ""; display: block; width: 0; height: 100%; border-radius: inherit; background: var(--red); transition: width .35s var(--ease); }
+    .progress-segment.done::after { width: 100%; }
+
+    .view {
+      width: min(900px,100%);
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-self: center;
+      animation: enter .34s var(--ease);
+    }
+    .view.active { display: flex; }
+    @keyframes enter { from { opacity: 0; transform: translateY(10px); } }
+
+    .intro { max-width: 720px; margin: 48px auto 28px; text-align: center; }
+    .eyebrow { color: var(--red); font-size: 12px; font-weight: 950; letter-spacing: .14em; text-transform: uppercase; }
+    .intro h1 { margin: 10px 0 0; font-size: clamp(31px,4.2vw,53px); line-height: 1.03; letter-spacing: -.05em; }
+    .intro p { max-width: 660px; margin: 14px auto 0; color: #c7c7cc; font-size: 16px; line-height: 1.52; }
+
+    .smart-paste {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto 26px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.19);
+      border-radius: 19px;
+      background: rgba(25,25,29,.83);
+      box-shadow: 0 26px 80px rgba(0,0,0,.22);
+    }
+    .smart-paste-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+    .smart-title { display: flex; align-items: center; gap: 11px; }
+    .smart-title-icon { width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; color: #fff; border: 1px solid rgba(229,9,20,.3); border-radius: 11px; background: linear-gradient(145deg,rgba(229,9,20,.2),rgba(229,9,20,.06)); }
+    .smart-paste h2 { margin: 0; font-size: 17px; }
+    .smart-paste p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .recommended { padding: 5px 8px; color: #0b0b0c; border-radius: 7px; background: #fff; font-size: 9px; font-weight: 950; letter-spacing: .07em; }
+    .paste-row { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+    .paste-row textarea {
+      width: 100%;
+      min-height: 58px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 12px 14px;
+      color: #fff;
+      border: 1px solid var(--line);
+      outline: 0;
+      border-radius: 13px;
+      background: var(--surface-2);
+      line-height: 1.4;
+    }
+    .paste-row textarea:focus { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.1); }
+    .small-primary { min-width: 112px; border: 0; border-radius: 13px; color: #fff; background: var(--red); font-weight: 900; }
+    .demo-link { display: inline-flex; margin-top: 10px; padding: 0; color: #c9c9ce; border: 0; background: none; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+    .detect-message { min-height: 17px; margin-top: 8px; color: var(--danger); font-size: 11px; }
+
+    .or { display: flex; align-items: center; gap: 12px; max-width: 720px; margin: 0 auto 17px; color: var(--subtle); font-size: 11px; font-weight: 850; }
+    .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    .method-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 11px; }
+    .method {
+      min-height: 139px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 17px;
+      color: #dddde1;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(18,18,21,.76);
+      transition: transform .18s var(--ease), border-color .18s, background .18s;
+    }
+    .method:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.35); background: rgba(35,35,39,.88); }
+    .method-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 18px; color: #e7e7eb; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035)); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+    .method:hover .method-icon, .method:focus-visible .method-icon { color: #fff; border-color: rgba(229,9,20,.42); background: linear-gradient(145deg,rgba(229,9,20,.2),rgba(229,9,20,.06)); }
+    .method strong { font-size: 14px; }
+    .method span:last-child { margin-top: 5px; color: #929299; font-size: 10.5px; line-height: 1.35; }
+    .legal-note { margin: auto auto 0; padding-top: 26px; color: #777780; text-align: center; font-size: 10.5px; line-height: 1.4; }
+
+    .details-layout { display: grid; grid-template-columns: 245px 1fr; gap: 26px; margin-top: 40px; }
+    .summary-card, .form-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(20,20,23,.8);
+      box-shadow: 0 28px 80px rgba(0,0,0,.2);
+    }
+    .summary-card { height: max-content; padding: 21px; }
+    .summary-icon { width: 50px; height: 50px; display: grid; place-items: center; border: 1px solid rgba(229,9,20,.28); border-radius: 15px; background: linear-gradient(145deg,rgba(229,9,20,.19),rgba(229,9,20,.06)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+    .summary-card h2 { margin: 16px 0 5px; font-size: 19px; }
+    .summary-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .summary-card button { margin-top: 17px; padding: 0; color: #fff; border: 0; background: none; font-size: 11px; font-weight: 850; text-decoration: underline; text-underline-offset: 3px; }
+    .form-card { padding: 26px; }
+    .form-head { margin-bottom: 22px; }
+    .form-head h1 { margin: 0; font-size: 27px; letter-spacing: -.035em; }
+    .form-head p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .field { margin-bottom: 17px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .field label { display: flex; justify-content: space-between; gap: 10px; margin: 0 2px 7px; color: #d7d7dc; font-size: 12px; font-weight: 800; }
+    .optional { color: var(--subtle); font-size: 9px; font-weight: 700; }
+    .input-wrap { position: relative; }
+    .field input {
+      width: 100%;
+      min-height: 54px;
+      padding: 0 14px;
+      color: #fff;
+      border: 1px solid var(--line);
+      outline: 0;
+      border-radius: 13px;
+      background: var(--surface-2);
+    }
+    .field input::placeholder { color: #6f6f77; }
+    .field input:focus { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.1); }
+    .field.invalid input { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,109,120,.09); }
+    .field-error { min-height: 15px; margin: 5px 2px 0; color: var(--danger); font-size: 10px; }
+    .input-action { position: absolute; top: 7px; right: 7px; min-width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 9px; color: #ddd; background: transparent; }
+    .with-action input { padding-right: 54px; }
+    .advanced-toggle { display: flex; align-items: center; gap: 7px; margin: 1px 0 14px; padding: 0; color: #bdbdc2; border: 0; background: none; font-size: 11px; font-weight: 850; }
+    .advanced-toggle .icon { transition: transform .18s var(--ease); }
+    .advanced-toggle.open .icon { transform: rotate(180deg); }
+    .advanced { display: none; padding-top: 3px; }
+    .advanced.open { display: block; animation: enter .22s var(--ease); }
+    .security-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 2px; padding: 11px 12px; color: #a9a9af; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); font-size: 10.5px; line-height: 1.4; }
+    .security-note .icon { flex: 0 0 auto; color: var(--green); }
+    .form-actions { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 15px; margin-top: 22px; }
+    .exit-link { width: max-content; padding: 0; color: #aaaab0; border: 0; background: none; font-size: 12px; font-weight: 800; }
+    .primary {
+      min-width: 230px;
+      min-height: 54px;
+      padding: 0 21px;
+      color: #fff;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg,var(--red),#c70811);
+      box-shadow: 0 16px 38px rgba(229,9,20,.16);
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .tv-transfer {
+      display: none;
+      width: 100%;
+      min-height: 55px;
+      margin-bottom: 17px;
+      padding: 0 16px;
+      color: #fff;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 13px;
+      background: rgba(255,255,255,.06);
+      font-weight: 850;
+    }
+    .tv-transfer-content { display: grid; grid-template-columns: 38px 1fr; align-items: center; gap: 12px; }
+    .tv-transfer-icon { width: 38px; height: 38px; display: grid; place-items: center; color: #fff; border-radius: 10px; background: rgba(255,255,255,.08); }
+    .tv-transfer strong { display: block; }
+    .tv-transfer span span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 600; }
+
+    .status-wrap { max-width: 650px; margin: auto; text-align: center; }
+    .status-orbit { position: relative; width: 112px; height: 112px; display: grid; place-items: center; margin: 0 auto 30px; }
+    .status-orbit::before, .status-orbit::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.13); }
+    .status-orbit::after { border-top-color: var(--red); animation: spin 1s linear infinite; }
+    .status-icon { width: 78px; height: 78px; display: grid; place-items: center; color: #fff; border: 1px solid rgba(229,9,20,.28); border-radius: 24px; background: linear-gradient(145deg,rgba(229,9,20,.2),rgba(229,9,20,.07)); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-wrap h1 { margin: 0; font-size: 35px; letter-spacing: -.045em; }
+    .status-wrap > p { margin: 10px auto 28px; color: var(--muted); font-size: 14px; }
+    .checklist { display: grid; gap: 9px; max-width: 460px; margin: auto; text-align: left; }
+    .check-item { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 11px; min-height: 50px; padding: 0 14px; color: #85858c; border: 1px solid var(--line); border-radius: 13px; background: rgba(22,22,25,.76); font-size: 12px; transition: .25s; }
+    .check-item.active { color: #fff; border-color: rgba(255,255,255,.34); }
+    .check-item.done { color: #ddd; }
+    .check-dot { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.07); font-size: 11px; }
+    .check-item.done .check-dot { color: #07130c; background: var(--green); }
+    .check-state { color: var(--subtle); font-size: 10px; }
+
+    .success-wrap { max-width: 720px; margin: auto; text-align: center; }
+    .success-mark { width: 86px; height: 86px; display: grid; place-items: center; margin: 0 auto 22px; color: #07130c; border-radius: 28px; background: linear-gradient(145deg,#69e79c,#45c77c); box-shadow: 0 20px 55px rgba(81,214,138,.18), inset 0 1px 0 rgba(255,255,255,.5); }
+    .success-wrap h1 { margin: 0; font-size: 39px; letter-spacing: -.05em; }
+    .success-wrap > p { margin: 10px auto 25px; color: #bbbcc1; font-size: 14px; }
+    .counts { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 24px; }
+    .count-card { padding: 17px 12px; border: 1px solid var(--line); border-radius: 15px; background: rgba(23,23,26,.8); }
+    .count-card strong { display: block; font-size: 23px; }
+    .count-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .success-primary { width: 100%; min-height: 56px; border: 0; border-radius: 15px; color: #fff; background: var(--red); font-weight: 950; }
+    .success-secondary { width: 100%; min-height: 44px; margin-top: 7px; color: #c9c9ce; border: 0; background: transparent; font-size: 12px; font-weight: 800; }
+
+    .catalog-view { width: 100%; max-width: none; }
+    .catalog-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 34px 0 20px; }
+    .catalog-header h1 { margin: 0; font-size: 31px; letter-spacing: -.04em; }
+    .catalog-header p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .ready-pill { padding: 8px 12px; color: var(--green); border: 1px solid rgba(81,214,138,.3); border-radius: 99px; background: var(--green-soft); font-size: 10px; font-weight: 900; }
+    .catalog-layout { display: grid; grid-template-columns: 210px 1fr; gap: 17px; }
+    .categories, .channels { padding: 12px; border: 1px solid var(--line); border-radius: 17px; background: rgba(18,18,21,.78); }
+    .category { width: 100%; min-height: 46px; padding: 0 13px; color: #aaaab0; text-align: left; border: 0; border-radius: 11px; background: transparent; font-size: 12px; font-weight: 800; }
+    .category.active { color: #fff; background: rgba(255,255,255,.09); }
+    .channels { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .channel { min-height: 70px; display: grid; grid-template-columns: 45px 1fr auto; align-items: center; gap: 11px; padding: 10px; color: #fff; text-align: left; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.025); }
+    .channel-logo { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 11px; background: linear-gradient(145deg,#2e2e34,#17171a); font-size: 17px; font-weight: 950; }
+    .channel strong { display: block; font-size: 12px; }
+    .channel span { display: block; margin-top: 4px; color: #8e8e95; font-size: 9px; }
+    .play { width: 30px; height: 30px; display: grid; place-items: center; color: #fff; border-radius: 50%; background: var(--red); box-shadow: 0 8px 20px rgba(229,9,20,.18); }
+    .play .icon { width: 14px; height: 14px; margin-left: 1px; fill: currentColor; stroke-width: 1.5; }
+
+    .modal {
+      position: fixed;
+      z-index: 120;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(0,0,0,.76);
+      backdrop-filter: blur(12px);
+    }
+    .modal.open { display: flex; }
+    .dialog { width: min(500px,100%); padding: 25px; border: 1px solid var(--line); border-radius: 21px; background: #18181c; box-shadow: 0 36px 110px #000; }
+    .dialog h2 { margin: 0; font-size: 23px; }
+    .dialog p { margin: 10px 0 0; color: #b4b4ba; font-size: 13px; line-height: 1.55; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 21px; }
+    .dialog button { min-height: 45px; padding: 0 17px; border: 1px solid var(--line); border-radius: 12px; color: #fff; background: var(--surface-2); font-weight: 850; }
+    .dialog button.primary-dialog { color: #09090a; background: #fff; }
+    .qr { width: 158px; height: 158px; display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin: 20px auto; padding: 11px; border-radius: 13px; background: #fff; }
+    .qr i { background: #0a0a0b; }
+    .pair-code { text-align: center; font-size: 26px; font-weight: 950; letter-spacing: .16em; }
+    .toast { position: fixed; z-index: 150; left: 50%; bottom: 25px; max-width: calc(100% - 34px); padding: 12px 17px; color: #080809; border-radius: 99px; background: #fff; box-shadow: 0 18px 55px #000; font-size: 11px; font-weight: 900; opacity: 0; transform: translate(-50%,16px); transition: .22s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    .focusable:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 0;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(255,255,255,.14);
+    }
+
+    .app.tv-mode .shell { width: min(1640px,100%); padding: clamp(30px,3vw,58px) clamp(50px,5vw,94px); }
+    .app.tv-mode .brand { font-size: clamp(25px,2vw,36px); }
+    .app.tv-mode .brand-mark { width: 41px; height: 37px; }
+    .app.tv-mode .brand-mark::after { width: 7px; height: 7px; top: 15px; }
+    .app.tv-mode .view { width: min(1330px,100%); }
+    .app.tv-mode .intro { margin-top: clamp(38px,4vw,70px); }
+    .app.tv-mode .intro h1 { font-size: clamp(43px,4vw,68px); }
+    .app.tv-mode .intro p { font-size: clamp(16px,1.2vw,21px); }
+    .app.tv-mode .smart-paste { display: none; }
+    .app.tv-mode .or { display: none; }
+    .app.tv-mode .method-grid { grid-template-columns: repeat(4,1fr); margin-top: 26px; }
+    .app.tv-mode .method { min-height: clamp(170px,15vw,230px); padding: clamp(20px,2vw,30px); }
+    .app.tv-mode .method-icon { width: 58px; height: 58px; }
+    .app.tv-mode .method-icon .icon { width: 29px; height: 29px; }
+    .app.tv-mode .method strong { font-size: clamp(16px,1.25vw,22px); }
+    .app.tv-mode .method span:last-child { font-size: clamp(11px,.8vw,14px); }
+    .app.tv-mode .details-layout { grid-template-columns: minmax(290px,.7fr) minmax(580px,1.3fr); gap: clamp(28px,4vw,64px); margin-top: clamp(50px,5vw,80px); }
+    .app.tv-mode .summary-card, .app.tv-mode .form-card { padding: clamp(25px,2.3vw,38px); }
+    .app.tv-mode .tv-transfer { display: block; }
+    .app.tv-mode .field input { min-height: 62px; font-size: 17px; }
+    .app.tv-mode .primary { min-height: 62px; min-width: 285px; font-size: 17px; }
+    .app.tv-mode .status-wrap, .app.tv-mode .success-wrap { transform: scale(1.14); }
+    .app.tv-mode .catalog-layout { grid-template-columns: 280px 1fr; }
+    .app.tv-mode .channels { grid-template-columns: repeat(3,1fr); }
+    .app.tv-mode .channel { min-height: 88px; }
+
+    @media (max-width: 720px) {
+      .prototype-bar { inset: 9px 9px auto auto; transform: scale(.92); transform-origin: top right; }
+      .shell { padding: 18px 18px 23px; }
+      .topbar { margin-top: 44px; }
+      .top-action { min-height: 38px; padding: 0 10px; font-size: 11px; }
+      .brand { font-size: 20px; }
+      .brand-mark { width: 27px; height: 25px; }
+      .intro { margin: 30px auto 22px; }
+      .intro h1 { font-size: 31px; }
+      .intro p { font-size: 13px; }
+      .smart-paste { padding: 15px; margin-bottom: 20px; }
+      .paste-row { grid-template-columns: 1fr; }
+      .paste-row textarea { min-height: 70px; }
+      .small-primary { min-height: 45px; }
+      .method-grid { grid-template-columns: 1fr 1fr; }
+      .method { min-height: 125px; }
+      .details-layout { grid-template-columns: 1fr; margin-top: 27px; }
+      .summary-card { display: flex; align-items: center; gap: 12px; padding: 13px; }
+      .summary-icon { flex: 0 0 auto; width: 40px; height: 40px; }
+      .summary-card h2 { margin: 0 0 3px; font-size: 15px; }
+      .summary-card p { font-size: 10px; }
+      .summary-card button { margin: 0 0 0 auto; }
+      .form-card { padding: 19px; }
+      .field-row { grid-template-columns: 1fr; gap: 0; }
+      .form-actions { grid-template-columns: 1fr; }
+      .primary { width: 100%; grid-row: 1; }
+      .exit-link { width: 100%; min-height: 42px; grid-row: 2; }
+      .status-wrap, .success-wrap { margin-top: 45px; }
+      .counts { gap: 7px; }
+      .count-card { padding: 14px 7px; }
+      .count-card strong { font-size: 19px; }
+      .catalog-header { margin-top: 28px; }
+      .catalog-layout { grid-template-columns: 1fr; }
+      .categories { display: flex; gap: 5px; overflow-x: auto; }
+      .category { flex: 0 0 auto; width: max-content; }
+      .channels { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/><path d="M9 12h10"/></symbol>
+    <symbol id="icon-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.5 1.2c0 1.8-2.3 2.1-2.3 3.6"/><path d="M12 17h.01"/></symbol>
+    <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.1 3.2A3 3 0 0 1 9 8.1L5.8 9.2 9 10.3a3 3 0 0 1 1.9 1.9L12 15.4l1.1-3.2a3 3 0 0 1 1.9-1.9l3.2-1.1L15 8.1a3 3 0 0 1-1.9-1.9L12 3Z"/><path d="m5.5 15 .6 1.7a2 2 0 0 0 1.2 1.2l1.7.6-1.7.6a2 2 0 0 0-1.2 1.2L5.5 22l-.6-1.7a2 2 0 0 0-1.2-1.2L2 18.5l1.7-.6a2 2 0 0 0 1.2-1.2l.6-1.7Z"/></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="M10.5 13.5a4.2 4.2 0 0 0 6.3.4l2.1-2.1a4.2 4.2 0 0 0-5.9-5.9l-1.2 1.2"/><path d="M13.5 10.5a4.2 4.2 0 0 0-6.3-.4l-2.1 2.1a4.2 4.2 0 0 0 5.9 5.9l1.2-1.2"/></symbol>
+    <symbol id="icon-credentials" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M6 16c.7-2 2-3 3-3s2.3 1 3 3"/><path d="M15 9h3M15 13h3"/></symbol>
+    <symbol id="icon-portal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2.5"/><path d="M8 21h8M12 18v3"/><path d="M8 11a4 4 0 0 1 8 0"/><path d="M10 11a2 2 0 0 1 4 0"/><path d="M12 11h.01"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></symbol>
+    <symbol id="icon-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zM19 15h2v6h-6v-2M15 11v2M11 15h2M11 19h2v2"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="icon-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18"/><path d="M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2 2.6M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.3 0 2.5-.3 3.5-.7"/></symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.8 8.1 7 10 4.2-1.9 7-5.3 7-10V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="icon-network" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/><path d="M8 7h.01M8 17h.01M16 7h1M16 17h1M12 10v4"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
+  </svg>
+
+  <nav class="prototype-bar" aria-label="Έλεγχος prototype">
+    <button class="active" data-device="mobile">Κινητό</button>
+    <button data-device="tv">Τηλεόραση</button>
+    <button class="reset" id="resetPrototype">Επαναφορά</button>
+  </nav>
+
+  <main class="device-stage">
+    <div class="app" id="app">
+      <div class="shell">
+        <header class="topbar">
+          <button class="top-action back focusable" id="backButton"><svg class="icon small"><use href="#icon-arrow-left"></use></svg>Πίσω</button>
+          <div class="brand"><span class="brand-mark" aria-hidden="true"></span>PRELUDE<b>+</b></div>
+          <button class="top-action help focusable" id="helpButton"><svg class="icon small"><use href="#icon-help"></use></svg>Βοήθεια</button>
+        </header>
+
+        <div class="progress-rail" id="progressRail" aria-label="Πρόοδος προσθήκης">
+          <span class="progress-segment done"></span><span class="progress-segment"></span><span class="progress-segment"></span>
+        </div>
+
+        <section class="view active" data-view="choose">
+          <div class="intro">
+            <div class="eyebrow">Προσθήκη πηγής</div>
+            <h1>Τι στοιχεία σου έδωσε ο πάροχος;</h1>
+            <p>Δεν χρειάζεται να γνωρίζεις τεχνικούς όρους. Επικόλλησε ό,τι σου έστειλε ή διάλεξε τι βλέπεις μπροστά σου.</p>
+          </div>
+
+          <section class="smart-paste" aria-labelledby="pasteTitle">
+            <div class="smart-paste-head">
+              <div class="smart-title"><span class="smart-title-icon"><svg class="icon"><use href="#icon-sparkles"></use></svg></span><div><h2 id="pasteTitle">Έξυπνη επικόλληση</h2><p>Αναγνωρίζουμε το είδος και συμπληρώνουμε τα σωστά πεδία.</p></div></div>
+              <span class="recommended">ΠΡΟΤΕΙΝΟΜΕΝΟ</span>
+            </div>
+            <div class="paste-row">
+              <textarea id="smartInput" placeholder="Επικόλλησε σύνδεσμο ή στοιχεία σύνδεσης…" aria-label="Στοιχεία παρόχου"></textarea>
+              <button class="small-primary focusable" id="detectButton">Αναγνώριση</button>
+            </div>
+            <button class="demo-link" id="demoPaste">Βάλε ασφαλή δοκιμαστικά στοιχεία</button>
+            <div class="detect-message" id="detectMessage" aria-live="polite"></div>
+          </section>
+
+          <div class="or">ή διάλεξε τι έχεις</div>
+          <div class="method-grid" role="list">
+            <button class="method focusable" data-method="url"><span class="method-icon"><svg class="icon"><use href="#icon-link"></use></svg></span><strong>Έναν σύνδεσμο</strong><span>Ένα URL που τελειώνει συνήθως σε .m3u ή περιέχει get.php</span></button>
+            <button class="method focusable" data-method="xtream"><span class="method-icon"><svg class="icon"><use href="#icon-credentials"></use></svg></span><strong>Server και κωδικούς</strong><span>Διεύθυνση server, username και password</span></button>
+            <button class="method focusable" data-method="mac"><span class="method-icon"><svg class="icon"><use href="#icon-portal"></use></svg></span><strong>Portal και MAC</strong><span>Portal URL και διεύθυνση MAC</span></button>
+            <button class="method focusable" data-method="file"><span class="method-icon"><svg class="icon"><use href="#icon-file"></use></svg></span><strong>Ένα αρχείο</strong><span>Αρχείο M3U ή M3U8 αποθηκευμένο στη συσκευή</span></button>
+          </div>
+          <p class="legal-note">Το PRELUDE+ είναι media player. Δεν παρέχει περιεχόμενο, λίστες ή συνδρομές IPTV.</p>
+        </section>
+
+        <section class="view" data-view="details">
+          <div class="details-layout">
+            <aside class="summary-card">
+              <div class="summary-icon"><svg class="icon large"><use id="summaryIconUse" href="#icon-link"></use></svg></div>
+              <div><h2 id="summaryTitle">Σύνδεσμος λίστας</h2><p id="summaryText">Θα ελέγξουμε ότι η λίστα απαντά πριν την αποθηκεύσουμε.</p></div>
+              <button id="changeMethod">Αλλαγή</button>
+            </aside>
+
+            <form class="form-card" id="sourceForm" novalidate>
+              <div class="form-head"><h1 id="formTitle">Συμπλήρωσε τον σύνδεσμο</h1><p id="formSubtitle">Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.</p></div>
+
+              <button class="tv-transfer focusable" type="button" id="phoneTransfer"><span class="tv-transfer-content"><span class="tv-transfer-icon"><svg class="icon"><use href="#icon-qr"></use></svg></span><span><strong>Συνέχεια από κινητό</strong><span>Σκάναρε QR και γράψε τα στοιχεία εύκολα από το κινητό σου</span></span></span></button>
+
+              <div class="method-fields" data-fields="url">
+                <div class="field" data-field="playlistUrl"><label for="playlistUrl">Σύνδεσμος λίστας</label><input id="playlistUrl" type="url" inputmode="url" placeholder="http://example.com/playlist.m3u"><div class="field-error"></div></div>
+              </div>
+              <div class="method-fields" data-fields="xtream" hidden>
+                <div class="field" data-field="server"><label for="server">Διεύθυνση server</label><input id="server" type="url" inputmode="url" placeholder="http://example.com:8080"><div class="field-error"></div></div>
+                <div class="field-row">
+                  <div class="field" data-field="username"><label for="username">Όνομα χρήστη</label><input id="username" autocomplete="username" placeholder="Username"><div class="field-error"></div></div>
+                  <div class="field" data-field="password"><label for="password">Κωδικός</label><div class="input-wrap with-action"><input id="password" type="password" autocomplete="current-password" placeholder="Password"><button class="input-action focusable" id="showPassword" type="button" aria-label="Εμφάνιση κωδικού"><svg class="icon small"><use id="passwordIconUse" href="#icon-eye"></use></svg></button></div><div class="field-error"></div></div>
+                </div>
+              </div>
+              <div class="method-fields" data-fields="mac" hidden>
+                <div class="field" data-field="portal"><label for="portal">Διεύθυνση portal</label><input id="portal" type="url" inputmode="url" placeholder="http://portal.example.com/c/"><div class="field-error"></div></div>
+                <div class="field" data-field="mac"><label for="mac">MAC address</label><input id="mac" maxlength="17" placeholder="00:1A:79:00:00:00"><div class="field-error"></div></div>
+              </div>
+              <div class="method-fields" data-fields="file" hidden>
+                <div class="field" data-field="file"><label for="playlistFile">Αρχείο M3U ή M3U8</label><input id="playlistFile" type="file" accept=".m3u,.m3u8,text/plain"><div class="field-error"></div></div>
+              </div>
+
+              <button class="advanced-toggle focusable" id="advancedToggle" type="button"><svg class="icon small"><use href="#icon-chevron-down"></use></svg><span>Περισσότερες επιλογές</span></button>
+              <div class="advanced" id="advancedFields">
+                <div class="field-row">
+                  <div class="field"><label for="sourceName">Όνομα πηγής <span class="optional">ΠΡΟΑΙΡΕΤΙΚΟ</span></label><input id="sourceName" placeholder="π.χ. Η λίστα μου"><div class="field-error"></div></div>
+                  <div class="field"><label for="epgUrl">Οδηγός προγράμματος <span class="optional">ΠΡΟΑΙΡΕΤΙΚΟ</span></label><input id="epgUrl" type="url" placeholder="EPG URL"><div class="field-error"></div></div>
+                </div>
+              </div>
+
+              <div class="security-note"><svg class="icon small"><use href="#icon-shield"></use></svg><span>Τα στοιχεία αποθηκεύονται κρυπτογραφημένα σε αυτή τη συσκευή και στέλνονται μόνο στον server που πρόσθεσες.</span></div>
+              <div class="form-actions">
+                <button class="exit-link focusable" type="button" id="exitButton">Έξοδος</button>
+                <button class="primary focusable" type="submit">Έλεγχος και προσθήκη</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="view" data-view="checking">
+          <div class="status-wrap">
+            <div class="status-orbit"><div class="status-icon"><svg class="icon large"><use href="#icon-network"></use></svg></div></div>
+            <h1>Ελέγχουμε τη σύνδεση</h1>
+            <p>Μείνε εδώ για λίγα δευτερόλεπτα. Δεν χρειάζεται να κάνεις κάτι άλλο.</p>
+            <div class="checklist">
+              <div class="check-item" data-check="address"><span class="check-dot">1</span><span>Έλεγχος διεύθυνσης</span><span class="check-state">Αναμονή</span></div>
+              <div class="check-item" data-check="access"><span class="check-dot">2</span><span>Σύνδεση με τον πάροχο</span><span class="check-state">Αναμονή</span></div>
+              <div class="check-item" data-check="catalog"><span class="check-dot">3</span><span>Προετοιμασία περιεχομένου</span><span class="check-state">Αναμονή</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-view="success">
+          <div class="success-wrap">
+            <div class="success-mark"><svg class="icon large"><use href="#icon-check"></use></svg></div>
+            <h1>Η πηγή προστέθηκε</h1>
+            <p>Η σύνδεση λειτουργεί και το περιεχόμενό σου είναι έτοιμο.</p>
+            <div class="counts"><div class="count-card"><strong>1.284</strong><span>Κανάλια</span></div><div class="count-card"><strong>18.620</strong><span>Ταινίες</span></div><div class="count-card"><strong>3.405</strong><span>Σειρές</span></div></div>
+            <button class="success-primary focusable" id="openContent">Άνοιγμα Live TV</button>
+            <button class="success-secondary focusable" id="openHome">Μετάβαση στην αρχική</button>
+          </div>
+        </section>
+
+        <section class="view catalog-view" data-view="catalog">
+          <div class="catalog-header"><div><h1>Live TV</h1><p>Η πηγή φορτώθηκε. Μπορείς ήδη να επιλέξεις κανάλι.</p></div><span class="ready-pill">● ΣΥΝΔΕΔΕΜΕΝΟ</span></div>
+          <div class="catalog-layout">
+            <nav class="categories"><button class="category active">Όλα τα κανάλια</button><button class="category">Ελληνικά</button><button class="category">Αθλητικά</button><button class="category">Ειδήσεις</button><button class="category">Παιδικά</button></nav>
+            <div class="channels">
+              <button class="channel focusable"><span class="channel-logo">1</span><span><strong>Prelude One</strong><span>Τώρα: Πρωινή ενημέρωση</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+              <button class="channel focusable"><span class="channel-logo">N</span><span><strong>News 24</strong><span>Τώρα: Δελτίο ειδήσεων</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+              <button class="channel focusable"><span class="channel-logo">S</span><span><strong>Sports Live</strong><span>Τώρα: Live αγώνας</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+              <button class="channel focusable"><span class="channel-logo">C</span><span><strong>Cinema Plus</strong><span>Τώρα: Βραδινή ταινία</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+              <button class="channel focusable"><span class="channel-logo">K</span><span><strong>Kids World</strong><span>Τώρα: Παιδική ζώνη</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+              <button class="channel focusable"><span class="channel-logo">D</span><span><strong>Documentary</strong><span>Τώρα: Ο πλανήτης μας</span></span><b class="play"><svg class="icon"><use href="#icon-play"></use></svg></b></button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="dialog"><h2 id="helpTitle">Πού βρίσκω τα στοιχεία;</h2><p>Χρησιμοποίησε τα στοιχεία που σου έδωσε ο νόμιμος πάροχος περιεχομένου. Μπορείς να επικολλήσεις ολόκληρο το μήνυμα και το PRELUDE+ θα προσπαθήσει να αναγνωρίσει τον σωστό τρόπο σύνδεσης.</p><div class="dialog-actions"><button class="primary-dialog" data-close-modal>Κατάλαβα</button></div></div>
+  </div>
+
+  <div class="modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+    <div class="dialog"><h2 id="qrTitle">Συνέχεια από κινητό</h2><p>Σκάναρε τον κωδικό με το κινητό σου ή άνοιξε το <b>prelude.plus/link</b> και γράψε τον παρακάτω προσωρινό κωδικό.</p><div class="qr" aria-label="Δοκιμαστικός κωδικός QR" id="qrGrid"></div><div class="pair-code">P7K 4M2</div><p style="text-align:center">Ο κωδικός λήγει σε 10 λεπτά και χρησιμοποιείται μόνο μία φορά.</p><div class="dialog-actions"><button data-close-modal>Ακύρωση</button><button class="primary-dialog" id="simulateTransfer">Προσομοίωση μεταφοράς</button></div></div>
+  </div>
+
+  <div class="modal" id="exitModal" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+    <div class="dialog"><h2 id="exitTitle">Έξοδος από την προσθήκη;</h2><p>Χωρίς πηγή δεν υπάρχει διαθέσιμο περιεχόμενο για αναπαραγωγή. Τα στοιχεία που συμπλήρωσες δεν θα αποθηκευτούν.</p><div class="dialog-actions"><button data-close-modal>Παραμονή</button><button class="primary-dialog" id="confirmExit">Έξοδος</button></div></div>
+  </div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script>
+    const app = document.getElementById('app');
+    const views = [...document.querySelectorAll('.view')];
+    const progressSegments = [...document.querySelectorAll('.progress-segment')];
+    const backButton = document.getElementById('backButton');
+    const metadata = {
+      url: { icon:'icon-link', title:'Σύνδεσμος λίστας', text:'Θα ελέγξουμε ότι η λίστα απαντά πριν την αποθηκεύσουμε.', form:'Συμπλήρωσε τον σύνδεσμο', subtitle:'Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.' },
+      xtream: { icon:'icon-credentials', title:'Server και κωδικοί', text:'Χρειαζόμαστε server, username και password.', form:'Συμπλήρωσε τα στοιχεία σύνδεσης', subtitle:'Αντέγραψε τα τρία στοιχεία ακριβώς όπως εμφανίζονται στο μήνυμα του παρόχου.' },
+      mac: { icon:'icon-portal', title:'Portal και MAC', text:'Θα μορφοποιήσουμε αυτόματα τη MAC address.', form:'Συμπλήρωσε Portal και MAC', subtitle:'Χρησιμοποίησε το Portal URL και τη MAC address που σου έδωσε ο πάροχος.' },
+      file: { icon:'icon-file', title:'Τοπικό αρχείο', text:'Το αρχείο θα διαβαστεί μόνο σε αυτή τη συσκευή.', form:'Διάλεξε το αρχείο σου', subtitle:'Υποστηρίζονται αρχεία M3U και M3U8 από τη συσκευή.' }
+    };
+    let currentView = 'choose';
+    let selectedMethod = 'url';
+    let checkingTimers = [];
+
+    function showView(name) {
+      currentView = name;
+      views.forEach(view => view.classList.toggle('active', view.dataset.view === name));
+      const step = name === 'choose' ? 1 : name === 'details' ? 2 : 3;
+      progressSegments.forEach((segment,index) => segment.classList.toggle('done', index < step));
+      document.getElementById('progressRail').style.visibility = name === 'catalog' ? 'hidden' : 'visible';
+      backButton.classList.toggle('visible', ['details','success','catalog'].includes(name));
+      window.scrollTo({top:0,behavior:'smooth'});
+      setTimeout(() => views.find(view => view.dataset.view === name)?.querySelector('button:not([disabled]),input,textarea')?.focus(), 80);
+    }
+
+    function chooseMethod(method, values = {}) {
+      selectedMethod = method;
+      const info = metadata[method];
+      document.getElementById('summaryIconUse').setAttribute('href',`#${info.icon}`);
+      document.getElementById('summaryTitle').textContent = info.title;
+      document.getElementById('summaryText').textContent = info.text;
+      document.getElementById('formTitle').textContent = info.form;
+      document.getElementById('formSubtitle').textContent = info.subtitle;
+      document.querySelectorAll('.method-fields').forEach(fields => fields.hidden = fields.dataset.fields !== method);
+      Object.entries(values).forEach(([id,value]) => { const input = document.getElementById(id); if (input) input.value = value; });
+      clearErrors();
+      showView('details');
+    }
+
+    document.querySelectorAll('[data-method]').forEach(button => button.addEventListener('click', () => chooseMethod(button.dataset.method)));
+    document.getElementById('changeMethod').addEventListener('click', () => showView('choose'));
+
+    function normalizeUrl(value) {
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
+    }
+    function isHttpUrl(value) { try { return ['http:','https:'].includes(new URL(value).protocol); } catch { return false; } }
+
+    function detectDetails(raw) {
+      const text = raw.trim();
+      if (!text) return null;
+      const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+      const macMatch = text.match(/(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}/i);
+      if (macMatch && urlMatch) return { method:'mac', values:{ portal:urlMatch[0], mac:macMatch[0].toUpperCase().replace(/-/g,':') } };
+      if (urlMatch) {
+        try {
+          const url = new URL(urlMatch[0]);
+          const username = url.searchParams.get('username');
+          const password = url.searchParams.get('password');
+          if (username && password) return { method:'xtream', values:{ server:`${url.protocol}//${url.host}`, username, password } };
+        } catch {}
+        return { method:'url', values:{ playlistUrl:urlMatch[0] } };
+      }
+      const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      if (lines.length >= 3 && isHttpUrl(normalizeUrl(lines[0]))) return { method:'xtream', values:{ server:normalizeUrl(lines[0]), username:lines[1], password:lines[2] } };
+      return null;
+    }
+
+    document.getElementById('detectButton').addEventListener('click', () => {
+      const result = detectDetails(document.getElementById('smartInput').value);
+      if (!result) { document.getElementById('detectMessage').textContent = 'Δεν αναγνωρίσαμε τα στοιχεία. Διάλεξε παρακάτω τι σου έδωσε ο πάροχος.'; return; }
+      document.getElementById('detectMessage').textContent = '';
+      chooseMethod(result.method,result.values);
+      showToast(`Αναγνωρίστηκε: ${metadata[result.method].title}`);
+    });
+    document.getElementById('demoPaste').addEventListener('click', () => {
+      document.getElementById('smartInput').value = 'http://demo.provider.test/get.php?username=demo_user&password=demo_pass&type=m3u_plus';
+      document.getElementById('detectMessage').textContent = 'Έτοιμο. Πάτησε «Αναγνώριση» για να δεις τη διαδρομή.';
+    });
+
+    document.getElementById('mac').addEventListener('input', event => {
+      const hex = event.target.value.toUpperCase().replace(/[^0-9A-F]/g,'').slice(0,12);
+      event.target.value = hex.match(/.{1,2}/g)?.join(':') || '';
+    });
+    document.getElementById('showPassword').addEventListener('click', event => {
+      const password = document.getElementById('password');
+      password.type = password.type === 'password' ? 'text' : 'password';
+      document.getElementById('passwordIconUse').setAttribute('href',password.type === 'password' ? '#icon-eye' : '#icon-eye-off');
+      event.currentTarget.setAttribute('aria-label',password.type === 'password' ? 'Εμφάνιση κωδικού' : 'Απόκρυψη κωδικού');
+    });
+    document.getElementById('advancedToggle').addEventListener('click', event => {
+      const open = document.getElementById('advancedFields').classList.toggle('open');
+      event.currentTarget.classList.toggle('open',open);
+      event.currentTarget.querySelector('span').textContent = open ? 'Λιγότερες επιλογές' : 'Περισσότερες επιλογές';
+    });
+
+    function clearErrors() {
+      document.querySelectorAll('.field.invalid').forEach(field => field.classList.remove('invalid'));
+      document.querySelectorAll('.field-error').forEach(error => error.textContent = '');
+    }
+    function fieldError(id,message) {
+      const field = document.querySelector(`[data-field="${id}"]`);
+      if (!field) return;
+      field.classList.add('invalid');
+      field.querySelector('.field-error').textContent = message;
+    }
+    function validate() {
+      clearErrors();
+      let firstInvalid = null;
+      const requireUrl = (id,label) => {
+        const input = document.getElementById(id);
+        const normalized = normalizeUrl(input.value);
+        if (normalized && normalized !== input.value) input.value = normalized;
+        if (!isHttpUrl(normalized)) { fieldError(id,`${label}: γράψε μια πλήρη διεύθυνση.`); firstInvalid ||= input; }
+      };
+      if (selectedMethod === 'url') requireUrl('playlistUrl','Σύνδεσμος');
+      if (selectedMethod === 'xtream') {
+        requireUrl('server','Server');
+        if (!document.getElementById('username').value.trim()) { fieldError('username','Συμπλήρωσε το όνομα χρήστη.'); firstInvalid ||= document.getElementById('username'); }
+        if (!document.getElementById('password').value) { fieldError('password','Συμπλήρωσε τον κωδικό.'); firstInvalid ||= document.getElementById('password'); }
+      }
+      if (selectedMethod === 'mac') {
+        requireUrl('portal','Portal');
+        if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(document.getElementById('mac').value)) { fieldError('mac','Χρησιμοποίησε μορφή 00:1A:79:00:00:00.'); firstInvalid ||= document.getElementById('mac'); }
+      }
+      if (selectedMethod === 'file' && !document.getElementById('playlistFile').files.length) { fieldError('file','Διάλεξε αρχείο M3U ή M3U8.'); firstInvalid ||= document.getElementById('playlistFile'); }
+      if (firstInvalid) { firstInvalid.focus(); return false; }
+      return true;
+    }
+
+    document.getElementById('sourceForm').addEventListener('submit', event => {
+      event.preventDefault();
+      if (!validate()) return;
+      startChecking();
+    });
+
+    function startChecking() {
+      checkingTimers.forEach(clearTimeout);
+      document.querySelectorAll('.check-item').forEach(item => { item.className = 'check-item'; item.querySelector('.check-dot').textContent = Number([...item.parentNode.children].indexOf(item))+1; item.querySelector('.check-state').textContent = 'Αναμονή'; });
+      showView('checking');
+      const items = [...document.querySelectorAll('.check-item')];
+      items[0].classList.add('active'); items[0].querySelector('.check-state').textContent = 'Έλεγχος…';
+      items.forEach((item,index) => {
+        checkingTimers.push(setTimeout(() => {
+          item.classList.remove('active'); item.classList.add('done'); item.querySelector('.check-dot').innerHTML = '<svg class="icon small"><use href="#icon-check"></use></svg>'; item.querySelector('.check-state').textContent = 'Ολοκληρώθηκε';
+          if (items[index+1]) { items[index+1].classList.add('active'); items[index+1].querySelector('.check-state').textContent = 'Έλεγχος…'; }
+        },850*(index+1)));
+      });
+      checkingTimers.push(setTimeout(() => showView('success'), 3000));
+    }
+
+    backButton.addEventListener('click', () => {
+      if (currentView === 'details') showView('choose');
+      else if (currentView === 'success') showView('details');
+      else if (currentView === 'catalog') showView('success');
+    });
+    document.getElementById('openContent').addEventListener('click', () => showView('catalog'));
+    document.getElementById('openHome').addEventListener('click', () => { showView('catalog'); showToast('Στο Android θα ανοίξει η αρχική με την ενεργή πηγή'); });
+    document.querySelectorAll('.channel').forEach(channel => channel.addEventListener('click', () => showToast(`Αναπαραγωγή: ${channel.querySelector('strong').textContent}`)));
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); setTimeout(() => document.getElementById(id).querySelector('button')?.focus(),60); }
+    function closeModals() { document.querySelectorAll('.modal.open').forEach(modal => modal.classList.remove('open')); }
+    document.getElementById('helpButton').addEventListener('click', () => openModal('helpModal'));
+    document.getElementById('phoneTransfer').addEventListener('click', () => openModal('qrModal'));
+    document.getElementById('exitButton').addEventListener('click', () => openModal('exitModal'));
+    document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', closeModals));
+    document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('click', event => { if (event.target === modal) closeModals(); }));
+    document.getElementById('confirmExit').addEventListener('click', () => { closeModals(); showView('choose'); showToast('Η προσθήκη ακυρώθηκε'); });
+    document.getElementById('simulateTransfer').addEventListener('click', () => { closeModals(); chooseMethod('xtream',{server:'http://tv.demo.test:8080',username:'demo_user',password:'demo_pass'}); showToast('Τα στοιχεία μεταφέρθηκαν με ασφάλεια'); });
+
+    const qrGrid = document.getElementById('qrGrid');
+    '1110111101010011011101101010101011110010010111011101010011101111111'.slice(0,49).split('').forEach(bit => { const cell = document.createElement('i'); cell.style.opacity = bit === '1' ? '1' : '0'; qrGrid.appendChild(cell); });
+
+    document.querySelectorAll('[data-device]').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('[data-device]').forEach(item => item.classList.toggle('active',item === button));
+      app.classList.toggle('tv-mode',button.dataset.device === 'tv');
+      showView('choose');
+    }));
+    document.getElementById('resetPrototype').addEventListener('click', () => {
+      checkingTimers.forEach(clearTimeout);
+      document.getElementById('sourceForm').reset();
+      document.getElementById('smartInput').value = '';
+      document.getElementById('detectMessage').textContent = '';
+      document.getElementById('advancedFields').classList.remove('open');
+      document.getElementById('advancedToggle').classList.remove('open');
+      document.querySelector('#advancedToggle span').textContent = 'Περισσότερες επιλογές';
+      clearErrors();
+      closeModals();
+      showView('choose');
+    });
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message; toast.classList.add('show');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'),2200);
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { if (document.querySelector('.modal.open')) closeModals(); else backButton.click(); return; }
+      if (!app.classList.contains('tv-mode') || !['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)) return;
+      const focusable = [...document.querySelectorAll('button:not([disabled]),input:not([type=file]),textarea')].filter(element => element.offsetParent !== null);
+      const current = focusable.indexOf(document.activeElement);
+      if (current < 0) return;
+      const rect = document.activeElement.getBoundingClientRect();
+      const candidates = focusable.filter(element => element !== document.activeElement).map(element => {
+        const target = element.getBoundingClientRect();
+        const dx = target.left + target.width/2 - (rect.left + rect.width/2);
+        const dy = target.top + target.height/2 - (rect.top + rect.height/2);
+        const valid = event.key === 'ArrowRight' ? dx > 8 : event.key === 'ArrowLeft' ? dx < -8 : event.key === 'ArrowDown' ? dy > 8 : dy < -8;
+        const primary = ['ArrowLeft','ArrowRight'].includes(event.key) ? Math.abs(dx) : Math.abs(dy);
+        const cross = ['ArrowLeft','ArrowRight'].includes(event.key) ? Math.abs(dy) : Math.abs(dx);
+        return {element,valid,score:primary+cross*2.4};
+      }).filter(item => item.valid).sort((a,b) => a.score-b.score);
+      if (candidates[0]) { candidates[0].element.focus(); event.preventDefault(); }
+    });
+  </script>
+</body>
+</html>

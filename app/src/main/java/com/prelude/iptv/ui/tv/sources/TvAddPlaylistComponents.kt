@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.mobile.sources.MobilePlaylistMethod
+import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.tvFocus
 
 @Composable
@@ -58,17 +58,17 @@ internal fun TvPlaylistBrand() {
 
 @Composable
 internal fun TvPlaylistMethodCard(
-    method: MobilePlaylistMethod,
+    method: PlaylistSourceMethod,
     selected: Boolean,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     onSelect: () -> Unit,
 ) {
     val content = when (method) {
-        MobilePlaylistMethod.URL -> TvMethodContent(Icons.Default.Link, "URL", "M3U", "Σύνδεσμος playlist")
-        MobilePlaylistMethod.XTREAM -> TvMethodContent(Icons.Default.Lock, "Username & password", "XTREAM", "Στοιχεία παρόχου")
-        MobilePlaylistMethod.MAC -> TvMethodContent(Icons.Default.Dns, "MAC Portal", "STALKER", "Portal και MAC address")
-        MobilePlaylistMethod.FILE -> TvMethodContent(Icons.Default.FolderOpen, "Αρχείο M3U", "FILE", "Από τη συσκευή")
+        PlaylistSourceMethod.URL -> TvMethodContent(Icons.Default.Link, "Έναν σύνδεσμο", "M3U", "M3U ή get.php URL")
+        PlaylistSourceMethod.XTREAM -> TvMethodContent(Icons.Default.Lock, "Server και κωδικούς", "XTREAM", "Server, username, password")
+        PlaylistSourceMethod.MAC -> TvMethodContent(Icons.Default.Dns, "Portal και MAC", "STALKER", "Portal URL και MAC address")
+        PlaylistSourceMethod.FILE -> TvMethodContent(Icons.Default.FolderOpen, "Ένα αρχείο", "FILE", "M3U ή M3U8 στη συσκευή")
     }
     Row(
         modifier
@@ -87,7 +87,9 @@ internal fun TvPlaylistMethodCard(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(43.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = .06f)),
+            Modifier.size(46.dp).clip(RoundedCornerShape(13.dp))
+                .background(if (selected) IptvColors.Primary.copy(alpha = .16f) else Color.White.copy(alpha = .06f))
+                .border(1.dp, if (selected) IptvColors.Primary.copy(alpha = .35f) else Color.White.copy(alpha = .08f), RoundedCornerShape(13.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(content.icon, null, tint = if (selected) Color.White else IptvColors.TextSecondary, modifier = Modifier.size(23.dp))
@@ -160,6 +162,7 @@ internal fun TvPlaylistFieldButton(
     modifier: Modifier = Modifier,
     optional: Boolean = false,
     password: Boolean = false,
+    error: String? = null,
     onClick: () -> Unit,
 ) {
     Column(modifier) {
@@ -175,7 +178,7 @@ internal fun TvPlaylistFieldButton(
                 .focusRequester(focusRequester)
                 .clip(RoundedCornerShape(11.dp))
                 .background(IptvColors.SurfaceRaised)
-                .border(1.dp, IptvColors.DividerStrong, RoundedCornerShape(11.dp))
+                .border(1.dp, if (error == null) IptvColors.DividerStrong else IptvColors.Error, RoundedCornerShape(11.dp))
                 .tvFocus(RoundedCornerShape(11.dp), tint = false)
                 .clickable(onClick = onClick)
                 .padding(horizontal = 14.dp),
@@ -194,6 +197,9 @@ internal fun TvPlaylistFieldButton(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        error?.let { message ->
+            Text(message, color = IptvColors.Error, fontSize = 7.5.sp, modifier = Modifier.padding(start = 3.dp, top = 3.dp))
+        }
     }
 }
 
@@ -202,10 +208,11 @@ internal fun TvM3uFileButton(
     fileLabel: String,
     importing: Boolean,
     focusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
             .height(72.dp)
             .focusRequester(focusRequester)
@@ -282,6 +289,7 @@ internal fun TvPlaylistAction(
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    icon: ImageVector? = null,
     onClick: () -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
@@ -302,12 +310,23 @@ internal fun TvPlaylistAction(
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            label,
-            color = if (enabled) Color.White else IptvColors.TextTertiary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Black,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            if (icon != null) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = if (enabled) Color.White else IptvColors.TextTertiary,
+                    modifier = Modifier.size(17.dp),
+                )
+                Spacer(Modifier.width(7.dp))
+            }
+            Text(
+                label,
+                color = if (enabled) Color.White else IptvColors.TextTertiary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+            )
+        }
     }
 }
 

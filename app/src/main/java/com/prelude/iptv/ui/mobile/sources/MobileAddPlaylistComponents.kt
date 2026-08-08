@@ -4,14 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -27,13 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
@@ -62,87 +57,6 @@ internal fun MobilePlaylistBrand() {
 }
 
 @Composable
-internal fun MobilePlaylistMethodCard(
-    method: MobilePlaylistMethod,
-    selected: Boolean,
-    onSelect: () -> Unit,
-) {
-    val content = when (method) {
-        MobilePlaylistMethod.URL -> MethodContent(Icons.Default.Link, "URL", "M3U", "Επικόλληση συνδέσμου playlist")
-        MobilePlaylistMethod.XTREAM -> MethodContent(Icons.Default.Lock, "Όνομα χρήστη & κωδικός", "XTREAM", "Server, username και password")
-        MobilePlaylistMethod.MAC -> MethodContent(Icons.Default.Dns, "MAC Portal", "STALKER", "Portal URL και MAC address")
-        MobilePlaylistMethod.FILE -> MethodContent(Icons.Default.FolderOpen, "Αρχείο M3U", "FILE", "Επιλογή αρχείου από τη συσκευή")
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(15.dp))
-            .background(if (selected) Color.White.copy(alpha = .09f) else IptvColors.Surface.copy(alpha = .78f))
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) Color.White.copy(alpha = .72f) else IptvColors.DividerStrong,
-                shape = RoundedCornerShape(15.dp),
-            )
-            .clickable(onClick = onSelect)
-            .padding(horizontal = 13.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier.size(38.dp).clip(RoundedCornerShape(11.dp)).background(Color.White.copy(alpha = .055f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(content.icon, null, tint = if (selected) Color.White else IptvColors.TextSecondary, modifier = Modifier.size(21.dp))
-        }
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // weight(1f, fill = false): ο τίτλος παίρνει όσο χώρο χρειάζεται
-                // αλλά ΥΠΟΧΩΡΕΙ πρώτος όταν δεν χωράει και τα δύο — χωρίς αυτό,
-                // ο μακρύς τίτλος «Όνομα χρήστη & κωδικός» έτρωγε όλο τον χώρο
-                // της γραμμής και το «XTREAM» δίπλα του τσαλακωνόταν σε ένα-δύο
-                // ορατά γράμματα («XTREA»).
-                Text(
-                    content.title,
-                    color = if (selected) IptvColors.TextPrimary else IptvColors.TextSecondary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                Spacer(Modifier.width(7.dp))
-                Text(
-                    content.tag,
-                    color = IptvColors.TextSecondary,
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Black,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Visible,
-                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Color.White.copy(alpha = .07f))
-                        .padding(horizontal = 6.dp, vertical = 4.dp),
-                )
-            }
-            Text(
-                content.subtitle,
-                color = IptvColors.TextTertiary,
-                fontSize = 10.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Box(
-            Modifier.size(24.dp).border(2.dp, if (selected) Color.White else IptvColors.TextTertiary, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (selected) Box(Modifier.size(12.dp).background(Color.White, CircleShape))
-        }
-    }
-}
-
-@Composable
 internal fun MobilePlaylistField(
     label: String,
     value: String,
@@ -153,6 +67,8 @@ internal fun MobilePlaylistField(
     password: Boolean = false,
     passwordVisible: Boolean = false,
     onTogglePassword: (() -> Unit)? = null,
+    error: String? = null,
+    focusRequester: FocusRequester? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     Column(modifier) {
@@ -164,7 +80,9 @@ internal fun MobilePlaylistField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().then(
+                if (focusRequester == null) Modifier else Modifier.focusRequester(focusRequester),
+            ),
             singleLine = true,
             shape = RoundedCornerShape(13.dp),
             placeholder = { Text(placeholder, color = IptvColors.TextTertiary, fontSize = 13.sp) },
@@ -180,6 +98,10 @@ internal fun MobilePlaylistField(
                     }
                 }
             },
+            isError = error != null,
+            supportingText = error?.let { message ->
+                { Text(message, color = IptvColors.Error, fontSize = 10.sp, lineHeight = 14.sp) }
+            },
             keyboardOptions = keyboardOptions,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = IptvColors.TextPrimary,
@@ -189,6 +111,8 @@ internal fun MobilePlaylistField(
                 unfocusedBorderColor = IptvColors.DividerStrong,
                 focusedContainerColor = IptvColors.SurfaceRaised,
                 unfocusedContainerColor = IptvColors.SurfaceRaised,
+                errorBorderColor = IptvColors.Error,
+                errorCursorColor = IptvColors.Error,
             ),
         )
     }
@@ -237,10 +161,3 @@ internal fun MobilePlaylistQuickTip(onDismiss: () -> Unit) {
         },
     )
 }
-
-private data class MethodContent(
-    val icon: ImageVector,
-    val title: String,
-    val tag: String,
-    val subtitle: String,
-)

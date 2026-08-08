@@ -76,8 +76,14 @@ proguard_rules = (ROOT / "app/proguard-rules.pro").read_text(encoding="utf-8")
 add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/AddPlaylistScreen.kt").read_text(encoding="utf-8")
 tv_add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistScreen.kt").read_text(encoding="utf-8")
 mobile_add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileAddPlaylistScreen.kt").read_text(encoding="utf-8")
+tv_onboarding_steps = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceOnboardingSteps.kt").read_text(encoding="utf-8")
+tv_source_details = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceDetailsStep.kt").read_text(encoding="utf-8")
+mobile_source_details = (ROOT / "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileSourceDetailsStep.kt").read_text(encoding="utf-8")
+playlist_source_submission = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sources/PlaylistSourceSubmission.kt").read_text(encoding="utf-8")
+playlist_source_draft = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sources/PlaylistSourceDraft.kt").read_text(encoding="utf-8")
 playlist_connection_tester = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sources/PlaylistConnectionTester.kt").read_text(encoding="utf-8")
 shared_m3u_importer = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sources/M3uFileImporter.kt").read_text(encoding="utf-8")
+playlist_store = (ROOT / "app/src/main/java/com/prelude/iptv/data/PlaylistStore.kt").read_text(encoding="utf-8")
 main_activity = (ROOT / "app/src/main/java/com/prelude/iptv/MainActivity.kt").read_text(encoding="utf-8")
 playlist_sources = (ROOT / "app/src/main/java/com/prelude/iptv/ui/route/PlaylistSourcesScreen.kt").read_text(encoding="utf-8")
 main_vm = TARGETS["MainViewModel"].read_text(encoding="utf-8")
@@ -194,8 +200,9 @@ source_contracts = {
     ),
     "TV add-playlist has deterministic initial and directional focus": (
         "requestFocusWithRetry()" in tv_add_playlist
-        and "focusProperties" in tv_add_playlist
-        and "right = firstFieldFocus" in tv_add_playlist
+        and "focusProperties" in tv_onboarding_steps
+        and "right = methodFocus.getValue" in tv_onboarding_steps
+        and "focusProperties" in tv_source_details
     ),
     "TV add-playlist restores focus after overlays": (
         "restoreInputFocus(editingInput)" in tv_add_playlist
@@ -207,23 +214,46 @@ source_contracts = {
         and "ByteArray(4096)" in shared_m3u_importer
         and "#EXTM3U" in shared_m3u_importer
     ),
-    "Mobile and TV add-playlist forms expose a real connection test": (
-        "testPlaylistConnection(snapshot)" in mobile_add_playlist
-        and "testPlaylistConnection(snapshot)" in tv_add_playlist
-        and "Δοκιμή σύνδεσης" in mobile_add_playlist
-        and "Δοκιμή σύνδεσης" in tv_add_playlist
+    "Mobile and TV add-playlist forms atomically test before building": (
+        "submitPlaylistSource(snapshot" in mobile_add_playlist
+        and "submitPlaylistSource(snapshot" in tv_add_playlist
+        and "tester(snapshot)" in playlist_source_submission
+        and "PlaylistSourceDraftPolicy.build(snapshot)" in playlist_source_submission
+        and "Έλεγχος και προσθήκη" in mobile_source_details
+        and "Έλεγχος και προσθήκη" in tv_source_details
     ),
     "Connection testing covers every supported source method": all(marker in playlist_connection_tester for marker in [
-        "MobilePlaylistMethod.URL -> Repository.testM3u",
-        "MobilePlaylistMethod.XTREAM -> XtreamClient.test",
-        "MobilePlaylistMethod.MAC -> StalkerClient",
-        "MobilePlaylistMethod.FILE -> Repository.testM3u",
+        "PlaylistSourceMethod.URL -> Repository.testM3u",
+        "PlaylistSourceMethod.XTREAM -> XtreamClient.test",
+        "PlaylistSourceMethod.MAC -> StalkerClient",
+        "PlaylistSourceMethod.FILE -> Repository.testM3u",
     ]),
-    "TV connection-test focus is explicit between dismiss and save": (
-        "right = testFocus" in tv_add_playlist
-        and "left = laterFocus" in tv_add_playlist
-        and "right = saveFocus" in tv_add_playlist
-        and "left = testFocus" in tv_add_playlist
+    "TV verified-submit focus is explicit between exit and submit": (
+        "right = submitFocus" in tv_source_details
+        and "left = exitFocus" in tv_source_details
+        and "up = advancedFocus" in tv_source_details
+    ),
+    "TV source details return left from each first input to method change": (
+        tv_source_details.count("left = changeFocus") >= 4
+        and "right = firstInput" in tv_source_details
+    ),
+    "Successful onboarding skips the redundant content chooser for Live TV": main_activity.count('vm.setContentType("live")') >= 2,
+    "Source onboarding detects credentials and owns field-level validation centrally": (
+        "fun detect(raw: String)" in playlist_source_draft
+        and "PlaylistSourceField.PASSWORD" in playlist_source_draft
+        and "PlaylistSourceField.MAC_ADDRESS" in playlist_source_draft
+        and "PlaylistSourceDraftPolicy.detect(smartInput)" in mobile_add_playlist
+    ),
+    "Source credentials stay transient until encrypted playlist persistence": (
+        "rememberSaveable" not in mobile_add_playlist
+        and "rememberSaveable" not in tv_add_playlist
+        and 'secure.putString("playlists", arr.toString())' in playlist_store
+    ),
+    "Active add-source screens contain no dead account-login promise": (
+        "Σύνδεση λογαριασμού" not in mobile_add_playlist
+        and "Σύνδεση λογαριασμού" not in tv_add_playlist
+        and "Ίσως αργότερα" not in mobile_source_details
+        and "Ίσως αργότερα" not in tv_source_details
     ),
     "Empty mobile and TV installs route directly to add playlist": (
         "if (state.playlists.isEmpty())" in main_activity

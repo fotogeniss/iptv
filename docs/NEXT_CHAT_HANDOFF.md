@@ -246,7 +246,30 @@ has now been implemented for Android TV.
   Android TV checks for CH+/CH-, rapid stepping, a failed provider URL, VLC
   fallback, Back, DPAD focus and VOD seeking.
 
-## 6. Architecture work to continue afterward
+## 6. Current approved source-onboarding implementation
+
+- The owner approved the functional mobile/TV direction in
+  `prototypes/onboarding/SOURCE_ONBOARDING_FLOW_PREVIEW.html`.
+- Mobile and TV now use the shared Android-free `PlaylistSourceDraftPolicy` for
+  credential detection, normalization, field-level validation and `Playlist`
+  construction.
+- `submitPlaylistSource` is the single validation -> real provider test -> build
+  boundary; saving cannot bypass a failed test.
+- Credential drafts and verified results remain transient in memory; only the
+  confirmed `Playlist` reaches the Android-Keystore-backed playlist store.
+- The mobile screen provides smart pasted-credential detection. Both surfaces use
+  plain-language method choices, premium Material iconography, explicit progress,
+  a confirmed-success step and direct Live TV continuation.
+- The dead account-login action and misleading "Ίσως αργότερα" wording were
+  removed from active add-source screens.
+- TV focus is explicit across method selection, fields, exit and submit; Back
+  cancels an in-flight submission and dialogs/file selection restore focus.
+- The QR phone-pairing concept remains prototype-only. It requires a separate
+  transport/security decision and no fake production button was introduced.
+- Static contracts cover the new ownership and focus boundaries. A normal Android
+  Studio build plus phone/TV device QA is still required; Codex did not run Gradle.
+
+## 7. Architecture work to continue afterward
 
 Continue splitting legacy files only through small, behavior-preserving
 extractions. Do not chase line count by moving arbitrary blocks.
@@ -276,7 +299,7 @@ Focused tests must protect these established rules:
 Do not introduce a `PlaybackEngine` ownership rewrite until connected lifecycle
 and fallback instrumentation is strong enough. That is a higher-risk future seam.
 
-## 7. Remaining release gates
+## 8. Remaining release gates
 
 These are not all code changes and must not be marked complete without owner or
 external-console work:
@@ -300,7 +323,7 @@ external-console work:
    decisions, not current blockers for the first revenue-oriented release unless
    the chosen store/premium threat model changes.
 
-## 8. Validation and documentation workflow
+## 9. Validation and documentation workflow
 
 Before editing:
 
@@ -340,7 +363,7 @@ Do not create a separate root-level validation report for every change. Keep
 current documents under `docs/`, prototypes under `prototypes/` and transient
 reports under `validation/`.
 
-## 9. Prompt to start the next chat
+## 10. Prompt to start the next chat
 
 The owner can paste the following after attaching or referencing this file:
 
@@ -351,6 +374,7 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate task is the Android TV HTML preview for
-> the premium directional live-channel transition and slim but DPAD-safe progress
-> bar described in the handoff.
+> cohesive completed change. The immediate task is to build and verify the approved
+> source onboarding implementation from Android Studio: check its mobile input,
+> provider failures, TV DPAD focus, Back cancellation and direct Live TV routing
+> on physical devices.

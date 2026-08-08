@@ -160,3 +160,23 @@ The codebase now has explicit seams, but the two legacy files are still large. F
   TV `SurfaceView`, preserving its frame pacing and avoiding a second surface.
 - Kept TV transition drawing below subtitles/chrome and free of focus or key
   handlers; the existing `PlayerHost` remains the only DPAD owner.
+
+## Completed shared source-onboarding boundary - Unreleased
+
+- Added `PlaylistSourceDraftPolicy` as the Android-free owner of pasted credential
+  detection, HTTP/MAC normalization, field-specific validation and final
+  `Playlist` construction for mobile and TV.
+- Added `submitPlaylistSource` as the ordered validation -> provider test ->
+  build boundary. A failed, cancelled or incomplete provider check cannot produce
+  a saved source.
+- Kept mobile and TV screens responsible only for presentation, editable draft
+  state and their own input/focus behavior. The TV surface explicitly restores
+  focus after dialogs and file selection and cancels in-flight submission on Back.
+- Split the approved presentation into focused step/detail files instead of
+  growing the former 400-500 line screen implementations.
+- Added a narrow connection-message policy so raw transport failures do not leak
+  into onboarding copy, plus focused detection, validation, submission and error
+  mapping tests.
+- TV-to-phone QR pairing remains outside the Android implementation until its
+  transport, expiry, authentication and credential-handling model receive a
+  separate security decision; no inert or simulated production action was added.
