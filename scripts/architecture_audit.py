@@ -198,6 +198,15 @@ require(all(marker not in main_vm for marker in [
         ]),
         "CategoryEditorCoordinator owns loading, draft state and persistence normalization")
 
+catalog_presentation = text("app/src/main/java/com/prelude/iptv/ui/policy/CatalogPresentationPolicy.kt")
+require(main_vm.count("CatalogPresentationPolicy.") == 2 and
+        "s.channels.filter" not in main_vm and "LinkedHashSet<String>()" not in main_vm,
+        "MainViewModel delegates catalog group ordering and visibility")
+require(all(marker in catalog_presentation for marker in [
+            "fun groups(", "fun visibleChannels(", "lockedGroups", '"year"'
+        ]),
+        "CatalogPresentationPolicy owns grouping, parental filtering and sorting")
+
 print("ARCHITECTURE AUDIT")
 for item in passes:
     print(f"PASS  {item}")

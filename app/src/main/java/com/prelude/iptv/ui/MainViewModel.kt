@@ -24,6 +24,7 @@ import com.prelude.iptv.ui.coordinator.SeriesLoadCoordinator
 import com.prelude.iptv.ui.coordinator.SourceGenerationGate
 import com.prelude.iptv.ui.coordinator.SourceSwitchCoordinator
 import com.prelude.iptv.ui.coordinator.SourceSwitchStatePolicy
+import com.prelude.iptv.ui.policy.CatalogPresentationPolicy
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
 import kotlinx.coroutines.CancellationException
@@ -1584,44 +1585,32 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun nowText(tvgId: String): String? = epgCoordinator.nowText(tvgId)
 
     private fun buildGroups(channels: List<Channel>, hasFavs: Boolean): List<String> {
-        val seen = LinkedHashSet<String>()
-        channels.forEach { seen.add(it.group.ifEmpty { "Χωρίς ομάδα" }) }
         val sourceId = currentSourceId()
         val preferred = store.loadCategoryLayout(sourceId, _state.value.contentType).orderedTitles
-        val rank = preferred.withIndex().associate { it.value to it.index }
-        val sorted = seen.sortedWith(compareBy<String> { rank[it] ?: Int.MAX_VALUE }
-            .thenBy { if (it in rank) "" else it.lowercase() })
-        val out = ArrayList<String>()
-        out.add(UiState.ALL_GROUP)
-        if (hasFavs) out.add(UiState.FAV_GROUP)
-        out.addAll(sorted)
-        return out
+        return CatalogPresentationPolicy.groups(
+            channels = channels,
+            hasFavorites = hasFavs,
+            preferredTitles = preferred,
+            allGroupLabel = UiState.ALL_GROUP,
+            favoritesGroupLabel = UiState.FAV_GROUP,
+        )
     }
 
     /** Τα κανάλια που φαίνονται με βάση ομάδα + αναζήτηση. */
     fun visibleChannels(): List<Channel> {
         val s = _state.value
-        val q = s.search.trim().lowercase()
-        val base = s.channels.filter { ch ->
-            val gname = ch.group.ifEmpty { "Χωρίς ομάδα" }
-            // Γονικός έλεγχος: κλειδωμένα groups ΔΕΝ εμφανίζονται πουθενά
-            // (ούτε στο «Όλες», ούτε στην αναζήτηση) μέχρι να δοθεί PIN.
-            if (!s.parentalUnlocked && gname in s.lockedGroups) return@filter false
-            val grpOk = when (s.selectedGroup) {
-                UiState.ALL_GROUP -> true
-                UiState.FAV_GROUP -> favKey(ch) in s.favorites
-                else -> gname == s.selectedGroup
-            }
-            val searchOk = q.isEmpty() || ch.name.lowercase().contains(q)
-            grpOk && searchOk
-        }
-        return when (s.sortMode) {
-            "az" -> base.sortedBy { it.name.lowercase() }
-            "za" -> base.sortedByDescending { it.name.lowercase() }
-            // string sort: 4ψήφια έτη συγκρίνονται σωστά, τα κενά πάνε τελευταία
-            "year" -> base.sortedByDescending { it.year }
-            else -> base
-        }
+        return CatalogPresentationPolicy.visibleChannels(
+            channels = s.channels,
+            search = s.search,
+            selectedGroup = s.selectedGroup,
+            allGroupLabel = UiState.ALL_GROUP,
+            favoritesGroupLabel = UiState.FAV_GROUP,
+            favorites = s.favorites,
+            lockedGroups = s.lockedGroups,
+            parentalUnlocked = s.parentalUnlocked,
+            sortMode = s.sortMode,
+            favoriteKey = ::favKey,
+        )
     }
 
     /* ---- Γονικός έλεγχος & ταξινόμηση ---- */

@@ -13,6 +13,8 @@ implementation notes are preserved in `docs/archive/changelog`.
   `MainViewModel` into a focused, tested coordinator while preserving its API.
 - Extracted category-editor loading, draft state and normalized persistence from
   `MainViewModel` into a focused coordinator with state and save-flow tests.
+- Extracted catalog group ordering, parental visibility, favorites filtering,
+  search and sorting into a pure policy with focused regression tests.
 
 ## 1.46.0 — versionCode 115
 
