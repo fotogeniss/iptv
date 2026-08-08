@@ -18,6 +18,10 @@ installation, has a separate application ID and displays as **Prelude+ QA**, so
 it can be installed beside the public app. Use the ordinary `debug` variant when
 an attached debugger is required.
 
+Because Android isolates data by application ID, QA playlists, favorites and
+history are separate from the public app. Import a backup into QA when realistic
+test data is needed; installing QA never replaces or modifies release data.
+
 ## Build and install
 
 ```powershell

@@ -5,7 +5,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
-- No unreleased changes recorded yet.
+- Made the owner QA build separately installable as `com.prelude.iptv.qa`, with
+  isolated app data and the existing visible `Prelude+ QA` label.
 
 ## 1.46.0 — versionCode 115
 
@@ -30,9 +31,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 - Replaced the short mobile legal bottom sheet with a full Privacy, Terms and
   Third-party Services center, including local-data, HTTP transport and release
   identity disclosures.
-- Added an owner-only QA variant with release-like shrinking and full Premium
-  access. It currently replaces the locally installed release build to preserve
-  owner test data; a distinct application ID remains a public-release gate.
+- Added an owner-only QA variant with release-like shrinking, full Premium
+  access and a separate application ID for safe side-by-side installation.
 - Added Google Play Billing 9.1 with a single non-consumable Prelude+ Premium
   product, Play-provided pricing, purchase/restore UI on mobile and TV, pending
   purchase handling, acknowledgement, reactive entitlement state and tests.

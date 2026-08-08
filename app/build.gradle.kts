@@ -85,19 +85,9 @@ android {
             // Keep release shrinking/optimisation so owner testing catches
             // release-only R8 and resource-shrinking problems.
             initWith(getByName("release"))
-            // ΧΩΡΙΣ applicationIdSuffix, ΕΠΙΤΗΔΕΣ.
-            //
-            // Με το «.qa» η εφαρμογή εγκαθίσταται ΔΙΠΛΑ στην κανονική, ως δεύτερη
-            // εφαρμογή με δικά της δεδομένα: άδειες λίστες, άδεια αγαπημένα, άδειο
-            // ιστορικό. Όσο ο ιδιοκτήτης είναι ο μόνος χρήστης, αυτό δεν προσφέρει
-            // τίποτα — απλώς τον αναγκάζει να ξαναστήσει τα πάντα για να δοκιμάσει.
-            //
-            // Το ίδιο applicationId με το release σημαίνει ότι το qa build
-            // ΑΝΤΙΚΑΘΙΣΤΑ την εγκατεστημένη εφαρμογή και κρατά τα δεδομένα της
-            // (ίδιο κλειδί υπογραφής, άρα καθαρή ενημέρωση).
-            //
-            // ΞΑΝΑΒΑΛΕ ΤΟ πριν την πρώτη δημοσίευση, ώστε δοκιμαστικό και
-            // πραγματικό να μπορούν να συνυπάρχουν.
+            // QA must coexist with release and keep isolated test data. This
+            // prevents an owner test build from replacing production data.
+            applicationIdSuffix = ".qa"
             versionNameSuffix = "-qa"
             signingConfig = signingConfigs.getByName("debug")
             // QA must exercise the same R8/resource-shrinking behavior as
