@@ -2,7 +2,7 @@
 
 The codebase now has explicit seams, but the two legacy files are still large. Further splitting should remain incremental and build-backed; a one-shot rewrite would create unacceptable regression risk.
 
-## Completed foundation — v1.40.41
+## Completed foundation - v1.40.41
 
 - Typed player launch boundary.
 - Testable player remote-input policy.
@@ -14,7 +14,7 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 - Repeatable architecture/focus/routing audit script.
 
 
-## Completed controlled session extraction — v1.40.42
+## Completed controlled session extraction - v1.40.42
 
 - Added `PlayerSessionController` as the single owner of current playback identity, source identity, queue index and asynchronous zap generation.
 - Separated committed playback from pending channel presentation so rapid-zap failures return to the last stream that actually started.
@@ -55,7 +55,7 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 4. **ProfileSettingsCoordinator**
    - Profile and parental-control state, with observable flows.
 
-## Completed deep validation gate — v1.40.43
+## Completed deep validation gate - v1.40.43
 
 - Added frozen compatibility, architecture, deep-validation and production-risk gates to CI.
 - Added Compose instrumentation foundations for TV dialog/category focus and deterministic DPAD movement.
@@ -69,11 +69,11 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 
 ## Next controlled extraction order after the device/build gate
 
-1. **PlayerChromeController** — overlay visibility, timers, focus restoration and transient status; keep engine ownership in Activity.
-2. **CatalogLoadCoordinator** — progressive provider loading and transactional group refresh; keep public ViewModel methods stable.
-3. **SourceSwitchCoordinator** — source generation, cancellation and visible-state invalidation.
-4. **SeriesCoordinator** — season/episode retrieval and cache ownership.
-5. **PlaybackEngine abstraction** — only after connected lifecycle/fallback instrumentation passes.
+1. **PlayerChromeController** - overlay visibility, timers, focus restoration and transient status; keep engine ownership in Activity.
+2. **CatalogLoadCoordinator** - progressive provider loading and transactional group refresh; keep public ViewModel methods stable.
+3. **SourceSwitchCoordinator** - source generation, cancellation and visible-state invalidation.
+4. **SeriesCoordinator** - season/episode retrieval and cache ownership.
+5. **PlaybackEngine abstraction** - only after connected lifecycle/fallback instrumentation passes.
 6. Multiview refinement, then DVR foundation, then timeshift, then localization/accessibility.
 
 ## Required guardrails
@@ -85,7 +85,7 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 - Preserve source-scoped state and coroutine cancellation semantics.
 - Keep Android TV focus boundaries and shortcut contracts in the automated audit.
 
-## Completed controlled chrome extraction — v1.40.44
+## Completed controlled chrome extraction - v1.40.44
 
 - Added `PlayerChromeController` as the single owner of overlay visibility, auto-hide scheduling, transient player status and bounded TV focus recovery.
 - Removed chrome-specific `Runnable` and retry counters from `PlayerActivity`.
@@ -96,12 +96,12 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 
 ## Next controlled extraction
 
-1. **CatalogLoadCoordinator** — progressive provider loading and transactional refresh.
-2. **SourceSwitchCoordinator** — source generation, cancellation and visible-state invalidation.
-3. **SeriesCoordinator** — season/episode retrieval and cache ownership.
-4. **PlaybackEngine abstraction** — only after connected lifecycle/fallback instrumentation passes.
+1. **CatalogLoadCoordinator** - progressive provider loading and transactional refresh.
+2. **SourceSwitchCoordinator** - source generation, cancellation and visible-state invalidation.
+3. **SeriesCoordinator** - season/episode retrieval and cache ownership.
+4. **PlaybackEngine abstraction** - only after connected lifecycle/fallback instrumentation passes.
 
-## Completed controlled catalog extraction — v1.40.45
+## Completed controlled catalog extraction - v1.40.45
 
 - Added `CatalogLoadCoordinator` as the single serialized boundary for category discovery and section loading across M3U, Xtream and Stalker.
 - Moved progressive and final catalog normalization out of `MainViewModel`.
@@ -112,11 +112,11 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 
 ## Next controlled extraction
 
-1. **SourceSwitchCoordinator** — source generation, cancellation and visible-state invalidation.
-2. **SeriesCoordinator** — season/episode retrieval and cache ownership.
-3. **PlaybackEngine abstraction** — only after connected lifecycle/fallback instrumentation passes.
+1. **SourceSwitchCoordinator** - source generation, cancellation and visible-state invalidation.
+2. **SeriesCoordinator** - season/episode retrieval and cache ownership.
+3. **PlaybackEngine abstraction** - only after connected lifecycle/fallback instrumentation passes.
 
-## Completed controlled source-switch extraction — v1.40.46
+## Completed controlled source-switch extraction - v1.40.46
 
 - Added `SourceGenerationGate` as the single owner of catalog and series freshness tokens.
 - Added `SourceSwitchCoordinator` as the ordered transaction boundary for playlist selection.
@@ -127,10 +127,10 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 
 ## Next controlled extraction
 
-1. **PlaybackEngine abstraction** — only after connected lifecycle/fallback instrumentation passes.
+1. **PlaybackEngine abstraction** - only after connected lifecycle/fallback instrumentation passes.
 2. Multiview refinement, DVR foundation, timeshift, localization and accessibility.
 
-## Completed controlled series extraction — v1.42.0
+## Completed controlled series extraction - v1.42.0
 
 - Added `SeriesLoadCoordinator` as the provider boundary for cached, Xtream and
   rebuilt M3U/Stalker season expansion.

@@ -22,7 +22,7 @@ implementation notes are preserved in `docs/archive/changelog`.
   refraction transition, and slimmed the visible player scrubber while retaining
   its larger touch target.
 
-## 1.46.0 — versionCode 115
+## 1.46.0 - versionCode 115
 
 - Added bounded parallel Stalker/MAC category loading for Live TV, movies and
   series while preserving provider category order.
@@ -78,7 +78,7 @@ implementation notes are preserved in `docs/archive/changelog`.
 - Added functional mobile settings for sources, EPG, player preferences, Home and
   category layouts.
 
-## 1.42.0 — versionCode 97
+## 1.42.0 - versionCode 97
 
 - Replaced the old mobile Live TV preview with category-first browsing.
 - Removed redundant Live/Movies/Series tiles from Home.

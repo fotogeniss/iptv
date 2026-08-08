@@ -30,7 +30,7 @@ failures: list[str] = []
 if f"Current app version: **{version_name}** (`versionCode {version_code}`)" not in readme:
     failures.append("README current-version line does not match app/build.gradle.kts")
 
-release_heading = rf"(?m)^##\s+{re.escape(version_name)}\s+—\s+versionCode\s+{re.escape(version_code)}\s*$"
+release_heading = rf"(?m)^##\s+{re.escape(version_name)}\s+(?:-|\u2014)\s+versionCode\s+{re.escape(version_code)}\s*$"
 if not re.search(release_heading, changelog):
     failures.append("CHANGELOG has no heading for the current app version/versionCode")
 
