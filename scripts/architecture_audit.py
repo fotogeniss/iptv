@@ -188,6 +188,16 @@ require("RelayHub." not in main_vm and all(marker in export_relay for marker in 
         ]),
         "ExportRelayCoordinator owns relay lifecycle and export preparation")
 
+category_editor = text("app/src/main/java/com/prelude/iptv/ui/coordinator/CategoryEditorCoordinator.kt")
+require("private val categoryEditor" in main_vm and main_vm.count("categoryEditor.") >= 6,
+        "MainViewModel delegates category-editor state and actions")
+require(all(marker not in main_vm for marker in [
+            "_categoryEditor", "_categoryLayoutRevision", "updateCategoryEditorSection"
+        ]) and all(marker in category_editor for marker in [
+            "fun open()", "fun updateLayout", "fun save()", "private fun updateSection"
+        ]),
+        "CategoryEditorCoordinator owns loading, draft state and persistence normalization")
+
 print("ARCHITECTURE AUDIT")
 for item in passes:
     print(f"PASS  {item}")

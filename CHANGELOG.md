@@ -11,6 +11,8 @@ implementation notes are preserved in `docs/archive/changelog`.
   interruptible backoff component and added focused policy tests.
 - Extracted relay lifecycle and resolved-M3U export preparation from
   `MainViewModel` into a focused, tested coordinator while preserving its API.
+- Extracted category-editor loading, draft state and normalized persistence from
+  `MainViewModel` into a focused coordinator with state and save-flow tests.
 
 ## 1.46.0 — versionCode 115
 

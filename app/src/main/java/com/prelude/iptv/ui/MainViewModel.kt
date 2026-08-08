@@ -16,6 +16,7 @@ import com.prelude.iptv.source.StalkerClient
 import com.prelude.iptv.tvhome.TvHomeSyncScheduler
 import com.prelude.iptv.ui.coordinator.CatalogLoadCoordinator
 import com.prelude.iptv.ui.coordinator.CatalogSessionStore
+import com.prelude.iptv.ui.coordinator.CategoryEditorCoordinator
 import com.prelude.iptv.ui.coordinator.ExportRelayCoordinator
 import com.prelude.iptv.ui.coordinator.MainEpgCoordinator
 import com.prelude.iptv.ui.coordinator.ProfileSettingsCoordinator
@@ -23,11 +24,8 @@ import com.prelude.iptv.ui.coordinator.SeriesLoadCoordinator
 import com.prelude.iptv.ui.coordinator.SourceGenerationGate
 import com.prelude.iptv.ui.coordinator.SourceSwitchCoordinator
 import com.prelude.iptv.ui.coordinator.SourceSwitchStatePolicy
-import com.prelude.iptv.category.CategoryEditorSection
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
-import com.prelude.iptv.category.CategoryLayoutPolicy
-import com.prelude.iptv.category.CategoryOption
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,7 +41,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
-    private val CATEGORY_TYPES = listOf("live", "vod", "series")
     private val store = PlaylistStore(app)
     private val _profiles = MutableStateFlow<List<PlaylistStore.Profile>>(store.profiles())
     val profilesState: StateFlow<List<PlaylistStore.Profile>> = _profiles.asStateFlow()
@@ -342,15 +339,27 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val seriesLoader by lazy { SeriesLoadCoordinator(catalogLoader) }
 
-    private val _categoryEditor = MutableStateFlow(CategoryEditorState())
-    val categoryEditorState: StateFlow<CategoryEditorState> = _categoryEditor.asStateFlow()
-    private val _categoryLayoutRevision = MutableStateFlow(0)
-    val categoryLayoutRevision: StateFlow<Int> = _categoryLayoutRevision.asStateFlow()
+    private val categoryEditor by lazy {
+        CategoryEditorCoordinator(
+            scope = viewModelScope,
+            currentPlaylist = ::currentPlaylist,
+            currentSourceId = ::currentSourceId,
+            currentContentType = { _state.value.contentType },
+            loadLayout = store::loadCategoryLayout,
+            loadCategories = { playlist, type -> catalogLoader.categories(playlist, type) },
+            saveLayout = store::saveCategoryLayout,
+            saveChoice = { key, ids ->
+                loadChoice[key] = ids
+                store.saveLoadChoice(key, ids)
+            },
+            reloadSelection = ::loadSelectedCategories,
+        )
+    }
+    val categoryEditorState: StateFlow<CategoryEditorState> get() = categoryEditor.state
+    val categoryLayoutRevision: StateFlow<Int> get() = categoryEditor.revision
 
     fun categoryTitlesInOrder(type: String): List<String> =
-        currentSourceId().takeIf { it.isNotBlank() }
-            ?.let { store.loadCategoryLayout(it, type).orderedTitles }
-            .orEmpty()
+        categoryEditor.titlesInOrder(type)
 
     private var loadedContentType: String = "live"
 
@@ -1106,79 +1115,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Loads the complete provider category catalogue for the settings editor. */
-    fun openCategoryEditor() {
-        val playlist = currentPlaylist() ?: return
-        val sourceId = PlaylistIdentity.stableId(playlist)
-        _categoryEditor.value = CategoryEditorState(
-            sourceId = sourceId,
-            sections = CATEGORY_TYPES.associateWith { type ->
-                CategoryEditorSection(layout = store.loadCategoryLayout(sourceId, type), loading = true)
-            }
-        )
-        viewModelScope.launch {
-            CATEGORY_TYPES.forEach { type ->
-                runCatching { catalogLoader.categories(playlist, type) }
-                    .onSuccess { categories ->
-                        if (_categoryEditor.value.sourceId != sourceId) return@onSuccess
-                        updateCategoryEditorSection(type) { current ->
-                            current.copy(
-                                available = categories.map { CategoryOption(it.first, it.second) },
-                                loading = false,
-                                error = null,
-                            )
-                        }
-                    }
-                    .onFailure { error ->
-                        if (error is CancellationException) throw error
-                        updateCategoryEditorSection(type) { current ->
-                            current.copy(loading = false, error = error.message ?: "Αποτυχία φόρτωσης")
-                        }
-                    }
-            }
-        }
-    }
+    fun openCategoryEditor() = categoryEditor.open()
 
-    fun updateCategoryEditorLayout(type: String, layout: CategoryLayout) {
-        updateCategoryEditorSection(type) { it.copy(layout = layout) }
-    }
+    fun updateCategoryEditorLayout(type: String, layout: CategoryLayout) =
+        categoryEditor.updateLayout(type, layout)
 
     /** Persists all three tabs and immediately reloads the active section when needed. */
-    fun saveCategoryEditor() {
-        val playlist = currentPlaylist() ?: return
-        val sourceId = PlaylistIdentity.stableId(playlist)
-        if (_categoryEditor.value.sourceId != sourceId) return
-        _categoryEditor.value.sections.forEach { (type, section) ->
-            if (section.loading || section.error != null) return@forEach
-            val entries = CategoryLayoutPolicy.resolve(section.available, section.layout)
-            store.saveCategoryLayout(
-                sourceId,
-                type,
-                section.layout.copy(
-                    order = entries.map { it.option.id },
-                    orderedTitles = entries.map { it.option.title },
-                )
-            )
-            val ids = CategoryLayoutPolicy.selectedIds(entries)
-            val key = "$sourceId:$type"
-            loadChoice[key] = ids
-            store.saveLoadChoice(key, ids)
-        }
-        _categoryLayoutRevision.value += 1
-        val activeType = _state.value.contentType
-        val active = _categoryEditor.value.section(activeType)
-        if (active.available.isNotEmpty()) {
-            loadSelectedCategories(CategoryLayoutPolicy.selectedIds(active.entries))
-        }
-    }
-
-    private fun updateCategoryEditorSection(
-        type: String,
-        transform: (CategoryEditorSection) -> CategoryEditorSection,
-    ) {
-        _categoryEditor.update { state ->
-            state.copy(sections = state.sections + (type to transform(state.section(type))))
-        }
-    }
+    fun saveCategoryEditor() = categoryEditor.save()
 
     /** Πίσω από τον διαλογέα κατηγοριών στην ερώτηση «όλα ή επιλογή;». */
     fun backToLoadMode() {
