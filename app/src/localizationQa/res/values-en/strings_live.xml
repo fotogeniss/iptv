@@ -1,0 +1,85 @@
+<resources>
+    <string name="live_title">Live TV</string>
+    <string name="live_all">All</string>
+    <string name="live_all_channels">All channels</string>
+    <string name="live_favorites">Favorites</string>
+    <string name="live_recent">Recent</string>
+    <string name="live_other">Other</string>
+    <string name="live_channels">Channels</string>
+    <string name="live_broadcast">Live broadcast</string>
+    <string name="live_broadcast_from">Live broadcast from %1$s.</string>
+    <string name="live_now_with_title">Now · %1$s</string>
+    <string name="live_now_with_channel">NOW ON %1$s</string>
+    <string name="live_no_epg">No EPG available</string>
+    <string name="live_now_label">NOW</string>
+    <string name="live_next_label">NEXT</string>
+    <string name="live_schedule_now_time">● NOW  %1$s</string>
+    <string name="live_schedule_now">● NOW</string>
+    <string name="live_time_and_remaining">%1$s · %2$s</string>
+    <string name="live_label">LIVE</string>
+    <string name="live_badge">●  LIVE</string>
+    <string name="live_tv_badge">●  LIVE TV</string>
+
+    <string name="live_back">Back</string>
+    <string name="live_search">Search</string>
+    <string name="live_search_hint">Search live channels</string>
+    <string name="live_clear_search">Clear search</string>
+    <string name="live_show_grid">Show as grid</string>
+    <string name="live_show_list">Show as list</string>
+    <string name="live_watch">Watch</string>
+    <string name="live_watch_channel">Watch %1$s</string>
+    <string name="live_guide">Guide</string>
+    <string name="live_favorite">Favorite</string>
+    <string name="live_add">Add</string>
+    <string name="live_close">Close</string>
+
+    <string name="live_see_all">All  ›</string>
+    <string name="live_category_explore_hint">Quickly find the channel you want</string>
+    <string name="live_categories_title">Live TV categories</string>
+    <string name="live_empty_category">No channels were found in this category.</string>
+    <string name="live_empty_search">No channels matching “%1$s”</string>
+    <string name="live_empty_categories">No Live TV categories were found.</string>
+    <string name="live_empty_filter">There are no channels in this filter</string>
+
+    <string name="live_now_heading">Live now</string>
+    <string name="live_sports_heading">Live sports</string>
+    <string name="live_quick_guide">Quick guide</string>
+    <string name="live_full_epg">Full EPG</string>
+
+    <string name="live_multiview_select_second">MULTIVIEW · “%1$s” — choose a second channel with OK (you can change category) · long-press OK again to cancel</string>
+    <string name="live_multiview_select_second_short">MULTIVIEW · Choose a second channel with OK · BACK to cancel</string>
+    <string name="live_multiview_long_press">Long-press OK on a channel · Multiview</string>
+    <string name="live_channel_unavailable">This channel is unavailable</string>
+    <string name="live_playback_error">Playback error</string>
+    <string name="live_multiview_primary_unavailable">The first channel is unavailable for Multiview.</string>
+    <string name="live_multiview_secondary_unavailable">The second channel is unavailable for Multiview.</string>
+    <string name="live_multiview_start_failed">Multiview could not start.</string>
+    <string name="live_select_preview">Choose a channel to preview</string>
+    <string name="live_no_description">No description is available.</string>
+    <string name="live_no_programme_information">No programme information is available.</string>
+    <string name="live_no_schedule">No schedule is available for this channel.</string>
+    <string name="live_schedule">SCHEDULE</string>
+    <string name="live_ok_again_to_play">Press OK again to play</string>
+    <string name="live_no_data">No information is available</string>
+
+    <plurals name="live_channel_count">
+        <item quantity="one">%1$d channel</item>
+        <item quantity="other">%1$d channels</item>
+    </plurals>
+    <plurals name="live_group_channel_count">
+        <item quantity="one">%1$d channel in this group</item>
+        <item quantity="other">%1$d channels in this group</item>
+    </plurals>
+    <plurals name="live_broadcast_count">
+        <item quantity="one">%1$d broadcast</item>
+        <item quantity="other">%1$d broadcasts</item>
+    </plurals>
+    <plurals name="live_minutes_remaining">
+        <item quantity="one">%1$d min remaining</item>
+        <item quantity="other">%1$d mins remaining</item>
+    </plurals>
+    <plurals name="live_hours_minutes_remaining">
+        <item quantity="one">%1$d hr %2$d min remaining</item>
+        <item quantity="other">%1$d hrs %2$d min remaining</item>
+    </plurals>
+</resources>

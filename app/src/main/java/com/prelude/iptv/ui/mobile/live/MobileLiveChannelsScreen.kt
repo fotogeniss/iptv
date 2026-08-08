@@ -19,12 +19,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.category.CategoryLayoutPolicy
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.home.MobileCategoryOption
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
+
+private const val OTHER_LIVE_GROUP_ID = "synthetic:other"
+
+private data class MobileLiveGroup(
+    val id: String,
+    val title: String,
+    val channels: List<Channel>,
+)
 
 /**
  * Mobile Live TV orchestration: owns screen state and selects the appropriate
@@ -51,22 +61,31 @@ fun MobileLiveChannelsScreen(
     val railListState = rememberLazyListState()
     val channelListState = rememberLazyListState()
     val channelGridState = rememberLazyGridState()
+    val otherGroupLabel = stringResource(R.string.live_other)
+    val allChannelsLabel = stringResource(R.string.live_all)
 
-    val groups = remember(channels, categoryTitlesInOrder) {
-        val grouped = channels.groupBy { it.group.trim().ifBlank { "Άλλα" } }
-            .toList()
-            .sortedByDescending { it.second.size }
-        CategoryLayoutPolicy.orderByTitle(grouped, categoryTitlesInOrder) { it.first }
+    val groups = remember(channels, categoryTitlesInOrder, otherGroupLabel) {
+        val grouped = channels.groupBy { it.group.trim() }
+            .map { (providerTitle, items) ->
+                MobileLiveGroup(
+                    id = if (providerTitle.isBlank()) OTHER_LIVE_GROUP_ID else "provider:$providerTitle",
+                    title = providerTitle.ifBlank { otherGroupLabel },
+                    channels = items,
+                )
+            }
+            .sortedByDescending { it.channels.size }
+        CategoryLayoutPolicy.orderByTitle(grouped, categoryTitlesInOrder) { it.title }
     }
-    val categoryOptions = remember(groups, channels.size) {
-        listOf(MobileCategoryOption("all", "Όλα", channels.size)) +
-            groups.map { (group, items) ->
-                MobileCategoryOption("group:$group", group, items.size)
+    val categoryOptions = remember(groups, channels.size, allChannelsLabel) {
+        listOf(MobileCategoryOption("all", allChannelsLabel, channels.size)) +
+            groups.map { group ->
+                MobileCategoryOption("group:${group.id}", group.title, group.channels.size)
             }
     }
-    val selectedGroupChannels = remember(groups, openGroup) {
-        openGroup?.let { selected -> groups.firstOrNull { it.first == selected }?.second }
+    val selectedGroup = remember(groups, openGroup) {
+        openGroup?.let { selected -> groups.firstOrNull { it.id == selected } }
     }
+    val selectedGroupChannels = selectedGroup?.channels
     val searchableChannels = selectedGroupChannels ?: channels
     val results = remember(searchableChannels, query) {
         if (query.isBlank()) emptyList()
@@ -107,7 +126,7 @@ fun MobileLiveChannelsScreen(
     Box(modifier.fillMaxSize().background(IptvColors.Background)) {
         Column(Modifier.fillMaxSize()) {
             LiveHeader(
-                title = openGroup ?: "Live TV",
+                title = selectedGroup?.title ?: stringResource(R.string.live_title),
                 onBack = { if (openGroup != null) openGroup = null else onBack() },
                 onOpenEpg = onOpenEpg,
                 onSettings = onOpenSettings,
@@ -133,8 +152,8 @@ fun MobileLiveChannelsScreen(
                     val categoryChannels = if (query.isBlank()) selectedGroupChannels.orEmpty() else results
                     if (categoryChannels.isEmpty()) {
                         EmptyLive(
-                            if (query.isBlank()) "Δεν βρέθηκαν κανάλια σε αυτή την κατηγορία."
-                            else "Κανένα κανάλι με «${query.trim()}»"
+                            if (query.isBlank()) stringResource(R.string.live_empty_category)
+                            else stringResource(R.string.live_empty_search, query.trim())
                         )
                     } else if (categoryLayout == LiveChannelLayout.LIST) {
                         ChannelList(
@@ -161,7 +180,7 @@ fun MobileLiveChannelsScreen(
 
                 query.isNotBlank() -> {
                     if (results.isEmpty()) {
-                        EmptyLive("Κανένα κανάλι με «${query.trim()}»")
+                        EmptyLive(stringResource(R.string.live_empty_search, query.trim()))
                     } else {
                         ChannelGrid(
                             channels = results,
@@ -177,7 +196,7 @@ fun MobileLiveChannelsScreen(
 
                 else -> {
                     if (groups.isEmpty()) {
-                        EmptyLive("Δεν βρέθηκαν κατηγορίες Live TV.")
+                        EmptyLive(stringResource(R.string.live_empty_categories))
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
@@ -191,15 +210,15 @@ fun MobileLiveChannelsScreen(
                                     onSelectGroup = { openGroup = it },
                                 )
                             }
-                            items(groups, key = { "live-group:${it.first}" }) { (group, groupChannels) ->
+                            items(groups, key = { "live-group:${it.id}" }) { group ->
                                 LiveCategorySection(
-                                    title = group,
-                                    channels = groupChannels,
+                                    title = group.title,
+                                    channels = group.channels,
                                     favoriteKeys = favoriteKeys,
                                     keyOf = keyOf,
                                     nowTextFor = nowTextFor,
                                     onPlay = onPlay,
-                                    onSeeAll = { openGroup = group },
+                                    onSeeAll = { openGroup = group.id },
                                 )
                             }
                         }

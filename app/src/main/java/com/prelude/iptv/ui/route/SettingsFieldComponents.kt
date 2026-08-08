@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -136,14 +137,13 @@ internal fun PinDialog(title: String, onOk: (String) -> Unit, onCancel: () -> Un
         confirmButton = {
             TextButton(enabled = pin.length >= 4, onClick = { onOk(pin) },
                 modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                Text("ΟΚ", color = AccentSoft, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.browse_confirm), color = AccentSoft, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onCancel, modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                Text("Άκυρο", color = TextMid)
+                Text(stringResource(R.string.browse_cancel), color = TextMid)
             }
         }
     )
 }
-

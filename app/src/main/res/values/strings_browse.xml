@@ -6,4 +6,14 @@
     <string name="browse_try_again">Δοκίμασε ξανά</string>
     <string name="browse_not_loaded">Αυτή η ενότητα δεν έχει φορτωθεί ακόμα</string>
     <string name="browse_load_now">Φόρτωσε τώρα</string>
+    <string name="browse_unlock_group">Ξεκλείδωμα «%1$s»</string>
+    <string name="browse_unlock_group_management">Ξεκλείδωμα group «%1$s»</string>
+    <string name="browse_lock_group">Κλείδωμα group «%1$s»</string>
+    <string name="browse_wrong_pin">Λάθος PIN</string>
+    <string name="browse_group_unlocked">Ξεκλειδώθηκε: %1$s</string>
+    <string name="browse_group_locked">🔒 Κλειδώθηκε: %1$s</string>
+    <string name="browse_group_not_lockable">Αυτό το group δεν κλειδώνει</string>
+    <string name="browse_set_parental_pin_first">Όρισε πρώτα PIN: Ρυθμίσεις → Γονικός έλεγχος</string>
+    <string name="browse_confirm">ΟΚ</string>
+    <string name="browse_cancel">Άκυρο</string>
 </resources>

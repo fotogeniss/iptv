@@ -10,11 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.home.MobileCategoryExplorer
 import com.prelude.iptv.ui.mobile.home.MobileCategoryOption
@@ -46,7 +48,7 @@ internal fun LiveCategorySection(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                "Όλα  ›",
+                stringResource(R.string.live_see_all),
                 color = IptvColors.TextSecondary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
@@ -84,7 +86,7 @@ internal fun LiveCategoryExplorer(
         onSelect = { id ->
             onSelectGroup(id.removePrefix("group:").takeIf { id != "all" })
         },
-        hint = "Βρες γρήγορα το κανάλι που θέλεις",
-        sheetTitle = "Κατηγορίες Live TV",
+        hint = stringResource(R.string.live_category_explore_hint),
+        sheetTitle = stringResource(R.string.live_categories_title),
     )
 }

@@ -80,11 +80,15 @@ object TvLiveBrowsePolicy {
      * πρόγραμμα: εφεδρική εγγραφή με το όνομα του καναλιού, ώστε ο διάλογος να
      * μην ανοίγει ποτέ κενός.
      */
-    fun detailsFor(programmes: List<LiveProgramme>, channelName: String): LiveProgramme =
+    fun detailsFor(
+        programmes: List<LiveProgramme>,
+        channelName: String,
+        fallbackDescription: String,
+    ): LiveProgramme =
         currentProgramme(programmes) ?: LiveProgramme(
             time = "",
             title = channelName,
-            description = "Δεν υπάρχει διαθέσιμη πληροφορία προγράμματος.",
+            description = fallbackDescription,
             isNow = true,
         )
 }

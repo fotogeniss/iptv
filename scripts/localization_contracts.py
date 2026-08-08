@@ -134,6 +134,55 @@ for ui_path in migrated_home_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Home UI: {ui_path}")
 
+live_foundation = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/live/LiveFoundation.kt"
+)
+tv_live_policy = read(
+    "app/src/main/java/com/prelude/iptv/ui/tv/browse/TvLiveBrowsePolicy.kt"
+)
+browse_route = read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt")
+mobile_live_channels = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveChannelsScreen.kt"
+)
+playback_launchers = read(
+    "app/src/main/java/com/prelude/iptv/ui/route/PlaybackLaunchers.kt"
+)
+if "val providerLabel: String?" not in live_foundation:
+    failures.append("Live filter model no longer separates provider data from app copy")
+if "fun liveRemaining(programme: EpgManager.Prog?, nowMs: Long): LiveRemaining?" not in live_foundation:
+    failures.append("Live remaining time is preformatted outside the resource boundary")
+live_foundation_greek = set(greek_string_literals(live_foundation))
+if live_foundation_greek != {'"αθλη"', '"ποδόσφ"'}:
+    failures.append("shared Live foundation contains unexpected Greek display copy")
+if greek_string_literals(tv_live_policy):
+    failures.append("Android-free TV Live policy still owns Greek display copy")
+if 'state.status.startsWith("Σφάλμα")' in browse_route:
+    failures.append("Browse UI bypasses the typed legacy catalog-status boundary")
+if "OTHER_LIVE_GROUP_ID" not in mobile_live_channels:
+    failures.append("localized Live fallback category is being used as state identity")
+if "MultiviewLaunchFailure" not in playback_launchers or greek_string_literals(playback_launchers):
+    failures.append("Multiview launch failures bypass the typed localization boundary")
+
+migrated_live_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/PremiumLiveTvScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveCategorySections.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveChannelContent.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveChannelsScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveControls.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobileLiveSections.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/live/MobilePremiumLiveScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/browse/TvLiveBrowseScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/browse/TvLiveBrowsePolicy.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/live/TvLiveRail.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/live/TvPremiumLiveScreen.kt",
+]
+for ui_path in migrated_live_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Live UI: {ui_path}")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

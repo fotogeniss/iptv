@@ -62,6 +62,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -69,12 +70,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.ui.player.PlayerExtraAction
 import com.prelude.iptv.ui.player.PlayerHost
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.greekUppercase
+import com.prelude.iptv.ui.localization.localizedLiveGroupLabel
+import com.prelude.iptv.ui.localization.localizedUppercase
 import com.prelude.iptv.ui.requestFocusWithRetry
 import com.prelude.iptv.ui.tvConfirm
 import kotlinx.coroutines.CancellationException
@@ -284,8 +287,7 @@ fun TvLiveBrowseScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "MULTIVIEW · «${first.name}» — διάλεξε δεύτερο κανάλι με OK " +
-                            "(μπορείς να αλλάξεις κατηγορία) · παρατεταμένο OK ξανά για ακύρωση",
+                        stringResource(R.string.live_multiview_select_second, first.name),
                         color = Color.White,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
@@ -304,7 +306,7 @@ fun TvLiveBrowseScreen(
                     if (!showingChannels) {
                         itemsIndexed(groups, key = { i, g -> "live-group:$i:$g" }) { index, group ->
                             TvLiveRow(
-                                label = group.greekUppercase(),
+                                label = localizedUppercase(localizedLiveGroupLabel(group)),
                                 selected = group == selectedGroup,
                                 modifier = if (index == 0) Modifier.focusRequester(firstItemFocus) else Modifier,
                                 onClick = { onSelectGroup(group); showingChannels = true }
@@ -417,9 +419,9 @@ fun TvLiveBrowseScreen(
                     val index = channels.indexOfFirst { keyOf(it) == keyOf(channel) }
                     channels.getOrNull(index + delta)?.let { preview = it }
                 },
-                errorText = if (failed) "Το κανάλι δεν είναι διαθέσιμο" else null,
+                errorText = if (failed) stringResource(R.string.live_channel_unavailable) else null,
                 extraActions = {
-                    PlayerExtraAction("Κανάλια") { channelPanelOpen = true }
+                    PlayerExtraAction(stringResource(R.string.live_channels)) { channelPanelOpen = true }
                 }
             )
         }
@@ -440,7 +442,7 @@ fun TvLiveBrowseScreen(
             ) {
                 Column(Modifier.fillMaxSize().padding(18.dp)) {
                     Text(
-                        "ΚΑΝΑΛΙΑ",
+                        localizedUppercase(stringResource(R.string.live_channels)),
                         color = IptvColors.Primary,
                         fontSize = 11.sp,
                         letterSpacing = 1.6.sp,
@@ -492,7 +494,7 @@ fun TvLiveBrowseScreen(
                     Icon(Icons.Default.LiveTv, null, tint = IptvColors.TextTertiary, modifier = Modifier.size(54.dp))
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "Διάλεξε κανάλι για προεπισκόπηση",
+                        stringResource(R.string.live_select_preview),
                         color = IptvColors.TextSecondary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -513,7 +515,9 @@ fun TvLiveBrowseScreen(
                     Column {
                         if (programme.time.isNotBlank() || programme.isNow) {
                             Text(
-                                if (programme.isNow) "● ΤΩΡΑ  ${programme.time}".trim() else programme.time,
+                                if (programme.isNow) {
+                                    stringResource(R.string.live_schedule_now_time, programme.time).trim()
+                                } else programme.time,
                                 color = IptvColors.Primary,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Black
@@ -532,7 +536,7 @@ fun TvLiveBrowseScreen(
                     LazyColumn(Modifier.heightIn(max = 300.dp)) {
                         item {
                             Text(
-                                programme.description.ifBlank { "Δεν υπάρχει διαθέσιμη περιγραφή." },
+                                programme.description.ifBlank { stringResource(R.string.live_no_description) },
                                 color = IptvColors.TextSecondary,
                                 fontSize = 13.sp,
                                 lineHeight = 19.sp
@@ -543,7 +547,7 @@ fun TvLiveBrowseScreen(
                 confirmButton = {},
                 dismissButton = {
                     com.prelude.iptv.ui.TvDialogTextButton(
-                        label = "Κλείσιμο",
+                        label = stringResource(R.string.live_close),
                         color = Color.White,
                         onClick = { programmeDetails = null },
                         modifier = Modifier.focusRequester(closeFocus)
@@ -562,14 +566,14 @@ private fun TvChannelSchedule(
 ) {
     if (programmes.isEmpty()) {
         Text(
-            "Δεν υπάρχει διαθέσιμο πρόγραμμα για αυτό το κανάλι.",
+            stringResource(R.string.live_no_schedule),
             color = IptvColors.TextTertiary,
             fontSize = 11.sp
         )
         return
     }
     Text(
-        "ΠΡΟΓΡΑΜΜΑ",
+        stringResource(R.string.live_schedule),
         color = IptvColors.Primary,
         fontSize = 10.sp,
         letterSpacing = 1.4.sp,
@@ -598,7 +602,7 @@ private fun TvChannelSchedule(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    if (programme.isNow) "● ΤΩΡΑ" else programme.time,
+                    if (programme.isNow) stringResource(R.string.live_schedule_now) else programme.time,
                     color = when {
                         focused -> Color.Black
                         programme.isNow -> IptvColors.Primary
@@ -663,7 +667,7 @@ private fun TvPreviewCaption(
         }
         if (!compact) {
             Text(
-                "OK ξανά για αναπαραγωγή",
+                stringResource(R.string.live_ok_again_to_play),
                 color = IptvColors.TextTertiary,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold

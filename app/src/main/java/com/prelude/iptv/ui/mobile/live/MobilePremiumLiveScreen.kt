@@ -12,8 +12,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import com.prelude.iptv.ui.components.live.LiveFilterOption
@@ -65,8 +68,12 @@ fun MobilePremiumLiveScreen(
             }
             item(key = "mobile-live-now") {
                 MobileLiveRailSection(
-                    title = "Ζωντανά τώρα",
-                    subtitle = "${channels.size} κανάλια",
+                    title = stringResource(R.string.live_now_heading),
+                    subtitle = pluralStringResource(
+                        R.plurals.live_channel_count,
+                        channels.size,
+                        channels.size,
+                    ),
                     channels = channels,
                     selected = selected,
                     favoriteKeys = favoriteKeys,

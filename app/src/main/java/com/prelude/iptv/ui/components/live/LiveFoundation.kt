@@ -48,7 +48,13 @@ import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 
 @Immutable
-data class LiveFilterOption(val id: String, val label: String)
+data class LiveFilterOption(
+    val id: String,
+    /** Null for app-owned filters; provider labels remain untranslated data. */
+    val providerLabel: String? = null,
+)
+
+data class LiveRemaining(val hours: Int, val minutes: Int)
 
 @Composable
 fun rememberLiveNow(tickMs: Long = 30_000L): Long {
@@ -67,12 +73,12 @@ fun liveFilterOptions(channels: List<Channel>): List<LiveFilterOption> {
         .map { it.group.trim() }
         .filter { it.isNotBlank() }
         .distinct()
-        .map { LiveFilterOption("group:$it", it) }
+        .map { LiveFilterOption("group:$it", providerLabel = it) }
         .toList()
     return listOf(
-        LiveFilterOption("all", "Όλα"),
-        LiveFilterOption("favorites", "Αγαπημένα"),
-        LiveFilterOption("recent", "Πρόσφατα")
+        LiveFilterOption("all"),
+        LiveFilterOption("favorites"),
+        LiveFilterOption("recent")
     ) + groups
 }
 
@@ -94,13 +100,10 @@ fun liveTime(ms: Long): String = SimpleDateFormat("HH:mm", Locale.getDefault()).
 fun liveTimeRange(programme: EpgManager.Prog?): String =
     programme?.let { "${liveTime(it.startMs)} – ${liveTime(it.stopMs)}" }.orEmpty()
 
-fun liveRemaining(programme: EpgManager.Prog?, nowMs: Long): String {
-    if (programme == null) return "Ζωντανή μετάδοση"
+fun liveRemaining(programme: EpgManager.Prog?, nowMs: Long): LiveRemaining? {
+    if (programme == null) return null
     val minutes = ((programme.stopMs - nowMs).coerceAtLeast(0L) / 60_000L).toInt()
-    return when {
-        minutes >= 60 -> "${minutes / 60}ω ${minutes % 60}λ απομένουν"
-        else -> "${minutes}λ απομένουν"
-    }
+    return LiveRemaining(hours = minutes / 60, minutes = minutes % 60)
 }
 
 fun isSportsChannel(channel: Channel): Boolean {

@@ -39,6 +39,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.live.LiveChannelArtwork
 import com.prelude.iptv.ui.components.live.LiveFilterOption
@@ -58,6 +60,8 @@ import com.prelude.iptv.ui.components.live.liveProgress
 import com.prelude.iptv.ui.components.live.liveRemaining
 import com.prelude.iptv.ui.components.live.liveTime
 import com.prelude.iptv.ui.components.live.liveTimeRange
+import com.prelude.iptv.ui.localization.localizedLabel
+import com.prelude.iptv.ui.localization.localizedLiveRemaining
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
@@ -88,7 +92,7 @@ internal fun TvLiveFilterRow(
             )
             val selected = item.id == selectedId
             Text(
-                item.label,
+                item.localizedLabel(),
                 color = if (selected || focused) Color.Black else IptvColors.TextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Black,
@@ -123,7 +127,7 @@ internal fun TvLiveChannelRail(
 ) {
     if (channels.isEmpty()) {
         Box(modifier, contentAlignment = Alignment.CenterStart) {
-            Text("Δεν υπάρχουν κανάλια σε αυτό το φίλτρο", color = IptvColors.TextSecondary, fontSize = 15.sp)
+            Text(stringResource(R.string.live_empty_filter), color = IptvColors.TextSecondary, fontSize = 15.sp)
         }
         return
     }
@@ -244,7 +248,7 @@ private fun TvLiveChannelCard(
                     Box(
                         Modifier.background(IptvColors.Primary, RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 4.dp)
-                    ) { Text("LIVE", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Black) }
+                    ) { Text(stringResource(R.string.live_label), color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Black) }
                     if (favorite) {
                         Spacer(Modifier.width(6.dp))
                         Icon(Icons.Default.Favorite, null, tint = IptvColors.Primary, modifier = Modifier.size(14.dp))
@@ -252,7 +256,7 @@ private fun TvLiveChannelCard(
                 }
                 Spacer(Modifier.height(7.dp))
                 Text(channel.name, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(now?.title ?: channel.group.ifBlank { "Ζωντανή μετάδοση" }, color = Color.White.copy(alpha = .68f), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(now?.title ?: channel.group.ifBlank { stringResource(R.string.live_broadcast) }, color = Color.White.copy(alpha = .68f), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(8.dp))
                 LiveProgressBar(liveProgress(now, nowMs), Modifier.fillMaxWidth(), height = 3)
             }
@@ -279,14 +283,18 @@ internal fun TvLiveNowNextStrip(
     val (now, next) = remember(channel.tvgId, nowMs / 30_000L) { liveNowNext(channel, nowMs) }
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         LiveProgrammePanel(
-            label = "ΤΩΡΑ",
-            title = now?.title ?: "Ζωντανή μετάδοση",
-            subtitle = if (now != null) "${liveTimeRange(now)} · ${liveRemaining(now, nowMs)}" else channel.name,
+            label = stringResource(R.string.live_now_label),
+            title = now?.title ?: stringResource(R.string.live_broadcast),
+            subtitle = if (now != null) stringResource(
+                R.string.live_time_and_remaining,
+                liveTimeRange(now),
+                localizedLiveRemaining(liveRemaining(now, nowMs)),
+            ) else channel.name,
             modifier = Modifier.weight(1.35f)
         )
         LiveProgrammePanel(
-            label = "ΕΠΟΜΕΝΟ",
-            title = next?.title ?: "Δεν υπάρχουν διαθέσιμα στοιχεία",
+            label = stringResource(R.string.live_next_label),
+            title = next?.title ?: stringResource(R.string.live_no_data),
             subtitle = next?.let { "${liveTime(it.startMs)} – ${liveTime(it.stopMs)}" }.orEmpty(),
             modifier = Modifier.weight(.8f)
         )

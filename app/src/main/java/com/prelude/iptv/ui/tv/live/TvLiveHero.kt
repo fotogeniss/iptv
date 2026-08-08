@@ -36,19 +36,23 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.greekUppercase
 import com.prelude.iptv.ui.components.live.LiveChannelArtwork
 import com.prelude.iptv.ui.components.live.LiveProgressBar
 import com.prelude.iptv.ui.components.live.liveNowNext
 import com.prelude.iptv.ui.components.live.liveProgress
 import com.prelude.iptv.ui.components.live.liveRemaining
 import com.prelude.iptv.ui.components.live.liveTimeRange
+import com.prelude.iptv.ui.localization.localizedLiveProgress
+import com.prelude.iptv.ui.localization.localizedLiveRemaining
+import com.prelude.iptv.ui.localization.localizedUppercase
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
@@ -71,7 +75,7 @@ internal fun TvLiveHero(
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                "ΤΩΡΑ ΣΤΟ ${channel.name.greekUppercase()}",
+                stringResource(R.string.live_now_with_channel, localizedUppercase(channel.name)),
                 color = Color.White.copy(alpha = .78f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Black,
@@ -91,13 +95,13 @@ internal fun TvLiveHero(
             )
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(9.dp), verticalAlignment = Alignment.CenterVertically) {
-                LivePill("LIVE", IptvColors.Primary)
+                LivePill(stringResource(R.string.live_label), IptvColors.Primary)
                 channel.group.takeIf { it.isNotBlank() }?.let { LivePill(it, Color.White.copy(alpha = .13f)) }
                 Text(liveTimeRange(now), color = IptvColors.TextSecondary, fontSize = 13.sp)
             }
             val description = now?.desc?.takeIf { it.isNotBlank() }
                 ?: channel.plot.takeIf { it.isNotBlank() }
-                ?: "Ζωντανή μετάδοση από το ${channel.name}."
+                ?: stringResource(R.string.live_broadcast_from, channel.name)
             Spacer(Modifier.height(12.dp))
             Text(
                 description,
@@ -110,17 +114,17 @@ internal fun TvLiveHero(
             )
             Spacer(Modifier.height(13.dp))
             Row(Modifier.fillMaxWidth(.84f), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(liveRemaining(now, nowMs), color = IptvColors.TextSecondary, fontSize = 12.sp)
-                Text("${(liveProgress(now, nowMs) * 100).toInt()}%", color = IptvColors.TextSecondary, fontSize = 12.sp)
+                Text(localizedLiveRemaining(liveRemaining(now, nowMs)), color = IptvColors.TextSecondary, fontSize = 12.sp)
+                Text(localizedLiveProgress(liveProgress(now, nowMs)), color = IptvColors.TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.height(6.dp))
             LiveProgressBar(liveProgress(now, nowMs), Modifier.fillMaxWidth(.84f))
             Spacer(Modifier.height(17.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                TvLiveAction("Παρακολούθηση", Icons.Default.PlayArrow, primary = true, onClick = onPlay)
-                TvLiveAction("Οδηγός", Icons.Default.CalendarMonth, onClick = onEpg)
+                TvLiveAction(stringResource(R.string.live_watch), Icons.Default.PlayArrow, primary = true, onClick = onPlay)
+                TvLiveAction(stringResource(R.string.live_guide), Icons.Default.CalendarMonth, onClick = onEpg)
                 TvLiveAction(
-                    if (favorite) "Αγαπημένο" else "Προσθήκη",
+                    stringResource(if (favorite) R.string.live_favorite else R.string.live_add),
                     if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     onClick = onFavorite
                 )
@@ -140,10 +144,10 @@ internal fun TvLiveHero(
                 Modifier.align(Alignment.TopStart).padding(16.dp)
                     .background(IptvColors.Primary, RoundedCornerShape(6.dp))
                     .padding(horizontal = 9.dp, vertical = 6.dp)
-            ) { Text("LIVE", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black) }
+            ) { Text(stringResource(R.string.live_label), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black) }
             Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(18.dp)) {
                 Text(channel.name, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
-                Text(now?.title ?: "Ζωντανή μετάδοση", color = Color.White.copy(alpha = .78f), fontSize = 13.sp)
+                Text(now?.title ?: stringResource(R.string.live_broadcast), color = Color.White.copy(alpha = .78f), fontSize = 13.sp)
             }
         }
     }

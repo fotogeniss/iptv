@@ -26,11 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.live.LiveChannelArtwork
 import com.prelude.iptv.ui.components.live.LiveFilterOption
@@ -39,6 +42,7 @@ import com.prelude.iptv.ui.components.live.isSportsChannel
 import com.prelude.iptv.ui.components.live.liveNowNext
 import com.prelude.iptv.ui.components.live.liveProgress
 import com.prelude.iptv.ui.components.live.liveTime
+import com.prelude.iptv.ui.localization.localizedLabel
 
 @Composable
 internal fun MobileLiveFilterRow(
@@ -53,7 +57,7 @@ internal fun MobileLiveFilterRow(
         items(filters, key = { it.id }) { item ->
             val selected = item.id == selectedId
             Text(
-                item.label,
+                item.localizedLabel(),
                 color = if (selected) Color.White else IptvColors.TextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Black,
@@ -89,7 +93,7 @@ internal fun MobileLiveRailSection(
         }
         if (channels.isEmpty()) {
             Text(
-                "Δεν υπάρχουν κανάλια σε αυτό το φίλτρο",
+                stringResource(R.string.live_empty_filter),
                 color = IptvColors.TextSecondary,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 22.dp)
@@ -125,8 +129,12 @@ internal fun MobileSportsRail(
     val sports = remember(channels) { channels.filter(::isSportsChannel).take(20) }
     if (sports.isNotEmpty()) {
         MobileLiveRailSection(
-            title = "Αθλητικά Live",
-            subtitle = "${sports.size} μεταδόσεις",
+            title = stringResource(R.string.live_sports_heading),
+            subtitle = pluralStringResource(
+                R.plurals.live_broadcast_count,
+                sports.size,
+                sports.size,
+            ),
             channels = sports,
             selected = selected,
             favoriteKeys = favoriteKeys,
@@ -162,7 +170,7 @@ private fun MobileLiveChannelCard(
                 Modifier.align(Alignment.TopStart).padding(5.dp)
                     .background(IptvColors.Primary, RoundedCornerShape(4.dp))
                     .padding(horizontal = 5.dp, vertical = 2.dp)
-            ) { Text("LIVE", color = Color.White, fontSize = 7.sp, fontWeight = FontWeight.Black) }
+            ) { Text(stringResource(R.string.live_label), color = Color.White, fontSize = 7.sp, fontWeight = FontWeight.Black) }
             if (favorite) {
                 Text(
                     "♥",
@@ -176,7 +184,7 @@ private fun MobileLiveChannelCard(
         Text(channel.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
         Text(
-            now?.title ?: channel.group.ifBlank { "Ζωντανή μετάδοση" },
+            now?.title ?: channel.group.ifBlank { stringResource(R.string.live_broadcast) },
             color = IptvColors.TextTertiary,
             fontSize = 9.5.sp,
             maxLines = 1,
@@ -203,15 +211,19 @@ internal fun MobileQuickGuideHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text("Σύντομος οδηγός", color = Color.White, fontSize = 15.5.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.live_quick_guide), color = Color.White, fontSize = 15.5.sp, fontWeight = FontWeight.Black)
             Text(
-                "$channelCount κανάλια στο γκρουπ",
+                pluralStringResource(
+                    R.plurals.live_group_channel_count,
+                    channelCount,
+                    channelCount,
+                ),
                 color = IptvColors.TextTertiary,
                 fontSize = 9.5.sp
             )
         }
         Text(
-            "Πλήρες EPG",
+            stringResource(R.string.live_full_epg),
             color = Color.White,
             fontSize = 10.5.sp,
             fontWeight = FontWeight.Bold,
@@ -264,7 +276,7 @@ internal fun MobileQuickGuideRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                now?.title ?: "Ζωντανή μετάδοση",
+                now?.title ?: stringResource(R.string.live_broadcast),
                 color = IptvColors.TextTertiary,
                 fontSize = 9.5.sp,
                 maxLines = 1,
@@ -280,7 +292,7 @@ internal fun MobileQuickGuideRow(
         Spacer(Modifier.width(5.dp))
         Icon(
             Icons.Default.PlayArrow,
-            "Παρακολούθηση ${channel.name}",
+            stringResource(R.string.live_watch_channel, channel.name),
             tint = IptvColors.TextTertiary,
             modifier = Modifier.size(15.dp)
         )

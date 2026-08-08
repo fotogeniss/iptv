@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 
 internal enum class LiveChannelLayout { LIST, GRID }
@@ -45,7 +47,7 @@ internal fun LiveHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            Icons.AutoMirrored.Filled.ArrowBack, "Πίσω",
+            Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.live_back),
             tint = IptvColors.TextPrimary,
             modifier = Modifier
                 .size(30.dp)
@@ -74,7 +76,7 @@ internal fun LiveHeader(
             ) {
                 Icon(Icons.Default.Tv, null, tint = IptvColors.TextPrimary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("EPG", color = IptvColors.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.live_epg), color = IptvColors.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black)
             }
         }
         Spacer(Modifier.width(6.dp))
@@ -113,7 +115,7 @@ internal fun LiveSearchField(
             BasicTextFieldRow(value = value, onChange = onChange)
             if (value.isNotBlank()) {
                 Icon(
-                    Icons.Default.Close, "Καθάρισμα",
+                    Icons.Default.Close, stringResource(R.string.live_clear_search),
                     tint = IptvColors.TextSecondary,
                     modifier = Modifier
                         .size(22.dp)
@@ -126,7 +128,9 @@ internal fun LiveSearchField(
             val switchToGrid = categoryLayout == LiveChannelLayout.LIST
             Icon(
                 imageVector = if (switchToGrid) Icons.Default.GridView else Icons.Default.Menu,
-                contentDescription = if (switchToGrid) "Προβολή ως πλέγμα" else "Προβολή ως λίστα",
+                contentDescription = stringResource(
+                    if (switchToGrid) R.string.live_show_grid else R.string.live_show_list
+                ),
                 tint = IptvColors.TextPrimary,
                 modifier = Modifier
                     .size(46.dp)
@@ -143,7 +147,7 @@ private fun RowScope.BasicTextFieldRow(value: String, onChange: (String) -> Unit
     Box(Modifier.weight(1f).padding(start = 12.dp, top = 16.dp, bottom = 16.dp)) {
         if (value.isEmpty()) {
             Text(
-                "Αναζήτηση στα ζωντανά",
+                stringResource(R.string.live_search_hint),
                 color = IptvColors.TextTertiary,
                 fontSize = 16.sp
             )

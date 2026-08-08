@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
 
@@ -151,8 +153,9 @@ private fun LiveListCard(
             )
             Spacer(Modifier.height(5.dp))
             Text(
-                epgNow?.takeIf(String::isNotBlank)?.let { "Τώρα · $it" }
-                    ?: "Χωρίς διαθέσιμο EPG",
+                epgNow?.takeIf(String::isNotBlank)?.let {
+                    stringResource(R.string.live_now_with_title, it)
+                } ?: stringResource(R.string.live_no_epg),
                 color = if (epgNow.isNullOrBlank()) IptvColors.TextTertiary else IptvColors.TextSecondary,
                 fontSize = 11.sp,
                 fontWeight = if (epgNow.isNullOrBlank()) FontWeight.Normal else FontWeight.SemiBold,
@@ -224,8 +227,9 @@ internal fun LiveCard(
             modifier = Modifier.heightIn(min = 32.dp),
         )
         Text(
-            epgNow?.takeIf(String::isNotBlank)?.let { "Τώρα · $it" }
-                ?: "Χωρίς διαθέσιμο EPG",
+            epgNow?.takeIf(String::isNotBlank)?.let {
+                stringResource(R.string.live_now_with_title, it)
+            } ?: stringResource(R.string.live_no_epg),
             color = if (epgNow.isNullOrBlank()) IptvColors.TextTertiary else IptvColors.TextSecondary,
             fontSize = 9.5.sp,
             fontWeight = if (epgNow.isNullOrBlank()) FontWeight.Normal else FontWeight.SemiBold,

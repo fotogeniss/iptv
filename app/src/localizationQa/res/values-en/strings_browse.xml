@@ -6,4 +6,14 @@
     <string name="browse_try_again">Try again</string>
     <string name="browse_not_loaded">This section has not been loaded yet</string>
     <string name="browse_load_now">Load now</string>
+    <string name="browse_unlock_group">Unlock “%1$s”</string>
+    <string name="browse_unlock_group_management">Unlock group “%1$s”</string>
+    <string name="browse_lock_group">Lock group “%1$s”</string>
+    <string name="browse_wrong_pin">Incorrect PIN</string>
+    <string name="browse_group_unlocked">Unlocked: %1$s</string>
+    <string name="browse_group_locked">🔒 Locked: %1$s</string>
+    <string name="browse_group_not_lockable">This group cannot be locked</string>
+    <string name="browse_set_parental_pin_first">Set a PIN first: Settings → Parental controls</string>
+    <string name="browse_confirm">OK</string>
+    <string name="browse_cancel">Cancel</string>
 </resources>

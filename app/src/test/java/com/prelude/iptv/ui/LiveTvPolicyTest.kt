@@ -2,6 +2,8 @@ package com.prelude.iptv.ui
 
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.ui.components.live.liveFilterOptions
+import com.prelude.iptv.ui.components.live.liveRemaining
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -23,5 +25,20 @@ class LiveTvPolicyTest {
         assertEquals(0f, LiveTvPolicy.progress(p, 500), 0.001f)
         assertEquals(0.5f, LiveTvPolicy.progress(p, 1_500), 0.001f)
         assertEquals(1f, LiveTvPolicy.progress(p, 2_500), 0.001f)
+    }
+
+    @Test fun appOwnedFilterCopyIsResolvedOutsideTheModel() {
+        val options = liveFilterOptions(
+            listOf(Channel(name = "News One", url = "news", group = "News"))
+        )
+
+        assertEquals(listOf(null, null, null, "News"), options.map { it.providerLabel })
+    }
+
+    @Test fun remainingTimeIsTypedInsteadOfPreformattedCopy() {
+        val programme = EpgManager.Prog("Show", "", 0, 3_720_000)
+
+        assertEquals(1, liveRemaining(programme, 0)?.hours)
+        assertEquals(2, liveRemaining(programme, 0)?.minutes)
     }
 }

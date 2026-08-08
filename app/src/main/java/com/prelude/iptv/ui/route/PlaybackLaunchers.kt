@@ -69,13 +69,19 @@ internal fun openCatchup(ctx: Context, ch: Channel, progTitle: String, url: Stri
 /** Secure two-stream launch: the Intent contains only a one-shot opaque token. */
 private val multiviewLaunchInFlight = java.util.concurrent.atomic.AtomicBoolean(false)
 
+internal enum class MultiviewLaunchFailure {
+    PRIMARY_UNAVAILABLE,
+    SECONDARY_UNAVAILABLE,
+    START_FAILED,
+}
+
 internal fun openMultiview(
     ctx: Context,
     scope: kotlinx.coroutines.CoroutineScope,
     vm: MainViewModel,
     primary: Channel,
     secondary: Channel,
-    toastFn: (String) -> Unit
+    onFailure: (MultiviewLaunchFailure) -> Unit
 ) {
     if (!multiviewLaunchInFlight.compareAndSet(false, true)) return
     scope.launch {
@@ -85,8 +91,14 @@ internal fun openMultiview(
                 // Session-sensitive providers are deliberately resolved sequentially.
                 vm.resolvePlayableUrl(primary) to vm.resolvePlayableUrl(secondary)
             }
-            if (urls.first.isBlank()) { toastFn("Το πρώτο stream δεν είναι διαθέσιμο"); return@launch }
-            if (urls.second.isBlank()) { toastFn("Το δεύτερο stream δεν είναι διαθέσιμο"); return@launch }
+            if (urls.first.isBlank()) {
+                onFailure(MultiviewLaunchFailure.PRIMARY_UNAVAILABLE)
+                return@launch
+            }
+            if (urls.second.isBlank()) {
+                onFailure(MultiviewLaunchFailure.SECONDARY_UNAVAILABLE)
+                return@launch
+            }
             val token = MultiviewLaunchStore.put(
                 MultiviewLaunchStore.Launch(
                     primary = MultiviewLaunchStore.Stream(urls.first, primary.name, primary.logo, sourceId),
@@ -99,8 +111,8 @@ internal fun openMultiview(
             )
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
-        } catch (e: Exception) {
-            toastFn("Multiview: ${e.message ?: "αποτυχία εκκίνησης"}")
+        } catch (_: Exception) {
+            onFailure(MultiviewLaunchFailure.START_FAILED)
         } finally {
             multiviewLaunchInFlight.set(false)
         }

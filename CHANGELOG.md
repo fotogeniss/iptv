@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized Live TV across the active mobile and Android TV flows, including
+  categories, search, list/grid views, channel preview, programme labels,
+  Multiview guidance and typed failures, parental-category actions, empty
+  states, accessibility copy, locale-aware progress and pluralized counts.
+  Provider channel/group names and EPG content remain unchanged.
 - Localized the complete Home experience for mobile and Android TV in the
   staged QA flow, including rails, hero actions, category exploration, Home
   editing, empty/recovery states, accessibility labels, plurals and

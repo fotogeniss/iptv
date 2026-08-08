@@ -1,7 +1,7 @@
 # Prelude+ localization architecture
 
-Status: owner-approved design; runtime foundation, navigation/settings and the
-mobile/TV Home slice are implemented behind the QA/parity rollout gate.
+Status: owner-approved design; runtime foundation, navigation/settings, Home
+and Live TV are implemented behind the QA/parity rollout gate.
 
 ## Product contract
 
@@ -118,11 +118,14 @@ cohesive vertical slices:
    QA builds; public visibility remains gated.**
 3. Home. **Implemented for mobile and TV, including shared empty/recovery
    states; public visibility remains gated.**
-4. Live, movies, series, Search, details and episodes.
-5. Player, audio/subtitle panels and playback errors.
-6. Source onboarding/management, EPG and all settings flows.
-7. Profiles, billing, legal, diagnostics, backup/export and system notifications.
-8. Final hardcoded-string audit, translation parity gate and public picker
+4. Live TV. **Implemented for mobile and TV, including inline programme copy,
+   Multiview failures and category/PIN actions; the full EPG screens remain a
+   later slice.**
+5. Movies, series, Search, details and episodes.
+6. Player, audio/subtitle panels and playback errors.
+7. Source onboarding/management, EPG and all settings flows.
+8. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+9. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -136,8 +139,8 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home resource mappings, the Home hardcoded-copy audit
-  and the closed public rollout gate.
+  boundaries, migrated Home/Live mappings and hardcoded-copy audits, and the
+  closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

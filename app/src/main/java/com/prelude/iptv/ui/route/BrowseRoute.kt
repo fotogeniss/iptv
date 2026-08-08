@@ -45,12 +45,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prelude.iptv.EpgGridScreen
 import com.prelude.iptv.ExportScreen
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.AdaptiveCatalogHome
 import com.prelude.iptv.ui.HeroShowcase
@@ -63,6 +65,8 @@ import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
 import com.prelude.iptv.ui.localization.catalogRailLabels
+import com.prelude.iptv.ui.status.CatalogStatusKind
+import com.prelude.iptv.ui.status.CatalogStatusPolicy
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.isTvDevice
@@ -105,7 +109,7 @@ internal fun BrowseScreen(
     var epgChannel by remember { mutableStateOf<Channel?>(null) }
     var showExport by remember { mutableStateOf(false) }
     var showGrid by remember { mutableStateOf(false) }
-    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var multiviewFailure by remember { mutableStateOf<MultiviewLaunchFailure?>(null) }
     var detailChannel by remember { mutableStateOf<Channel?>(null) }
     var recentsTick by remember { mutableStateOf(0) }
     var searchOpen by remember { mutableStateOf(false) }
@@ -397,9 +401,11 @@ internal fun BrowseScreen(
     var lastFlashed by remember { mutableStateOf<String?>(null) }
     // Χωρίς το epgStatus στα κλειδιά: δεν το δείχνουμε πια, οπότε δεν υπάρχει
     // λόγος να ξανατρέχει το effect κάθε φορά που αλλάζει.
-    LaunchedEffect(state.status, state.loading) {
+    val localizedStatusSurface = isCatalogHome || state.contentType == "live"
+    val catalogStatusKind = CatalogStatusPolicy.kindOf(state.status)
+    LaunchedEffect(state.status, state.loading, localizedStatusSurface) {
         val msg = when {
-            state.loading -> null
+            state.loading || localizedStatusSurface -> null
             // ΤΟ EPG ΔΕΝ ΑΝΑΚΟΙΝΩΝΕΤΑΙ.
             //
             // Το «✓ EPG: ταιριάζει σε 412 κανάλια» είναι πληροφορία για όποιον
@@ -422,18 +428,24 @@ internal fun BrowseScreen(
     pinAction?.let { (mode, g) ->
         PinDialog(
             title = when {
-                mode == "unlock" -> "Ξεκλείδωμα «$g»"
-                g in state.lockedGroups -> "Ξεκλείδωμα group «$g»"
-                else -> "Κλείδωμα group «$g»"
+                mode == "unlock" -> stringResource(R.string.browse_unlock_group, g)
+                g in state.lockedGroups -> stringResource(R.string.browse_unlock_group_management, g)
+                else -> stringResource(R.string.browse_lock_group, g)
             },
             onOk = { pin ->
-                if (!vm.checkPin(pin)) toast(ctx, "Λάθος PIN")
+                if (!vm.checkPin(pin)) toast(ctx, ctx.getString(R.string.browse_wrong_pin))
                 else when (mode) {
                     "unlock" -> { vm.unlockParental(pin); vm.setGroup(g) }
                     else -> {
                         val wasLocked = g in state.lockedGroups
                         vm.toggleLockGroup(g)
-                        toast(ctx, if (wasLocked) "Ξεκλειδώθηκε: $g" else "🔒 Κλειδώθηκε: $g")
+                        toast(
+                            ctx,
+                            ctx.getString(
+                                if (wasLocked) R.string.browse_group_unlocked else R.string.browse_group_locked,
+                                g,
+                            ),
+                        )
                     }
                 }
                 pinAction = null
@@ -657,9 +669,9 @@ internal fun BrowseScreen(
                 onLongPress = { group ->
                     when {
                         group == UiState.ALL_GROUP || group == UiState.FAV_GROUP ->
-                            toast(ctx, "Αυτό το group δεν κλειδώνει")
+                            toast(ctx, ctx.getString(R.string.browse_group_not_lockable))
                         !vm.hasParentalPin() ->
-                            toast(ctx, "Όρισε πρώτα PIN: Ρυθμίσεις → Γονικός έλεγχος")
+                            toast(ctx, ctx.getString(R.string.browse_set_parental_pin_first))
                         else -> pinAction = "toggle" to group
                     }
                 },
@@ -775,7 +787,7 @@ internal fun BrowseScreen(
                     onRequestUnlock = { group -> pinAction = "unlock" to group },
                     onFullscreenChange = { liveFullscreen = it },
                     onMultiview = { primary, secondary ->
-                        openMultiview(ctx, scope, vm, primary, secondary) { errorMsg = it }
+                        openMultiview(ctx, scope, vm, primary, secondary) { multiviewFailure = it }
                     },
                     onOpenDetails = { channel ->
                         lastOpenedKey = vm.favKey(channel)
@@ -798,9 +810,9 @@ internal fun BrowseScreen(
                     onLongPress = { g ->
                         when {
                             g == UiState.ALL_GROUP || g == UiState.FAV_GROUP ->
-                                toast(ctx, "Αυτό το group δεν κλειδώνει")
+                                toast(ctx, ctx.getString(R.string.browse_group_not_lockable))
                             !vm.hasParentalPin() ->
-                                toast(ctx, "Όρισε πρώτα PIN: Ρυθμίσεις → Γονικός έλεγχος")
+                                toast(ctx, ctx.getString(R.string.browse_set_parental_pin_first))
                             else -> pinAction = "toggle" to g
                         }
                     }
@@ -883,10 +895,10 @@ internal fun BrowseScreen(
                 val headerCount = (if (hasContinue) 1 else 0) + (if (hasHero) 1 else 0)
                 if (channels.isEmpty() && !state.loading) EmptyState(
                     hasLoaded = state.channels.isNotEmpty(),
-                    isError = state.status.startsWith("Σφάλμα"),
-                    // View-model status text is still a legacy Greek string. Home uses the
-                    // localized recovery copy until catalog status becomes a typed UI event.
-                    message = if (isCatalogHome) "" else state.status,
+                    isError = catalogStatusKind == CatalogStatusKind.ERROR,
+                    // Migrated surfaces consume the typed status classification and
+                    // localized recovery copy, never the legacy Greek transport text.
+                    message = if (localizedStatusSurface) "" else state.status,
                     onLoad = { vm.loadCurrent() },
                     onClearFilters = { vm.setSearch(""); vm.setGroup(UiState.ALL_GROUP) },
                     onRefresh = { vm.requestRefresh() },
@@ -1265,12 +1277,30 @@ internal fun BrowseScreen(
 
     epgChannel?.let { ch -> EpgSheet(ch, vm) { epgChannel = null } }
 
-    errorMsg?.let { msg ->
+    multiviewFailure?.let { failure ->
         AlertDialog(
-            onDismissRequest = { errorMsg = null },
-            confirmButton = { TvDialogTextButton(label = "OK", color = AccentSoft, onClick = { errorMsg = null }) },
-            title = { Text("Σφάλμα αναπαραγωγής", color = TextHi) },
-            text = { Text(msg, fontSize = 12.sp, color = TextMid) },
+            onDismissRequest = { multiviewFailure = null },
+            confirmButton = {
+                TvDialogTextButton(
+                    label = stringResource(R.string.live_close),
+                    color = AccentSoft,
+                    onClick = { multiviewFailure = null },
+                )
+            },
+            title = { Text(stringResource(R.string.live_playback_error), color = TextHi) },
+            text = {
+                Text(
+                    stringResource(
+                        when (failure) {
+                            MultiviewLaunchFailure.PRIMARY_UNAVAILABLE -> R.string.live_multiview_primary_unavailable
+                            MultiviewLaunchFailure.SECONDARY_UNAVAILABLE -> R.string.live_multiview_secondary_unavailable
+                            MultiviewLaunchFailure.START_FAILED -> R.string.live_multiview_start_failed
+                        }
+                    ),
+                    fontSize = 12.sp,
+                    color = TextMid,
+                )
+            },
             containerColor = BgElev2
         )
     }

@@ -316,9 +316,19 @@ has now been implemented for Android TV.
   only stable IDs and behavior flags, `CatalogPolicy` receives localized labels,
   and provider category/title data is deliberately left untouched. The static
   localization contract rejects Greek literals in the migrated Home UI files.
-- The next cohesive localization slice is Live TV across phone and TV. Treat
-  catalog status/error strings in `MainViewModel` as a typed-state migration,
-  not as ad-hoc resource lookup from the data layer.
+- Live TV is now localized across the active phone and TV routes plus the
+  retained premium Live components: categories, search, list/grid views,
+  preview/player panels, inline programme labels, Multiview guidance/failures,
+  PIN/category actions, empty states, accessibility copy, locale-aware progress
+  and plurals. Provider channel/group names and EPG content remain data.
+- `LiveFilterOption` no longer owns app labels, remaining time is a typed value,
+  Multiview launch failures are typed, and the legacy catalog status string is
+  classified once through `CatalogStatusPolicy`. Migrated Home/Live surfaces do
+  not render that legacy Greek transport text. Full producer-side typed catalog
+  status should replace the transitional classifier in a later focused change.
+- The next cohesive localization slice is movies and series browsing. The full
+  EPG UI remains with the later EPG/settings slice; only programme labels shown
+  directly inside Live were included here.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.
@@ -432,6 +442,7 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate implementation task is the Live TV
-> localization slice across phone and TV, keeping provider/EPG data untouched
-> and moving app-owned status/error copy behind typed UI state before resources.
+> cohesive completed change. The immediate implementation task is the movies
+> and series browse localization slice across phone and TV, keeping provider
+> titles, categories and metadata untouched while moving app-owned copy to the
+> Android resource boundary.

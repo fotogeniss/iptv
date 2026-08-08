@@ -1,0 +1,86 @@
+<resources>
+    <string name="live_title">Live TV</string>
+    <string name="live_all">Όλα</string>
+    <string name="live_all_channels">Όλα τα κανάλια</string>
+    <string name="live_favorites">Αγαπημένα</string>
+    <string name="live_recent">Πρόσφατα</string>
+    <string name="live_other">Άλλα</string>
+    <string name="live_channels">Κανάλια</string>
+    <string name="live_broadcast">Ζωντανή μετάδοση</string>
+    <string name="live_broadcast_from">Ζωντανή μετάδοση από το %1$s.</string>
+    <string name="live_now_with_title">Τώρα · %1$s</string>
+    <string name="live_now_with_channel">ΤΩΡΑ ΣΤΟ %1$s</string>
+    <string name="live_no_epg">Χωρίς διαθέσιμο EPG</string>
+    <string name="live_now_label">ΤΩΡΑ</string>
+    <string name="live_next_label">ΕΠΟΜΕΝΟ</string>
+    <string name="live_schedule_now_time">● ΤΩΡΑ  %1$s</string>
+    <string name="live_schedule_now">● ΤΩΡΑ</string>
+    <string name="live_time_and_remaining">%1$s · %2$s</string>
+    <string name="live_label">LIVE</string>
+    <string name="live_badge">●  LIVE</string>
+    <string name="live_tv_badge">●  LIVE TV</string>
+    <string name="live_epg" translatable="false">EPG</string>
+
+    <string name="live_back">Πίσω</string>
+    <string name="live_search">Αναζήτηση</string>
+    <string name="live_search_hint">Αναζήτηση στα ζωντανά</string>
+    <string name="live_clear_search">Καθάρισμα αναζήτησης</string>
+    <string name="live_show_grid">Προβολή ως πλέγμα</string>
+    <string name="live_show_list">Προβολή ως λίστα</string>
+    <string name="live_watch">Παρακολούθηση</string>
+    <string name="live_watch_channel">Παρακολούθηση %1$s</string>
+    <string name="live_guide">Οδηγός</string>
+    <string name="live_favorite">Αγαπημένο</string>
+    <string name="live_add">Προσθήκη</string>
+    <string name="live_close">Κλείσιμο</string>
+
+    <string name="live_see_all">Όλα  ›</string>
+    <string name="live_category_explore_hint">Βρες γρήγορα το κανάλι που θέλεις</string>
+    <string name="live_categories_title">Κατηγορίες Live TV</string>
+    <string name="live_empty_category">Δεν βρέθηκαν κανάλια σε αυτή την κατηγορία.</string>
+    <string name="live_empty_search">Κανένα κανάλι με «%1$s»</string>
+    <string name="live_empty_categories">Δεν βρέθηκαν κατηγορίες Live TV.</string>
+    <string name="live_empty_filter">Δεν υπάρχουν κανάλια σε αυτό το φίλτρο</string>
+
+    <string name="live_now_heading">Ζωντανά τώρα</string>
+    <string name="live_sports_heading">Αθλητικά Live</string>
+    <string name="live_quick_guide">Σύντομος οδηγός</string>
+    <string name="live_full_epg">Πλήρες EPG</string>
+
+    <string name="live_multiview_select_second">MULTIVIEW · «%1$s» — διάλεξε δεύτερο κανάλι με OK (μπορείς να αλλάξεις κατηγορία) · παρατεταμένο OK ξανά για ακύρωση</string>
+    <string name="live_multiview_select_second_short">MULTIVIEW · Επίλεξε δεύτερο κανάλι με OK · BACK για ακύρωση</string>
+    <string name="live_multiview_long_press">Παρατεταμένο OK σε κανάλι · Multiview</string>
+    <string name="live_channel_unavailable">Το κανάλι δεν είναι διαθέσιμο</string>
+    <string name="live_playback_error">Σφάλμα αναπαραγωγής</string>
+    <string name="live_multiview_primary_unavailable">Το πρώτο κανάλι δεν είναι διαθέσιμο για Multiview.</string>
+    <string name="live_multiview_secondary_unavailable">Το δεύτερο κανάλι δεν είναι διαθέσιμο για Multiview.</string>
+    <string name="live_multiview_start_failed">Το Multiview δεν μπόρεσε να ξεκινήσει.</string>
+    <string name="live_select_preview">Διάλεξε κανάλι για προεπισκόπηση</string>
+    <string name="live_no_description">Δεν υπάρχει διαθέσιμη περιγραφή.</string>
+    <string name="live_no_programme_information">Δεν υπάρχει διαθέσιμη πληροφορία προγράμματος.</string>
+    <string name="live_no_schedule">Δεν υπάρχει διαθέσιμο πρόγραμμα για αυτό το κανάλι.</string>
+    <string name="live_schedule">ΠΡΟΓΡΑΜΜΑ</string>
+    <string name="live_ok_again_to_play">OK ξανά για αναπαραγωγή</string>
+    <string name="live_no_data">Δεν υπάρχουν διαθέσιμα στοιχεία</string>
+
+    <plurals name="live_channel_count">
+        <item quantity="one">%1$d κανάλι</item>
+        <item quantity="other">%1$d κανάλια</item>
+    </plurals>
+    <plurals name="live_group_channel_count">
+        <item quantity="one">%1$d κανάλι στο γκρουπ</item>
+        <item quantity="other">%1$d κανάλια στο γκρουπ</item>
+    </plurals>
+    <plurals name="live_broadcast_count">
+        <item quantity="one">%1$d μετάδοση</item>
+        <item quantity="other">%1$d μεταδόσεις</item>
+    </plurals>
+    <plurals name="live_minutes_remaining">
+        <item quantity="one">%1$dλ απομένει</item>
+        <item quantity="other">%1$dλ απομένουν</item>
+    </plurals>
+    <plurals name="live_hours_minutes_remaining">
+        <item quantity="one">%1$dω %2$dλ απομένει</item>
+        <item quantity="other">%1$dω %2$dλ απομένουν</item>
+    </plurals>
+</resources>

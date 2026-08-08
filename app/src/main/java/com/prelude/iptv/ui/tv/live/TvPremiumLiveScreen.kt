@@ -23,10 +23,12 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.live.LiveCinematicBackdrop
 import com.prelude.iptv.ui.components.live.LiveFilterOption
@@ -75,7 +77,7 @@ fun TvPremiumLiveScreen(
                         Modifier.background(IptvColors.Primary.copy(alpha = .18f), RoundedCornerShape(99.dp))
                             .padding(horizontal = 11.dp, vertical = 7.dp)
                     ) {
-                        Text("●  LIVE TV", color = Color(0xFFFF777D), fontSize = 11.sp, fontWeight = FontWeight.Black)
+                        Text(stringResource(R.string.live_tv_badge), color = Color(0xFFFF777D), fontSize = 11.sp, fontWeight = FontWeight.Black)
                     }
                 }
                 Text(liveTime(nowMs), color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
@@ -91,9 +93,9 @@ fun TvPremiumLiveScreen(
             ) {
                 Text(
                     if (multiviewPrimaryKey != null)
-                        "MULTIVIEW · Επίλεξε δεύτερο κανάλι με OK · BACK για ακύρωση"
+                        stringResource(R.string.live_multiview_select_second_short)
                     else
-                        "Παρατεταμένο OK σε κανάλι · Multiview",
+                        stringResource(R.string.live_multiview_long_press),
                     color = if (multiviewPrimaryKey != null) Color.White else IptvColors.TextSecondary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold

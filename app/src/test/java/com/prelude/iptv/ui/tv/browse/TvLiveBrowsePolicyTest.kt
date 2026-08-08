@@ -99,15 +99,23 @@ class TvLiveBrowsePolicyTest {
     @Test
     fun detailsUsesCurrentProgrammeWhenAvailable() {
         val list = listOf(prog("Τώρα", isNow = true, desc = "Περιγραφή"))
-        val details = TvLiveBrowsePolicy.detailsFor(list, channelName = "FOX HD")
+        val details = TvLiveBrowsePolicy.detailsFor(
+            list,
+            channelName = "FOX HD",
+            fallbackDescription = "No programme information",
+        )
         assertEquals("Τώρα", details.title)
         assertEquals("Περιγραφή", details.description)
     }
 
     @Test
     fun detailsFallsBackToChannelNameSoDialogIsNeverEmpty() {
-        val details = TvLiveBrowsePolicy.detailsFor(emptyList(), channelName = "FOX HD")
+        val details = TvLiveBrowsePolicy.detailsFor(
+            emptyList(),
+            channelName = "FOX HD",
+            fallbackDescription = "No programme information",
+        )
         assertEquals("FOX HD", details.title)
-        assertEquals(true, details.description.isNotBlank())
+        assertEquals("No programme information", details.description)
     }
 }
