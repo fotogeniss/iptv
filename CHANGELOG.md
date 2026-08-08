@@ -15,6 +15,9 @@ implementation notes are preserved in `docs/archive/changelog`.
   `MainViewModel` into a focused coordinator with state and save-flow tests.
 - Extracted catalog group ordering, parental visibility, favorites filtering,
   search and sorting into a pure policy with focused regression tests.
+- Replaced the mobile live-channel swipe arrow with a subtle directional
+  refraction transition, and slimmed the visible player scrubber while retaining
+  its larger touch target.
 
 ## 1.46.0 — versionCode 115
 

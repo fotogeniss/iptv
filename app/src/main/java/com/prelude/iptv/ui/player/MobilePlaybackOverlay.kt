@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -147,9 +145,8 @@ fun MobilePlaybackOverlay(
     var seekFeedbackMs by remember { mutableLongStateOf(0L) }
     var seekFeedbackForward by remember { mutableStateOf(true) }
 
-    // Ανάδραση σύρσιμου καναλιού: ένα βέλος στην άκρη που έφυγε το δάχτυλο,
-    // ίδιο μοτίβο με το seekFeedbackMs — φεύγει μόνο του μετά από λίγο.
-    var channelFlash by remember { mutableStateOf<Boolean?>(null) } // true = επόμενο (δεξιά), false = προηγούμενο (αριστερά)
+    var channelTransitionSequence by remember { mutableIntStateOf(0) }
+    var channelTransition by remember { mutableStateOf<LiveChannelTransitionRequest?>(null) }
     // Όνομα του νέου καναλιού σε συννεφάκι πάνω-πάνω. null = κρυμμένο.
     var channelToast by remember { mutableStateOf<String?>(null) }
     // Το πρώτο κανάλι δεν πρέπει να δείξει συννεφάκι «άλλαξε» — μόνο αυτά που
@@ -333,13 +330,6 @@ fun MobilePlaybackOverlay(
         }
     }
 
-    LaunchedEffect(channelFlash) {
-        if (channelFlash != null) {
-            delay(260)
-            channelFlash = null
-        }
-    }
-
     // ---- ΜΑΖΕΜΕΝΟΣ PLAYER ----
     //
     // Όσο είναι μαζεμένος, το BACK ανήκει στην οθόνη από κάτω: ο χρήστης πλοηγείται
@@ -469,6 +459,13 @@ fun MobilePlaybackOverlay(
                 )
             }
 
+            if (isLive) {
+                MobileLiveChannelTransition(
+                    request = channelTransition,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+
             PlayerSubtitles(
                 engine = engine,
                 sizePercent = subtitleSize,
@@ -556,11 +553,17 @@ fun MobilePlaybackOverlay(
                                     // όχι σταθερά pixel.
                                     val threshold = widthPx / 5f
                                     if (dragX <= -threshold) {
+                                        channelTransition = LiveChannelTransitionRequest(
+                                            sequence = ++channelTransitionSequence,
+                                            direction = LiveChannelTransitionMotion.direction(1),
+                                        )
                                         onChannelStep(1)
-                                        channelFlash = true
                                     } else if (dragX >= threshold) {
+                                        channelTransition = LiveChannelTransitionRequest(
+                                            sequence = ++channelTransitionSequence,
+                                            direction = LiveChannelTransitionMotion.direction(-1),
+                                        )
                                         onChannelStep(-1)
-                                        channelFlash = false
                                     }
                                     dragX = 0f
                                 },
@@ -623,27 +626,6 @@ fun MobilePlaybackOverlay(
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                    )
-                }
-            }
-
-            // Βέλος στην άκρη από όπου «έφυγε» το σύρσιμο — επόμενο κανάλι δεξιά,
-            // προηγούμενο αριστερά. Ίδιο ύφος με την ανάδραση του seek.
-            if (channelFlash != null) {
-                Box(
-                    Modifier
-                        .align(if (channelFlash == true) Alignment.CenterEnd else Alignment.CenterStart)
-                        .padding(horizontal = 20.dp)
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = .50f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (channelFlash == true) Icons.Default.ChevronRight else Icons.Default.ChevronLeft,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
                     )
                 }
             }

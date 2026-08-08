@@ -251,7 +251,7 @@ internal fun mobileAspectBadgeLabel(mode: AspectMode): String = when (mode) {
 /**
  * Η μπάρα προόδου.
  *
- * ΤΟ ΛΑΒΗ ΕΙΝΑΙ ΜΕΓΑΛΥΤΕΡΗ ΑΠΟ ΟΣΟ ΦΑΙΝΕΤΑΙ: η γραμμή έχει 3dp ύψος, αλλά η
+ * ΤΟ TOUCH TARGET ΕΙΝΑΙ ΜΕΓΑΛΥΤΕΡΟ ΑΠΟ ΟΣΟ ΦΑΙΝΕΤΑΙ: η γραμμή έχει 2dp ύψος, αλλά η
  * περιοχή που δέχεται το δάχτυλο 26dp. Μια μπάρα 3dp είναι αδύνατο να πιαστεί —
  * και αν προσπαθήσεις να τη μεγαλώσεις για να πιάνεται, γίνεται άσχημη.
  */
@@ -268,7 +268,7 @@ private fun Scrubber(
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 20.dp)
             .height(26.dp)
             .pointerInput(durationMs) {
                 detectTapGestures { offset ->
@@ -293,22 +293,22 @@ private fun Scrubber(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(3.dp)
+                .height(2.dp)
                 .background(Color.White.copy(alpha = .30f))
         )
         // Παιγμένο
         Box(
             Modifier
                 .width(width * fraction)
-                .height(3.dp)
+                .height(2.dp)
                 .background(SCRUB_RED)
         )
         // Λαβή. Το offset είναι η θέση μείον η μισή λαβή, ώστε το κέντρο του
         // κύκλου να πέφτει ΠΑΝΩ στη θέση και όχι δεξιά της.
         Box(
             Modifier
-                .offset(x = width * fraction - 6.dp)
-                .size(12.dp)
+                .offset(x = width * fraction - 4.dp)
+                .size(8.dp)
                 .clip(CircleShape)
                 .background(SCRUB_RED)
         )

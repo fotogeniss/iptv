@@ -207,6 +207,24 @@ require(all(marker in catalog_presentation for marker in [
         ]),
         "CatalogPresentationPolicy owns grouping, parental filtering and sorting")
 
+mobile_playback = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt")
+live_transition = text("app/src/main/java/com/prelude/iptv/ui/player/MobileLiveChannelTransition.kt")
+require("MobileLiveChannelTransition(" in mobile_playback and
+        "channelFlash" not in mobile_playback and "ChevronRight" not in mobile_playback,
+        "Mobile live zapping uses directional refraction without arrow feedback")
+require(all(marker in live_transition for marker in [
+            "LiveChannelTransitionMotion", "fun edgeFraction", "fun intensity", "Canvas(modifier)"
+        ]),
+        "Live channel transition keeps deterministic motion separate from playback")
+
+mobile_controls = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlayerControls.kt")
+scrubber_start = mobile_controls.find("private fun Scrubber(")
+scrubber_end = mobile_controls.find("private fun QualityBadge", scrubber_start)
+scrubber = mobile_controls[scrubber_start:scrubber_end]
+require(scrubber.count(".height(2.dp)") == 2 and ".size(8.dp)" in scrubber and
+        ".height(26.dp)" in scrubber,
+        "Mobile scrubber is visually slim while retaining its touch target")
+
 print("ARCHITECTURE AUDIT")
 for item in passes:
     print(f"PASS  {item}")

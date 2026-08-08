@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PRELUDE+ · Live Channel Water Transition</title>
+  <style>
+    :root { color-scheme:dark; --accent:#ef0b20; --muted:#999aa2; --panel:#111116; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; background:#000; color:#fff; font-family:Inter,system-ui,-apple-system,sans-serif; }
+    body { display:grid; place-items:center; overflow:hidden; }
+    button { font:inherit; }
+    .phone {
+      position:relative; width:min(100vw,430px); height:min(100vh,900px); overflow:hidden;
+      background:#000; box-shadow:0 0 70px #000; isolation:isolate;
+    }
+    .status { height:48px; padding:15px 22px 0; display:flex; justify-content:space-between; font-size:13px; font-weight:800; }
+    .brand { position:absolute; z-index:8; top:70px; left:22px; display:flex; align-items:center; gap:8px; font-size:12px; font-weight:900; letter-spacing:.14em; }
+    .brand-mark { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:13px 0 0 #fff; }
+    .live-pill { position:absolute; z-index:8; top:68px; right:20px; padding:7px 10px; border:1px solid #ffffff26; border-radius:99px; background:#08080abf; font-size:10px; font-weight:900; letter-spacing:.09em; }
+    .stage {
+      position:relative; height:242px; margin-top:18px; overflow:hidden; background:#08090d;
+      touch-action:pan-y; user-select:none; cursor:grab;
+    }
+    .stage:active { cursor:grabbing; }
+    .frame { position:absolute; inset:0; overflow:hidden; background:#111; transform:translateZ(0); }
+    .visual { position:absolute; inset:-4%; display:grid; place-items:center; background:var(--scene); }
+    .visual::before {
+      content:""; position:absolute; inset:0;
+      background:radial-gradient(circle at 72% 26%,#ffffff2b 0 2%,transparent 24%),
+                 linear-gradient(180deg,transparent 45%,#000b 100%);
+    }
+    .scene-logo { position:relative; text-align:center; filter:drop-shadow(0 12px 25px #000b); }
+    .scene-logo b { display:block; font-size:38px; line-height:.9; letter-spacing:-.06em; }
+    .scene-logo span { display:block; margin-top:12px; font-size:10px; font-weight:900; letter-spacing:.26em; opacity:.78; }
+    .incoming { z-index:3; visibility:hidden; }
+    .outgoing { z-index:2; }
+    .stage.switching .incoming { visibility:visible; }
+    .stage.next .incoming { animation:reveal-from-right 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .stage.prev .incoming { animation:reveal-from-left 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .stage.next .outgoing { animation:retreat-left 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .stage.prev .outgoing { animation:retreat-right 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .refraction {
+      position:absolute; z-index:5; top:-12%; bottom:-12%; width:92px; opacity:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse at 50% 8%,#fff9 0 3%,transparent 23%),
+        radial-gradient(ellipse at 45% 31%,#83ddff69 0 5%,transparent 29%),
+        radial-gradient(ellipse at 57% 59%,#fff7 0 4%,transparent 27%),
+        radial-gradient(ellipse at 40% 82%,#7ccfff54 0 4%,transparent 25%);
+      filter:blur(7px); mix-blend-mode:screen;
+    }
+    .stage.next .refraction { animation:flow-left 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .stage.prev .refraction { animation:flow-right 640ms cubic-bezier(.22,.75,.18,1) both; }
+    .stage::after {
+      content:""; position:absolute; z-index:6; inset:0; opacity:0; pointer-events:none;
+      background:linear-gradient(90deg,transparent 30%,#d8f6ff18 49%,transparent 68%);
+    }
+    .stage.switching::after { animation:surface-glint 640ms ease both; }
+    @keyframes reveal-from-right {
+      0% { clip-path:polygon(106% 0,100% 0,100% 100%,106% 100%); transform:scale(1.035); filter:blur(4px); }
+      45% { clip-path:polygon(49% 0,42% 14%,53% 29%,43% 47%,52% 65%,42% 82%,48% 100%,100% 100%,100% 0); }
+      100% { clip-path:polygon(-6% 0,0 14%,0 29%,0 47%,0 65%,0 82%,-6% 100%,100% 100%,100% 0); transform:scale(1); filter:blur(0); }
+    }
+    @keyframes reveal-from-left {
+      0% { clip-path:polygon(-6% 0,0 0,0 100%,-6% 100%); transform:scale(1.035); filter:blur(4px); }
+      45% { clip-path:polygon(51% 0,58% 14%,47% 29%,57% 47%,48% 65%,58% 82%,52% 100%,0 100%,0 0); }
+      100% { clip-path:polygon(106% 0,100% 14%,100% 29%,100% 47%,100% 65%,100% 82%,106% 100%,0 100%,0 0); transform:scale(1); filter:blur(0); }
+    }
+    @keyframes retreat-left { to { transform:translateX(-4%) scale(1.018); filter:blur(3px) brightness(.62); } }
+    @keyframes retreat-right { to { transform:translateX(4%) scale(1.018); filter:blur(3px) brightness(.62); } }
+    @keyframes flow-left { 0% { left:102%; opacity:0; } 22%,70% { opacity:.75; } 100% { left:-24%; opacity:0; } }
+    @keyframes flow-right { 0% { right:102%; opacity:0; } 22%,70% { opacity:.75; } 100% { right:-24%; opacity:0; } }
+    @keyframes surface-glint { 0%,100% { opacity:0; } 45% { opacity:.8; } }
+    .progress { height:2px; margin:0 22px; background:#2a2a2f; }
+    .progress i { display:block; width:43%; height:100%; background:var(--accent); }
+    .content { padding:25px 22px 120px; }
+    .kicker { color:#63d58a; font-size:12px; font-weight:900; letter-spacing:.1em; }
+    h1 { min-height:70px; margin:9px 0 3px; font-size:29px; line-height:1.08; letter-spacing:-.035em; }
+    .programme { min-height:24px; color:#d8d8dc; font-size:14px; font-weight:700; }
+    .meta { display:flex; gap:10px; margin-top:9px; color:var(--muted); font-size:12px; }
+    .epg { margin-top:24px; padding:16px; border:1px solid #29292f; border-radius:17px; background:linear-gradient(135deg,#15151a,#0d0d10); }
+    .epg-head { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+    .epg-title { margin-top:8px; font-size:15px; font-weight:800; }
+    .hint { margin-top:22px; color:#777981; font-size:11px; text-align:center; line-height:1.5; }
+    .rail { position:absolute; z-index:9; left:0; right:0; bottom:0; padding:14px 16px 19px; background:linear-gradient(180deg,transparent,#000 24%); }
+    .channels { display:flex; gap:9px; overflow:auto; scrollbar-width:none; }
+    .channels::-webkit-scrollbar { display:none; }
+    .channel {
+      flex:0 0 auto; min-width:94px; padding:11px 13px; border:1px solid #292930; border-radius:14px;
+      background:#111116; color:#a6a6ad; text-align:left; font-size:10px; font-weight:850; cursor:pointer;
+    }
+    .channel.active { border-color:#ffffffc7; background:#f2f2f4; color:#09090b; box-shadow:0 9px 26px #0009; }
+    @media (prefers-reduced-motion:reduce) {
+      .stage.next .incoming,.stage.prev .incoming { animation-duration:1ms; }
+      .stage.next .outgoing,.stage.prev .outgoing,.stage .refraction,.stage.switching::after { animation:none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="status"><span>21:42</span><span>● 5G ▮▮▮ 67%</span></div>
+    <div class="brand"><i class="brand-mark"></i> PRELUDE+</div>
+    <div class="live-pill">● LIVE</div>
+
+    <section class="stage" id="stage" aria-label="Live player — σύρε οριζόντια για αλλαγή καναλιού">
+      <div class="frame outgoing" id="currentFrame"></div>
+      <div class="frame incoming" id="incomingFrame"></div>
+      <i class="refraction"></i>
+    </section>
+    <div class="progress"><i></i></div>
+
+    <section class="content">
+      <div class="kicker">ΖΩΝΤΑΝΑ ΤΩΡΑ</div>
+      <h1 id="channelName"></h1>
+      <div class="programme" id="programme"></div>
+      <div class="meta"><span id="quality"></span><span>•</span><span id="category"></span></div>
+      <article class="epg">
+        <div class="epg-head"><span>Ακολουθεί</span><span id="nextTime"></span></div>
+        <div class="epg-title" id="nextProgramme"></div>
+      </article>
+      <p class="hint">Σύρε πάνω στο video αριστερά ή δεξιά.<br>Το εφέ ακολουθεί πάντα την κατεύθυνση της αλλαγής.</p>
+    </section>
+
+    <nav class="rail" aria-label="Δοκιμή καναλιών"><div class="channels" id="channels"></div></nav>
+  </main>
+
+  <script>
+    const data = [
+      {name:'PRELUDE NEWS', programme:'Βραδινό δελτίο ειδήσεων', next:'Η μεγάλη εικόνα', time:'22:15', quality:'FHD', category:'Ενημέρωση', scene:'linear-gradient(125deg,#07111f 0%,#123968 45%,#702036 100%)', mark:'NEWS', sub:'LIVE REPORT'},
+      {name:'ARENA SPORT 1', programme:'Champions Night · Live', next:'Match Center', time:'23:05', quality:'4K', category:'Αθλητικά', scene:'linear-gradient(135deg,#061b12 0%,#08763d 44%,#d6a928 120%)', mark:'ARENA', sub:'SPORT 1'},
+      {name:'CINEMA PREMIERE', programme:'The Last Horizon', next:'Midnight Stories', time:'23:40', quality:'FHD', category:'Ταινίες', scene:'linear-gradient(120deg,#10091e 0%,#541b58 48%,#d05a36 115%)', mark:'CINEMA', sub:'PREMIERE'},
+      {name:'DISCOVERY WORLD', programme:'Blue Planet · Oceans', next:'Wild Frontiers', time:'22:50', quality:'HD', category:'Ντοκιμαντέρ', scene:'linear-gradient(145deg,#031b2b 0%,#087a8c 52%,#67cdd4 120%)', mark:'WORLD', sub:'DISCOVERY'}
+    ];
+    const stage = document.getElementById('stage');
+    const currentFrame = document.getElementById('currentFrame');
+    const incomingFrame = document.getElementById('incomingFrame');
+    const channelName = document.getElementById('channelName');
+    const programme = document.getElementById('programme');
+    const quality = document.getElementById('quality');
+    const category = document.getElementById('category');
+    const nextProgramme = document.getElementById('nextProgramme');
+    const nextTime = document.getElementById('nextTime');
+    const channels = document.getElementById('channels');
+    let index = 0, busy = false, startX = 0;
+
+    function frameMarkup(item) {
+      return `<div class="visual" style="--scene:${item.scene}"><div class="scene-logo"><b>${item.mark}</b><span>${item.sub}</span></div></div>`;
+    }
+    function paintInfo(item) {
+      channelName.textContent = item.name; programme.textContent = item.programme;
+      quality.textContent = item.quality; category.textContent = item.category;
+      nextProgramme.textContent = item.next; nextTime.textContent = item.time;
+      [...channels.children].forEach((node,i)=>node.classList.toggle('active',i===index));
+      channels.children[index]?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    }
+    function switchTo(nextIndex, direction) {
+      if (busy || nextIndex === index) return;
+      busy = true;
+      const target = data[(nextIndex + data.length) % data.length];
+      incomingFrame.innerHTML = frameMarkup(target);
+      stage.className = `stage switching ${direction}`;
+      setTimeout(()=>paintInfo(target),260);
+      setTimeout(()=>{
+        index = (nextIndex + data.length) % data.length;
+        currentFrame.innerHTML = frameMarkup(target);
+        stage.className = 'stage'; busy = false; paintInfo(target);
+      },660);
+    }
+    function step(delta) { switchTo(index + delta, delta > 0 ? 'next' : 'prev'); }
+
+    data.forEach((item,i)=>{
+      const button=document.createElement('button'); button.className='channel'; button.textContent=item.name;
+      button.onclick=()=>switchTo(i,i>index?'next':'prev'); channels.appendChild(button);
+    });
+    stage.addEventListener('pointerdown',e=>{ startX=e.clientX; stage.setPointerCapture(e.pointerId); });
+    stage.addEventListener('pointerup',e=>{ const dx=e.clientX-startX; if(Math.abs(dx)>34) step(dx<0?1:-1); });
+    window.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'||e.key==='PageDown')step(1); if(e.key==='ArrowUp'||e.key==='PageUp')step(-1); });
+    currentFrame.innerHTML=frameMarkup(data[0]); paintInfo(data[0]);
+  </script>
+</body>
+</html>
