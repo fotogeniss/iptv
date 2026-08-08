@@ -7,6 +7,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 - Made the owner QA build separately installable as `com.prelude.iptv.qa`, with
   isolated app data and the existing visible `Prelude+ QA` label.
+- Replaced the provider download retry `Thread.sleep` with a bounded,
+  interruptible backoff component and added focused policy tests.
 
 ## 1.46.0 — versionCode 115
 

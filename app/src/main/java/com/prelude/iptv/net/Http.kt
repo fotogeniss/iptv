@@ -275,7 +275,7 @@ object Http {
                 if (attempt > maxRetries) throw error
                 // Μικρή αναμονή που μεγαλώνει: ένας διακομιστής που μόλις έκοψε
                 // τη σύνδεση συνήθως χρειάζεται μια στιγμή.
-                Thread.sleep((500L * attempt).coerceAtMost(4_000L))
+                ProviderRetryBackoff.await(attempt)
             }
         }
     }
