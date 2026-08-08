@@ -5,6 +5,10 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Added a functional mobile/TV localization-settings preview for System, Greek
+  and English, covering immediate app-wide updates, persistence, safe English
+  fallback, mobile bottom-sheet behavior and TV DPAD selection; Android
+  integration remains pending owner approval.
 - Implemented the approved unified content navigation on mobile and Android TV:
   Home, Live, movies, series and automatic Search are now direct primary
   destinations, secondary library/EPG/source tools remain inside their owning

@@ -298,6 +298,22 @@ has now been implemented for Android TV.
   zero critical production-risk findings and a clean diff check. Gradle was not
   run; the owner still needs to compile and perform phone/TV device QA.
 
+### Localization direction awaiting approval
+
+- The current app has only `app_name` in Android string resources; the visible
+  interface is overwhelmingly hardcoded and cannot be safely localized through
+  a bulk replacement.
+- The proposed mobile/TV language flow is functional at
+  `prototypes/localization/LOCALIZATION_SETTINGS_FLOW_PREVIEW.html` with System,
+  Greek and English choices, immediate effective-language changes, persistence,
+  English fallback and TV DPAD movement.
+- `docs/LOCALIZATION_ARCHITECTURE.md` defines the approved-API implementation,
+  feature-owned resource files, English fallback, Greek parity requirement,
+  Kotlin boundaries and staged migration gates.
+- Do not change Android localization UI until the owner approves the preview.
+  After approval, implement the runtime foundation first and keep the picker out
+  of public builds until complete release-surface translation parity is reached.
+
 ## 7. Architecture work to continue afterward
 
 Continue splitting legacy files only through small, behavior-preserving
