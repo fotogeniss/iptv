@@ -22,13 +22,27 @@ import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+/** Pure large-screen tuning kept separate from the mobile visual treatment. */
+internal object TvLiveChannelTransitionMotion {
+    const val DURATION_MS = 780
+    const val WAVE_AMPLITUDE_FRACTION = .010f
+    const val BAND_WIDTH_FRACTION = .18f
+    const val MAX_DIM_ALPHA = .08f
+
+    fun direction(step: Int): Int = LiveChannelTransitionMotion.direction(step)
+
+    fun edgeFraction(progress: Float, direction: Int): Float =
+        LiveChannelTransitionMotion.edgeFraction(progress, direction)
+
+    fun intensity(progress: Float): Float = LiveChannelTransitionMotion.intensity(progress)
+}
+
 /**
- * Lightweight directional refraction drawn above the existing TextureView.
- * It never owns playback or a second surface, so channel resolution remains
- * entirely inside the existing player session.
+ * Restrained TV refraction drawn above the existing fullscreen video surface.
+ * A Canvas has no focus or key-input modifiers, so DPAD ownership stays in PlayerHost.
  */
 @Composable
-internal fun MobileLiveChannelTransition(
+internal fun TvLiveChannelTransition(
     request: LiveChannelTransitionRequest?,
     onFinished: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -45,7 +59,7 @@ internal fun MobileLiveChannelTransition(
         progress.animateTo(
             targetValue = 1f,
             animationSpec = tween(
-                durationMillis = LiveChannelTransitionMotion.DURATION_MS,
+                durationMillis = TvLiveChannelTransitionMotion.DURATION_MS,
                 easing = FastOutSlowInEasing,
             ),
         )
@@ -54,26 +68,22 @@ internal fun MobileLiveChannelTransition(
 
     Canvas(modifier) {
         val phase = progress.value
-        val intensity = LiveChannelTransitionMotion.intensity(phase)
-        // At phase zero the outgoing snapshot must still fully cover the new
-        // frame; returning on zero intensity would flash the incoming stream for
-        // one frame before the reveal begins.
+        val intensity = TvLiveChannelTransitionMotion.intensity(phase)
         if (phase >= .999f) return@Canvas
 
-        val edgeX = size.width * LiveChannelTransitionMotion.edgeFraction(
+        val edgeX = size.width * TvLiveChannelTransitionMotion.edgeFraction(
             progress = phase,
             direction = request.direction,
         )
-        val bandWidth = size.width.coerceAtLeast(1f) * .25f
+        val bandWidth = size.width.coerceAtLeast(1f) *
+            TvLiveChannelTransitionMotion.BAND_WIDTH_FRACTION
+        val bendAmplitude = size.width *
+            TvLiveChannelTransitionMotion.WAVE_AMPLITUDE_FRACTION
 
-        // The new stream is already rendering underneath this Canvas. Keep the
-        // captured outgoing frame above it and remove that frame behind a wavy,
-        // directional edge, matching the approved incoming/outgoing prototype
-        // without creating a second player or video surface.
         request.outgoingFrame?.let { frame ->
             val outgoingClip = Path()
-            val segments = 18
-            val firstBend = sin((phase * 10f).toDouble()).toFloat() * size.width * .018f
+            val segments = 20
+            val firstBend = sin((phase * 9f).toDouble()).toFloat() * bendAmplitude
             if (request.direction >= 0) {
                 outgoingClip.moveTo(0f, 0f)
                 outgoingClip.lineTo(edgeX + firstBend, 0f)
@@ -84,8 +94,8 @@ internal fun MobileLiveChannelTransition(
             repeat(segments) { zeroBased ->
                 val index = zeroBased + 1
                 val y = size.height * index / segments
-                val bend = sin((index * 1.31f + phase * 10f).toDouble()).toFloat() *
-                    size.width * .018f
+                val bend = sin((index * 1.19f + phase * 9f).toDouble()).toFloat() *
+                    bendAmplitude
                 outgoingClip.lineTo(edgeX + bend, y)
             }
             outgoingClip.lineTo(
@@ -102,20 +112,22 @@ internal fun MobileLiveChannelTransition(
                     dstOffset = IntOffset(frameLeft, frameTop),
                     dstSize = IntSize(frame.widthPx, frame.heightPx),
                 )
-                drawRect(Color.Black.copy(alpha = .22f * intensity))
+                drawRect(Color.Black.copy(alpha = .12f * intensity))
             }
         }
 
-        // A restrained dip and glint make the boundary readable even when the
-        // current backend cannot provide a TextureView snapshot (LibVLC).
-        drawRect(Color.Black.copy(alpha = .16f * intensity))
+        drawRect(
+            Color.Black.copy(
+                alpha = TvLiveChannelTransitionMotion.MAX_DIM_ALPHA * intensity,
+            )
+        )
         drawRect(
             brush = Brush.horizontalGradient(
                 colors = listOf(
                     Color.Transparent,
-                    Color(0xFF79D8FF).copy(alpha = .14f * intensity),
-                    Color.White.copy(alpha = .38f * intensity),
-                    Color(0xFFBDEFFF).copy(alpha = .22f * intensity),
+                    Color(0xFF83DCFF).copy(alpha = .08f * intensity),
+                    Color.White.copy(alpha = .26f * intensity),
+                    Color(0xFFBDEFFF).copy(alpha = .13f * intensity),
                     Color.Transparent,
                 ),
                 startX = edgeX - bandWidth,
@@ -126,11 +138,11 @@ internal fun MobileLiveChannelTransition(
         )
 
         val wave = Path()
-        val segments = 18
+        val segments = 20
         repeat(segments + 1) { index ->
             val y = size.height * index / segments
-            val bend = sin((index * 1.31f + phase * 10f).toDouble()).toFloat() *
-                size.width * .018f
+            val bend = sin((index * 1.19f + phase * 9f).toDouble()).toFloat() *
+                bendAmplitude
             val x = edgeX + bend
             if (index == 0) wave.moveTo(x, y) else wave.lineTo(x, y)
         }
@@ -138,19 +150,19 @@ internal fun MobileLiveChannelTransition(
             path = wave,
             brush = Brush.horizontalGradient(
                 listOf(
-                    Color(0xFF75D5FF).copy(alpha = .05f * intensity),
-                    Color.White.copy(alpha = .18f * intensity),
-                    Color(0xFF9CE7FF).copy(alpha = .05f * intensity),
+                    Color.Transparent,
+                    Color.White.copy(alpha = .12f * intensity),
+                    Color.Transparent,
                 ),
-                startX = edgeX - 22f,
-                endX = edgeX + 22f,
+                startX = edgeX - 18f,
+                endX = edgeX + 18f,
             ),
-            style = Stroke(width = 36f),
+            style = Stroke(width = 26f),
         )
         drawPath(
             path = wave,
-            color = Color.White.copy(alpha = .36f * intensity),
-            style = Stroke(width = 2.2f),
+            color = Color.White.copy(alpha = .24f * intensity),
+            style = Stroke(width = 1.6f),
         )
     }
 }

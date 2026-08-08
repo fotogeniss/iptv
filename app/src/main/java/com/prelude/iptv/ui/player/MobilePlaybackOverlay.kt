@@ -94,7 +94,7 @@ fun MobilePlaybackOverlay(
     val engine = remember { PlaybackEngine(context.applicationContext) }
     val videoFrameCapture = remember { PlayerVideoFrameCapture() }
     val liveTransitionCoordinator = remember(engine, videoFrameCapture) {
-        MobileLiveChannelTransitionCoordinator(engine, videoFrameCapture)
+        LiveChannelTransitionCoordinator(engine, videoFrameCapture)
     }
     val state by engine.state.collectAsState()
     var failed by remember(channel) { mutableStateOf(false) }

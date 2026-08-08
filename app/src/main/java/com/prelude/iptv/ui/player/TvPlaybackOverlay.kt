@@ -10,6 +10,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -21,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.player.PlaybackEngine
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 
 /**
@@ -82,8 +82,19 @@ fun TvPlaybackOverlay(
 ) {
     val context = LocalContext.current
     val engine = remember { PlaybackEngine(context.applicationContext) }
+    val videoFrameCapture = remember { PlayerVideoFrameCapture() }
+    val liveTransitionCoordinator = remember(engine, videoFrameCapture) {
+        LiveChannelTransitionCoordinator(engine, videoFrameCapture)
+    }
     val state by engine.state.collectAsState()
     var failed by remember(channel) { mutableStateOf(false) }
+    var channelTransition by remember {
+        mutableStateOf<LiveChannelTransitionRequest?>(null)
+    }
+    var channelTransitionSequence by remember { mutableIntStateOf(0) }
+    var pendingChannelTransitionDirection by remember { mutableStateOf<Int?>(null) }
+    var pendingChannelTransitionVersion by remember { mutableIntStateOf(0) }
+    var isFirstChannel by remember { mutableStateOf(true) }
 
     // Ζωντανή ροή: δεν έχει αρχή, τέλος, ούτε «πού είχα μείνει».
     val isLive = channel.kind == "live"
@@ -91,41 +102,70 @@ fun TvPlaybackOverlay(
     // Το rememberUpdatedState κρατά την τελευταία έκδοση των callbacks χωρίς να
     // ξαναξεκινά η αναπαραγωγή σε κάθε recomposition.
     val save by rememberUpdatedState(saveResumeMs)
+    val stepChannel by rememberUpdatedState(onChannelStep)
+    val directionalChannelStep: ((Int) -> Unit)? = onChannelStep?.let {
+        { step ->
+            if (isLive) {
+                pendingChannelTransitionDirection =
+                    TvLiveChannelTransitionMotion.direction(step)
+                pendingChannelTransitionVersion++
+            }
+            stepChannel?.invoke(step)
+        }
+    }
 
     LaunchedEffect(channel) {
         failed = false
-        val url = try {
-            resolveUrl(channel)
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (error: Exception) {
-            android.util.Log.w(
-                "PreludePlayback",
-                "Η επίλυση διεύθυνσης απέτυχε για «${channel.name}» (${channel.kind})",
-                error
-            )
-            ""
+        channelTransition = null
+        val initialChannel = isFirstChannel
+        if (initialChannel) isFirstChannel = false
+        val transitionDirection = pendingChannelTransitionDirection
+            .takeIf { !initialChannel && isLive }
+        pendingChannelTransitionDirection = null
+
+        when (val result = liveTransitionCoordinator.open(
+            channel = channel,
+            isLive = isLive,
+            transitionDirection = transitionDirection,
+            resolveUrl = resolveUrl,
+            loadResumeMs = loadResumeMs,
+        )) {
+            is LiveChannelOpenResult.Failed -> {
+                result.cause?.let { error ->
+                    android.util.Log.w(
+                        "PreludePlayback",
+                        "Η επίλυση διεύθυνσης απέτυχε για «${channel.name}» (${channel.kind})",
+                        error,
+                    )
+                }
+                android.util.Log.w(
+                    "PreludePlayback",
+                    "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
+                        "url='${channel.url}' cmd='${channel.cmd}'",
+                )
+                failed = true
+            }
+            is LiveChannelOpenResult.Opened -> {
+                result.transition?.let { prepared ->
+                    channelTransition = LiveChannelTransitionRequest(
+                        sequence = ++channelTransitionSequence,
+                        direction = prepared.direction,
+                        outgoingFrame = prepared.outgoingFrame,
+                    )
+                }
+            }
         }
-        if (url.isBlank()) {
-            // ΤΟ ΠΡΟΒΛΗΜΑ ΕΙΝΑΙ ΠΡΙΝ ΤΗ ΜΗΧΑΝΗ.
-            //
-            // Εδώ δεν έχει τρέξει ούτε ExoPlayer ούτε LibVLC: δεν υπάρχει
-            // διεύθυνση να ανοίξει. Το παλιό μήνυμα («Δεν ήταν δυνατή η
-            // αναπαραγωγή») ήταν ίδιο με του σφάλματος αναπαραγωγής, και έκρυβε
-            // ακριβώς αυτή τη διάκριση — ψάχναμε τη μηχανή ενώ έφταιγε ο κατάλογος.
-            android.util.Log.w(
-                "PreludePlayback",
-                "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
-                    "url='${channel.url}' cmd='${channel.cmd}'"
-            )
-            failed = true
+    }
+
+    // A boundary CH+/CH− press may not publish another channel. Expire that
+    // intent so a later list selection cannot inherit the wrong direction.
+    LaunchedEffect(pendingChannelTransitionVersion) {
+        if (pendingChannelTransitionVersion == 0) return@LaunchedEffect
+        val version = pendingChannelTransitionVersion
+        delay(1_200)
+        if (pendingChannelTransitionVersion == version) {
+            pendingChannelTransitionDirection = null
         }
-        // Το `live` δεν αφορά τη διεπαφή: λέει στη μηχανή πόσο να αποθηκεύει.
-        else engine.open(
-            url,
-            resumeMs = if (isLive) 0L else loadResumeMs(channel),
-            live = isLive,
-        )
     }
 
     // Περιοδική αποθήκευση: αν κοπεί το ρεύμα ή σκοτωθεί η εφαρμογή, δεν χάνεται
@@ -146,8 +186,13 @@ fun TvPlaybackOverlay(
                 val position = engine.currentPositionMs()
                 if (position > 0) save(channel, position, engine.durationMs())
             }
-            engine.release()
         }
+    }
+
+    // One overlay owns one engine. Releasing on each channel key would race the
+    // next open and its first-rendered-frame transition.
+    DisposableEffect(engine) {
+        onDispose { engine.release() }
     }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -189,7 +234,21 @@ fun TvPlaybackOverlay(
                 // Σε ζωντανή ροή δεν υπάρχει πού να πας: ούτε μπάρα προόδου,
                 // ούτε ±10 δευτερόλεπτα. Αντ' αυτού, τα βελάκια αλλάζουν κανάλι.
                 seekable = !isLive,
-                onChannelStep = onChannelStep,
+                onChannelStep = directionalChannelStep,
+                frameCapture = videoFrameCapture,
+                videoOverlay = if (isLive) {
+                    {
+                        TvLiveChannelTransition(
+                            request = channelTransition,
+                            onFinished = { sequence ->
+                                if (channelTransition?.sequence == sequence) {
+                                    channelTransition = null
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                } else null,
                 isFavorite = isFavorite,
                 onToggleFavorite = onToggleFavorite,
                 nextTitle = nextTitle,
@@ -215,4 +274,3 @@ fun TvPlaybackOverlay(
         }
     }
 }
-

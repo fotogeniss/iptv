@@ -132,6 +132,10 @@ fun PlayerHost(
      * όπως σε κανονική τηλεόραση. Το D-pad ΔΕΝ αλλάζει κανάλι — ανοίγει λίστα.
      */
     onChannelStep: ((Int) -> Unit)? = null,
+    /** Optional one-frame capture bridge used only by visual channel handoffs. */
+    frameCapture: PlayerVideoFrameCapture? = null,
+    /** Non-interactive visual drawn above video and below subtitles/chrome. */
+    videoOverlay: (@Composable () -> Unit)? = null,
     /**
      * Αυξήστε το όταν κλείνει μια επίστρωση που είχε πάρει το focus (π.χ. η λίστα
      * καναλιών), ώστε ο player να το ξαναπάρει.
@@ -625,6 +629,7 @@ fun PlayerHost(
                 engine = engine,
                 keepScreenOn = state.playing,
                 preferSmoothResize = !fullscreen,
+                frameCapture = frameCapture,
                 onLastFrame = { bitmap ->
                     if (bitmap != null) freezeFrame = bitmap.asImageBitmap()
                 },
@@ -654,6 +659,8 @@ fun PlayerHost(
         // Οι υπότιτλοι πάνω από την εικόνα, ΚΑΤΩ από τα χειριστήρια: όταν
         // εμφανίζεται η μπάρα δεν πρέπει να σκεπάζει τις γραμμές — γι' αυτό
         // ανεβαίνουν όσο φαίνεται.
+        videoOverlay?.invoke()
+
         PlayerSubtitles(
             engine = engine,
             sizePercent = subtitleSize,

@@ -1,13 +1,13 @@
 package com.prelude.iptv.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +25,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -175,7 +178,8 @@ internal fun PlayerControlsBar(
                             }
                         }
                         .focusable()
-                        .padding(horizontal = 8.dp, vertical = 7.dp),
+                        .padding(horizontal = 8.dp)
+                        .height(48.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -184,20 +188,40 @@ internal fun PlayerControlsBar(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                     )
-                    Box(
+                    val fraction = (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
+                    Canvas(
                         Modifier
                             .weight(1f)
                             .padding(horizontal = 14.dp)
-                            .height(if (scrubFocused) 6.dp else 4.dp)
-                            .clip(RoundedCornerShape(99.dp))
-                            .background(Color.White.copy(alpha = 0.28f))
+                            .height(8.dp)
                     ) {
-                        val fraction = (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
-                        Box(
-                            Modifier
-                                .fillMaxWidth(fraction)
-                                .fillMaxHeight()
-                                .background(IptvColors.Primary, RoundedCornerShape(99.dp))
+                        val lineHeight = (if (scrubFocused) 3.dp else 2.dp).toPx()
+                        val lineTop = (size.height - lineHeight) / 2f
+                        val lineRadius = CornerRadius(lineHeight / 2f, lineHeight / 2f)
+                        drawRoundRect(
+                            color = Color.White.copy(alpha = 0.28f),
+                            topLeft = Offset(0f, lineTop),
+                            size = Size(size.width, lineHeight),
+                            cornerRadius = lineRadius,
+                        )
+                        val playedWidth = size.width * fraction
+                        if (playedWidth > 0f) {
+                            drawRoundRect(
+                                color = IptvColors.Primary,
+                                topLeft = Offset(0f, lineTop),
+                                size = Size(playedWidth, lineHeight),
+                                cornerRadius = lineRadius,
+                            )
+                        }
+                        val thumbRadius = (if (scrubFocused) 4.dp else 3.dp).toPx()
+                        val maxThumbX = (size.width - thumbRadius).coerceAtLeast(thumbRadius)
+                        drawCircle(
+                            color = Color.White,
+                            radius = thumbRadius,
+                            center = Offset(
+                                x = playedWidth.coerceIn(thumbRadius, maxThumbX),
+                                y = size.height / 2f,
+                            ),
                         )
                     }
                     Text(

@@ -29,6 +29,9 @@ implementation notes are preserved in `docs/archive/changelog`.
 - Made manual OpenSubtitles search run automatically when opened and after an
   edited title settles, with cancellation of stale keystroke searches and no
   required magnifying-glass tap.
+- Added the approved restrained directional live-channel transition to Android
+  TV, committed only after the requested stream renders its first frame, and
+  slimmed the TV scrubber while retaining a 48 dp DPAD focus target.
 
 ## 1.46.0 - versionCode 115
 

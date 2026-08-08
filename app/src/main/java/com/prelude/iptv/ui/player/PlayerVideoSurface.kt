@@ -104,7 +104,10 @@ fun PlayerVideoSurface(
         val surfaceRef = remember { arrayOfNulls<SurfaceView>(1) }
         DisposableEffect(engine) {
             onDispose {
-                surfaceRef[0]?.let(engine::detachSurface)
+                surfaceRef[0]?.let { current ->
+                    frameCapture?.detach(current)
+                    engine.detachSurface(current)
+                }
                 surfaceRef[0] = null
             }
         }
@@ -116,6 +119,7 @@ fun PlayerVideoSurface(
                     // από πίσω. Αν του βάλεις φόντο, το φόντο μπαίνει ΠΑΝΩ από
                     // το βίντεο και βλέπεις μόνο μαύρο.
                     surfaceRef[0] = this
+                    frameCapture?.attach(this)
                 }
             },
             update = { view ->

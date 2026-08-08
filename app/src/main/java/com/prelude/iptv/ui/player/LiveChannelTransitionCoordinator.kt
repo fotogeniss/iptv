@@ -9,14 +9,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * Opens mobile playback and prepares the optional live-channel visual handoff.
+ * Opens playback and prepares an optional live-channel visual handoff.
  *
- * URL resolution and first-frame confirmation belong together: starting the
- * visual transition at either the swipe callback or target publication lets it
- * finish while the provider is still resolving. This coordinator keeps that
- * ordering out of the already large playback overlay.
+ * URL resolution and first-frame confirmation belong together: beginning the
+ * visual at the key/swipe callback can let it finish while the provider is still
+ * resolving. Mobile and TV therefore share this ordering boundary while keeping
+ * separate renderers and input policies.
  */
-internal class MobileLiveChannelTransitionCoordinator(
+internal class LiveChannelTransitionCoordinator(
     private val engine: PlaybackEngine,
     private val frameCapture: PlayerVideoFrameCapture,
 ) {

@@ -41,6 +41,8 @@ testing steps that cannot be completed from source code alone.
 - XMLTV/XMLTV.GZ, Xtream and Stalker/MAC EPG sources.
 - Now/next information under channels and full EPG views.
 - Catch-up URL support where the provider exposes it.
+- Directional first-frame live-channel transitions adapted separately for mobile
+  and Android TV without introducing another player or video surface.
 - Android TV Home recommendations, Play Next and My List integration.
 
 ### Movies and series

@@ -81,6 +81,7 @@ The current project-local history begins with the following controlled sequence:
 | `1a7b4f4` | Added the approved premium mobile live-channel transition and slimmed the mobile player scrubber without shrinking its touch target. |
 | `2a050af` | Attempted to move the mobile transition trigger from swipe-end to channel publication; later device feedback proved that publication was still too early. |
 | `ef62ed4` | Corrected mobile transition ownership and timing around captured outgoing frames, actual first-rendered-frame commitment and overlay-scoped engine lifetime. |
+| Current TV parity change | Added the owner-approved restrained TV transition, shared first-frame coordination, fullscreen `SurfaceView` capture and a slim DPAD-safe TV scrubber. |
 
 ### Latest mobile live-channel change
 
@@ -102,8 +103,8 @@ The current project-local history begins with the following controlled sequence:
 - The corrected flow captures the outgoing mobile `TextureView` frame, resolves
   and opens the requested stream, waits for the engine's actual first-rendered-
   frame counter, then reveals the new video under a directional wavy boundary.
-- The capture/open/first-frame ordering now lives in the focused
-  `MobileLiveChannelTransitionCoordinator`; the overlay keeps only UI state.
+- The capture/open/first-frame ordering now lives in the focused shared
+  `LiveChannelTransitionCoordinator`; each overlay keeps only its UI state.
 - Failed, timed-out and cancelled requests release their snapshot and do not
   visually commit a transition. Rapid channel changes cancel stale preparation.
 - The mobile `PlaybackEngine` is now released only when the complete overlay
@@ -150,7 +151,8 @@ prototype. Important delivered behavior includes:
 - Now/next EPG under channels and full EPG views.
 - XMLTV/XMLTV.GZ, Xtream and Stalker/MAC EPG paths.
 - Live playback context and channel stepping.
-- Mobile premium directional transition during live channel changes.
+- Separate mobile and Android TV directional transitions during live channel
+  changes, committed only after the requested stream renders a frame.
 - Android TV Home recommendations, Play Next and My List integration.
 
 ### Movies and series
@@ -198,47 +200,51 @@ prototype. Important delivered behavior includes:
 - Privacy policy, Terms draft and Play Data Safety worksheet live under `docs/`.
 - Account/cloud sync remains deliberately deferred.
 
-## 5. Immediate next task: Android TV parity for live transitions
+## 5. Completed current task: Android TV live-transition parity
 
-The last open discussion was whether the mobile premium live-channel behavior
-should also exist on Android TV. The decision was **yes, adapted to TV**, but no TV
-implementation or new TV prototype has been made yet.
+The owner approved the functional preview at
+`prototypes/player/LIVE_CHANNEL_WATER_TRANSITION_TV_PREVIEW.html`, and that design
+has now been implemented for Android TV.
 
-### Required sequence
+### Implementation state
 
-1. Inspect the existing TV player, remote-channel-step routing, focus policy and
-   the approved mobile transition implementation.
-2. Create a functional TV HTML prototype first, preferably:
-   `prototypes/player/LIVE_CHANNEL_WATER_TRANSITION_TV_PREVIEW.html`.
-3. The TV prototype should demonstrate both next-channel and previous-channel
-   directions, without an arrow, and should use a more restrained intensity for a
-   large screen.
-4. Show the HTML to the owner and wait for explicit approval.
-5. Only after approval, add a focused TV transition component and integrate it
-   above the existing video surface without introducing another player/surface.
-6. Direction must come from next/previous channel intent or queue delta, not a
-   mobile swipe gesture:
-   - next channel -> one direction;
-   - previous channel -> the opposite direction.
-7. Apply the already approved slimmer progress-bar visual logic to TV only if it
-   preserves a generous focus/interaction area. The visible bar may be thin; the
-   focus target must remain suitable for DPAD use.
-8. Keep Back, DPAD, seek-bar ownership, overlay auto-hide and focus restoration
-   unchanged unless a focused test proves a necessary adjustment.
-9. Add pure motion/direction tests and extend the TV focus/static contracts.
-10. Update `CHANGELOG.md`, run static audits, review the diff and commit. Do not run
-    Gradle unless the owner explicitly requests it.
+- `TvLiveChannelTransition` owns the restrained large-screen Canvas treatment;
+  it has no focus, pointer or key-input modifiers.
+- `LiveChannelTransitionCoordinator` is now the shared capture -> URL resolution
+  -> engine open -> first-rendered-frame boundary used by both mobile and TV.
+- TV CH+/CH- intent supplies opposite directions. Boundary presses expire after
+  1.2 seconds so a later list selection cannot inherit stale direction state.
+- Rapid channel publication cancels the older `LaunchedEffect`; stale snapshots
+  are recycled and cannot publish a late transition.
+- Failed URL resolution and playback errors never create a transition request.
+- The fullscreen `SurfaceView` remains the only TV video surface. A short-lived
+  `PixelCopy` bitmap supplies the outgoing frame without changing TV frame pacing
+  or creating another player/surface.
+- The TV effect is inserted through `PlayerHost.videoOverlay`, above video but
+  below subtitles, errors and focusable chrome.
+- The TV playback engine now belongs to the complete overlay and is no longer
+  released during each channel-key change.
+- The VOD scrubber draws a 2 dp line (3 dp focused) and a 6/8 dp thumb inside the
+  existing focus graph; its DPAD target is explicitly 48 dp high.
+- Pure motion tests and static contracts cover direction, restrained TV tuning,
+  first-frame ownership, one-surface capture, focus isolation, seek ownership and
+  scrubber target size.
 
-### TV acceptance criteria
+### Verification status and next action
 
-- No old chevron or directional arrow appears.
-- Rapid channel stepping cannot leave a stale transition on screen.
-- Failed stream resolution does not visually commit the failed channel.
-- Only the committed playback surface remains visible.
-- The animation cannot consume DPAD events or receive focus.
-- Seek-bar focus, left/right seeking, confirm, Back and overlay dismissal retain
-  current behavior.
-- No focusable control is clipped at TV overscan-safe edges.
+- Static verification after the Android integration reported:
+  - architecture audit: 60 passes, one known `MainViewModel` size warning, no
+    failures;
+  - compatibility contracts: 51/51;
+  - deep validation: 67 passes, one documented cleartext-HTTP compatibility
+    warning, no failures;
+  - production-risk inventory: zero critical findings;
+  - documentation contract and `git diff --check`: clean.
+- Codex did not run Gradle, compile or package because the owner did not authorize
+  a build in this turn.
+- The next action is the owner's normal Android Studio build followed by physical
+  Android TV checks for CH+/CH-, rapid stepping, a failed provider URL, VLC
+  fallback, Back, DPAD focus and VOD seeking.
 
 ## 6. Architecture work to continue afterward
 

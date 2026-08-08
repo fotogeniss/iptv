@@ -67,6 +67,8 @@ source_switch = (ROOT / "app/src/main/java/com/prelude/iptv/ui/coordinator/Sourc
 player_video_surface = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerVideoSurface.kt").read_text(encoding="utf-8")
 player_host = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerHost.kt").read_text(encoding="utf-8")
 player_controls = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerControls.kt").read_text(encoding="utf-8")
+tv_playback_overlay = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/TvPlaybackOverlay.kt").read_text(encoding="utf-8")
+tv_live_transition = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/TvLiveChannelTransition.kt").read_text(encoding="utf-8")
 subtitle_search_content = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerSubtitleSearchContent.kt").read_text(encoding="utf-8")
 subtitle_wiring = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/SubtitleWiring.kt").read_text(encoding="utf-8")
 playback_engine = (ROOT / "app/src/main/java/com/prelude/iptv/player/PlaybackEngine.kt").read_text(encoding="utf-8")
@@ -141,6 +143,28 @@ source_contracts = {
         and "right = tracksFocus" in player_controls
         and "right = aspectFocus" in player_controls
         and "right = afterAspect" in player_controls
+    ),
+    "TV live zapping keeps direction and transition outside focus handling": (
+        "directionalChannelStep" in tv_playback_overlay
+        and "TvLiveChannelTransition(" in tv_playback_overlay
+        and "videoOverlay = if (isLive)" in tv_playback_overlay
+        and all(marker not in tv_live_transition for marker in (
+            ".focusable(", ".onKeyEvent", ".onPreviewKeyEvent", ".clickable("
+        ))
+    ),
+    "TV live zapping keeps one surface and waits for first frame": (
+        "frameCapture = frameCapture" in player_host
+        and "frameCapture?.attach(this)" in player_video_surface
+        and "PixelCopy.request" in (
+            ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerVideoFrameCapture.kt"
+        ).read_text(encoding="utf-8")
+        and "DisposableEffect(engine)" in tv_playback_overlay
+    ),
+    "TV scrubber stays slim without shrinking its DPAD target": (
+        ".height(48.dp)" in player_controls
+        and "if (scrubFocused) 3.dp else 2.dp" in player_controls
+        and "onSeekBy(-SCRUB_STEP_MS)" in player_controls
+        and "onSeekBy(SCRUB_STEP_MS)" in player_controls
     ),
     "TV player exposes one combined subtitles and audio entry": (
         'label = "Υπότιτλοι & ήχος"' in player_controls

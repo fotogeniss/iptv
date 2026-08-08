@@ -57,4 +57,26 @@ class LiveChannelTransitionMotionTest {
             ),
         )
     }
+
+    @Test fun `TV channel keys preserve opposite transition directions`() {
+        assertEquals(1, TvLiveChannelTransitionMotion.direction(1))
+        assertEquals(-1, TvLiveChannelTransitionMotion.direction(-1))
+        assertEquals(
+            1f,
+            TvLiveChannelTransitionMotion.edgeFraction(0f, direction = 1),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            TvLiveChannelTransitionMotion.edgeFraction(0f, direction = -1),
+            0.0001f,
+        )
+    }
+
+    @Test fun `TV tuning remains restrained for a large screen`() {
+        assertEquals(.010f, TvLiveChannelTransitionMotion.WAVE_AMPLITUDE_FRACTION, 0.0001f)
+        assertEquals(.18f, TvLiveChannelTransitionMotion.BAND_WIDTH_FRACTION, 0.0001f)
+        assertEquals(.08f, TvLiveChannelTransitionMotion.MAX_DIM_ALPHA, 0.0001f)
+        assertEquals(1f, TvLiveChannelTransitionMotion.intensity(.5f), 0.0001f)
+    }
 }
