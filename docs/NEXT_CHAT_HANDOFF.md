@@ -80,6 +80,7 @@ The current project-local history begins with the following controlled sequence:
 | `aab96af` | Extracted catalog grouping, visibility, favorites, search and sorting into a pure tested presentation policy. |
 | `1a7b4f4` | Added the approved premium mobile live-channel transition and slimmed the mobile player scrubber without shrinking its touch target. |
 | `2a050af` | Attempted to move the mobile transition trigger from swipe-end to channel publication; later device feedback proved that publication was still too early. |
+| `ef62ed4` | Corrected mobile transition ownership and timing around captured outgoing frames, actual first-rendered-frame commitment and overlay-scoped engine lifetime. |
 
 ### Latest mobile live-channel change
 
@@ -110,6 +111,19 @@ The current project-local history begins with the following controlled sequence:
 - ExoPlayer and LibVLC now both advance the shared rendered-frame signal for each
   new surface frame. This work has static validation but still needs the owner's
   normal Android Studio build and device confirmation.
+
+### Latest manual subtitle search change
+
+- Opening `Χειροκίνητη` now starts the prefilled OpenSubtitles search without a
+  magnifying-glass tap.
+- Editing the title automatically restarts the search after a 400 ms debounce;
+  Compose cancels the previous producer and stale results cannot publish.
+- The provider loop checks coroutine cancellation before starting each language,
+  so an obsolete query does not unnecessarily continue into the next request.
+- Result focus is no longer moved away from the text field while the owner is
+  typing. TV/result focus behavior is preserved when the field is not active.
+- The magnifying glass remains available as an optional explicit refresh. This
+  behavior has static validation and still needs normal device confirmation.
 
 ## 4. Delivered product capabilities
 

@@ -67,6 +67,8 @@ source_switch = (ROOT / "app/src/main/java/com/prelude/iptv/ui/coordinator/Sourc
 player_video_surface = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerVideoSurface.kt").read_text(encoding="utf-8")
 player_host = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerHost.kt").read_text(encoding="utf-8")
 player_controls = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerControls.kt").read_text(encoding="utf-8")
+subtitle_search_content = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/PlayerSubtitleSearchContent.kt").read_text(encoding="utf-8")
+subtitle_wiring = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/SubtitleWiring.kt").read_text(encoding="utf-8")
 playback_engine = (ROOT / "app/src/main/java/com/prelude/iptv/player/PlaybackEngine.kt").read_text(encoding="utf-8")
 proguard_rules = (ROOT / "app/proguard-rules.pro").read_text(encoding="utf-8")
 add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/AddPlaylistScreen.kt").read_text(encoding="utf-8")
@@ -148,6 +150,14 @@ source_contracts = {
         "fun setExternalSubtitle(cues: List<Cue>, label: String)" in playback_engine
         and "publishExternalCue(p.currentPosition" in playback_engine
         and "p.setMediaItem(buildMediaItem(currentUrl))" not in playback_engine
+    ),
+    "Editable manual subtitle queries search automatically and cancel stale work": (
+        "normalizedQuery," in subtitle_search_content
+        and "SubtitleAutoSearchPolicy.DEBOUNCE_MS" in subtitle_search_content
+        and "currentLoad(normalizedQuery)" in subtitle_search_content
+        and "queryFocused" in subtitle_search_content
+        and "currentCoroutineContext().ensureActive()" in subtitle_wiring
+        and "ProviderCancellation.rethrow" in subtitle_wiring
     ),
     "Crashlytics optional profiling has narrow R8 rules": (
         "-dontwarn android.os.ProfilingTrigger$Builder" in proguard_rules

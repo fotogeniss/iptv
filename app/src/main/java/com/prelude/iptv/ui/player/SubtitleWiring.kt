@@ -8,10 +8,13 @@ import com.prelude.iptv.data.SubtitleResultNamePolicy
 import com.prelude.iptv.data.PlaybackPreferencePolicy
 import com.prelude.iptv.data.PlaylistStore
 import com.prelude.iptv.data.TmdbClient
+import com.prelude.iptv.net.ProviderCancellation
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.player.Cue
 import com.prelude.iptv.player.SrtParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 /**
@@ -84,28 +87,38 @@ object SubtitleWiring {
         val fallback = SubtitleSearchPolicy.fromChannel(channel, year)
         val request = if (query.isNotBlank()) SubtitleSearchPolicy.manual(query, fallback) else fallback
         val preferredLanguage = PlaylistStore(context).preferredSubtitleLanguage
-        PlaybackPreferencePolicy.subtitleSearchLanguages(preferredLanguage).flatMap { language ->
-            runCatching { SubtitleClient.search(request, language) }
-                .getOrDefault(emptyList())
-                .mapIndexed { index, sub ->
-                    ExternalSubtitle(
-                        id = sub.fileId,
-                        // Το file_name είναι το πιο αναγνωρίσιμο όνομα έκδοσης.
-                        // Αν ο πάροχος επιστρέψει κενό/τελεία/generic τιμή, η
-                        // πολιτική παράγει σταθερό fallback αντί για «EL ·».
-                        label = SubtitleResultNamePolicy.displayName(
-                            fileName = sub.name,
-                            release = sub.release,
-                            featureTitle = sub.featureTitle,
-                            request = request,
-                            language = sub.lang.ifBlank { language },
-                            ordinal = index,
-                        ),
+        val results = ArrayList<ExternalSubtitle>()
+        for (language in PlaybackPreferencePolicy.subtitleSearchLanguages(preferredLanguage)) {
+            // The editable query can change while the first language is in
+            // flight. Do not start the second provider request for a search
+            // whose producer has already been cancelled.
+            currentCoroutineContext().ensureActive()
+            val candidates = try {
+                SubtitleClient.search(request, language)
+            } catch (error: Exception) {
+                ProviderCancellation.rethrow(error, "Subtitle search cancelled")
+                emptyList()
+            }
+            candidates.forEachIndexed { index, sub ->
+                results += ExternalSubtitle(
+                    id = sub.fileId,
+                    // Το file_name είναι το πιο αναγνωρίσιμο όνομα έκδοσης.
+                    // Αν ο πάροχος επιστρέψει κενό/τελεία/generic τιμή, η
+                    // πολιτική παράγει σταθερό fallback αντί για «EL ·».
+                    label = SubtitleResultNamePolicy.displayName(
+                        fileName = sub.name,
+                        release = sub.release,
+                        featureTitle = sub.featureTitle,
+                        request = request,
                         language = sub.lang.ifBlank { language },
-                        matchPercent = sub.matchPercent,
-                    )
-                }
+                        ordinal = index,
+                    ),
+                    language = sub.lang.ifBlank { language },
+                    matchPercent = sub.matchPercent,
+                )
+            }
         }
+        results
     }
 
     /** Κατεβάζει και εφαρμόζει τον επιλεγμένο. Επιστρέφει μήνυμα για τον χρήστη. */

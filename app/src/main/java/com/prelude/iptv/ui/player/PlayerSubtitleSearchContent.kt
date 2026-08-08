@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.requestFocusWithRetry
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 
 /** Η χειροκίνητη αναζήτηση που αναπτύσσεται μέσα στο κοινό CC/audio panel. */
 @Composable
@@ -52,10 +54,25 @@ internal fun PlayerSubtitleSearchContent(
     val firstResultFocus = remember { FocusRequester() }
     var query by remember(initialQuery) { mutableStateOf(initialQuery) }
     var searchTick by remember { mutableStateOf(0) }
-    val results by produceState<List<ExternalSubtitle>?>(initialValue = null, searchTick) {
+    var queryFocused by remember { mutableStateOf(false) }
+    val normalizedQuery = SubtitleAutoSearchPolicy.normalizedQuery(query)
+    val currentLoad by rememberUpdatedState(load)
+    val results by produceState<List<ExternalSubtitle>?>(
+        initialValue = null,
+        normalizedQuery,
+        searchTick,
+    ) {
         value = null
+        if (!SubtitleAutoSearchPolicy.shouldSearch(normalizedQuery)) {
+            value = emptyList()
+            return@produceState
+        }
+        // Query changes cancel this producer automatically. The debounce avoids
+        // sending one OpenSubtitles request per keystroke while still searching
+        // immediately after the user pauses typing.
+        delay(SubtitleAutoSearchPolicy.DEBOUNCE_MS)
         value = try {
-            load(query)
+            currentLoad(normalizedQuery)
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
@@ -63,8 +80,10 @@ internal fun PlayerSubtitleSearchContent(
         }
     }
 
-    LaunchedEffect(results) {
-        if (!results.isNullOrEmpty()) firstResultFocus.requestFocusWithRetry()
+    LaunchedEffect(results, queryFocused) {
+        if (!queryFocused && !results.isNullOrEmpty()) {
+            firstResultFocus.requestFocusWithRetry()
+        }
     }
 
     Box(Modifier.fillMaxWidth()) {
@@ -73,7 +92,10 @@ internal fun PlayerSubtitleSearchContent(
             onValueChange = { query = it },
             label = { Text("Τίτλος", color = IptvColors.TextSecondary) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(end = 55.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 55.dp)
+                .onFocusChanged { queryFocused = it.isFocused },
         )
         Box(
             Modifier
@@ -115,6 +137,16 @@ internal fun PlayerSubtitleSearchContent(
             }
         }
     }
+}
+
+internal object SubtitleAutoSearchPolicy {
+    const val DEBOUNCE_MS = 400L
+    private val repeatedWhitespace = Regex("\\s+")
+
+    fun normalizedQuery(query: String): String =
+        query.trim().replace(repeatedWhitespace, " ")
+
+    fun shouldSearch(query: String): Boolean = normalizedQuery(query).isNotBlank()
 }
 
 @Composable

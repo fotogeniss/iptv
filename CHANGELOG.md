@@ -26,6 +26,9 @@ implementation notes are preserved in `docs/archive/changelog`.
   failed or stale channel loads no longer trigger a false visual commit.
 - Kept the mobile playback engine alive across channel changes instead of
   releasing it while the next stream and first-frame transition were starting.
+- Made manual OpenSubtitles search run automatically when opened and after an
+  edited title settles, with cancellation of stale keystroke searches and no
+  required magnifying-glass tap.
 
 ## 1.46.0 - versionCode 115
 
