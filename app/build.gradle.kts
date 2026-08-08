@@ -24,7 +24,11 @@ android {
         targetSdk = 35
         versionCode = 115
         versionName = "1.46.0"
+        resourceConfigurations += listOf("en", "el")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // The in-app picker remains QA-only until every release surface has
+        // matching English/Greek resources. Flip only after the parity gate.
+        buildConfigField("boolean", "LOCALIZATION_PARITY_COMPLETE", "false")
         buildConfigField(
             "boolean",
             "FIREBASE_CRASH_REPORTING_CONFIGURED",
@@ -100,6 +104,13 @@ android {
         }
     }
 
+    // English is exercised only by owner builds while translation is partial.
+    // The public release keeps the existing Greek baseline until the parity gate.
+    sourceSets {
+        getByName("debug").res.srcDir("src/localizationQa/res")
+        getByName("qa").res.srcDir("src/localizationQa/res")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -139,6 +150,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.work:work-runtime-ktx:2.11.2")

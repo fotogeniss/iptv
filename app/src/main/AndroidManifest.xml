@@ -36,6 +36,17 @@
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
 
+        <!-- AndroidX persists per-app locales on API 26-32. Android 13+ uses
+             the platform LocaleManager through the same AppCompat API. -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
         <activity
             android:name=".StartupActivity"
             android:exported="true"

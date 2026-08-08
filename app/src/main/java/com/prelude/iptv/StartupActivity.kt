@@ -14,10 +14,10 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.VideoView
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 
 /** Lightweight cold-start branding. MainActivity remains the production app shell. */
-class StartupActivity : ComponentActivity() {
+class StartupActivity : AppCompatActivity() {
     private var launchedMain = false
     private var introVideo: VideoView? = null
     private val handler = Handler(Looper.getMainLooper())

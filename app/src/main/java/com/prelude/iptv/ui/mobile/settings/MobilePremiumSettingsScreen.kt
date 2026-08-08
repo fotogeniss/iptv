@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PlayCircle
@@ -45,10 +46,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.PlaylistStore
+import com.prelude.iptv.BuildConfig
+import com.prelude.iptv.R
+import com.prelude.iptv.localization.AppLanguageController
+import com.prelude.iptv.localization.LocalizationRolloutPolicy
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
@@ -56,6 +62,7 @@ import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.ui.mobile.home.MobileEditHomeScreen
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
+import com.prelude.iptv.ui.localization.labelRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +118,7 @@ fun MobilePremiumSettingsScreen(
     var epgSettingsOpen by remember { mutableStateOf(false) }
     var legalPrivacyOpen by remember { mutableStateOf(false) }
     var diagnosticsOpen by remember { mutableStateOf(false) }
+    var languagePickerOpen by remember { mutableStateOf(false) }
     var autoOpenPlaylist by remember { mutableStateOf(store.autoOpenPlaylist) }
     var playlistRefreshDays by remember { mutableStateOf(store.playlistRefreshDays) }
     var mobileBufferProfile by remember { mutableStateOf(store.bufferProfile) }
@@ -121,11 +129,17 @@ fun MobilePremiumSettingsScreen(
     var homeEntries by remember {
         mutableStateOf(HomeLayoutPolicy.resolve(store.homeSectionOrder, store.homeHiddenSections))
     }
+    val languagePickerVisible = LocalizationRolloutPolicy.pickerVisible(
+        ownerQaBuild = BuildConfig.PREMIUM_QA_OVERRIDE,
+        translationParityComplete = BuildConfig.LOCALIZATION_PARITY_COMPLETE,
+    )
+    val selectedAppLanguage = AppLanguageController.selected()
 
-    LaunchedEffect(navigationCollapsed, editingHome, editingCategories, accountFlow, managerSourceIndex, playerSettingsOpen, epgSettingsOpen, legalPrivacyOpen, diagnosticsOpen) {
+    LaunchedEffect(navigationCollapsed, editingHome, editingCategories, accountFlow, managerSourceIndex, playerSettingsOpen, epgSettingsOpen, legalPrivacyOpen, diagnosticsOpen, languagePickerOpen) {
         onNavigationCollapsedChange(
             navigationCollapsed || editingHome || editingCategories || accountFlow ||
-                managerSourceIndex != null || playerSettingsOpen || epgSettingsOpen || legalPrivacyOpen || diagnosticsOpen
+                managerSourceIndex != null || playerSettingsOpen || epgSettingsOpen || legalPrivacyOpen ||
+                diagnosticsOpen || languagePickerOpen
         )
     }
 
@@ -324,8 +338,17 @@ fun MobilePremiumSettingsScreen(
         }
 
         item(key = "settings-customize") {
-            MobileSettingsGroupTitle("Εξατομίκευση")
+            MobileSettingsGroupTitle(stringResource(R.string.settings_group_personalization))
             MobileSettingsRows {
+                if (languagePickerVisible) {
+                    MobileOverviewRow(
+                        title = stringResource(R.string.settings_app_language),
+                        subtitle = stringResource(R.string.settings_app_language_subtitle),
+                        icon = Icons.Default.Language,
+                        value = stringResource(selectedAppLanguage.labelRes()),
+                        onClick = { languagePickerOpen = true },
+                    )
+                }
                 MobileOverviewRow(
                     title = "Επεξεργασία αρχικής",
                     subtitle = "Σειρά και ορατότητα ενοτήτων",
@@ -339,8 +362,8 @@ fun MobilePremiumSettingsScreen(
                     onClick = { onEditCategories(); editingCategories = true }
                 )
                 MobileOverviewRow(
-                    title = "Εμφάνιση",
-                    subtitle = "Μέγεθος κειμένου και προσβασιμότητα",
+                    title = stringResource(R.string.settings_appearance_title),
+                    subtitle = stringResource(R.string.settings_appearance_subtitle),
                     icon = Icons.Default.FormatSize,
                     value = "${(fontScale * 100).toInt()}%",
                     onClick = { onDialog("font") }
@@ -474,6 +497,17 @@ fun MobilePremiumSettingsScreen(
 
     if (premiumSheet) {
         MobilePremiumSheet(onDismiss = { premiumSheet = false })
+    }
+
+    if (languagePickerOpen && languagePickerVisible) {
+        MobileAppLanguageSheet(
+            selected = selectedAppLanguage,
+            onSelect = { language ->
+                languagePickerOpen = false
+                AppLanguageController.select(language)
+            },
+            onDismiss = { languagePickerOpen = false },
+        )
     }
 
     infoSheet?.let { info ->

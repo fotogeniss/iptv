@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 
 /** Settings stays available without occupying a primary content destination. */
@@ -27,7 +29,7 @@ internal fun MobileSettingsAction(
     ) {
         Icon(
             imageVector = Icons.Default.Settings,
-            contentDescription = "Ρυθμίσεις",
+            contentDescription = stringResource(R.string.nav_settings),
             tint = IptvColors.TextPrimary,
             modifier = Modifier.size(21.dp),
         )

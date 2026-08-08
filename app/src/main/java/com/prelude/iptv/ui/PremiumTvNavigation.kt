@@ -38,11 +38,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.prelude.iptv.ui.navigation.PrimaryContentDestination
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.R
 
 private val NavRed = IptvColors.Primary
 private val NavMuted = Color(0xFF8E8E96)
@@ -163,6 +166,7 @@ fun PremiumTvNavigationRail(
             { destination -> selectedFocus?.takeIf { selectedDestination == destination } }
 
         PrimaryContentDestination.ordered.forEach { destination ->
+            val label = stringResource(destination.labelRes())
             val (icon, action) = when (destination) {
                 PrimaryContentDestination.HOME -> Icons.Default.Home to onHome
                 PrimaryContentDestination.LIVE -> Icons.Default.LiveTv to onLive
@@ -172,7 +176,7 @@ fun PremiumTvNavigationRail(
             }
             TvNavIcon(
                 icon = icon,
-                contentDescription = destination.label,
+                contentDescription = label,
                 selected = selectedDestination == destination,
                 onClick = action,
                 expanded = expanded,
@@ -182,7 +186,7 @@ fun PremiumTvNavigationRail(
         }
 
         Spacer(Modifier.weight(1f))
-        TvNavIcon(Icons.Default.Settings, "Ρυθμίσεις", false, onSettings, expanded, null, interactive)
+        TvNavIcon(Icons.Default.Settings, stringResource(R.string.nav_settings), false, onSettings, expanded, null, interactive)
         Spacer(Modifier.height(8.dp))
         // Προφίλ (μη-focusable ένδειξη).
         Box(

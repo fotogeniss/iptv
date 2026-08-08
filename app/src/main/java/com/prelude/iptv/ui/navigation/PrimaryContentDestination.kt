@@ -8,13 +8,12 @@ package com.prelude.iptv.ui.navigation
  */
 enum class PrimaryContentDestination(
     val route: String,
-    val label: String,
 ) {
-    HOME("home", "Αρχική"),
-    LIVE("live", "Live"),
-    MOVIES("movies", "Ταινίες"),
-    SERIES("series", "Σειρές"),
-    SEARCH("search", "Αναζήτηση"),
+    HOME("home"),
+    LIVE("live"),
+    MOVIES("movies"),
+    SERIES("series"),
+    SEARCH("search"),
     ;
 
     companion object {

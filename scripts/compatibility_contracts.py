@@ -93,7 +93,7 @@ select_end = main_vm.find("    fun saveFontScale", select_start)
 select_body = main_vm[select_start:select_end]
 
 source_contracts = {
-    "External PlayerActivity keeps its manifest launch class": "class PlayerActivity : ComponentActivity()" in player,
+    "External PlayerActivity keeps its manifest launch class": "class PlayerActivity : AppCompatActivity()" in player,
     "External PlayerActivity rejects malformed launch intents": "if (request == null)" in player and "finish()" in player,
     "External PlayerActivity delegates to the shared playback overlay": "TvPlaybackOverlay(" in player,
     "External PlayerActivity persists resume through the shared overlay": "loadResumeMs =" in player and "saveResumeMs =" in player,

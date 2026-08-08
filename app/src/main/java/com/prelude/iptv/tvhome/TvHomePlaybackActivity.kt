@@ -3,7 +3,7 @@ package com.prelude.iptv.tvhome
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.prelude.iptv.player.PlayerLaunchRequest
 import com.prelude.iptv.data.Channel
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Resolves an opaque launcher token and starts the internal player without exposing credentials. */
-class TvHomePlaybackActivity : ComponentActivity() {
+class TvHomePlaybackActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val data = intent?.data

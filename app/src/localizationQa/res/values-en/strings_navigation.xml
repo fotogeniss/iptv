@@ -1,0 +1,9 @@
+<resources>
+    <string name="nav_home">Home</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_series">Series</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_settings">Settings</string>
+    <string name="a11y_open_navigation">Open navigation</string>
+</resources>

@@ -184,7 +184,8 @@ ci = read(".github/workflows/android-ci.yml")
 require("actions/checkout@v6" in ci and "actions/setup-java@v5" in ci and
         "gradle/actions/setup-gradle@v6" in ci,
         "CI uses valid pinned major action versions")
-require("python3 scripts/deep_validation_audit.py" in ci and
+require("python3 scripts/localization_contracts.py" in ci and
+        "python3 scripts/deep_validation_audit.py" in ci and
         "python3 scripts/risk_inventory.py" in ci and
         ci.find("python3 scripts/deep_validation_audit.py") < ci.find(":app:testDebugUnitTest"),
         "static release contracts run before Gradle build jobs")

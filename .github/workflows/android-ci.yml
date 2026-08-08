@@ -41,6 +41,7 @@ jobs:
       - name: Static compatibility and architecture contracts
         run: |
           python3 scripts/documentation_contracts.py
+          python3 scripts/localization_contracts.py
           python3 scripts/compatibility_contracts.py
           python3 scripts/architecture_audit.py
           python3 scripts/deep_validation_audit.py

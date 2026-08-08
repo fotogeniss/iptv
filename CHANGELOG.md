@@ -5,10 +5,15 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Implemented the approved localization foundation across all five activity
+  hosts, with AndroidX per-app locale persistence, paired English/Greek
+  navigation and settings resources, localized mobile/TV primary navigation,
+  and QA-gated mobile/TV language pickers for System, Greek and English. Public
+  builds preserve the existing Greek baseline, while English routing and picker
+  exposure remain blocked until full translation parity.
 - Added a functional mobile/TV localization-settings preview for System, Greek
   and English, covering immediate app-wide updates, persistence, safe English
-  fallback, mobile bottom-sheet behavior and TV DPAD selection; Android
-  integration remains pending owner approval.
+  fallback, mobile bottom-sheet behavior and TV DPAD selection.
 - Implemented the approved unified content navigation on mobile and Android TV:
   Home, Live, movies, series and automatic Search are now direct primary
   destinations, secondary library/EPG/source tools remain inside their owning

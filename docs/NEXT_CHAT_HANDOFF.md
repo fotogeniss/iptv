@@ -298,21 +298,25 @@ has now been implemented for Android TV.
   zero critical production-risk findings and a clean diff check. Gradle was not
   run; the owner still needs to compile and perform phone/TV device QA.
 
-### Localization direction awaiting approval
+### Localization implementation in progress
 
-- The current app has only `app_name` in Android string resources; the visible
-  interface is overwhelmingly hardcoded and cannot be safely localized through
-  a bulk replacement.
-- The proposed mobile/TV language flow is functional at
+- The owner approved the functional mobile/TV language flow at
   `prototypes/localization/LOCALIZATION_SETTINGS_FLOW_PREVIEW.html` with System,
   Greek and English choices, immediate effective-language changes, persistence,
   English fallback and TV DPAD movement.
 - `docs/LOCALIZATION_ARCHITECTURE.md` defines the approved-API implementation,
   feature-owned resource files, English fallback, Greek parity requirement,
   Kotlin boundaries and staged migration gates.
-- Do not change Android localization UI until the owner approves the preview.
-  After approval, implement the runtime foundation first and keep the picker out
-  of public builds until complete release-surface translation parity is reached.
+- The runtime foundation now uses AppCompat per-app locales across all five
+  activity hosts. The first paired resource slice covers primary navigation and
+  the language/appearance settings surface.
+- Partial English resources live in the shared `app/src/localizationQa` source
+  set used only by debug/QA. Production keeps the Greek unqualified baseline so
+  English-system devices cannot receive a mixed-language public UI mid-migration.
+- Mobile and TV language pickers are visible in owner QA builds. Public builds
+  keep them hidden through `LOCALIZATION_PARITY_COMPLETE=false`; do not flip the
+  flag or enable generated locale config until every release surface has matching
+  English/Greek resources and the final audit passes.
 
 ## 7. Architecture work to continue afterward
 

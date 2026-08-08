@@ -2,8 +2,8 @@ package com.prelude.iptv
 
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,7 +57,7 @@ import com.prelude.iptv.ui.player.upcomingProgrammes
  * μια υπενθύμιση για ένα κανάλι, μια κάρτα της αρχικής TV, μια δοκιμή σύνδεσης,
  * ένα αρχειοθετημένο πρόγραμμα. Δεν υπάρχει λίστα να διατρέξεις.
  */
-class PlayerActivity : ComponentActivity() {
+class PlayerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

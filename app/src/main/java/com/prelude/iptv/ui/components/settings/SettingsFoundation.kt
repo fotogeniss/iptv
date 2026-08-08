@@ -34,12 +34,12 @@ data class SettingsSourceUi(
         }
 }
 
-enum class SettingsPage(val label: String) {
-    Sources("Πηγές"),
-    Playback("Αναπαραγωγή"),
-    Appearance("Εμφάνιση"),
-    Account("Λογαριασμός"),
-    About("Σχετικά")
+enum class SettingsPage {
+    Sources,
+    Playback,
+    Appearance,
+    Account,
+    About,
 }
 
 fun buildSettingsSources(

@@ -1,6 +1,7 @@
 # Prelude+ localization architecture
 
-Status: design preview ready; Android implementation waits for owner approval.
+Status: owner-approved design; runtime foundation and the first navigation/settings
+slice are implemented behind the QA/parity rollout gate.
 
 ## Product contract
 
@@ -16,10 +17,13 @@ notifications and app-owned errors. It does not translate provider category
 names, channel names, movie/series titles, EPG data or user-entered source names.
 Audio and subtitle language preferences remain separate playback settings.
 
-English is the unqualified resource set and ultimate fallback. Greek must be a
-complete `values-el` translation before the language picker is exposed in a
-public build. A missing translation must show English, never a resource key,
-blank label or crash.
+English is the final unqualified resource set and ultimate fallback. During the
+partial migration, however, the public `main` source set deliberately preserves
+the existing Greek baseline. Matching English resources live only in the shared
+`localizationQa` source set consumed by debug and QA builds. This prevents an
+English-device release from showing an English navigation shell over a still
+Greek application. At final parity, English moves to unqualified `values`, Greek
+moves to `values-el`, and `unqualifiedResLocale` changes from `el` to `en`.
 
 ## Android runtime architecture
 
@@ -29,8 +33,10 @@ The implementation follows Android's public per-app language stack:
 2. Move all five Compose hosts from `ComponentActivity` to
    `AppCompatActivity`; use an AppCompat no-action-bar parent for both existing
    app themes.
-3. Enable AGP `generateLocaleConfig` and declare `unqualifiedResLocale=en` in
-   `app/src/main/res/resources.properties`.
+3. Declare the current public baseline with `unqualifiedResLocale=el`. Change it
+   to `en` and enable AGP `generateLocaleConfig` only at the final parity gate;
+   enabling production language routing earlier would expose the incomplete
+   translation.
 4. Limit packaged locales to `en` and `el` so dependency translations are not
    accidentally advertised as supported app languages.
 5. Enable AndroidX locale auto-storage for API 26–32. Android 13+ persists and
@@ -56,22 +62,26 @@ Resources are split by feature responsibility, not collected in one giant file:
 
 ```text
 app/src/main/res/
-├── values/
-│   ├── strings_core.xml
-│   ├── strings_navigation.xml
-│   ├── strings_home.xml
-│   ├── strings_live.xml
-│   ├── strings_catalog.xml
-│   ├── strings_search.xml
-│   ├── strings_details.xml
-│   ├── strings_player.xml
-│   ├── strings_sources.xml
-│   ├── strings_settings.xml
-│   ├── strings_errors.xml
-│   └── strings_accessibility.xml
-└── values-el/
-    └── matching files with the same resource keys
+└── values/                 # Greek public baseline during migration
+    ├── strings_core.xml
+    ├── strings_navigation.xml
+    ├── strings_home.xml
+    ├── strings_live.xml
+    ├── strings_catalog.xml
+    ├── strings_search.xml
+    ├── strings_details.xml
+    ├── strings_player.xml
+    ├── strings_sources.xml
+    ├── strings_settings.xml
+    ├── strings_errors.xml
+    └── strings_accessibility.xml
+app/src/localizationQa/res/
+└── values-en/              # merged only into debug and QA
+    └── matching English files
 ```
+
+At the final parity gate, the English files become `main/res/values` and the
+Greek files move together to `main/res/values-el`.
 
 Key names describe ownership and meaning, for example `nav_home`,
 `settings_app_language`, `live_no_channels_in_category` and
@@ -101,8 +111,10 @@ allowed.
 The picker must not expose a half-translated application. Migration proceeds in
 cohesive vertical slices:
 
-1. Runtime foundation, resource generation and pure language-selection policy.
-2. Primary navigation plus mobile/TV language settings UI.
+1. Runtime foundation, staged fallback and pure language-selection policy.
+   **Implemented.**
+2. Primary navigation plus mobile/TV language settings UI. **Implemented for
+   QA builds; public visibility remains gated.**
 3. Home, Live, movies, series, Search, details and episodes.
 4. Player, audio/subtitle panels and playback errors.
 5. Source onboarding/management, EPG and all settings flows.
@@ -110,14 +122,18 @@ cohesive vertical slices:
 7. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
-The English base and Greek translation for each slice land together. No slice is
-considered migrated when visible copy, errors or accessibility text still bypass
-resources.
+The Greek baseline and QA English translation for each slice land together. No
+slice is considered migrated when visible copy, errors or accessibility text
+still bypass resources.
 
 ## Verification gates
 
-- Every default translatable key exists in `values-el`; intentional brand and
-  protocol constants are marked `translatable="false"`.
+- Every staged Greek key has a matching QA English key; after final inversion,
+  every English default key must have a matching `values-el` key. Intentional
+  brand and protocol constants are marked `translatable="false"`.
+- `python scripts/localization_contracts.py` enforces current resource parity,
+  the release-safe Greek baseline, host coverage and the closed public rollout
+  gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

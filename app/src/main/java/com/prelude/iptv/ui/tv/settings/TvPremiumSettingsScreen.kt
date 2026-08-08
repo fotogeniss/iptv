@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Palette
@@ -52,6 +53,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prelude.iptv.billing.PreludeBilling
 import com.prelude.iptv.billing.PremiumTier
@@ -69,6 +71,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.BuildConfig
+import com.prelude.iptv.R
+import com.prelude.iptv.localization.AppLanguage
+import com.prelude.iptv.localization.AppLanguageController
+import com.prelude.iptv.localization.LocalizationRolloutPolicy
 import com.prelude.iptv.ui.components.settings.PremiumSettingsRow
 import com.prelude.iptv.ui.components.settings.SettingsHealthCard
 import com.prelude.iptv.ui.components.settings.SettingsPage
@@ -76,6 +83,7 @@ import com.prelude.iptv.ui.components.settings.SettingsSectionHeader
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.TvDialogTextButton
+import com.prelude.iptv.ui.localization.labelRes
 
 @Composable
 fun TvPremiumSettingsScreen(
@@ -106,6 +114,12 @@ fun TvPremiumSettingsScreen(
 ) {
     var page by remember { mutableStateOf(SettingsPage.Sources) }
     var addPicker by remember { mutableStateOf(false) }
+    var languagePickerOpen by remember { mutableStateOf(false) }
+    val languagePickerVisible = LocalizationRolloutPolicy.pickerVisible(
+        ownerQaBuild = BuildConfig.PREMIUM_QA_OVERRIDE,
+        translationParityComplete = BuildConfig.LOCALIZATION_PARITY_COMPLETE,
+    )
+    val selectedAppLanguage = AppLanguageController.selected()
     val firstFocus = rememberInitialFocus(enabled = true)
     val pages = listOf(
         SettingsPage.Sources to Icons.Default.Storage,
@@ -198,7 +212,13 @@ fun TvPremiumSettingsScreen(
                     onAdd = { addPicker = true }
                 )
                 SettingsPage.Playback -> TvPlaybackPage(playerLabel, autoFrameRateLabel, bufferLabel, tvHomeEnabled, tvHomeMyListEnabled, epgEnabled, tmdbConfigured, subtitlesConfigured, onDialog, onToggleEpg, onToggleTvHome, onToggleTvHomeMyList, onClearTmdbCache)
-                SettingsPage.Appearance -> TvAppearancePage(fontScale, onDialog)
+                SettingsPage.Appearance -> TvAppearancePage(
+                    fontScale = fontScale,
+                    selectedLanguage = selectedAppLanguage,
+                    languagePickerVisible = languagePickerVisible,
+                    onOpenLanguagePicker = { languagePickerOpen = true },
+                    onDialog = onDialog,
+                )
                 SettingsPage.Account -> TvAccountPage(profileName, onDialog, onShare)
                 SettingsPage.About -> TvAboutPage(version, sources.size, playerLabel, epgEnabled)
             }
@@ -220,6 +240,17 @@ fun TvPremiumSettingsScreen(
             },
             confirmButton = {},
             dismissButton = { TvDialogTextButton(label = "Κλείσιμο", color = Color.White, onClick = { addPicker = false }) }
+        )
+    }
+
+    if (languagePickerOpen && languagePickerVisible) {
+        TvAppLanguageDialog(
+            selected = selectedAppLanguage,
+            onSelect = { language ->
+                languagePickerOpen = false
+                AppLanguageController.select(language)
+            },
+            onDismiss = { languagePickerOpen = false },
         )
     }
 }
@@ -311,12 +342,36 @@ private fun TvPlaybackPage(
 )
 
 @Composable
-private fun TvAppearancePage(fontScale: Float, onDialog: (String) -> Unit) = TvSettingsRows(
-    "Εμφάνιση & προσβασιμότητα", "Κοινό premium design language για TV και Mobile",
-    listOf(
-        TvRowData("Μέγεθος γραμματοσειράς", "Συμβατό με system scaling", Icons.Default.FormatSize, "${(fontScale * 100).toInt()}%") { onDialog("font") }
+private fun TvAppearancePage(
+    fontScale: Float,
+    selectedLanguage: AppLanguage,
+    languagePickerVisible: Boolean,
+    onOpenLanguagePicker: () -> Unit,
+    onDialog: (String) -> Unit,
+) {
+    val rows = mutableListOf<TvRowData>()
+    if (languagePickerVisible) {
+        rows += TvRowData(
+            title = stringResource(R.string.settings_app_language),
+            subtitle = stringResource(R.string.settings_app_language_subtitle),
+            icon = Icons.Default.Language,
+            value = stringResource(selectedLanguage.labelRes()),
+            action = onOpenLanguagePicker,
+        )
+    }
+    rows += TvRowData(
+        title = stringResource(R.string.settings_text_size),
+        subtitle = stringResource(R.string.settings_text_size_subtitle),
+        icon = Icons.Default.FormatSize,
+        value = "${(fontScale * 100).toInt()}%",
+    ) { onDialog("font") }
+
+    TvSettingsRows(
+        title = stringResource(R.string.settings_appearance_title),
+        subtitle = stringResource(R.string.settings_appearance_subtitle),
+        rows = rows,
     )
-)
+}
 
 @Composable
 private fun TvAccountPage(profile: String, onDialog: (String) -> Unit, onShare: () -> Unit) {

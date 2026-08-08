@@ -1,0 +1,24 @@
+<resources>
+    <string name="settings_nav_sources">Πηγές</string>
+    <string name="settings_nav_playback">Αναπαραγωγή</string>
+    <string name="settings_nav_appearance">Εμφάνιση</string>
+    <string name="settings_nav_account">Λογαριασμός</string>
+    <string name="settings_nav_about">Σχετικά</string>
+    <string name="settings_group_personalization">Εξατομίκευση</string>
+    <string name="settings_appearance_title">Εμφάνιση &amp; προσβασιμότητα</string>
+    <string name="settings_appearance_subtitle">Ενιαία premium εμπειρία σε TV και κινητό</string>
+    <string name="settings_app_language">Γλώσσα εφαρμογής</string>
+    <string name="settings_app_language_subtitle">Μενού, κουμπιά, μηνύματα και προσβασιμότητα</string>
+    <string name="settings_text_size">Μέγεθος κειμένου</string>
+    <string name="settings_text_size_subtitle">Προσαρμογή ανά συσκευή και απόσταση θέασης</string>
+    <string name="language_picker_title">Γλώσσα εφαρμογής</string>
+    <string name="language_picker_subtitle">Διάλεξε μία φορά ή άφησε το Prelude+ να ακολουθεί τη συσκευή.</string>
+    <string name="language_system">Αυτόματα (συσκευή)</string>
+    <string name="language_system_summary">Ακολουθεί τη γλώσσα της συσκευής</string>
+    <string name="language_greek">Ελληνικά</string>
+    <string name="language_greek_summary">Greek</string>
+    <string name="language_english">English</string>
+    <string name="language_english_summary">Αγγλικά</string>
+    <string name="language_picker_note">Η επιλογή αποθηκεύεται σε αυτή τη συσκευή. Η γλώσσα εφαρμογής είναι ανεξάρτητη από τις προτιμήσεις ήχου και υποτίτλων.</string>
+    <string name="a11y_close">Κλείσιμο</string>
+</resources>

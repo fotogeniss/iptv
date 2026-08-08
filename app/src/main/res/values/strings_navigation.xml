@@ -1,0 +1,9 @@
+<resources>
+    <string name="nav_home">Αρχική</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_movies">Ταινίες</string>
+    <string name="nav_series">Σειρές</string>
+    <string name="nav_search">Αναζήτηση</string>
+    <string name="nav_settings">Ρυθμίσεις</string>
+    <string name="a11y_open_navigation">Άνοιγμα πλοήγησης</string>
+</resources>

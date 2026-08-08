@@ -9,7 +9,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -30,7 +30,7 @@ import com.prelude.iptv.player.PlaybackStabilityPolicy
 import io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory
 
 @OptIn(markerClass = [UnstableApi::class])
-class MultiviewActivity : ComponentActivity() {
+class MultiviewActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_LAUNCH_TOKEN = "multiview_launch_token"
         private const val MAX_PANE_RESTARTS = 5

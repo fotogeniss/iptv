@@ -23,6 +23,7 @@ if (( ${#DEVICES[@]} > 1 )) && [[ -z "${ANDROID_SERIAL:-}" ]]; then
 fi
 
 python3 scripts/compatibility_contracts.py
+python3 scripts/localization_contracts.py
 python3 scripts/architecture_audit.py
 python3 scripts/deep_validation_audit.py
 python3 scripts/risk_inventory.py

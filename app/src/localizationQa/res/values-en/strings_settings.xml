@@ -1,0 +1,24 @@
+<resources>
+    <string name="settings_nav_sources">Sources</string>
+    <string name="settings_nav_playback">Playback</string>
+    <string name="settings_nav_appearance">Appearance</string>
+    <string name="settings_nav_account">Account</string>
+    <string name="settings_nav_about">About</string>
+    <string name="settings_group_personalization">Personalization</string>
+    <string name="settings_appearance_title">Appearance &amp; accessibility</string>
+    <string name="settings_appearance_subtitle">A consistent premium experience on TV and mobile</string>
+    <string name="settings_app_language">App language</string>
+    <string name="settings_app_language_subtitle">Menus, buttons, messages and accessibility</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_text_size_subtitle">Adapted for each device and viewing distance</string>
+    <string name="language_picker_title">App language</string>
+    <string name="language_picker_subtitle">Choose once or let Prelude+ follow this device.</string>
+    <string name="language_system">Automatic (device)</string>
+    <string name="language_system_summary">Follows the device language</string>
+    <string name="language_greek">Ελληνικά</string>
+    <string name="language_greek_summary">Greek</string>
+    <string name="language_english">English</string>
+    <string name="language_english_summary">Αγγλικά</string>
+    <string name="language_picker_note">The choice is stored on this device. App language is separate from audio and subtitle preferences.</string>
+    <string name="a11y_close">Close</string>
+</resources>

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -32,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.ui.navigation.PrimaryContentDestination
 
 internal val PremiumMobileBottomBarHeight: Dp = 68.dp
@@ -158,7 +161,7 @@ internal fun PremiumMobileBottomNavigation(
                 IconButton(onClick = { manuallyExpanded = true }) {
                     Icon(
                         imageVector = Icons.Default.Menu,
-                        contentDescription = "Άνοιγμα μενού",
+                        contentDescription = stringResource(R.string.a11y_open_navigation),
                         tint = IptvColors.Primary,
                         modifier = Modifier.size(31.dp)
                     )
@@ -241,6 +244,7 @@ private fun PremiumMobileNavItem(
     modifier: Modifier = Modifier,
 ) {
     val selected = destination.route == selectedRoute
+    val label = stringResource(destination.labelRes())
     Column(
         modifier
             .padding(horizontal = 2.dp)
@@ -255,13 +259,13 @@ private fun PremiumMobileNavItem(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = destination.label,
+            contentDescription = label,
             tint = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
             modifier = Modifier.size(22.dp)
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            text = destination.label,
+            text = label,
             color = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
             fontSize = 9.sp,
             fontWeight = if (selected) FontWeight.Black else FontWeight.SemiBold,

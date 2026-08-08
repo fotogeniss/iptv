@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,7 @@ import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.labelRes
 
 @Composable
 internal fun TvSettingsNavItem(
@@ -91,7 +93,7 @@ internal fun TvSettingsNavItem(
         Icon(icon, null, tint = fg, modifier = Modifier.size(20.dp))
         if (expanded) {
             Spacer(Modifier.width(12.dp))
-            Text(page.label, color = fg, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(stringResource(page.labelRes()), color = fg, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
