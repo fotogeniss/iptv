@@ -29,18 +29,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.ContentQualityPolicy
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingProgress
 import com.prelude.iptv.ui.WatchProgress
-import com.prelude.iptv.ui.WatchProgressPolicy
 import com.prelude.iptv.ui.design.MotionSkeleton
 import com.prelude.iptv.ui.components.rememberEpisodeMeta
+import com.prelude.iptv.ui.localization.localizedWatchRemaining
 
 @Composable
 internal fun MobileEpisodeCard(
@@ -60,7 +62,11 @@ internal fun MobileEpisodeCard(
     )
     val artwork = tmdbEpisode?.still?.takeIf(String::isNotBlank) ?: episode.logo
     val title = tmdbEpisode?.title?.takeIf(String::isNotBlank) ?: episode.name
+    val displayTitle = if (title.isBlank()) {
+        stringResource(R.string.details_episode_number, number)
+    } else title
     val overview = tmdbEpisode?.overview?.takeIf(String::isNotBlank) ?: episode.plot
+    val remainingLabel = if (progress != null) localizedWatchRemaining(progress) else null
     val quality = ContentQualityPolicy.label(episode.name, episode.group)
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick)
@@ -101,7 +107,7 @@ internal fun MobileEpisodeCard(
                 Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
             }
             Text(
-                "EP $number",
+                stringResource(R.string.details_episode_badge, number),
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.ExtraBold,
@@ -128,7 +134,11 @@ internal fun MobileEpisodeCard(
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                "$number. ${title.ifBlank { "Επεισόδιο $number" }}",
+                stringResource(
+                    R.string.details_numbered_title,
+                    number,
+                    displayTitle,
+                ),
                 color = IptvColors.TextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -141,7 +151,7 @@ internal fun MobileEpisodeCard(
                 Text(
                     listOfNotNull(
                         episodeMeta.takeIf(String::isNotBlank),
-                        progress?.let(WatchProgressPolicy::remainingLabel)
+                        remainingLabel
                     ).joinToString(" · "),
                     color = IptvColors.TextTertiary,
                     style = MaterialTheme.typography.bodySmall

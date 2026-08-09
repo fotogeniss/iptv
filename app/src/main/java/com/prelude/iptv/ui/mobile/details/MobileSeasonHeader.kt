@@ -20,11 +20,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.SubtitleSearchPolicy
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.localizedSeasonCount
 
 @Composable
 internal fun MobileSeasonHeader(
@@ -48,13 +51,13 @@ internal fun MobileSeasonHeader(
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = "Επεισόδια",
+                text = stringResource(R.string.details_episodes),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "${seasons.size} σεζόν",
+                text = localizedSeasonCount(seasons.size),
                 color = IptvColors.TextTertiary,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.align(Alignment.CenterEnd)
@@ -76,7 +79,10 @@ internal fun MobileSeasonHeader(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = seasonLabel(season.first, index),
+                        text = stringResource(
+                            R.string.details_season_number,
+                            SubtitleSearchPolicy.seasonNumber(season.first, index + 1) ?: index + 1,
+                        ),
                         color = if (active) Color.White else IptvColors.TextTertiary,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
@@ -96,7 +102,9 @@ internal fun MobileSeasonHeader(
         }
 
         Text(
-            text = if (descending) "⇅ Από το τελευταίο" else "⇅ Από το πρώτο",
+            text = stringResource(
+                if (descending) R.string.details_order_last else R.string.details_order_first
+            ),
             color = IptvColors.TextSecondary,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
@@ -106,9 +114,4 @@ internal fun MobileSeasonHeader(
                 .padding(vertical = 6.dp, horizontal = 2.dp)
         )
     }
-}
-
-private fun seasonLabel(rawLabel: String, index: Int): String {
-    val number = SubtitleSearchPolicy.seasonNumber(rawLabel, index + 1) ?: index + 1
-    return "Σεζόν $number"
 }

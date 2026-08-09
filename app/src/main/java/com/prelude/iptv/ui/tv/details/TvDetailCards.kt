@@ -38,19 +38,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingProgress
 import com.prelude.iptv.ui.WatchProgress
-import com.prelude.iptv.ui.WatchProgressPolicy
 import androidx.compose.animation.core.tween
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.localizedUppercase
+import com.prelude.iptv.ui.localization.localizedWatchRemaining
 
 @Composable
 internal fun TvEpisodeCard(
@@ -72,6 +75,10 @@ internal fun TvEpisodeCard(
         episodeNumber = number
     )
     val artwork = tmdbEpisode?.still?.takeIf { it.isNotBlank() } ?: episode.logo
+    val displayTitle = if (episode.name.isBlank()) {
+        stringResource(R.string.details_episode_number, number)
+    } else episode.name
+    val remainingLabel = if (progress != null) localizedWatchRemaining(progress) else null
     var focused by remember(episode) { mutableStateOf(false) }
     val scale by animateFloatAsState(
         if (focused) motionScale(Motion.TvActionScale) else 1f,
@@ -121,16 +128,21 @@ internal fun TvEpisodeCard(
             Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.04f)))
         }
         Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(12.dp)) {
-            Text("ΕΠΕΙΣΟΔΙΟ $number", color = Color.White.copy(alpha = .80f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.ExtraBold)
             Text(
-                episode.name.ifBlank { "Επεισόδιο $number" },
+                localizedUppercase(stringResource(R.string.details_episode_number, number)),
+                color = Color.White.copy(alpha = .80f),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.ExtraBold,
+            )
+            Text(
+                displayTitle,
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            val meta = listOf(episode.duration, progress?.let(WatchProgressPolicy::remainingLabel)).filterNotNull().filter(String::isNotBlank).joinToString(" · ")
+            val meta = listOfNotNull(episode.duration.takeIf(String::isNotBlank), remainingLabel).joinToString(" · ")
             if (meta.isNotBlank()) Text(meta, color = IptvColors.TextSecondary, style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
         progress?.let { StreamingProgress(it.fraction, Modifier.align(Alignment.BottomCenter)) }
@@ -155,6 +167,9 @@ internal fun TvEpisodeInfoPanel(
     )
     val episodeTitle = tmdbEpisode?.title?.takeIf { it.isNotBlank() } ?: episode?.name.orEmpty()
     val episodeOverview = tmdbEpisode?.overview?.takeIf { it.isNotBlank() } ?: episode?.plot.orEmpty()
+    val displayOverview = if (episodeOverview.isBlank()) {
+        stringResource(R.string.details_no_episode_description)
+    } else episodeOverview
     Column(
         Modifier.width(300.dp).fillMaxHeight()
             .clip(RoundedCornerShape(16.dp))
@@ -162,10 +177,11 @@ internal fun TvEpisodeInfoPanel(
             .border(1.dp, IptvColors.Divider, RoundedCornerShape(16.dp))
             .padding(18.dp)
     ) {
-        Text("FOCUSED EPISODE", color = IptvColors.Primary, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.details_focused_episode), color = IptvColors.Primary, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(8.dp))
         Text(
-            if (episode == null) "Επίλεξε επεισόδιο" else "$number. $episodeTitle",
+            if (episode == null) stringResource(R.string.details_select_episode)
+            else stringResource(R.string.details_numbered_title, number, episodeTitle),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold,
@@ -180,7 +196,7 @@ internal fun TvEpisodeInfoPanel(
             }
             Spacer(Modifier.height(11.dp))
             Text(
-                episodeOverview.ifBlank { "Δεν υπάρχει διαθέσιμη περιγραφή για αυτό το επεισόδιο." },
+                displayOverview,
                 color = IptvColors.TextSecondary,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 7,
@@ -191,7 +207,7 @@ internal fun TvEpisodeInfoPanel(
         if (nextTitle.isNotBlank()) {
             Box(Modifier.fillMaxWidth().height(1.dp).background(IptvColors.Divider))
             Spacer(Modifier.height(10.dp))
-            Text("Επόμενο: $nextTitle", color = IptvColors.TextTertiary, style = MaterialTheme.typography.bodySmall, maxLines = 2)
+            Text(stringResource(R.string.details_next_title, nextTitle), color = IptvColors.TextTertiary, style = MaterialTheme.typography.bodySmall, maxLines = 2)
         }
     }
 }

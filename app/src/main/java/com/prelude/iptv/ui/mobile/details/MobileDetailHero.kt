@@ -31,18 +31,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.StreamingButton
-import com.prelude.iptv.ui.WatchProgressPolicy
 import com.prelude.iptv.ui.components.details.DetailCinematicBackdrop
 import com.prelude.iptv.ui.components.details.DetailMetaRow
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.components.details.DetailProgress
 import com.prelude.iptv.ui.components.details.detailGenreLine
-import com.prelude.iptv.ui.components.details.detailSeriesLabel
+import com.prelude.iptv.ui.localization.localizedProgressPercent
+import com.prelude.iptv.ui.localization.localizedSeasonCount
+import com.prelude.iptv.ui.localization.localizedWatchRemaining
 
 @Composable
 internal fun MobileDetailHero(
@@ -75,7 +78,7 @@ internal fun MobileDetailHero(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MobileTopAction(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", onBack)
+            MobileTopAction(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.details_back), onBack)
             Text(
                 "PRELUDE+",
                 color = Color.White,
@@ -91,7 +94,10 @@ internal fun MobileDetailHero(
             Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp)
         ) {
             Text(
-                if (presentation.isSeries) "PRELUDE+ ORIGINAL SERIES" else "PRELUDE+ FEATURE FILM",
+                stringResource(
+                    if (presentation.isSeries) R.string.details_original_series
+                    else R.string.details_feature_film
+                ),
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.ExtraBold
@@ -111,7 +117,9 @@ internal fun MobileDetailHero(
                 rating = presentation.rating,
                 ageRating = presentation.ageRating,
                 duration = presentation.duration,
-                seriesLabel = if (presentation.isSeries) detailSeriesLabel(presentation.seasons) else "",
+                seriesLabel = if (presentation.isSeries && presentation.seasons.isNotEmpty()) {
+                    localizedSeasonCount(presentation.seasons.size)
+                } else "",
                 quality = presentation.quality
             )
             val genres = detailGenreLine(presentation.genre)
@@ -133,7 +141,7 @@ internal fun MobileDetailHero(
                 )
                 if (plotCanExpand) {
                     Text(
-                        if (plotExpanded) "Λιγότερα" else "Περισσότερα",
+                        stringResource(if (plotExpanded) R.string.details_less else R.string.details_more),
                         color = Color.White,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Black,
@@ -146,11 +154,14 @@ internal fun MobileDetailHero(
             Spacer(Modifier.height(16.dp))
             StreamingButton(
                 label = when {
-                    presentation.isSeries && presentation.resumeEpisode != null -> "Συνέχεια σειράς"
-                    presentation.isSeries && presentation.loading -> "Έναρξη σειράς…"
-                    presentation.isSeries -> "Έναρξη σειράς"
-                    presentation.movieProgress != null -> "Συνέχεια · ${presentation.movieProgress.percent}%"
-                    else -> "Αναπαραγωγή"
+                    presentation.isSeries && presentation.resumeEpisode != null -> stringResource(R.string.details_resume_series)
+                    presentation.isSeries && presentation.loading -> stringResource(R.string.details_starting_series)
+                    presentation.isSeries -> stringResource(R.string.details_start_series)
+                    presentation.movieProgress != null -> stringResource(
+                        R.string.details_resume_progress,
+                        localizedProgressPercent(presentation.movieProgress),
+                    )
+                    else -> stringResource(R.string.details_play)
                 },
                 icon = Icons.Default.PlayArrow,
                 onClick = onPlay,
@@ -163,20 +174,20 @@ internal fun MobileDetailHero(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 MobileHeroVAction(
                     icon = if (presentation.isFav) Icons.Default.Check else Icons.Default.Add,
-                    label = "Η λίστα μου",
+                    label = stringResource(R.string.details_my_list),
                     onClick = onFav
                 )
-                MobileHeroVAction(Icons.Default.Share, "Κοινοποίηση", onClick = onShare)
+                MobileHeroVAction(Icons.Default.Share, stringResource(R.string.details_share), onClick = onShare)
                 if (!presentation.isSeries && presentation.movieProgress != null) {
-                    MobileHeroVAction(Icons.Default.RestartAlt, "Από την αρχή", onClick = onRestart)
+                    MobileHeroVAction(Icons.Default.RestartAlt, stringResource(R.string.details_restart), onClick = onRestart)
                 }
             }
             presentation.movieProgress?.let { progress ->
                 Spacer(Modifier.height(14.dp))
                 DetailProgress(
                     progress = progress.fraction,
-                    leading = "${progress.percent}%",
-                    trailing = WatchProgressPolicy.remainingLabel(progress)
+                    leading = localizedProgressPercent(progress),
+                    trailing = localizedWatchRemaining(progress)
                 )
             }
         }

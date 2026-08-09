@@ -44,20 +44,24 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.WatchProgressPolicy
 import com.prelude.iptv.ui.components.details.DetailMetaRow
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.components.details.DetailProgress
 import com.prelude.iptv.ui.components.details.detailGenreLine
-import com.prelude.iptv.ui.components.details.detailSeriesLabel
 import androidx.compose.animation.core.tween
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
+import com.prelude.iptv.ui.localization.localizedProgressPercent
+import com.prelude.iptv.ui.localization.localizedSeasonCount
+import com.prelude.iptv.ui.localization.localizedUppercase
+import com.prelude.iptv.ui.localization.localizedWatchRemaining
 
 @Composable
 internal fun TvDetailHero(
@@ -88,7 +92,7 @@ internal fun TvDetailHero(
         ) {
             PremiumTvAction(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
-                label = "Πίσω",
+                label = stringResource(R.string.details_back),
                 compact = true,
                 modifier = if (backFocus != null) Modifier.focusRequester(backFocus) else Modifier,
                 onClick = onBack
@@ -109,7 +113,10 @@ internal fun TvDetailHero(
                 Box(Modifier.width(4.dp).height(20.dp).background(IptvColors.Primary, RoundedCornerShape(99.dp)))
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    if (presentation.isSeries) "PRELUDE+ ORIGINAL SERIES" else "PRELUDE+ FEATURE FILM",
+                    stringResource(
+                        if (presentation.isSeries) R.string.details_original_series
+                        else R.string.details_feature_film
+                    ),
                     color = Color.White,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.ExtraBold
@@ -130,7 +137,9 @@ internal fun TvDetailHero(
                 rating = presentation.rating,
                 ageRating = presentation.ageRating,
                 duration = presentation.duration,
-                seriesLabel = if (presentation.isSeries) detailSeriesLabel(presentation.seasons) else ""
+                seriesLabel = if (presentation.isSeries && presentation.seasons.isNotEmpty()) {
+                    localizedSeasonCount(presentation.seasons.size)
+                } else ""
             )
             val genres = detailGenreLine(presentation.genre)
             if (genres.isNotBlank()) {
@@ -149,11 +158,14 @@ internal fun TvDetailHero(
             }
             if (presentation.director.isNotBlank() || presentation.cast.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
+                val castCredit = if (presentation.cast.isNotEmpty()) {
+                    stringResource(R.string.details_starring, presentation.cast.take(3).joinToString { it.name })
+                } else null
+                val creatorCredit = if (presentation.director.isNotBlank()) {
+                    stringResource(R.string.details_creator, presentation.director)
+                } else null
                 Text(
-                    buildList {
-                        if (presentation.cast.isNotEmpty()) add("Πρωταγωνιστούν: ${presentation.cast.take(3).joinToString { it.name }}")
-                        if (presentation.director.isNotBlank()) add("Δημιουργός: ${presentation.director}")
-                    }.joinToString("  ·  "),
+                    listOfNotNull(castCredit, creatorCredit).joinToString("  ·  "),
                     color = IptvColors.TextTertiary,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
@@ -165,11 +177,16 @@ internal fun TvDetailHero(
                 PremiumTvAction(
                     icon = Icons.Default.PlayArrow,
                     label = when {
-                        presentation.isSeries && presentation.resumeEpisode != null -> "ΣΥΝΕΧΕΙΑ ΣΕΙΡΑΣ"
-                        presentation.isSeries && presentation.loading -> "ΕΝΑΡΞΗ ΣΕΙΡΑΣ…"
-                        presentation.isSeries -> "ΕΝΑΡΞΗ ΣΕΙΡΑΣ"
-                        presentation.movieProgress != null -> "ΣΥΝΕΧΕΙΑ · ${presentation.movieProgress.percent}%"
-                        else -> "ΑΝΑΠΑΡΑΓΩΓΗ"
+                        presentation.isSeries && presentation.resumeEpisode != null -> localizedUppercase(stringResource(R.string.details_resume_series))
+                        presentation.isSeries && presentation.loading -> localizedUppercase(stringResource(R.string.details_starting_series))
+                        presentation.isSeries -> localizedUppercase(stringResource(R.string.details_start_series))
+                        presentation.movieProgress != null -> localizedUppercase(
+                            stringResource(
+                                R.string.details_resume_progress,
+                                localizedProgressPercent(presentation.movieProgress),
+                            )
+                        )
+                        else -> localizedUppercase(stringResource(R.string.details_play))
                     },
                     primary = true,
                     // ΠΑΝΤΑ ενεργό: αν τα επεισόδια δεν έχουν φορτώσει ακόμη, η
@@ -180,13 +197,13 @@ internal fun TvDetailHero(
                 )
                 PremiumTvAction(
                     icon = if (presentation.isFav) Icons.Default.Check else Icons.Default.Add,
-                    label = "Η ΛΙΣΤΑ ΜΟΥ",
+                    label = localizedUppercase(stringResource(R.string.details_my_list)),
                     selected = presentation.isFav,
                     onClick = onFav
                 )
-                PremiumTvAction(Icons.Default.Share, "ΚΟΙΝΟΠΟΙΗΣΗ", onClick = onShare)
+                PremiumTvAction(Icons.Default.Share, localizedUppercase(stringResource(R.string.details_share)), onClick = onShare)
                 if (!presentation.isSeries && presentation.movieProgress != null) {
-                    PremiumTvAction(Icons.Default.RestartAlt, "Από την αρχή", compact = true, onClick = onRestart)
+                    PremiumTvAction(Icons.Default.RestartAlt, stringResource(R.string.details_restart), compact = true, onClick = onRestart)
                 }
                 // Επαναφορά προόδου: εμφανίζεται μόνο όταν ΥΠΑΡΧΕΙ πρόοδος να
                 // σβηστεί — σε ταινία η δική της, σε σειρά οποιουδήποτε επεισοδίου.
@@ -198,7 +215,7 @@ internal fun TvDetailHero(
                 if (hasProgress) {
                     PremiumTvAction(
                         Icons.Default.Delete,
-                        "Επαναφορά προόδου",
+                        stringResource(R.string.details_clear_progress),
                         compact = true,
                         onClick = onClearProgress
                     )
@@ -208,8 +225,8 @@ internal fun TvDetailHero(
                 Spacer(Modifier.height(10.dp))
                 DetailProgress(
                     progress = progress.fraction,
-                    leading = "${progress.percent}%",
-                    trailing = WatchProgressPolicy.remainingLabel(progress),
+                    leading = localizedProgressPercent(progress),
+                    trailing = localizedWatchRemaining(progress),
                     modifier = Modifier.width(420.dp)
                 )
             }

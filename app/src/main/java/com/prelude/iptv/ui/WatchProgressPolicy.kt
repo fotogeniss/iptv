@@ -19,6 +19,8 @@ data class WatchProgress(
         get() = (durationMs - positionMs).coerceAtLeast(0L)
 }
 
+data class WatchRemaining(val hours: Int, val minutes: Int)
+
 object WatchProgressPolicy {
     const val MIN_RESUME_MS = 60_000L
     const val COMPLETED_PERCENT = 95
@@ -34,14 +36,11 @@ object WatchProgressPolicy {
         return WatchProgress(position, duration)
     }
 
-    fun remainingLabel(progress: WatchProgress): String {
+    fun remaining(progress: WatchProgress): WatchRemaining {
         val totalMinutes = (progress.remainingMs / 60_000L).coerceAtLeast(1L)
-        val hours = totalMinutes / 60L
-        val minutes = totalMinutes % 60L
-        return when {
-            hours > 0L && minutes > 0L -> "Απομένουν ${hours}ω ${minutes}λ"
-            hours > 0L -> "Απομένουν ${hours}ω"
-            else -> "Απομένουν ${minutes}λ"
-        }
+        return WatchRemaining(
+            hours = (totalMinutes / 60L).toInt(),
+            minutes = (totalMinutes % 60L).toInt(),
+        )
     }
 }

@@ -14,10 +14,10 @@ class WatchProgressPolicyTest {
     }
 
     @Test
-    fun calculatesStableFractionAndRemainingLabel() {
+    fun calculatesStableFractionAndTypedRemainingTime() {
         val progress = WatchProgressPolicy.from(1_800_000L to 3_600_000L)!!
         assertEquals(50, progress.percent)
         assertEquals(0.5f, progress.fraction, 0.0001f)
-        assertEquals("Απομένουν 30λ", WatchProgressPolicy.remainingLabel(progress))
+        assertEquals(WatchRemaining(hours = 0, minutes = 30), WatchProgressPolicy.remaining(progress))
     }
 }

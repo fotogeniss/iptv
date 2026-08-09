@@ -29,9 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.SubtitleSearchPolicy
@@ -40,6 +42,7 @@ import com.prelude.iptv.ui.components.details.DetailSection
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.components.details.PremiumCastCard
 import com.prelude.iptv.ui.components.details.PremiumRelatedCard
+import com.prelude.iptv.ui.localization.labelRes
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -185,7 +188,7 @@ private fun MobileDetailTabs(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    tab.mobileLabel(),
+                    stringResource(tab.labelRes()),
                     color = if (tab == active) Color.White else IptvColors.TextTertiary,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.ExtraBold
@@ -203,18 +206,26 @@ private fun MobileDetailTabs(
 @Composable
 private fun MobileAboutSection(presentation: DetailPresentation) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 22.dp)) {
-        Text("Σχετικά", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.details_about), color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
+        val description = if (presentation.plot.isBlank()) {
+            stringResource(R.string.details_no_description)
+        } else presentation.plot
         Text(
-            presentation.plot.ifBlank { "Δεν υπάρχει διαθέσιμη περιγραφή." },
+            description,
             color = IptvColors.TextSecondary,
             style = MaterialTheme.typography.bodyMedium
         )
-        val credits = buildList {
-            if (presentation.director.isNotBlank()) add("Δημιουργός: ${presentation.director}")
-            if (presentation.cast.isNotEmpty()) add("Πρωταγωνιστούν: ${presentation.cast.take(4).joinToString { it.name }}")
-            if (presentation.genre.isNotBlank()) add("Είδη: ${presentation.genre}")
-        }
+        val creatorCredit = if (presentation.director.isNotBlank()) {
+            stringResource(R.string.details_creator, presentation.director)
+        } else null
+        val castCredit = if (presentation.cast.isNotEmpty()) {
+            stringResource(R.string.details_starring, presentation.cast.take(4).joinToString { it.name })
+        } else null
+        val genreCredit = if (presentation.genre.isNotBlank()) {
+            stringResource(R.string.details_genres, presentation.genre)
+        } else null
+        val credits = listOfNotNull(creatorCredit, castCredit, genreCredit)
         if (credits.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
             credits.forEach { line ->
@@ -222,9 +233,9 @@ private fun MobileAboutSection(presentation: DetailPresentation) {
                 Spacer(Modifier.height(4.dp))
             }
         }
-        if (presentation.notice.isNotBlank()) {
+        if (presentation.showTmdbNotice) {
             Spacer(Modifier.height(14.dp))
-            Text(presentation.notice, color = IptvColors.TextTertiary, style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.details_tmdb_notice), color = IptvColors.TextTertiary, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -233,7 +244,7 @@ private fun MobileAboutSection(presentation: DetailPresentation) {
 private fun MobileCastSection(presentation: DetailPresentation) {
     Column(Modifier.fillMaxWidth().padding(top = 22.dp)) {
         Text(
-            "Ηθοποιοί",
+            stringResource(R.string.details_cast),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -255,7 +266,7 @@ private fun MobileSimilarSection(
 ) {
     Column(Modifier.fillMaxWidth().padding(top = 22.dp)) {
         Text(
-            "Παρόμοια για εσένα",
+            stringResource(R.string.details_similar_for_you),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -270,11 +281,4 @@ private fun MobileSimilarSection(
             }
         }
     }
-}
-
-private fun DetailSection.mobileLabel(): String = when (this) {
-    DetailSection.Episodes -> "Επεισόδια"
-    DetailSection.About -> "Σχετικά"
-    DetailSection.Cast -> "Ηθοποιοί"
-    DetailSection.Similar -> "Παρόμοια"
 }

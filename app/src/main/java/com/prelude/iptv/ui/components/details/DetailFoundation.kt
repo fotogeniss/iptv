@@ -235,12 +235,6 @@ fun DetailProgress(
     }
 }
 
-fun detailSeriesLabel(seasons: List<Pair<String, *>>): String = when (seasons.size) {
-    0 -> ""
-    1 -> "1 σεζόν"
-    else -> "${seasons.size} σεζόν"
-}
-
 fun detailGenreLine(genre: String): String = genre
     .split(',', '/', '|')
     .map(String::trim)

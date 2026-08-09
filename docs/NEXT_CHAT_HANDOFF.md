@@ -341,9 +341,17 @@ has now been implemented for Android TV.
   the TV keyboard from the active app language while retaining Greek, Latin and
   numeric layouts. Provider suggestions, titles, categories and metadata remain
   data.
-- The next cohesive localization slice is movie/series details, seasons and
-  episodes. The full EPG UI remains with the later EPG/settings slice; only
-  programme labels shown directly inside Live were included there.
+- Movie/series details, seasons and episode browsing are now localized across
+  the active phone and TV routes: hero actions, tabs, descriptions, metadata
+  labels, season selectors, episode cards/counts, progress and accessibility.
+  `DetailPresentation` carries a typed TMDB-notice flag rather than localized
+  text, provider season labels remain state identities and are parsed only for
+  localized display, and `WatchProgressPolicy` exposes typed `WatchRemaining`
+  data instead of Greek formatting.
+- The next cohesive localization slice is Player, including audio/subtitle
+  panels, next-episode surfaces and playback errors. The full EPG UI remains
+  with the later EPG/settings slice; only programme labels shown directly inside
+  Live were included there.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.

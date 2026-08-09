@@ -247,6 +247,51 @@ search_keyboard = read("app/src/main/java/com/prelude/iptv/ui/SearchKeyboardPoli
 if 'initialMode(language: String)' not in search_keyboard:
     failures.append("TV Search keyboard no longer follows the active app language")
 
+detail_presentation = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/details/DetailPresentation.kt"
+)
+detail_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/DetailsLocalizationResources.kt"
+)
+watch_progress = read("app/src/main/java/com/prelude/iptv/ui/WatchProgressPolicy.kt")
+if "val showTmdbNotice: Boolean" not in detail_presentation or "val notice: String" in detail_presentation:
+    failures.append("Detail presentation still transports localized TMDB notice copy")
+for section in ("Episodes", "About", "Cast", "Similar"):
+    if f"DetailSection.{section} -> R.string.details_" not in detail_mapping:
+        failures.append(f"Detail section resource mapping missing: {section}")
+if "data class WatchRemaining" not in watch_progress or "remainingLabel" in watch_progress:
+    failures.append("watch progress still formats localized remaining-time copy in pure policy")
+if greek_string_literals(watch_progress):
+    failures.append("pure watch-progress policy owns Greek display copy")
+
+migrated_detail_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/DetailScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/components/details/DetailFoundation.kt",
+    "app/src/main/java/com/prelude/iptv/ui/components/details/DetailPresentation.kt",
+    "app/src/main/java/com/prelude/iptv/ui/components/details/DetailCastAndRelated.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/details/MobilePremiumDetailScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/details/MobileDetailHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/details/MobileDetailCards.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/details/MobileSeasonHeader.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/details/TvPremiumDetailScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/details/TvDetailHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/details/TvDetailCards.kt",
+]
+for ui_path in migrated_detail_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Details UI: {ui_path}")
+
+detail_route = uncomment_kotlin(
+    read("app/src/main/java/com/prelude/iptv/ui/route/DetailRouteHost.kt")
+)
+for legacy_copy in (
+    "Για βαθμολογίες, ελληνική υπόθεση και φωτογραφίες ηθοποιών",
+    'Intent.createChooser(share, "Κοινοποίηση")',
+):
+    if legacy_copy in detail_route:
+        failures.append("Detail route bypasses typed/resource-owned app copy")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

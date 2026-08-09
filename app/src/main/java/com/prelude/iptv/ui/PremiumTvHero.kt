@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
+import com.prelude.iptv.ui.localization.localizedWatchRemaining
 
 private val PlaybackAccent = IptvColors.Primary
 private val HeroBlack = IptvColors.Background
@@ -213,7 +214,7 @@ fun PremiumTvHero(
                 }
                 Spacer(Modifier.height(5.dp))
                 Text(
-                    WatchProgressPolicy.remainingLabel(it),
+                    localizedWatchRemaining(it),
                     color = Color(0xFFB8B8BE),
                     fontSize = 11.sp
                 )

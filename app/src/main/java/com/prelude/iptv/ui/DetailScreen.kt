@@ -40,7 +40,7 @@ fun DetailScreen(
     /** true όσο περιμένουμε το TMDB. Δες [DetailPresentation.backdropPending]. */
     backdropPending: Boolean = false,
     cast: List<CastMember> = emptyList(),
-    notice: String = "",
+    showTmdbNotice: Boolean = false,
     contentIsSeries: Boolean = false,
     seasons: List<Pair<String, List<Channel>>> = emptyList(),
     relatedItems: List<Channel> = emptyList(),
@@ -76,7 +76,7 @@ fun DetailScreen(
         backdropUrl = backdropUrl,
         backdropPending = backdropPending,
         cast = cast,
-        notice = notice,
+        showTmdbNotice = showTmdbNotice,
         contentIsSeries = contentIsSeries,
         seasons = seasons,
         relatedItems = relatedItems,

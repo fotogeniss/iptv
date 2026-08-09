@@ -144,9 +144,7 @@ internal fun DetailHost(
         backdropUrl = tmdb?.backdrop ?: "",
         backdropPending = !tmdbSettled,
         cast = cast,
-        notice = if (!com.prelude.iptv.data.TmdbClient.hasKey())
-            "Για βαθμολογίες, ελληνική υπόθεση και φωτογραφίες ηθοποιών, βάλε δωρεάν TMDB API key: Ρυθμίσεις → TMDB."
-        else "",
+        showTmdbNotice = !com.prelude.iptv.data.TmdbClient.hasKey(),
         contentIsSeries = isSeries,
         seasons = if (isSeries) state.seriesSeasons else emptyList(),
         relatedItems = relatedItems,
@@ -165,7 +163,7 @@ internal fun DetailHost(
                 putExtra(Intent.EXTRA_SUBJECT, ch.name)
                 putExtra(Intent.EXTRA_TEXT, ch.name)
             }
-            context.startActivity(Intent.createChooser(share, "Κοινοποίηση"))
+            context.startActivity(Intent.createChooser(share, context.getString(R.string.details_share)))
         },
         onPlayMovie = { onPlay(ch, null, movieSubtitleRequest, emptyMap()) },
         onRestartMovie = {

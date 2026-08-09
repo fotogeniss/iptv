@@ -29,7 +29,7 @@ data class DetailPresentation(
      */
     val backdropPending: Boolean = false,
     val cast: List<CastMember>,
-    val notice: String,
+    val showTmdbNotice: Boolean,
     val contentIsSeries: Boolean,
     val seasons: List<Pair<String, List<Channel>>>,
     val relatedItems: List<Channel>,

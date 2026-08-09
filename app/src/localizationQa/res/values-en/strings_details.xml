@@ -1,0 +1,65 @@
+<resources>
+    <string name="details_back">Back</string>
+    <string name="details_original_series">PRELUDE+ ORIGINAL SERIES</string>
+    <string name="details_feature_film">PRELUDE+ FEATURE FILM</string>
+    <string name="details_more">More</string>
+    <string name="details_less">Less</string>
+    <string name="details_play">Play</string>
+    <string name="details_resume_series">Resume series</string>
+    <string name="details_start_series">Start series</string>
+    <string name="details_starting_series">Starting series…</string>
+    <string name="details_resume_progress">Resume · %1$s</string>
+    <string name="details_my_list">My list</string>
+    <string name="details_share">Share</string>
+    <string name="details_restart">Start over</string>
+    <string name="details_clear_progress">Reset progress</string>
+
+    <string name="details_episodes">Episodes</string>
+    <string name="details_about">About</string>
+    <string name="details_cast">Cast</string>
+    <string name="details_similar">Similar</string>
+    <string name="details_similar_for_you">Similar for you</string>
+    <string name="details_about_series">About this series</string>
+    <string name="details_about_movie">About this movie</string>
+    <string name="details_no_description">No description is available.</string>
+    <string name="details_creator">Creator: %1$s</string>
+    <string name="details_starring">Starring: %1$s</string>
+    <string name="details_genres">Genres: %1$s</string>
+    <string name="details_creator_label">Creator</string>
+    <string name="details_starring_label">Starring</string>
+    <string name="details_genres_label">Genres</string>
+    <string name="details_tmdb_notice">For ratings, localized summaries and cast photos, add a free TMDB API key in Settings → TMDB.</string>
+
+    <string name="details_season_number">Season %1$d</string>
+    <string name="details_order_first">⇅ First episode first</string>
+    <string name="details_order_last">⇅ Last episode first</string>
+    <string name="details_episode_badge">EP %1$d</string>
+    <string name="details_episode_number">Episode %1$d</string>
+    <string name="details_numbered_title">%1$d. %2$s</string>
+    <string name="details_select_episode">Select an episode</string>
+    <string name="details_focused_episode">FOCUSED EPISODE</string>
+    <string name="details_no_episode_description">No description is available for this episode.</string>
+    <string name="details_next_title">Next: %1$s</string>
+    <string name="details_season_episode_count">%1$s · %2$s</string>
+
+    <plurals name="details_season_count">
+        <item quantity="one">%1$d season</item>
+        <item quantity="other">%1$d seasons</item>
+    </plurals>
+    <plurals name="details_episode_count">
+        <item quantity="one">%1$d episode</item>
+        <item quantity="other">%1$d episodes</item>
+    </plurals>
+    <plurals name="details_remaining_minutes">
+        <item quantity="one">%1$d min remaining</item>
+        <item quantity="other">%1$d mins remaining</item>
+    </plurals>
+    <plurals name="details_remaining_hours">
+        <item quantity="one">%1$d hr remaining</item>
+        <item quantity="other">%1$d hrs remaining</item>
+    </plurals>
+    <plurals name="details_remaining_hours_minutes">
+        <item quantity="one">%1$d hr %2$d min remaining</item>
+        <item quantity="other">%1$d hrs %2$d min remaining</item>
+    </plurals>
+</resources>

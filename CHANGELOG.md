@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized movie/series details, seasons and episode browsing across mobile
+  and Android TV, including hero actions, tabs, metadata labels, descriptions,
+  season selectors, episode counts/cards, progress and accessibility copy.
+  TMDB/provider titles, plots, cast roles and season identities remain data;
+  TMDB guidance and remaining-time presentation now cross typed UI boundaries.
 - Localized global Search across the active mobile and Android TV routes,
   including filters, headings, result counts, empty states, featured actions,
   accessibility copy and a TV keyboard that starts with the active app

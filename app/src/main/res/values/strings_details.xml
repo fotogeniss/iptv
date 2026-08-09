@@ -1,0 +1,65 @@
+<resources>
+    <string name="details_back">Πίσω</string>
+    <string name="details_original_series">PRELUDE+ ORIGINAL SERIES</string>
+    <string name="details_feature_film">PRELUDE+ FEATURE FILM</string>
+    <string name="details_more">Περισσότερα</string>
+    <string name="details_less">Λιγότερα</string>
+    <string name="details_play">Αναπαραγωγή</string>
+    <string name="details_resume_series">Συνέχεια σειράς</string>
+    <string name="details_start_series">Έναρξη σειράς</string>
+    <string name="details_starting_series">Έναρξη σειράς…</string>
+    <string name="details_resume_progress">Συνέχεια · %1$s</string>
+    <string name="details_my_list">Η λίστα μου</string>
+    <string name="details_share">Κοινοποίηση</string>
+    <string name="details_restart">Από την αρχή</string>
+    <string name="details_clear_progress">Επαναφορά προόδου</string>
+
+    <string name="details_episodes">Επεισόδια</string>
+    <string name="details_about">Σχετικά</string>
+    <string name="details_cast">Ηθοποιοί</string>
+    <string name="details_similar">Παρόμοια</string>
+    <string name="details_similar_for_you">Παρόμοια για εσένα</string>
+    <string name="details_about_series">Σχετικά με τη σειρά</string>
+    <string name="details_about_movie">Σχετικά με την ταινία</string>
+    <string name="details_no_description">Δεν υπάρχει διαθέσιμη περιγραφή.</string>
+    <string name="details_creator">Δημιουργός: %1$s</string>
+    <string name="details_starring">Πρωταγωνιστούν: %1$s</string>
+    <string name="details_genres">Είδη: %1$s</string>
+    <string name="details_creator_label">Δημιουργός</string>
+    <string name="details_starring_label">Πρωταγωνιστούν</string>
+    <string name="details_genres_label">Είδη</string>
+    <string name="details_tmdb_notice">Για βαθμολογίες, ελληνική υπόθεση και φωτογραφίες ηθοποιών, βάλε δωρεάν TMDB API key: Ρυθμίσεις → TMDB.</string>
+
+    <string name="details_season_number">Σεζόν %1$d</string>
+    <string name="details_order_first">⇅ Από το πρώτο</string>
+    <string name="details_order_last">⇅ Από το τελευταίο</string>
+    <string name="details_episode_badge">ΕΠ %1$d</string>
+    <string name="details_episode_number">Επεισόδιο %1$d</string>
+    <string name="details_numbered_title">%1$d. %2$s</string>
+    <string name="details_select_episode">Επίλεξε επεισόδιο</string>
+    <string name="details_focused_episode">ΕΠΙΛΕΓΜΕΝΟ ΕΠΕΙΣΟΔΙΟ</string>
+    <string name="details_no_episode_description">Δεν υπάρχει διαθέσιμη περιγραφή για αυτό το επεισόδιο.</string>
+    <string name="details_next_title">Επόμενο: %1$s</string>
+    <string name="details_season_episode_count">%1$s · %2$s</string>
+
+    <plurals name="details_season_count">
+        <item quantity="one">%1$d σεζόν</item>
+        <item quantity="other">%1$d σεζόν</item>
+    </plurals>
+    <plurals name="details_episode_count">
+        <item quantity="one">%1$d επεισόδιο</item>
+        <item quantity="other">%1$d επεισόδια</item>
+    </plurals>
+    <plurals name="details_remaining_minutes">
+        <item quantity="one">Απομένει %1$dλ</item>
+        <item quantity="other">Απομένουν %1$dλ</item>
+    </plurals>
+    <plurals name="details_remaining_hours">
+        <item quantity="one">Απομένει %1$dω</item>
+        <item quantity="other">Απομένουν %1$dω</item>
+    </plurals>
+    <plurals name="details_remaining_hours_minutes">
+        <item quantity="one">Απομένει %1$dω %2$dλ</item>
+        <item quantity="other">Απομένουν %1$dω %2$dλ</item>
+    </plurals>
+</resources>

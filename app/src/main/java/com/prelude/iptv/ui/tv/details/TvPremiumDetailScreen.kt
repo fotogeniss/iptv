@@ -48,16 +48,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
+import com.prelude.iptv.data.SubtitleSearchPolicy
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.details.DetailCinematicBackdrop
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.components.details.DetailSection
 import com.prelude.iptv.ui.components.details.PremiumCastCard
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedEpisodeCount
+import com.prelude.iptv.ui.localization.localizedUppercase
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.tvFocus
 import kotlinx.coroutines.launch
@@ -291,7 +297,7 @@ private fun TvDetailTabs(
     ) {
         tabs.forEach { tab ->
             TvDetailTabButton(
-                label = tab.tvLabel(),
+                label = localizedUppercase(stringResource(tab.labelRes())),
                 selected = tab == active,
                 onClick = { onTab(tab) }
             )
@@ -309,8 +315,11 @@ private fun TvDetailTabs(
                         .padding(horizontal = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val selectedSeasonNumber = seasons.getOrNull(seasonIndex)?.let { pair ->
+                        SubtitleSearchPolicy.seasonNumber(pair.first, seasonIndex + 1)
+                    } ?: seasonIndex + 1
                     Text(
-                        seasons.getOrNull(seasonIndex)?.first.orEmpty(),
+                        stringResource(R.string.details_season_number, selectedSeasonNumber),
                         color = Color.White,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
@@ -323,8 +332,17 @@ private fun TvDetailTabs(
                     containerColor = IptvColors.SurfaceRaised
                 ) {
                     seasons.forEachIndexed { index, pair ->
+                        val seasonNumber = SubtitleSearchPolicy.seasonNumber(pair.first, index + 1) ?: index + 1
                         DropdownMenuItem(
-                            text = { Text("${pair.first} · ${pair.second.size} επεισόδια") },
+                            text = {
+                                Text(
+                                    stringResource(
+                                        R.string.details_season_episode_count,
+                                        stringResource(R.string.details_season_number, seasonNumber),
+                                        localizedEpisodeCount(pair.second.size),
+                                    )
+                                )
+                            },
                             modifier = Modifier.tvFocus(RoundedCornerShape(6.dp)),
                             onClick = { onSeason(index); expanded = false }
                         )
@@ -482,7 +500,9 @@ private fun TvAboutSection(presentation: DetailPresentation) {
             .padding(horizontal = 44.dp, vertical = 20.dp)
     ) {
         Text(
-            if (presentation.isSeries) "Σχετικά με τη σειρά" else "Σχετικά με την ταινία",
+            stringResource(
+                if (presentation.isSeries) R.string.details_about_series else R.string.details_about_movie
+            ),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold
@@ -506,26 +526,27 @@ private fun TvAboutSection(presentation: DetailPresentation) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    presentation.plot.ifBlank { "Δεν υπάρχει διαθέσιμη περιγραφή." },
+                    if (presentation.plot.isBlank()) stringResource(R.string.details_no_description)
+                    else presentation.plot,
                     color = Color.White.copy(alpha = 0.90f),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                if (presentation.notice.isNotBlank()) {
+                if (presentation.showTmdbNotice) {
                     Spacer(Modifier.height(14.dp))
                     Text(
-                        presentation.notice,
+                        stringResource(R.string.details_tmdb_notice),
                         color = IptvColors.TextTertiary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
             Column(Modifier.width(320.dp)) {
-                TvDetailMetadata("ΔΗΜΙΟΥΡΓΟΣ", presentation.director)
+                TvDetailMetadata(localizedUppercase(stringResource(R.string.details_creator_label)), presentation.director)
                 TvDetailMetadata(
-                    "ΠΡΩΤΑΓΩΝΙΣΤΟΥΝ",
+                    localizedUppercase(stringResource(R.string.details_starring_label)),
                     presentation.cast.take(6).joinToString { it.name }
                 )
-                TvDetailMetadata("ΕΙΔΗ", presentation.genre)
+                TvDetailMetadata(localizedUppercase(stringResource(R.string.details_genres_label)), presentation.genre)
             }
         }
     }
@@ -560,7 +581,7 @@ private fun TvCastSection(presentation: DetailPresentation) {
             .padding(top = 20.dp, bottom = 18.dp)
     ) {
         Text(
-            "Ηθοποιοί",
+            stringResource(R.string.details_cast),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold,
@@ -593,7 +614,7 @@ private fun TvSimilarSection(
             .padding(top = 20.dp, bottom = 18.dp)
     ) {
         Text(
-            "Παρόμοια για εσένα",
+            stringResource(R.string.details_similar_for_you),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold,
@@ -608,11 +629,4 @@ private fun TvSimilarSection(
             }
         }
     }
-}
-
-private fun DetailSection.tvLabel(): String = when (this) {
-    DetailSection.Episodes -> "ΕΠΕΙΣΟΔΙΑ"
-    DetailSection.About -> "ΣΧΕΤΙΚΑ"
-    DetailSection.Cast -> "ΗΘΟΠΟΙΟΙ"
-    DetailSection.Similar -> "ΠΑΡΟΜΟΙΑ"
 }
