@@ -38,6 +38,9 @@ import com.prelude.iptv.data.*
 import com.prelude.iptv.ui.*
 import com.prelude.iptv.ui.components.library.*
 import com.prelude.iptv.ui.design.*
+import com.prelude.iptv.ui.epg.EpgStatus
+import com.prelude.iptv.ui.localization.localizedLabel
+import com.prelude.iptv.ui.localization.localizedText
 import kotlinx.coroutines.*
 
 @Composable
@@ -157,7 +160,14 @@ internal fun XmltvDialog(vm: MainViewModel, onDismiss: () -> Unit) {
     val st by vm.epgState.collectAsStateWithLifecycle()
     var url by remember { mutableStateOf(com.prelude.iptv.data.EpgManager.currentSource() ?: "") }
     val f = rememberInitialFocus()
-    val busy = st.status == "Κατέβασμα…" || st.status == "Λήψη EPG…"
+    val busy = when (st.status) {
+        EpgStatus.Loading,
+        EpgStatus.LoadingWithExistingGuide,
+        EpgStatus.Downloading,
+        EpgStatus.DownloadingWithExistingGuide -> true
+        else -> false
+    }
+    val statusText = st.status.localizedText()
     LaunchedEffect(Unit) { vm.searchEpg() }
     val close = { vm.closeEpgSearch(); onDismiss() }
 
@@ -175,11 +185,14 @@ internal fun XmltvDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                         Modifier.fillMaxWidth().heightIn(max = 260.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        st.sources.forEach { (label, u) ->
+                        st.sources.forEach { source ->
                             Row(
                                 Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
                                     .tvFocus(RoundedCornerShape(8.dp))
-                                    .clickable(enabled = !busy) { url = u; vm.useEpgSource(u) }
+                                    .clickable(enabled = !busy) {
+                                        url = source.url
+                                        vm.useEpgSource(source.url)
+                                    }
                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -187,8 +200,8 @@ internal fun XmltvDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                                     modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text(label, color = TextHi, fontSize = 13.sp)
-                                    Text(u, color = TextLo, fontSize = 10.sp,
+                                    Text(source.localizedLabel(), color = TextHi, fontSize = 13.sp)
+                                    Text(source.url, color = TextLo, fontSize = 10.sp,
                                         maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                             }
@@ -207,10 +220,10 @@ internal fun XmltvDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                         CircularProgressIndicator(Modifier.size(16.dp), color = Accent, strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp)); Text("Κατέβασμα…", color = TextMid, fontSize = 12.sp)
                     }
-                } else if (st.status.isNotEmpty()) {
+                } else if (statusText.isNotEmpty()) {
                     // «✓ Ταιριάζει σε Χ κανάλια» / «⚠ δεν ταιριάζει» / «✗ απέτυχε»
                     Spacer(Modifier.height(10.dp))
-                    Text(st.status, color = AccentSoft, fontSize = 12.sp)
+                    Text(statusText, color = AccentSoft, fontSize = 12.sp)
                 }
             }
         },
@@ -276,4 +289,3 @@ internal fun SingleStreamDialog(onDismiss: () -> Unit) {
         dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο", color = TextMid) } }
     )
 }
-

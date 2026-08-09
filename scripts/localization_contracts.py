@@ -558,6 +558,25 @@ for ui_path in migrated_epg_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated EPG UI: {ui_path}")
 
+provider_import_epg = read(
+    "app/src/main/java/com/prelude/iptv/ui/route/ProviderImportScreens.kt"
+)
+for typed_consumer in (
+    "st.status.localizedText()",
+    "source.localizedLabel()",
+    "vm.useEpgSource(source.url)",
+):
+    if typed_consumer not in provider_import_epg:
+        failures.append(f"legacy provider EPG dialog bypasses typed presentation: {typed_consumer}")
+for stale_string_consumer in (
+    'st.status == "',
+    "st.status.isNotEmpty()",
+    "Text(st.status",
+    "st.sources.forEach { (label, u) ->",
+):
+    if stale_string_consumer in provider_import_epg:
+        failures.append(f"legacy provider EPG dialog still treats typed state as String: {stale_string_consumer}")
+
 adaptive_settings = read("app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt")
 mobile_settings = read(
     "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobilePremiumSettingsScreen.kt"

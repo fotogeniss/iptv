@@ -82,6 +82,13 @@ of a **30-year senior software engineer**. In practice this means:
   ambiguous. The focused fix adds explicit `com.prelude.iptv.R` imports to those
   five files and a static regression contract. The owner must rerun the QA build;
   this document does not claim that rebuild has passed.
+- That rebuild advanced to `ProviderImportScreens.kt` and exposed one more stale
+  EPG consumer: it still compared typed `EpgStatus` values with Greek strings,
+  called string methods on the status, destructured `EpgSourceOption` as an old
+  label/URL pair and passed typed objects to `Text`. The focused correction uses
+  `EpgStatus` loading identities, `localizedText()`, `localizedLabel()` and the
+  source's raw URL, with a regression contract. A new owner QA build is still
+  required after this fix.
 - The latest static validation cycle at `e892e2a` reported:
   - localization contracts: pass, including 208 paired Settings keys with
     matching structure and placeholders;
