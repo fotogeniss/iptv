@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_back">Πίσω</string>
+    <string name="library_title">Βιβλιοθήκη</string>
+    <string name="library_hero_headline">Όλα όσα αγαπάς,\nσε ένα μέρος.</string>
+    <string name="library_hero_subheadline">Συνέχισε, οργάνωσε και ξαναβρες ό,τι έχει σημασία για εσένα.</string>
+    <string name="library_stat_my_list">Η ΛΙΣΤΑ ΜΟΥ</string>
+    <string name="library_stat_continue">ΣΕ ΕΞΕΛΙΞΗ</string>
+    <string name="library_stat_history">ΙΣΤΟΡΙΚΟ</string>
+
+    <string name="library_tab_all">Όλα</string>
+    <string name="library_tab_my_list">Η λίστα μου</string>
+    <string name="library_tab_continue">Συνέχεια</string>
+    <string name="library_tab_history">Ιστορικό</string>
+
+    <string name="library_sort_recent">Πρόσφατα</string>
+    <string name="library_sort_title">Τίτλος</string>
+
+    <string name="library_action_done">Τέλος</string>
+    <string name="library_action_manage">Διαχείριση</string>
+    <string name="library_action_continue">Συνέχεια</string>
+    <string name="library_action_play">Αναπαραγωγή</string>
+    <string name="library_action_remove">Αφαίρεση</string>
+    <string name="library_action_info">Πληροφορίες</string>
+    <string name="library_action_add">Προσθήκη</string>
+    <string name="library_in_my_list">Στη λίστα μου</string>
+
+    <string name="library_info_panel_empty">Δεν υπάρχει περιεχόμενο</string>
+    <string name="library_eyebrow_my_list">ΣΤΗ ΛΙΣΤΑ ΜΟΥ</string>
+    <string name="library_eyebrow_continue">ΣΥΝΕΧΙΣΕ ΝΑ ΒΛΕΠΕΙΣ</string>
+    <string name="library_eyebrow_history">ΠΡΟΣΦΑΤΑ ΠΡΟΒΛΗΘΗΚΕ</string>
+    <string name="library_eyebrow_library">ΒΙΒΛΙΟΘΗΚΗ</string>
+    <string name="library_hero_eyebrow_from_library">ΑΠΟ ΤΗ ΒΙΒΛΙΟΘΗΚΗ ΣΟΥ</string>
+
+    <string name="library_empty_title">Δεν υπάρχει περιεχόμενο εδώ</string>
+    <string name="library_empty_subtitle">Πρόσθεσε τίτλους από Home, Search ή Details.</string>
+    <string name="library_description_fallback">Άνοιξε τον τίτλο για περισσότερες πληροφορίες και επιλογές αναπαραγωγής.</string>
+
+    <plurals name="library_selected_count">
+        <item quantity="one">%1$d επιλεγμένο</item>
+        <item quantity="other">%1$d επιλεγμένα</item>
+    </plurals>
+
+    <string name="library_summary_my_list">Η λίστα μου</string>
+    <string name="library_summary_continue">Σε εξέλιξη</string>
+    <string name="library_summary_history">Ιστορικό</string>
+
+    <string name="library_rail_continue_title">Συνέχισε να βλέπεις</string>
+    <string name="library_rail_continue_subtitle">Από εκεί που σταμάτησες</string>
+    <plurals name="library_rail_continue_count">
+        <item quantity="one">%1$d σε εξέλιξη</item>
+        <item quantity="other">%1$d σε εξέλιξη</item>
+    </plurals>
+    <string name="library_rail_my_list_title">Η λίστα μου</string>
+    <string name="library_rail_my_list_subtitle">Οι αποθηκευμένες επιλογές σου</string>
+    <plurals name="library_rail_my_list_count">
+        <item quantity="one">%1$d αποθηκευμένο</item>
+        <item quantity="other">%1$d αποθηκευμένα</item>
+    </plurals>
+    <string name="library_rail_history_title">Πρόσφατα προβληθέντα</string>
+    <string name="library_rail_history_subtitle">Το ιστορικό σου</string>
+    <plurals name="library_rail_history_count">
+        <item quantity="one">%1$d πρόσφατο</item>
+        <item quantity="other">%1$d πρόσφατα</item>
+    </plurals>
+</resources>

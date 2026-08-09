@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_back">Back</string>
+    <string name="library_title">Library</string>
+    <string name="library_hero_headline">Everything you love,\nin one place.</string>
+    <string name="library_hero_subheadline">Continue, organize and find again what matters to you.</string>
+    <string name="library_stat_my_list">MY LIST</string>
+    <string name="library_stat_continue">IN PROGRESS</string>
+    <string name="library_stat_history">HISTORY</string>
+
+    <string name="library_tab_all">All</string>
+    <string name="library_tab_my_list">My list</string>
+    <string name="library_tab_continue">Continue</string>
+    <string name="library_tab_history">History</string>
+
+    <string name="library_sort_recent">Recent</string>
+    <string name="library_sort_title">Title</string>
+
+    <string name="library_action_done">Done</string>
+    <string name="library_action_manage">Manage</string>
+    <string name="library_action_continue">Continue</string>
+    <string name="library_action_play">Play</string>
+    <string name="library_action_remove">Remove</string>
+    <string name="library_action_info">Info</string>
+    <string name="library_action_add">Add</string>
+    <string name="library_in_my_list">In my list</string>
+
+    <string name="library_info_panel_empty">No content</string>
+    <string name="library_eyebrow_my_list">IN MY LIST</string>
+    <string name="library_eyebrow_continue">CONTINUE WATCHING</string>
+    <string name="library_eyebrow_history">RECENTLY VIEWED</string>
+    <string name="library_eyebrow_library">LIBRARY</string>
+    <string name="library_hero_eyebrow_from_library">FROM YOUR LIBRARY</string>
+
+    <string name="library_empty_title">Nothing here yet</string>
+    <string name="library_empty_subtitle">Add titles from Home, Search or Details.</string>
+    <string name="library_description_fallback">Open the title for more information and playback options.</string>
+
+    <plurals name="library_selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+
+    <string name="library_summary_my_list">My list</string>
+    <string name="library_summary_continue">In progress</string>
+    <string name="library_summary_history">History</string>
+
+    <string name="library_rail_continue_title">Continue watching</string>
+    <string name="library_rail_continue_subtitle">From where you left off</string>
+    <plurals name="library_rail_continue_count">
+        <item quantity="one">%1$d in progress</item>
+        <item quantity="other">%1$d in progress</item>
+    </plurals>
+    <string name="library_rail_my_list_title">My list</string>
+    <string name="library_rail_my_list_subtitle">Your saved picks</string>
+    <plurals name="library_rail_my_list_count">
+        <item quantity="one">%1$d saved</item>
+        <item quantity="other">%1$d saved</item>
+    </plurals>
+    <string name="library_rail_history_title">Recently viewed</string>
+    <string name="library_rail_history_subtitle">Your history</string>
+    <plurals name="library_rail_history_count">
+        <item quantity="one">%1$d recent</item>
+        <item quantity="other">%1$d recent</item>
+    </plurals>
+</resources>

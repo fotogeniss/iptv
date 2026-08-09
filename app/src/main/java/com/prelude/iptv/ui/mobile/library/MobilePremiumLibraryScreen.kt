@@ -32,9 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -49,6 +52,7 @@ import com.prelude.iptv.ui.components.library.libraryKey
 import com.prelude.iptv.ui.components.library.libraryProgress
 import com.prelude.iptv.ui.components.library.libraryRails
 import com.prelude.iptv.ui.components.library.rememberLibraryMeta
+import com.prelude.iptv.ui.localization.libraryRailLabels
 
 @Composable
 fun MobilePremiumLibraryScreen(
@@ -73,7 +77,8 @@ fun MobilePremiumLibraryScreen(
     var sort by remember { mutableStateOf(LibrarySort.RECENT) }
     var managementMode by remember { mutableStateOf(false) }
     var removalSelection by remember { mutableStateOf<Map<String, Pair<LibraryDestination, Channel>>>(emptyMap()) }
-    val rails = remember(content, tab, sort) { libraryRails(content, tab, sort) }
+    val railLabels = libraryRailLabels(content)
+    val rails = remember(content, tab, sort, railLabels) { libraryRails(content, tab, sort, railLabels) }
     var selected by remember(rails) { mutableStateOf(rails.firstOrNull()?.items?.firstOrNull()) }
     val meta by rememberLibraryMeta(selected, tmdbFor)
 
@@ -100,7 +105,7 @@ fun MobilePremiumLibraryScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.library_back), tint = Color.White)
                         }
                         Spacer(Modifier.weight(1f))
                         Text("PRELUDE", color = Color.White, fontSize = 12.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.Black)
@@ -169,7 +174,10 @@ fun MobilePremiumLibraryScreen(
                     .navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("${removalSelection.size} επιλεγμένα", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(
+                    pluralStringResource(R.plurals.library_selected_count, removalSelection.size, removalSelection.size),
+                    color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f)
+                )
                 Button(
                     onClick = {
                         removalSelection.values.forEach { (destination, channel) -> onRemove(destination, channel) }
@@ -182,7 +190,7 @@ fun MobilePremiumLibraryScreen(
                 ) {
                     Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Αφαίρεση", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.library_action_remove), fontWeight = FontWeight.Bold)
                 }
             }
         } else {

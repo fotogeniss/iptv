@@ -76,26 +76,27 @@ of a **30-year senior software engineer**. In practice this means:
   line-ending normalization (every line identical content, CRLF/LF only). This
   file was left untouched by this slice; it is not part of this change and was
   not committed or reverted.
-- **Commit blocked by the local environment, not by code or verification.**
-  All code/resource changes described below passed every required static
-  gate, but `git add`/`git commit` could not be completed from inside the
-  sandboxed agent workspace: `.git/index.lock` repeatedly appears and cannot
-  be removed from that side (`rm`, `git`'s own cleanup, and repeated retries
-  all return `Operation not permitted`). The owner successfully deleted the
-  lock file directly from Windows once, which confirms this is a Windows-side
-  file-locking/permission boundary on the sandboxed mount's view of `.git`,
-  not a stale git lock the agent can clear itself — **every git command that
-  touches the index (including a plain `git status`) can leave a fresh lock
-  behind that only a Windows-side delete can remove**, so clearing it once is
-  not enough if another git command runs afterward before staging/committing.
-  At the owner's explicit direction, work continued past this blocker rather
-  than stopping to fix git first, so **two cohesive slices are now stacked
-  uncommitted on top of `622f90b`**: export/relay + notifications, and the
-  Library hub. **HEAD still remains `622f90b`.** Before the next commit
-  attempt: delete `.git\index.lock` from Windows if present, then immediately
-  run `git add`/`git commit` for one slice at a time in the same breath as
-  clearing the lock (avoid an intervening plain `git status`, which can
-  re-create and orphan a fresh lock before the add/commit runs).
+- **`.git` write locking on this sandboxed mount: known behavior, not a code
+  problem.** From inside the sandboxed agent workspace, `git add`/`git
+  commit`/`git status` can each leave behind `.git/index.lock`,
+  `.git/HEAD.lock` and/or `.git/objects/maintenance.lock`, and the agent
+  cannot remove them itself (`rm` returns `Operation not permitted`) — only
+  deleting the file directly from Windows works. Both slices below were
+  committed successfully once the owner cleared these lock files from Windows
+  immediately before each `git add`/`git commit`/`git commit --amend` step.
+  **The working pattern for the next session:** run one git write command,
+  check `find .git -maxdepth 2 -iname "*.lock"`, ask the owner to delete from
+  Windows anything it finds, confirm the list is empty, then run exactly the
+  next single git command — do not chain multiple git commands together or
+  run a plain `git status` in between, since either can leave a fresh
+  orphaned lock that blocks the next command before it even starts.
+- Both slices are now committed directly on top of `622f90b`: export/relay
+  surfaces and system notifications (`feat: localize export/relay surfaces
+  and system notifications`), then the Library hub (`feat: localize library
+  hub`). HEAD is no longer `622f90b` — confirm the current HEAD and exact
+  hashes with `git log --oneline -5` rather than trusting a hash hand-typed
+  into this document, since this line will not be updated after every future
+  commit.
 - The Git worktree was clean at `4c7ee73` when the profile/account-security
   slice began.
 - The owner previously supplied an Android Studio screenshot confirming a
@@ -512,8 +513,7 @@ diagnostic data is intentionally not translated.
 Export/relay surfaces (`ExportScreen`), the catalog-download/relay/EPG-
 reminder system notifications, and the Library hub (Favorites/My List,
 Continue watching, History) are also migrated at the code/resource and
-static-contract level, but as of this handoff that work is **still
-uncommitted** on top of `622f90b` — see section 2's `.git/index.lock` note.
+static-contract level and committed (see section 3/`git log`).
 
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
@@ -617,7 +617,7 @@ contain Greek display copy and raw display messages.
   expanded but not executed because the owner did not authorize Gradle. Android
   Studio compilation and mobile QA remain pending owner evidence.
 
-#### Completed slice (uncommitted): Export/relay surfaces and system notifications
+#### Completed slice: Export/relay surfaces and system notifications
 
 - The active route is `ExportScreen` (opened from `BrowseRoute` via
   `showExport`), backed by the Android-free `ExportRelayCoordinator` and
@@ -655,11 +655,12 @@ contain Greek display copy and raw display messages.
   read-only source, not a different codebase); documentation contract passes;
   `git diff --check` is clean for every file this slice touched. Gradle,
   compilation and device QA were not run.
-- **This slice is verified but not committed** — see the `.git/index.lock`
-  blocker in section 2. The next session should retry staging/committing
-  before starting new work.
+- Committed as `feat: localize export/relay surfaces and system
+  notifications` (see `git log` for the exact hash — it was amended once to
+  remove Library-slice contract code that had been accidentally staged
+  alongside it before either slice was committed).
 
-#### Completed slice (uncommitted): Library hub (Favorites/My List, Continue watching, History)
+#### Completed slice: Library hub (Favorites/My List, Continue watching, History)
 
 - The active route is `PremiumLibraryScreen` (`app/src/main/java/com/prelude/iptv/ui/PremiumLibraryScreen.kt`),
   reached from `BrowseLibraryLayer.kt`; it delegates to `TvPremiumLibraryScreen`
@@ -695,7 +696,8 @@ contain Greek display copy and raw display messages.
   mounted-workspace I/O reason); documentation contract passes; `git diff
   --check` is clean for every file this slice touched. Gradle, compilation and
   device QA were not run.
-- **This slice is also verified but not committed** — see section 2.
+- Committed as `feat: localize library hub` (see `git log` for the exact
+  hash).
 
 #### Next slice: Final release-surface hardcoded-string audit
 
@@ -878,24 +880,21 @@ The owner can paste the following after attaching or referencing this file:
 > crash-reporting localization is complete at the code/resource and
 > static-contract level, but still requires the owner's normal Android Studio
 > build and mobile QA. Export/relay surfaces and system notification
-> localization (`ExportScreen`, `CatalogDownloadService`, `RelayService`,
-> `ReminderScheduler`/`ReminderReceiver`) and the Library hub localization
-> (`LibraryFoundation`, `TvLibraryHeader`/`TvLibraryComponents`/
-> `TvPremiumLibraryScreen`, `MobilePremiumLibraryScreen`/
-> `MobileLibrarySections`/`MobileLibraryComponents`) are also complete at the
-> code/resource and static-contract level, but as of this handoff **both are
-> uncommitted** because `.git/index.lock` kept reappearing in the working
-> session (every git command touching the index can leave a fresh
-> Windows-side lock the sandbox cannot remove itself) — first retry
-> staging/committing those two slices **separately, one cohesive commit
-> each**, clearing `.git\index.lock` from Windows immediately before each
-> add/commit with no intervening `git status`. Then continue with the final
-> release-surface hardcoded-string audit across every active manifest, Kotlin
-> and XML file; a reconnaissance sweep already found 50 files with
-> unclassified Greek literals outside Library (see the handoff body for the
-> file list). Classify each remaining literal as app copy, invariant
-> brand/protocol text, provider/user data, diagnostic data or developer
-> comment, migrate only app copy, and only after that audit plus compilation
-> and phone/TV QA proceed to parity inversion and public picker activation.
-> Run the static gates, inspect the diff, update the handoff, and commit only
-> when a slice is cohesive and clean.
+> localization and the Library hub localization (Favorites/My List, Continue
+> watching, History) are also complete at the code/resource and
+> static-contract level and are committed as two separate commits on top of
+> `622f90b` (check `git log --oneline` for exact hashes). Writing to `.git`
+> from the sandboxed agent workspace on this machine is unreliable — git
+> commands that touch the index can leave `.git/index.lock`,
+> `.git/HEAD.lock` or `.git/objects/maintenance.lock` behind, removable only
+> from Windows; if this recurs, run one git write command at a time and ask
+> the owner to clear any lock files Windows-side immediately before each one.
+> Continue with the final release-surface hardcoded-string audit across every
+> active manifest, Kotlin and XML file; a reconnaissance sweep already found
+> 50 files with unclassified Greek literals outside Library (see the handoff
+> body for the file list). Classify each remaining literal as app copy,
+> invariant brand/protocol text, provider/user data, diagnostic data or
+> developer comment, migrate only app copy, and only after that audit plus
+> compilation and phone/TV QA proceed to parity inversion and public picker
+> activation. Run the static gates, inspect the diff, update the handoff, and
+> commit only when a slice is cohesive and clean.

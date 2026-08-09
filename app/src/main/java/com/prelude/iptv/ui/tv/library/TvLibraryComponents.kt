@@ -38,10 +38,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -52,6 +54,7 @@ import com.prelude.iptv.ui.components.library.LibraryCardProgress
 import com.prelude.iptv.ui.components.library.libraryDescription
 import com.prelude.iptv.ui.components.library.libraryMetaLine
 import com.prelude.iptv.ui.components.library.libraryTitle
+import com.prelude.iptv.ui.localization.eyebrowRes
 import com.prelude.iptv.ui.rememberInitialFocus
 import androidx.compose.animation.core.tween
 import com.prelude.iptv.ui.design.Motion
@@ -164,7 +167,7 @@ internal fun TvLibraryInfoPanel(
     ) {
         if (channel == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Δεν υπάρχει περιεχόμενο", color = IptvColors.TextSecondary)
+                Text(stringResource(R.string.library_info_panel_empty), color = IptvColors.TextSecondary)
             }
             return@Column
         }
@@ -174,12 +177,7 @@ internal fun TvLibraryInfoPanel(
         }
         Spacer(Modifier.height(14.dp))
         Text(
-            when (destination) {
-                LibraryDestination.MY_LIST -> "ΣΤΗ ΛΙΣΤΑ ΜΟΥ"
-                LibraryDestination.CONTINUE_WATCHING -> "ΣΥΝΕΧΙΣΕ ΝΑ ΒΛΕΠΕΙΣ"
-                LibraryDestination.HISTORY -> "ΠΡΟΣΦΑΤΑ ΠΡΟΒΛΗΘΗΚΕ"
-                LibraryDestination.SEARCH -> "ΒΙΒΛΙΟΘΗΚΗ"
-            },
+            stringResource(destination.eyebrowRes()),
             color = IptvColors.Success,
             fontSize = 9.sp,
             letterSpacing = 1.2.sp,
@@ -199,7 +197,7 @@ internal fun TvLibraryInfoPanel(
         Text(libraryMetaLine(channel, meta), color = Color(0xFFD3D7DC), fontSize = 11.sp, maxLines = 2)
         Spacer(Modifier.height(10.dp))
         Text(
-            libraryDescription(channel, meta),
+            libraryDescription(channel, meta) ?: stringResource(R.string.library_description_fallback),
             color = IptvColors.TextSecondary,
             fontSize = 11.sp,
             lineHeight = 17.sp,
@@ -209,14 +207,14 @@ internal fun TvLibraryInfoPanel(
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TvLibraryAction(
-                label = if (progress != null) "Συνέχεια" else "Αναπαραγωγή",
+                label = stringResource(if (progress != null) R.string.library_action_continue else R.string.library_action_play),
                 icon = Icons.Default.PlayArrow,
                 primary = true,
                 onClick = onOpen,
                 modifier = Modifier.weight(1f)
             )
             TvLibraryAction(
-                label = if (managementMode) "Αφαίρεση" else if (favorite) "✓" else "+",
+                label = if (managementMode) stringResource(R.string.library_action_remove) else if (favorite) "✓" else "+",
                 icon = when {
                     managementMode -> Icons.Default.Delete
                     favorite -> Icons.Default.Check

@@ -828,6 +828,37 @@ if greek_string_literals(export_screen):
         "app/src/main/java/com/prelude/iptv/ExportScreen.kt"
     )
 
+library_foundation = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/library/LibraryFoundation.kt"
+)
+library_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/LibraryLocalizationResources.kt"
+)
+if "val label: String" in library_foundation:
+    failures.append("Android-free Library tab/sort models still own display copy")
+if "data class LibraryRailLabels" not in library_foundation:
+    failures.append("Library rail titles/subtitles bypass the typed resource-label boundary")
+if "fun libraryDescription(channel: Channel, meta: TmdbClient.Meta?): String?" not in library_foundation:
+    failures.append("Library description fallback is still formatted outside resources")
+if greek_string_literals(library_foundation):
+    failures.append("Android-free Library foundation still owns Greek display copy")
+for mapping in ("LibraryHubTab.labelRes", "LibrarySort.labelRes", "LibraryDestination.eyebrowRes", "libraryRailLabels"):
+    if mapping not in library_mapping:
+        failures.append(f"Library resource mapping missing: {mapping}")
+
+migrated_library_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/tv/library/TvLibraryHeader.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/library/TvLibraryComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/library/TvPremiumLibraryScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/library/MobilePremiumLibraryScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/library/MobileLibrarySections.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/library/MobileLibraryComponents.kt",
+]
+for ui_path in migrated_library_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Library UI: {ui_path}")
+
 notification_producers = [
     "app/src/main/java/com/prelude/iptv/data/CatalogDownloadService.kt",
     "app/src/main/java/com/prelude/iptv/RelayService.kt",

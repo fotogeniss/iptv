@@ -22,17 +22,31 @@ data class PremiumLibraryContent(
         get() = libraryUnique(continueWatching + myList + history)
 }
 
-enum class LibraryHubTab(val label: String, val destination: LibraryDestination?) {
-    ALL("Όλα", null),
-    MY_LIST("Η λίστα μου", LibraryDestination.MY_LIST),
-    CONTINUE("Συνέχεια", LibraryDestination.CONTINUE_WATCHING),
-    HISTORY("Ιστορικό", LibraryDestination.HISTORY)
+enum class LibraryHubTab(val destination: LibraryDestination?) {
+    ALL(null),
+    MY_LIST(LibraryDestination.MY_LIST),
+    CONTINUE(LibraryDestination.CONTINUE_WATCHING),
+    HISTORY(LibraryDestination.HISTORY)
 }
 
-enum class LibrarySort(val label: String) {
-    RECENT("Πρόσφατα"),
-    TITLE("Τίτλος")
+enum class LibrarySort {
+    RECENT,
+    TITLE
 }
+
+/** App-owned rail titles/subtitles resolved at the Android UI boundary; see [libraryRails]. */
+@Immutable
+data class LibraryRailLabels(
+    val continueTitle: String,
+    val continueSubtitleDescription: String,
+    val continueSubtitleCount: String,
+    val myListTitle: String,
+    val myListSubtitleDescription: String,
+    val myListSubtitleCount: String,
+    val historyTitle: String,
+    val historySubtitleDescription: String,
+    val historySubtitleCount: String,
+)
 
 @Immutable
 data class LibraryRail(
@@ -47,7 +61,8 @@ data class LibraryRail(
 fun libraryRails(
     content: PremiumLibraryContent,
     tab: LibraryHubTab,
-    sort: LibrarySort
+    sort: LibrarySort,
+    labels: LibraryRailLabels
 ): List<LibraryRail> {
     fun sorted(items: List<Channel>): List<Channel> = when (sort) {
         LibrarySort.RECENT -> items
@@ -55,18 +70,18 @@ fun libraryRails(
     }
     return when (tab) {
         LibraryHubTab.ALL -> listOf(
-            LibraryRail("continue", "Συνέχισε να βλέπεις", "Από εκεί που σταμάτησες", LibraryDestination.CONTINUE_WATCHING, sorted(content.continueWatching), false),
-            LibraryRail("my-list", "Η λίστα μου", "Οι αποθηκευμένες επιλογές σου", LibraryDestination.MY_LIST, sorted(content.myList), true),
-            LibraryRail("history", "Πρόσφατα προβληθέντα", "Το ιστορικό σου", LibraryDestination.HISTORY, sorted(content.history), false)
+            LibraryRail("continue", labels.continueTitle, labels.continueSubtitleDescription, LibraryDestination.CONTINUE_WATCHING, sorted(content.continueWatching), false),
+            LibraryRail("my-list", labels.myListTitle, labels.myListSubtitleDescription, LibraryDestination.MY_LIST, sorted(content.myList), true),
+            LibraryRail("history", labels.historyTitle, labels.historySubtitleDescription, LibraryDestination.HISTORY, sorted(content.history), false)
         ).filter { it.items.isNotEmpty() }
         LibraryHubTab.MY_LIST -> listOf(
-            LibraryRail("my-list", "Η λίστα μου", "${content.myList.size} αποθηκευμένα", LibraryDestination.MY_LIST, sorted(content.myList), true)
+            LibraryRail("my-list", labels.myListTitle, labels.myListSubtitleCount, LibraryDestination.MY_LIST, sorted(content.myList), true)
         ).filter { it.items.isNotEmpty() }
         LibraryHubTab.CONTINUE -> listOf(
-            LibraryRail("continue", "Συνέχισε να βλέπεις", "${content.continueWatching.size} σε εξέλιξη", LibraryDestination.CONTINUE_WATCHING, sorted(content.continueWatching), false)
+            LibraryRail("continue", labels.continueTitle, labels.continueSubtitleCount, LibraryDestination.CONTINUE_WATCHING, sorted(content.continueWatching), false)
         ).filter { it.items.isNotEmpty() }
         LibraryHubTab.HISTORY -> listOf(
-            LibraryRail("history", "Πρόσφατα προβληθέντα", "${content.history.size} πρόσφατα", LibraryDestination.HISTORY, sorted(content.history), false)
+            LibraryRail("history", labels.historyTitle, labels.historySubtitleCount, LibraryDestination.HISTORY, sorted(content.history), false)
         ).filter { it.items.isNotEmpty() }
     }
 }
@@ -92,10 +107,11 @@ fun libraryMetaLine(channel: Channel, meta: TmdbClient.Meta? = null): String = l
 fun libraryTitle(channel: Channel): String =
     TmdbClient.cleanTitle(channel.name).ifBlank { channel.name }
 
-fun libraryDescription(channel: Channel, meta: TmdbClient.Meta?): String =
+/** Returns null when neither TMDB nor the provider expose a description; the UI boundary
+ *  supplies a localized fallback sentence (library_description_fallback) instead. */
+fun libraryDescription(channel: Channel, meta: TmdbClient.Meta?): String? =
     meta?.overview?.takeIf(String::isNotBlank)
         ?: channel.plot.takeIf(String::isNotBlank)
-        ?: "Άνοιξε τον τίτλο για περισσότερες πληροφορίες και επιλογές αναπαραγωγής."
 
 fun libraryUnique(items: Iterable<Channel>): List<Channel> {
     val seen = HashSet<String>()

@@ -31,10 +31,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.LibraryDestination
@@ -44,13 +46,14 @@ import com.prelude.iptv.ui.components.library.LibrarySort
 import com.prelude.iptv.ui.components.library.PremiumLibraryContent
 import com.prelude.iptv.ui.components.library.libraryKey
 import com.prelude.iptv.ui.components.library.libraryProgress
+import com.prelude.iptv.ui.localization.labelRes
 
 @Composable
 internal fun MobileLibrarySummary(content: PremiumLibraryContent) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        LibraryStat(content.myList.size.toString(), "Η λίστα μου", Modifier.weight(1f))
-        LibraryStat(content.continueWatching.size.toString(), "Σε εξέλιξη", Modifier.weight(1f))
-        LibraryStat(content.history.size.toString(), "Ιστορικό", Modifier.weight(1f))
+        LibraryStat(content.myList.size.toString(), stringResource(R.string.library_summary_my_list), Modifier.weight(1f))
+        LibraryStat(content.continueWatching.size.toString(), stringResource(R.string.library_summary_continue), Modifier.weight(1f))
+        LibraryStat(content.history.size.toString(), stringResource(R.string.library_summary_history), Modifier.weight(1f))
     }
 }
 
@@ -74,7 +77,7 @@ internal fun MobileLibraryTabs(
     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(LibraryHubTab.entries) { tab ->
             Text(
-                tab.label,
+                stringResource(tab.labelRes()),
                 color = if (tab == selected) Color.White else IptvColors.TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
@@ -83,12 +86,15 @@ internal fun MobileLibraryTabs(
             )
         }
         item {
-            Text("⇅ ${sort.label}", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+            Text("⇅ ${stringResource(sort.labelRes())}", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.background(IptvColors.Surface, RoundedCornerShape(99.dp)).clickable(onClick = onSort)
                     .padding(horizontal = 13.dp, vertical = 10.dp))
         }
         item {
-            Text(if (managementMode) "Τέλος" else "✓ Διαχείριση", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+            Text(
+                if (managementMode) stringResource(R.string.library_action_done)
+                else "✓ ${stringResource(R.string.library_action_manage)}",
+                color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.background(IptvColors.Surface, RoundedCornerShape(99.dp)).clickable(onClick = onManage)
                     .padding(horizontal = 13.dp, vertical = 10.dp))
         }
@@ -137,8 +143,8 @@ internal fun MobileLibraryEmpty(tab: LibraryHubTab, modifier: Modifier = Modifie
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(if (tab == LibraryHubTab.HISTORY) Icons.Default.History else Icons.Default.Check, null, tint = IptvColors.TextTertiary, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
-            Text("Δεν υπάρχει περιεχόμενο εδώ", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
-            Text("Πρόσθεσε τίτλους από Home, Search ή Details.", color = IptvColors.TextSecondary, fontSize = 12.sp)
+            Text(stringResource(R.string.library_empty_title), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.library_empty_subtitle), color = IptvColors.TextSecondary, fontSize = 12.sp)
         }
     }
 }

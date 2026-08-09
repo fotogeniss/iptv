@@ -23,13 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.library.LibraryHubTab
 import com.prelude.iptv.ui.components.library.LibrarySort
 import com.prelude.iptv.ui.components.library.PremiumLibraryContent
+import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.ui.tvFocus
 
 @Composable
@@ -45,21 +48,21 @@ internal fun TvLibraryHeading(
                     .clickable(onClick = onBack).focusable().padding(horizontal = 10.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.library_back), tint = Color.White)
                 Spacer(Modifier.width(7.dp))
-                Text("Βιβλιοθήκη", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.library_title), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(17.dp))
             Text("PRELUDE LIBRARY", color = IptvColors.Success, fontSize = 10.sp, letterSpacing = 1.8.sp, fontWeight = FontWeight.Black)
             Spacer(Modifier.height(8.dp))
-            Text("Όλα όσα αγαπάς,\nσε ένα μέρος.", color = Color.White, fontSize = 38.sp, lineHeight = 39.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.library_hero_headline), color = Color.White, fontSize = 38.sp, lineHeight = 39.sp, fontWeight = FontWeight.Black)
             Spacer(Modifier.height(7.dp))
-            Text("Συνέχισε, οργάνωσε και ξαναβρες ό,τι έχει σημασία για εσένα.", color = IptvColors.TextSecondary, fontSize = 12.sp)
+            Text(stringResource(R.string.library_hero_subheadline), color = IptvColors.TextSecondary, fontSize = 12.sp)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            TvLibraryStat(content.myList.size, "Η ΛΙΣΤΑ ΜΟΥ")
-            TvLibraryStat(content.continueWatching.size, "ΣΕ ΕΞΕΛΙΞΗ")
-            TvLibraryStat(content.history.size, "ΙΣΤΟΡΙΚΟ")
+            TvLibraryStat(content.myList.size, stringResource(R.string.library_stat_my_list))
+            TvLibraryStat(content.continueWatching.size, stringResource(R.string.library_stat_continue))
+            TvLibraryStat(content.history.size, stringResource(R.string.library_stat_history))
         }
     }
 }
@@ -85,12 +88,16 @@ internal fun TvLibraryControls(
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
             LibraryHubTab.entries.forEach { tab ->
-                TvLibraryPill(tab.label, tab == selected) { onSelect(tab) }
+                TvLibraryPill(stringResource(tab.labelRes()), tab == selected) { onSelect(tab) }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TvLibraryTool(Icons.Default.Sort, sort.label, onSort)
-            TvLibraryTool(Icons.Default.Check, if (managementMode) "Τέλος" else "Διαχείριση", onManage)
+            TvLibraryTool(Icons.Default.Sort, stringResource(sort.labelRes()), onSort)
+            TvLibraryTool(
+                Icons.Default.Check,
+                stringResource(if (managementMode) R.string.library_action_done else R.string.library_action_manage),
+                onManage
+            )
         }
     }
 }

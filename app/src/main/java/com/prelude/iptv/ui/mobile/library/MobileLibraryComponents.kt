@@ -31,10 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -58,7 +60,7 @@ internal fun MobileLibraryHeroCopy(
 ) {
     Column(modifier.fillMaxWidth()) {
         Text(
-            if (progress != null) "ΣΥΝΕΧΙΣΕ ΝΑ ΒΛΕΠΕΙΣ" else "ΑΠΟ ΤΗ ΒΙΒΛΙΟΘΗΚΗ ΣΟΥ",
+            stringResource(if (progress != null) R.string.library_eyebrow_continue else R.string.library_hero_eyebrow_from_library),
             color = if (progress != null) IptvColors.Success else IptvColors.Primary,
             fontSize = 9.sp,
             letterSpacing = 1.4.sp,
@@ -85,7 +87,7 @@ internal fun MobileLibraryHeroCopy(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            libraryDescription(channel, meta),
+            libraryDescription(channel, meta) ?: stringResource(R.string.library_description_fallback),
             color = Color(0xFFC1C6CC),
             fontSize = 12.sp,
             lineHeight = 18.sp,
@@ -102,12 +104,15 @@ internal fun MobileLibraryHeroCopy(
             ) {
                 Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(21.dp))
                 Spacer(Modifier.width(5.dp))
-                Text(if (progress != null) "Συνέχεια" else "Αναπαραγωγή", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text(
+                    stringResource(if (progress != null) R.string.library_action_continue else R.string.library_action_play),
+                    fontWeight = FontWeight.Black, fontSize = 12.sp
+                )
             }
-            LibraryHeroIconButton(Icons.Default.Info, "Πληροφορίες", onInfo)
+            LibraryHeroIconButton(Icons.Default.Info, stringResource(R.string.library_action_info), onInfo)
             LibraryHeroIconButton(
                 icon = if (favorite) Icons.Default.Check else Icons.Default.Add,
-                description = if (favorite) "Στη λίστα μου" else "Προσθήκη",
+                description = stringResource(if (favorite) R.string.library_in_my_list else R.string.library_action_add),
                 onClick = onFavorite
             )
         }
