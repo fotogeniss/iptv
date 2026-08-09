@@ -1,6 +1,7 @@
 package com.prelude.iptv.billing
 
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -19,6 +20,10 @@ class DevicePurchaseVerifierTest {
         val result = verifier.verify(evidence(packageName = "other.package"))
 
         assertTrue(result is PurchaseVerificationResult.Rejected)
+        assertEquals(
+            "invalid_purchase_evidence",
+            (result as PurchaseVerificationResult.Rejected).reason,
+        )
     }
 
     @Test

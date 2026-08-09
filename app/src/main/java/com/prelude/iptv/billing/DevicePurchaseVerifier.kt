@@ -1,9 +1,9 @@
 package com.prelude.iptv.billing
 
 /**
- * Temporary client-side verifier used until the account backend is connected.
- * It accepts only evidence delivered by BillingClient for our known product.
- * Production server verification will return [VerificationLevel.SERVER].
+ * Device-side verifier for evidence delivered by BillingClient.
+ * The persisted [VerificationLevel.SERVER] value remains supported for storage
+ * compatibility, but this application does not require or promise a backend.
  */
 internal class DevicePurchaseVerifier(
     private val expectedPackageName: String,
@@ -18,7 +18,11 @@ internal class DevicePurchaseVerifier(
         ) {
             PurchaseVerificationResult.Accepted(VerificationLevel.PLAY_DEVICE)
         } else {
-            PurchaseVerificationResult.Rejected("Η αγορά δεν αντιστοιχεί σε προϊόν του PRELUDE+.")
+            PurchaseVerificationResult.Rejected(INVALID_PURCHASE_EVIDENCE)
         }
+    }
+
+    private companion object {
+        const val INVALID_PURCHASE_EVIDENCE = "invalid_purchase_evidence"
     }
 }

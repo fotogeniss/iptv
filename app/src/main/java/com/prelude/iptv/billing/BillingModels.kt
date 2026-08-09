@@ -44,8 +44,27 @@ data class BillingUiState(
     val entitlement: PremiumEntitlement = PremiumEntitlement(),
     val offer: BillingOffer? = null,
     val working: Boolean = false,
-    val message: String? = null,
+    val message: BillingMessage? = null,
 )
+
+sealed interface BillingMessage {
+    data object CheckingPurchases : BillingMessage
+    data object PremiumAlreadyActive : BillingMessage
+    data object ConnectingToPlay : BillingMessage
+    data object ProductNotConfigured : BillingMessage
+    data object OfferUnavailableForAccount : BillingMessage
+    data object PurchaseCanceled : BillingMessage
+    data object PurchasePending : BillingMessage
+    data object PurchaseRestored : BillingMessage
+    data object NoActivePurchase : BillingMessage
+    data object PremiumActivated : BillingMessage
+    data object AcknowledgementRetry : BillingMessage
+    data object BillingUnavailable : BillingMessage
+    data object ItemUnavailable : BillingMessage
+    data object ItemAlreadyOwned : BillingMessage
+    data object NetworkUnavailable : BillingMessage
+    data class PlayError(val debugMessage: String?) : BillingMessage
+}
 
 data class PurchaseSnapshot(
     val productIds: Set<String>,
@@ -69,10 +88,8 @@ sealed interface PurchaseVerificationResult {
 }
 
 /**
- * Boundary for server-side Play Developer API verification.
- *
- * The device implementation is intentionally replaceable. The backend phase
- * plugs into this interface without changing BillingClient or the UI.
+ * Boundary for validation of purchase evidence reported by BillingClient.
+ * The current application uses device verification and has no publisher backend.
  */
 fun interface PurchaseVerifier {
     suspend fun verify(evidence: PurchaseEvidence): PurchaseVerificationResult

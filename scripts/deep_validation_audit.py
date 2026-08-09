@@ -59,6 +59,8 @@ require((ROOT / "docs/DEVICE_QA_MATRIX.md").exists(),
 
 billing_policy = read("app/src/main/java/com/prelude/iptv/billing/PremiumPolicy.kt")
 billing_repository = read("app/src/main/java/com/prelude/iptv/billing/PlayBillingRepository.kt")
+billing_verifier = read("app/src/main/java/com/prelude/iptv/billing/DevicePurchaseVerifier.kt")
+billing_setup = read("docs/PLAY_BILLING_SETUP.md")
 require('implementation("com.android.billingclient:billing:9.1.0")' in gradle,
         "current Google Play Billing dependency is pinned")
 require('val defaultTier: PremiumTier = PremiumTier.FREE' in billing_policy and
@@ -71,12 +73,14 @@ require('Purchase.PurchaseState.PENDING -> PurchaseState.PENDING' in billing_rep
         "pending purchases cannot grant premium")
 require('queryPurchasesAsync' in billing_repository and 'acknowledgePurchase' in billing_repository,
         "owned purchases are restored and acknowledged")
-require('PurchaseVerifier' in billing_repository and
-        (ROOT / "docs/PLAY_BILLING_SETUP.md").exists(),
-        "billing has a documented server-verification boundary")
+require('DevicePurchaseVerifier' in billing_repository and
+        'VerificationLevel.PLAY_DEVICE' in billing_verifier and
+        'has no publisher backend' in billing_setup,
+        "billing documents device verification without a backend promise")
 require((TEST / "com/prelude/iptv/billing/BillingEntitlementPolicyTest.kt").exists() and
-        (TEST / "com/prelude/iptv/billing/DevicePurchaseVerifierTest.kt").exists(),
-        "billing entitlement and verifier policies have focused unit tests")
+        (TEST / "com/prelude/iptv/billing/DevicePurchaseVerifierTest.kt").exists() and
+        (TEST / "com/prelude/iptv/billing/BillingMessagePolicyTest.kt").exists(),
+        "billing entitlement, verifier and message policies have focused unit tests")
 premium_state = read("app/src/main/java/com/prelude/iptv/billing/PremiumState.kt")
 require('create("qa")' in gradle and 'applicationIdSuffix = ".qa"' in gradle and
         'versionNameSuffix = "-qa"' in gradle,

@@ -45,22 +45,19 @@ version.
 - New purchases are acknowledged; failed acknowledgement is retried when the
   purchase is queried again.
 
-## Mandatory backend gate before public paid release
+## Verification boundary
 
-The current `DevicePurchaseVerifier` is a deliberately isolated interim adapter.
-Before public monetization, replace it with a `PurchaseVerifier` implementation
-that sends the purchase token to the Prelude backend. The backend must:
+Prelude+ has no publisher backend. `DevicePurchaseVerifier` accepts only purchase
+evidence delivered by BillingClient for the application package and the known
+product ID, with a nonblank purchase token and Play payload. Only a verified
+`PURCHASED` result grants Premium; pending, missing and unrelated purchases do
+not.
 
-1. Treat the purchase token as the unique transaction key.
-2. Verify it with Google Play Developer API `Purchases.products:get`.
-3. Check package name, product ID, purchase state and account ownership.
-4. Grant entitlement only for a valid `PURCHASED` response.
-5. Acknowledge valid purchases server-side.
-6. Consume Real-time Developer Notifications and Voided Purchases so refunds and
-   revocations propagate while the app is closed.
-
-The backend response should map to `VerificationLevel.SERVER`; no UI or
-BillingClient rewrite is required.
+`VerificationLevel.SERVER` remains readable solely for compatibility with any
+previously persisted entitlement value. The current client does not emit that
+level and this release plan does not promise a server-verification phase. A
+future change to the store threat model would be a separate product, security,
+legal and Play-compliance decision.
 
 ## Release evidence
 
@@ -71,4 +68,4 @@ For every release that touches billing, attach to the release QA record:
 - successful purchase and restore results;
 - pending-payment result;
 - refund/revocation result;
-- backend verification/RTDN evidence once the server integration is enabled.
+- device-verification result for the expected package and product ID.

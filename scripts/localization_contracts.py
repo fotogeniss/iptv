@@ -526,6 +526,37 @@ for ui_path in migrated_settings_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Settings UI: {ui_path}")
 
+billing_models = read("app/src/main/java/com/prelude/iptv/billing/BillingModels.kt")
+billing_repository = read("app/src/main/java/com/prelude/iptv/billing/PlayBillingRepository.kt")
+billing_verifier = read("app/src/main/java/com/prelude/iptv/billing/DevicePurchaseVerifier.kt")
+billing_dialog = read("app/src/main/java/com/prelude/iptv/billing/PremiumRequiredDialog.kt")
+billing_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/BillingLocalizationResources.kt"
+)
+if "val message: BillingMessage?" not in billing_models:
+    failures.append("Billing UI state still transports preformatted display messages")
+for producer_path, producer in (
+    ("PlayBillingRepository.kt", billing_repository),
+    ("DevicePurchaseVerifier.kt", billing_verifier),
+):
+    if greek_string_literals(producer):
+        failures.append(f"Billing producer still owns Greek display copy: {producer_path}")
+if 'const val INVALID_PURCHASE_EVIDENCE = "invalid_purchase_evidence"' not in billing_verifier:
+    failures.append("purchase verification rejection no longer uses a stable diagnostic identity")
+for mapping in (
+    "BillingMessage.localizedText",
+    "PremiumFeature.titleRes",
+    "PremiumFeature.explanationRes",
+):
+    if mapping not in billing_mapping:
+        failures.append(f"Billing/Premium resource mapping missing: {mapping}")
+if greek_string_literals(billing_dialog):
+    failures.append("hardcoded Greek display copy remains in Premium-required dialog")
+if "formattedPrice" not in billing_dialog or "formattedPrice" not in read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileSettingsSheets.kt"
+):
+    failures.append("Billing/Premium UI no longer preserves Play-formatted prices")
+
 profile_presentation = read(
     "app/src/main/java/com/prelude/iptv/ui/profile/ProfilePresentationPolicy.kt"
 )

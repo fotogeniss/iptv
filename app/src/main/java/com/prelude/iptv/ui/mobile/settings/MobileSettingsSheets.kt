@@ -39,6 +39,7 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 import com.prelude.iptv.ui.components.settings.PremiumSettingsRow
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
+import com.prelude.iptv.ui.localization.localizedText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,7 +126,7 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
         contentColor = IptvColors.TextPrimary
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
-            Text("PRELUDE+ Premium", fontSize = 24.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.billing_premium_title), fontSize = 24.sp, fontWeight = FontWeight.Black)
             Text(
                 when {
                     qaAccess -> stringResource(R.string.settings_premium_owner_qa)
@@ -154,7 +155,7 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
             Spacer(Modifier.height(20.dp))
             billing.message?.let { message ->
                 Text(
-                    message,
+                    message.localizedText(),
                     color = if (billing.entitlement.state == PurchaseState.PENDING) {
                         Color(0xFFFFC857)
                     } else {

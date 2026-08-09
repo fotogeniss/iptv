@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="billing_premium_title">PRELUDE+ Premium</string>
+    <string name="billing_qa_badge">QA</string>
+    <string name="billing_purchases_unavailable_device">Purchases are unavailable on this device.</string>
+    <string name="billing_offer_once">Prelude+ · %1$s one time</string>
+    <string name="billing_connecting_to_play">Connecting to Google Play…</string>
+    <string name="billing_waiting">Please wait…</string>
+    <string name="billing_get_prelude_plus">Get Prelude+</string>
+    <string name="billing_restore_purchase">Restore purchase</string>
+    <string name="billing_not_now">Not now</string>
+
+    <string name="billing_message_checking_purchases">Checking purchases on Google Play…</string>
+    <string name="billing_message_premium_already_active">PRELUDE+ Premium is already active.</string>
+    <string name="billing_message_connecting_to_play">Connecting to Google Play…</string>
+    <string name="billing_message_product_not_configured">The Premium product has not been configured on Google Play yet.</string>
+    <string name="billing_message_offer_unavailable_account">This product is unavailable for this account.</string>
+    <string name="billing_message_purchase_canceled">The purchase was canceled.</string>
+    <string name="billing_message_purchase_pending">The purchase is pending. Premium will activate when payment is complete.</string>
+    <string name="billing_message_purchase_restored">The purchase was restored.</string>
+    <string name="billing_message_no_active_purchase">No active purchase was found for this Google Play account.</string>
+    <string name="billing_message_premium_activated">PRELUDE+ Premium is now active.</string>
+    <string name="billing_message_acknowledgement_retry">The purchase is active, but Google Play acknowledgement will be retried.</string>
+    <string name="billing_error_unavailable">Google Play Billing is unavailable on this device or account.</string>
+    <string name="billing_error_item_unavailable">The Premium product is not yet available on Google Play.</string>
+    <string name="billing_error_item_already_owned">You already own this purchase. Select restore purchases.</string>
+    <string name="billing_error_network">Google Play could not be reached. Try again.</string>
+    <string name="billing_error_generic">There was a problem with Google Play Billing.</string>
+
+    <string name="premium_feature_edit_home_title">Make Home yours</string>
+    <string name="premium_feature_edit_home_explanation">Reorder Home sections, hide the ones you do not want, and choose which category each row shows.</string>
+    <string name="premium_feature_suggestions_title">Suggestions for you</string>
+    <string name="premium_feature_suggestions_explanation">Recommendations based on what you watch and save to favorites.</string>
+    <string name="premium_feature_profiles_title">Multiple profiles</string>
+    <string name="premium_feature_profiles_explanation">Separate favorites, history, and parental controls for each person at home.</string>
+    <string name="premium_feature_multiview_title">Two channels together</string>
+    <string name="premium_feature_multiview_explanation">Watch two channels on the same screen when two games are on at once.</string>
+    <string name="premium_feature_online_subtitles_title">Online subtitles</string>
+    <string name="premium_feature_online_subtitles_explanation">Automatically download or manually search for subtitles from OpenSubtitles.</string>
+    <string name="premium_feature_multiple_sources_title">More than one source</string>
+    <string name="premium_feature_multiple_sources_explanation">Keep more than one source and switch between them.</string>
+    <string name="premium_feature_backup_title">Backups</string>
+    <string name="premium_feature_backup_explanation">Export and restore your data.</string>
+</resources>

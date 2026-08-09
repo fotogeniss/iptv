@@ -42,9 +42,9 @@ of a **30-year senior software engineer**. In practice this means:
     compilation, emulator checks and physical-device QA.
 11. After a cohesive verified change, commit it with an intentional message. Do
     not combine unrelated work in the same commit.
-12. Account/cloud synchronization is intentionally deferred until the product has
-    revenue. Do not add Supabase, a VPS or another backend without a new explicit
-    decision from the owner.
+12. Account/cloud synchronization is not part of the current local-only product.
+    Do not add Supabase, a VPS or another backend without a new explicit decision
+    from the owner.
 13. The app is a media player and does not provide IPTV content. Preserve that
     wording in onboarding, legal and store material.
 14. Read the full current instructions and the files named at the top of this
@@ -248,7 +248,7 @@ prototype. Important delivered behavior includes:
   until the owner supplies `app/google-services.json` and completes the external
   setup.
 - Privacy policy, Terms draft and Play Data Safety worksheet live under `docs/`.
-- Account/cloud sync remains deliberately deferred.
+- Account/cloud sync is not part of the current local-only product.
 
 ## 5. Previously completed: Android TV live-transition parity
 
@@ -474,8 +474,8 @@ contracts: runtime/primary navigation, Home, Live TV, movie/series browsing,
 global Search, details/seasons/episodes, shared Player and subtitle/audio flows,
 source onboarding/management, full EPG and the active Settings shell plus
 playback/personalization/category surfaces, local profiles, parental controls and
-encrypted backup/restore. Provider-owned and user-owned data is intentionally
-not translated.
+encrypted backup/restore, Billing and Premium. Provider-owned and user-owned data
+is intentionally not translated.
 
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
@@ -499,30 +499,49 @@ contain Greek display copy and raw display messages.
   legacy import rule, switch/restart step, cleanup step, TV Home schedule or
   DPAD/Back/focus modifier changed.
 
-#### Immediate next slice: Billing and Premium
+#### Completed slice: Billing and Premium
+
+- `BillingUiState.message` now carries a sealed `BillingMessage` identity instead
+  of producer-formatted Greek sentences. Mobile, TV and the shared Premium gate
+  map those identities to paired Greek/QA-English resources at the UI boundary.
+- The shared gate's feature titles/explanations, purchase availability, one-time
+  offer label and actions are paired resources. The mobile Premium sheet, TV
+  account rows and mobile Premium badge use the same staged localization model.
+- Unknown nonblank Google Play `debugMessage` details remain provider-owned data;
+  blank details receive localized app-owned fallback copy. Play-provided
+  `formattedPrice` remains unmodified in every purchase surface.
+- BillingClient response branches, product ID/type, pending handling, restore
+  semantics, acknowledgement, device verification, entitlement reduction,
+  persisted keys/enum values, QA/public gates and UI focus/navigation/layout were
+  not changed. No HTML preview was required because this was copy-only.
+- The verifier's rejected reason retains its public `String` API but now carries
+  a stable non-display diagnostic identity instead of Greek UI copy. The retained
+  `SERVER` verification enum remains readable for persisted compatibility; the
+  application has no publisher backend and does not promise one.
+- Static localization/resource parity, compatibility (63/63), architecture
+  (60 passes plus the known `MainViewModel` size warning), deep validation
+  (67 passes plus the documented cleartext compatibility warning), risk and
+  documentation gates pass. Focused verifier/message-policy tests were added but
+  were not executed because the owner did not authorize Gradle. Android Studio
+  compilation and mobile/TV QA remain pending owner evidence.
+
+#### Immediate next slice: Legal and privacy
 
 Complete one commit and verification cycle per item; do not combine them:
 
-1. **Billing and Premium.** Audit `BillingModels.kt`, `PlayBillingRepository.kt`,
-   `PremiumState.kt`, `PremiumRequiredDialog.kt`, `MobileSettingsSheets.kt` and
-   the mobile/TV Settings consumers. `BillingUiState.message` is known remaining
-   presentation debt. Preserve BillingClient response handling, pending-purchase
-   rules, acknowledgement, device verification and Play-provided formatted
-   prices. A billing behavior change requires Terms/privacy/Play declaration
-   review; localization alone must not change entitlement behavior.
-2. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
+1. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
    `MobileLegalComponents.kt` and especially `MobileLegalContent.kt`, whose model
    currently owns long Greek display copy. Keep publisher placeholders, policy
    version/effective date, URLs, service names and mandatory TMDB attribution
    accurate. Localization does not authorize rewriting legal meaning. Any legal
    substance change requires owner/publisher review and the documentation duties
    in `docs/MAINTENANCE.md`.
-3. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
+2. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
    `MobileDiagnosticsComponents.kt`, `DiagnosticsManager.kt` and diagnostic
    result producers. Preserve opt-in consent, redaction, one local pending report,
    no Analytics/ad ID, and disconnected Firebase configuration. Raw diagnostic
    details are not normal UI copy and must remain redacted.
-4. **Export/share surfaces, system notifications and remaining service copy.**
+3. **Export/share surfaces, system notifications and remaining service copy.**
    Audit `Exporter.kt`, `ExportScreen.kt`, `CatalogDownloadService.kt`,
    `RelayService.kt` and reminder/download notification producers. Notification
    channel names, titles, progress/errors and accessibility copy follow the app
@@ -604,9 +623,8 @@ external-console work:
 7. Production Crashlytics connection only after the owner chooses to enable it and
    provides the Firebase configuration. Consent must remain opt-in.
 8. Broad performance/crash validation with genuinely large playlists.
-9. Server-side account sync and purchase verification are deferred business
-   decisions, not current blockers for the first revenue-oriented release unless
-   the chosen store/premium threat model changes.
+9. Account sync and publisher-server purchase verification are not part of the
+   current local-only product or current release plan.
 
 ## 9. Validation and documentation workflow
 
@@ -669,12 +687,13 @@ The owner can paste the following after attaching or referencing this file:
 > CHANGELOG/docs and commit each cohesive completed slice. Profiles, parental PIN
 > and encrypted backup/restore localization are complete at the code/resource and
 > static-contract level, but still require the owner's normal Android Studio build
-> and phone/TV QA. The immediate next task is Billing and Premium localization.
-> Audit `BillingModels.kt`, `PlayBillingRepository.kt`, `PremiumState.kt`,
-> `PremiumRequiredDialog.kt`, `MobileSettingsSheets.kt` and the mobile/TV Settings
-> consumers. Replace producer-owned display messages with typed identities while
-> preserving BillingClient responses, pending-purchase handling, acknowledgement,
-> verification, entitlement behavior and Play-formatted prices. Do not mix Legal,
-> Diagnostics, notifications or exported/share surfaces into that slice. Run the
-> static gates, inspect the diff, update the handoff, and commit only when the
-> slice is cohesive and clean.
+> and phone/TV QA. Billing and Premium localization is complete at the
+> code/resource and static-contract level, but still requires the owner's normal
+> Android Studio build and mobile/TV QA. The immediate next task is Legal and
+> privacy localization. Audit `MobileLegalPrivacyScreen.kt`,
+> `MobileLegalComponents.kt` and `MobileLegalContent.kt`; preserve policy meaning,
+> publisher placeholders, dates, URLs, service names and mandatory attribution.
+> Any legal substance change requires owner review. Do not mix Diagnostics,
+> notifications or exported/share surfaces into that slice. Run the static gates,
+> inspect the diff, update the handoff, and commit only when the slice is cohesive
+> and clean.

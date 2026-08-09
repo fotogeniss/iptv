@@ -82,7 +82,7 @@ class PlayBillingRepository internal constructor(
 
     fun restorePurchases() {
         restoreRequested = true
-        _state.update { it.copy(working = true, message = "Έλεγχος αγορών στο Google Play…") }
+        _state.update { it.copy(working = true, message = BillingMessage.CheckingPurchases) }
         if (billingClient.isReady) {
             restoreRequested = false
             refreshPurchases(userInitiated = true)
@@ -93,11 +93,11 @@ class PlayBillingRepository internal constructor(
 
     fun launchPremiumPurchase(activity: Activity) {
         if (_state.value.entitlement.tier == PremiumTier.PREMIUM) {
-            _state.update { it.copy(message = "Το PRELUDE+ Premium είναι ήδη ενεργό.") }
+            _state.update { it.copy(message = BillingMessage.PremiumAlreadyActive) }
             return
         }
         if (!billingClient.isReady) {
-            _state.update { it.copy(message = "Σύνδεση με το Google Play…") }
+            _state.update { it.copy(message = BillingMessage.ConnectingToPlay) }
             start()
             return
         }
@@ -107,7 +107,7 @@ class PlayBillingRepository internal constructor(
             if (details == null) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     _state.update {
-                        it.copy(working = false, message = "Το προϊόν Premium δεν έχει ρυθμιστεί ακόμη στο Google Play.")
+                        it.copy(working = false, message = BillingMessage.ProductNotConfigured)
                     }
                 } else {
                     publishBillingError(result, working = false)
@@ -118,7 +118,7 @@ class PlayBillingRepository internal constructor(
             val offer = preferredOneTimeOffer(details)
             if (offer == null) {
                 _state.update {
-                    it.copy(working = false, message = "Το προϊόν δεν είναι διαθέσιμο για αυτόν τον λογαριασμό.")
+                    it.copy(working = false, message = BillingMessage.OfferUnavailableForAccount)
                 }
                 return@queryPremiumProduct
             }
@@ -147,7 +147,7 @@ class PlayBillingRepository internal constructor(
         when (result.responseCode) {
             BillingClient.BillingResponseCode.OK -> processPurchases(purchases.orEmpty(), restored = false)
             BillingClient.BillingResponseCode.USER_CANCELED ->
-                _state.update { it.copy(working = false, message = "Η αγορά ακυρώθηκε.") }
+                _state.update { it.copy(working = false, message = BillingMessage.PurchaseCanceled) }
             else -> publishBillingError(result, working = false)
         }
     }
@@ -221,10 +221,10 @@ class PlayBillingRepository internal constructor(
                     entitlement = entitlement,
                     working = false,
                     message = when {
-                        pending -> "Η αγορά εκκρεμεί. Το Premium θα ενεργοποιηθεί μόλις ολοκληρωθεί η πληρωμή."
-                        restored && entitlement.tier == PremiumTier.PREMIUM -> "Η αγορά επαναφέρθηκε."
-                        restored -> "Δεν βρέθηκε ενεργή αγορά για αυτόν τον λογαριασμό Google Play."
-                        entitlement.tier == PremiumTier.PREMIUM -> "Το PRELUDE+ Premium ενεργοποιήθηκε."
+                        pending -> BillingMessage.PurchasePending
+                        restored && entitlement.tier == PremiumTier.PREMIUM -> BillingMessage.PurchaseRestored
+                        restored -> BillingMessage.NoActivePurchase
+                        entitlement.tier == PremiumTier.PREMIUM -> BillingMessage.PremiumActivated
                         else -> null
                     },
                 )
@@ -277,7 +277,7 @@ class PlayBillingRepository internal constructor(
         billingClient.acknowledgePurchase(params) { result ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) {
                 _state.update {
-                    it.copy(message = "Η αγορά ενεργοποιήθηκε, αλλά η επιβεβαίωση στο Google Play θα επαναληφθεί.")
+                    it.copy(message = BillingMessage.AcknowledgementRetry)
                 }
             }
         }
@@ -292,22 +292,8 @@ class PlayBillingRepository internal constructor(
                     BillingConnectionState.UNAVAILABLE
                 },
                 working = working,
-                message = billingMessage(result),
+                message = BillingMessagePolicy.fromResponse(result.responseCode, result.debugMessage),
             )
         }
-    }
-
-    private fun billingMessage(result: BillingResult): String = when (result.responseCode) {
-        BillingClient.BillingResponseCode.BILLING_UNAVAILABLE ->
-            "Το Google Play Billing δεν είναι διαθέσιμο σε αυτή τη συσκευή ή στον λογαριασμό."
-        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE ->
-            "Το προϊόν Premium δεν είναι ακόμη διαθέσιμο στο Google Play."
-        BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED ->
-            "Η αγορά υπάρχει ήδη. Πάτησε επαναφορά αγορών."
-        BillingClient.BillingResponseCode.NETWORK_ERROR,
-        BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE ->
-            "Δεν ήταν δυνατή η επικοινωνία με το Google Play. Δοκίμασε ξανά."
-        else -> result.debugMessage.takeIf(String::isNotBlank)
-            ?: "Παρουσιάστηκε πρόβλημα με το Google Play Billing."
     }
 }

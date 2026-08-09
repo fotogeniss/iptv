@@ -149,10 +149,16 @@ cohesive vertical slices:
 12. Profiles, parental controls and encrypted backup/restore. **Implemented for
     mobile and TV, with local-only product copy, typed profile-name identities
     and typed backup failures. User profile names, PIN material, persisted keys
-    and the portable backup format remain unchanged.** Billing/Premium,
-    Legal/Privacy, Diagnostics, exported/share surfaces and system notifications
-    follow as separate cohesive slices. Cloud/account sync remains deferred.
-13. Final hardcoded-string audit, translation parity gate and public picker
+    and the portable backup format remain unchanged.**
+13. Billing and Premium. **Implemented across the shared feature gate, mobile
+    purchase sheet and Android TV Settings consumer. Billing producers expose
+    typed message identities, while Play-formatted prices and provider debug
+    details remain untranslated data. Purchase, restore, pending,
+    acknowledgement, device verification and entitlement behavior remain
+    unchanged.** Legal/Privacy, Diagnostics, exported/share surfaces and system
+    notifications follow as separate cohesive slices. Account/cloud sync is not
+    part of the current local-only product.
+14. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No

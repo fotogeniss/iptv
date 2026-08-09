@@ -189,6 +189,7 @@
     <string name="settings_premium_purchase_active">Η αγορά είναι ενεργή</string>
     <string name="settings_premium_single_purchase">Μία αγορά μέσω Google Play</string>
     <string name="settings_premium_active_badge">ΕΝΕΡΓΟ</string>
+    <string name="settings_premium_badge">PREMIUM</string>
     <string name="settings_premium_active_device">Ενεργό σε αυτή τη συσκευή</string>
     <string name="settings_premium_all_features">Μία αγορά. Όλες οι προηγμένες δυνατότητες.</string>
     <string name="settings_premium_benefit_sources">Πολλαπλές πηγές περιεχομένου</string>

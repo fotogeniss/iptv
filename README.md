@@ -12,10 +12,10 @@ Users connect sources they are authorized to use.
 
 The application is an advanced beta/release candidate. Core playback, catalog,
 EPG and source-management flows are implemented. Google Play Billing is wired for
-the non-consumable Premium product, while production signing, server-side purchase
-verification, final store compliance material and broad physical-device
-validation remain release gates. Account/cloud sync is intentionally deferred
-until the product has revenue and a sustainable backend budget.
+the non-consumable Premium product with device-side purchase verification, while
+production signing, final store compliance material and broad physical-device
+validation remain release gates. The product has no publisher backend or
+account/cloud synchronization; profiles and playback state remain local.
 
 Without a verified Play purchase the premium policy defaults to `FREE`. Purchases
 reported as pending never unlock Premium. See

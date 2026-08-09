@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized Billing and Premium purchase, restore, pending, entitlement and
+  feature-gate copy across mobile and Android TV. Billing producers now expose
+  typed message identities while Play-formatted prices and provider debug details
+  remain unchanged data; purchase handling, acknowledgement, device verification
+  and persisted entitlement values are unchanged.
 - Localized local profiles, parental PIN and encrypted backup flows across
   mobile and Android TV. Removed inactive account/cloud-sync promises, kept
   user profile names and persisted storage unchanged, and mapped backup

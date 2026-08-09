@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="billing_premium_title">PRELUDE+ Premium</string>
+    <string name="billing_qa_badge">QA</string>
+    <string name="billing_purchases_unavailable_device">Οι αγορές δεν είναι διαθέσιμες σε αυτή τη συσκευή.</string>
+    <string name="billing_offer_once">Prelude+ · %1$s μία φορά</string>
+    <string name="billing_connecting_to_play">Γίνεται σύνδεση με το Google Play…</string>
+    <string name="billing_waiting">Αναμονή…</string>
+    <string name="billing_get_prelude_plus">Απόκτησε το Prelude+</string>
+    <string name="billing_restore_purchase">Επαναφορά αγοράς</string>
+    <string name="billing_not_now">Όχι τώρα</string>
+
+    <string name="billing_message_checking_purchases">Έλεγχος αγορών στο Google Play…</string>
+    <string name="billing_message_premium_already_active">Το PRELUDE+ Premium είναι ήδη ενεργό.</string>
+    <string name="billing_message_connecting_to_play">Σύνδεση με το Google Play…</string>
+    <string name="billing_message_product_not_configured">Το προϊόν Premium δεν έχει ρυθμιστεί ακόμη στο Google Play.</string>
+    <string name="billing_message_offer_unavailable_account">Το προϊόν δεν είναι διαθέσιμο για αυτόν τον λογαριασμό.</string>
+    <string name="billing_message_purchase_canceled">Η αγορά ακυρώθηκε.</string>
+    <string name="billing_message_purchase_pending">Η αγορά εκκρεμεί. Το Premium θα ενεργοποιηθεί μόλις ολοκληρωθεί η πληρωμή.</string>
+    <string name="billing_message_purchase_restored">Η αγορά επαναφέρθηκε.</string>
+    <string name="billing_message_no_active_purchase">Δεν βρέθηκε ενεργή αγορά για αυτόν τον λογαριασμό Google Play.</string>
+    <string name="billing_message_premium_activated">Το PRELUDE+ Premium ενεργοποιήθηκε.</string>
+    <string name="billing_message_acknowledgement_retry">Η αγορά ενεργοποιήθηκε, αλλά η επιβεβαίωση στο Google Play θα επαναληφθεί.</string>
+    <string name="billing_error_unavailable">Το Google Play Billing δεν είναι διαθέσιμο σε αυτή τη συσκευή ή στον λογαριασμό.</string>
+    <string name="billing_error_item_unavailable">Το προϊόν Premium δεν είναι ακόμη διαθέσιμο στο Google Play.</string>
+    <string name="billing_error_item_already_owned">Η αγορά υπάρχει ήδη. Πάτησε επαναφορά αγορών.</string>
+    <string name="billing_error_network">Δεν ήταν δυνατή η επικοινωνία με το Google Play. Δοκίμασε ξανά.</string>
+    <string name="billing_error_generic">Παρουσιάστηκε πρόβλημα με το Google Play Billing.</string>
+
+    <string name="premium_feature_edit_home_title">Φτιάξε την αρχική σου</string>
+    <string name="premium_feature_edit_home_explanation">Άλλαξε τη σειρά των ενοτήτων, κρύψε όσες δεν θέλεις και διάλεξε ποια κατηγορία δείχνει κάθε σειρά.</string>
+    <string name="premium_feature_suggestions_title">Προτάσεις για σένα</string>
+    <string name="premium_feature_suggestions_explanation">Προτάσεις με βάση όσα βλέπεις και όσα έχεις στα αγαπημένα.</string>
+    <string name="premium_feature_profiles_title">Πολλαπλά προφίλ</string>
+    <string name="premium_feature_profiles_explanation">Ξεχωριστά αγαπημένα, ιστορικό και γονικός έλεγχος για κάθε άτομο του σπιτιού.</string>
+    <string name="premium_feature_multiview_title">Δύο κανάλια μαζί</string>
+    <string name="premium_feature_multiview_explanation">Δύο κανάλια στην ίδια οθόνη — για όταν παίζουν δύο αγώνες μαζί.</string>
+    <string name="premium_feature_online_subtitles_title">Υπότιτλοι από το διαδίκτυο</string>
+    <string name="premium_feature_online_subtitles_explanation">Αυτόματη λήψη και χειροκίνητη αναζήτηση υποτίτλων από το OpenSubtitles.</string>
+    <string name="premium_feature_multiple_sources_title">Περισσότερες από μία λίστες</string>
+    <string name="premium_feature_multiple_sources_explanation">Κράτα περισσότερες από μία λίστες και άλλαξε ανάμεσά τους.</string>
+    <string name="premium_feature_backup_title">Αντίγραφα ασφαλείας</string>
+    <string name="premium_feature_backup_explanation">Εξαγωγή και επαναφορά των δεδομένων σου.</string>
+</resources>

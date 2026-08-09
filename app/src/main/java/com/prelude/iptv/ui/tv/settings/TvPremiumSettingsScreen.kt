@@ -84,6 +84,7 @@ import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedText
 import com.prelude.iptv.ui.localization.localizedUppercase
 
 @Composable
@@ -388,21 +389,22 @@ private fun TvAccountPage(profile: String, onDialog: (String) -> Unit, onShare: 
     val qaAccess = hasQaPremiumOverride()
     val premiumActive = effectivePremiumTier(billing.entitlement.tier) == PremiumTier.PREMIUM
     val activity = context.billingActivity()
+    val billingMessage = billing.message?.localizedText()
 
     TvSettingsRows(
         stringResource(R.string.settings_group_account_security),
         stringResource(R.string.settings_account_security_subtitle),
         listOf(
             TvRowData(
-                "PRELUDE+ Premium",
+                stringResource(R.string.billing_premium_title),
                 when {
                     qaAccess -> stringResource(R.string.settings_premium_owner_qa)
-                    billing.message != null -> billing.message
+                    billingMessage != null -> billingMessage
                     premiumActive -> stringResource(R.string.settings_premium_purchase_active)
                     else -> stringResource(R.string.settings_premium_single_purchase)
                 }.orEmpty(),
                 Icons.Default.Star,
-                if (qaAccess) "QA" else if (premiumActive) stringResource(R.string.settings_premium_active_badge) else billing.offer?.formattedPrice.orEmpty(),
+                if (qaAccess) stringResource(R.string.billing_qa_badge) else if (premiumActive) stringResource(R.string.settings_premium_active_badge) else billing.offer?.formattedPrice.orEmpty(),
             ) {
                 if (!qaAccess) activity?.let(repository::launchPremiumPurchase) ?: repository.start()
             },

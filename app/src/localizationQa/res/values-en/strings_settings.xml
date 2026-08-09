@@ -189,6 +189,7 @@
     <string name="settings_premium_purchase_active">The purchase is active</string>
     <string name="settings_premium_single_purchase">One purchase through Google Play</string>
     <string name="settings_premium_active_badge">ACTIVE</string>
+    <string name="settings_premium_badge">PREMIUM</string>
     <string name="settings_premium_active_device">Active on this device</string>
     <string name="settings_premium_all_features">One purchase. Every advanced feature.</string>
     <string name="settings_premium_benefit_sources">Multiple content sources</string>

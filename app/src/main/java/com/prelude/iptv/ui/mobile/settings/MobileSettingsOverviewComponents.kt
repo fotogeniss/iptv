@@ -157,7 +157,12 @@ internal fun MobileSettingsPremiumCard(onClick: () -> Unit) {
                     .background(IptvColors.Primary.copy(alpha = 0.17f))
                     .padding(horizontal = 7.dp, vertical = 4.dp)
             ) {
-                Text("PREMIUM", color = Color(0xFFFF666D), fontSize = 8.sp, fontWeight = FontWeight.Black)
+                Text(
+                    stringResource(R.string.settings_premium_badge),
+                    color = Color(0xFFFF666D),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Black,
+                )
             }
         }
         Spacer(Modifier.height(15.dp))

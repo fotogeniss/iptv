@@ -13,10 +13,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.explanationRes
+import com.prelude.iptv.ui.localization.localizedText
+import com.prelude.iptv.ui.localization.titleRes
 
 /**
  * Τι λέει η εφαρμογή όταν ο χρήστης ζητά κάτι κλειδωμένο.
@@ -50,38 +55,41 @@ fun PremiumRequiredDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                featureTitle(feature),
+                stringResource(feature.titleRes()),
                 fontWeight = FontWeight.Black,
                 fontSize = 19.sp
             )
         },
         text = {
             Column(Modifier.fillMaxWidth()) {
-                Text(featureExplanation(feature), fontSize = 14.sp, lineHeight = 21.sp)
+                Text(stringResource(feature.explanationRes()), fontSize = 14.sp, lineHeight = 21.sp)
                 Spacer(Modifier.height(14.dp))
                 when {
                     unavailable -> Text(
-                        "Οι αγορές δεν είναι διαθέσιμες σε αυτή τη συσκευή.",
+                        stringResource(R.string.billing_purchases_unavailable_device),
                         color = IptvColors.TextTertiary,
                         fontSize = 13.sp
                     )
                     // Η τιμή έρχεται από το Play, όχι από εμάς: αλλιώς θα δείχναμε
                     // λάθος νόμισμα σε κάθε χώρα εκτός της δικής μας.
                     state.offer != null -> Text(
-                        "Prelude+ · ${state.offer?.formattedPrice} μία φορά",
+                        stringResource(
+                            R.string.billing_offer_once,
+                            state.offer?.formattedPrice.orEmpty(),
+                        ),
                         color = IptvColors.TextSecondary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                     else -> Text(
-                        "Γίνεται σύνδεση με το Google Play…",
+                        stringResource(R.string.billing_connecting_to_play),
                         color = IptvColors.TextTertiary,
                         fontSize = 13.sp
                     )
                 }
                 state.message?.let { message ->
                     Spacer(Modifier.height(10.dp))
-                    Text(message, color = IptvColors.Error, fontSize = 13.sp)
+                    Text(message.localizedText(), color = IptvColors.Error, fontSize = 13.sp)
                 }
             }
         },
@@ -95,7 +103,9 @@ fun PremiumRequiredDialog(
                 }
             ) {
                 Text(
-                    if (state.working) "Αναμονή…" else "Απόκτησε το Prelude+",
+                    stringResource(
+                        if (state.working) R.string.billing_waiting else R.string.billing_get_prelude_plus
+                    ),
                     color = IptvColors.Primary,
                     fontWeight = FontWeight.Black
                 )
@@ -110,46 +120,12 @@ fun PremiumRequiredDialog(
                     enabled = !state.working,
                     onClick = { repository.restorePurchases() }
                 ) {
-                    Text("Επαναφορά αγοράς", color = IptvColors.TextSecondary)
+                    Text(stringResource(R.string.billing_restore_purchase), color = IptvColors.TextSecondary)
                 }
                 TextButton(onClick = onDismiss) {
-                    Text("Όχι τώρα", color = IptvColors.TextTertiary)
+                    Text(stringResource(R.string.billing_not_now), color = IptvColors.TextTertiary)
                 }
             }
         }
     )
-}
-
-/**
- * Τα κείμενα ζουν εδώ και όχι στα σημεία κλήσης.
- *
- * Είναι η υπόσχεση που δίνουμε για κάθε δυνατότητα. Σκόρπια, θα έλεγαν
- * διαφορετικά πράγματα για το ίδιο πράγμα ανάλογα με το ποιος τα έγραψε.
- */
-private fun featureTitle(feature: PremiumFeature): String = when (feature) {
-    PremiumFeature.EDIT_HOME -> "Φτιάξε την αρχική σου"
-    PremiumFeature.SUGGESTIONS -> "Προτάσεις για σένα"
-    PremiumFeature.PROFILES -> "Πολλαπλά προφίλ"
-    PremiumFeature.MULTIVIEW -> "Δύο κανάλια μαζί"
-    PremiumFeature.SUBTITLES_ONLINE -> "Υπότιτλοι από το διαδίκτυο"
-    PremiumFeature.MULTIPLE_SOURCES -> "Περισσότερες από μία λίστες"
-    PremiumFeature.BACKUP -> "Αντίγραφα ασφαλείας"
-}
-
-private fun featureExplanation(feature: PremiumFeature): String = when (feature) {
-    PremiumFeature.EDIT_HOME ->
-        "Άλλαξε τη σειρά των ενοτήτων, κρύψε όσες δεν θέλεις και διάλεξε ποια " +
-            "κατηγορία δείχνει κάθε σειρά."
-    PremiumFeature.SUGGESTIONS ->
-        "Προτάσεις με βάση όσα βλέπεις και όσα έχεις στα αγαπημένα."
-    PremiumFeature.PROFILES ->
-        "Ξεχωριστά αγαπημένα, ιστορικό και γονικός έλεγχος για κάθε άτομο του σπιτιού."
-    PremiumFeature.MULTIVIEW ->
-        "Δύο κανάλια στην ίδια οθόνη — για όταν παίζουν δύο αγώνες μαζί."
-    PremiumFeature.SUBTITLES_ONLINE ->
-        "Αυτόματη λήψη και χειροκίνητη αναζήτηση υποτίτλων από το OpenSubtitles."
-    PremiumFeature.MULTIPLE_SOURCES ->
-        "Κράτα περισσότερες από μία λίστες και άλλαξε ανάμεσά τους."
-    PremiumFeature.BACKUP ->
-        "Εξαγωγή και επαναφορά των δεδομένων σου."
 }
