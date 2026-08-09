@@ -4,8 +4,8 @@ Last verified workspace date: **2026-08-09**
 Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
-Baseline app commit when this handoff was created:
-`1a7b4f4 feat: add premium live channel transition`
+Latest completed implementation commit before this documentation handoff:
+`e892e2a feat: localize settings experience`
 
 This document is the operational source of truth for continuing the current
 Codex collaboration in a fresh chat. Read it together with `README.md`,
@@ -47,22 +47,44 @@ of a **30-year senior software engineer**. In practice this means:
     decision from the owner.
 13. The app is a media player and does not provide IPTV content. Preserve that
     wording in onboarding, legal and store material.
+14. Read the full current instructions and the files named at the top of this
+    handoff before acting. Do not infer that a feature works merely because an
+    old changelog entry says it was implemented; inspect the active route and
+    verify the actual code path.
+15. Diagnose ownership before editing. Do not apply blind project-wide string
+    replacements, do not move responsibilities only to reduce line count, and
+    do not duplicate an existing policy, coordinator, player or navigation state.
+16. Localization must preserve user/provider data and storage contracts. Never
+    translate source/profile names, credentials, URLs, channel/programme/catalog
+    titles, filenames, raw provider diagnostics or persisted protocol keys.
+    App-owned display copy belongs in feature resources; Android-free layers
+    expose stable values or typed states rather than localized sentences.
+17. Copy/resource-only localization does not require an HTML preview when layout
+    and interaction remain identical. Any visual hierarchy, spacing, motion,
+    focus or navigation change still requires the preview-and-approval workflow.
 
 ## 2. Current confirmed state
 
-- The Git worktree was clean when this handoff was prepared.
-- The owner supplied an Android Studio screenshot confirming the latest code
-  completed a **successful QA build in approximately 34 seconds** after commit
-  `1a7b4f4`.
-- Codex did not run that build; it was performed and confirmed by the owner.
-- The latest static validation cycle reported:
-  - architecture audit: 56 passes, one known size warning for `MainViewModel`, no
+- The Git worktree was clean immediately after commit `e892e2a` and before this
+  documentation-only handoff update began.
+- The owner previously supplied an Android Studio screenshot confirming a
+  **successful QA build in approximately 34 seconds** after commit `1a7b4f4`, and
+  later reported another localization checkpoint built without errors. Those are
+  owner-provided historical build results; they do **not** prove that the current
+  `e892e2a` Settings slice compiles or passes device QA.
+- Codex did not run Gradle for the current localization work because the owner did
+  not authorize it. Android Studio compilation and phone/TV checks after
+  `e892e2a` remain outstanding.
+- The latest static validation cycle at `e892e2a` reported:
+  - localization contracts: pass, including 208 paired Settings keys with
+    matching structure and placeholders;
+  - architecture audit: 60 passes, one known size warning for `MainViewModel`, no
     failures;
-  - compatibility contracts: 47/47;
+  - compatibility contracts: 58/58;
   - deep validation: 67 passes, one documented cleartext-HTTP compatibility
     warning, no failures;
   - production-risk inventory: zero critical findings;
-  - `git diff --check`: clean.
+  - documentation contract and `git diff --check`: clean.
 - Cleartext HTTP remains deliberately supported because many user-provided IPTV
   servers do not support HTTPS. This is documented, not an accidental warning.
 
@@ -81,7 +103,20 @@ The current project-local history begins with the following controlled sequence:
 | `1a7b4f4` | Added the approved premium mobile live-channel transition and slimmed the mobile player scrubber without shrinking its touch target. |
 | `2a050af` | Attempted to move the mobile transition trigger from swipe-end to channel publication; later device feedback proved that publication was still too early. |
 | `ef62ed4` | Corrected mobile transition ownership and timing around captured outgoing frames, actual first-rendered-frame commitment and overlay-scoped engine lifetime. |
-| Current TV parity change | Added the owner-approved restrained TV transition, shared first-frame coordination, fullscreen `SurfaceView` capture and a slim DPAD-safe TV scrubber. |
+| `eea9fbd` | Added the owner-approved restrained TV transition, shared first-frame coordination, fullscreen `SurfaceView` capture and a slim DPAD-safe TV scrubber. |
+| `a37b9fd` | Rebuilt mobile/TV source onboarding around truthful choices, validation and provider verification before saving. |
+| `47c22df`, `e3138e1` | Fixed the reported QA compilation failures: internal Compose `weight` access and duplicate TV onboarding helper names. |
+| `707bd9c`, `f445063` | Prototyped and implemented unified Home/Live/movies/series/Search navigation. |
+| `6f21a44`, `2b23930` | Approved and implemented the staged per-app localization foundation and QA-only language picker. |
+| `0a9ab48` | Localized Home on mobile and TV. |
+| `3e78af6` | Localized Live TV on mobile and TV. |
+| `7b44577` | Localized movie and series browsing. |
+| `ad2ea4f` | Localized global Search. |
+| `a61f853` | Localized movie/series details, seasons and episodes. |
+| `33bca82` | Localized shared player controls, audio/subtitle surfaces and playback errors. |
+| `1d86198` | Localized source onboarding, validation, editing and management. |
+| `c1d96ff` | Localized the complete EPG experience and EPG settings. |
+| `e892e2a` | Localized the active Settings shell, playback/personalization preferences, category editor and directly opened sheets. |
 
 ### Latest mobile live-channel change
 
@@ -200,7 +235,7 @@ prototype. Important delivered behavior includes:
 - Privacy policy, Terms draft and Play Data Safety worksheet live under `docs/`.
 - Account/cloud sync remains deliberately deferred.
 
-## 5. Completed current task: Android TV live-transition parity
+## 5. Previously completed: Android TV live-transition parity
 
 The owner approved the functional preview at
 `prototypes/player/LIVE_CHANNEL_WATER_TRANSITION_TV_PREVIEW.html`, and that design
@@ -242,9 +277,9 @@ has now been implemented for Android TV.
   - documentation contract and `git diff --check`: clean.
 - Codex did not run Gradle, compile or package because the owner did not authorize
   a build in this turn.
-- The next action is the owner's normal Android Studio build followed by physical
-  Android TV checks for CH+/CH-, rapid stepping, a failed provider URL, VLC
-  fallback, Back, DPAD focus and VOD seeking.
+- Physical Android TV evidence is still required for CH+/CH-, rapid stepping, a
+  failed provider URL, VLC fallback, Back, DPAD focus and VOD seeking. Do not
+  confuse the later localization work with proof of those device behaviors.
 
 ## 6. Current approved navigation implementations
 
@@ -306,7 +341,7 @@ has now been implemented for Android TV.
   zero critical production-risk findings and a clean diff check. Gradle was not
   run; the owner still needs to compile and perform phone/TV device QA.
 
-### Localization implementation in progress
+### Staged localization: completed scope and exact remaining work
 
 - The owner approved the functional mobile/TV language flow at
   `prototypes/localization/LOCALIZATION_SETTINGS_FLOW_PREVIEW.html` with System,
@@ -414,6 +449,121 @@ has now been implemented for Android TV.
   flag or enable generated locale config until every release surface has matching
   English/Greek resources and the final audit passes.
 
+#### Localization work that is genuinely complete
+
+The following vertical slices have paired Greek-baseline/QA-English resources,
+typed or stable presentation boundaries where needed, and static localization
+contracts: runtime/primary navigation, Home, Live TV, movie/series browsing,
+global Search, details/seasons/episodes, shared Player and subtitle/audio flows,
+source onboarding/management, full EPG and the active Settings shell plus
+playback/personalization/category surfaces. Provider-owned and user-owned data is
+intentionally not translated.
+
+“Complete” here means the code/resource migration and static gates are complete.
+It does not mean that the current head has compiled or passed device QA. It also
+does not mean public English can be enabled: the remaining slices below still
+contain Greek display copy and raw display messages.
+
+#### Immediate next slice: profiles and account/security dialogs
+
+Work on this slice alone. Inspect these active boundaries before editing:
+
+- `app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileAccountSyncScreen.kt`
+- `app/src/main/java/com/prelude/iptv/ui/route/SettingsAccountDialogs.kt`
+- `app/src/main/java/com/prelude/iptv/ui/coordinator/ProfileSettingsCoordinator.kt`
+- `app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt`
+- profile/PIN defaults and persistence in `PlaylistStore` and their focused tests
+
+Important product truth: cloud/account synchronization is deferred and there is
+no publisher backend. `MobileAccountSyncScreen` currently contains aspirational
+cross-device/synchronization claims. Do not merely translate those claims and do
+not add a backend. First trace whether the screen is active, then keep the flow
+truthful to the implemented local profiles, source-scoped favorites/history and
+encrypted file backup. If correcting that promise changes the approved product
+flow or visual hierarchy, stop for owner approval and provide an HTML preview.
+
+Preserve these contracts:
+
+- profile names entered by the user are raw user data and must not be translated;
+- existing persisted profile names/IDs and the primary profile cannot be silently
+  renamed or migrated;
+- PIN material never enters resources, logs, analytics or display diagnostics;
+- protected-profile entry and parental unlock TTL behavior stay unchanged;
+- switching profile keeps the existing restart/order semantics and TV Home sync;
+- deletion keeps profile-scoped favorites/history cleanup and never affects a
+  different profile;
+- TV dialogs retain deterministic initial focus, DPAD traversal and exact Back
+  restoration.
+
+App-created fallback/default names such as the primary profile and unnamed
+profile fallback are localization debt, but persisted user-visible values make
+them migration-sensitive. Model a stable identity or inject display copy at the
+UI boundary; do not rewrite stored names globally. Replace app-owned dialog,
+toast, accessibility and error sentences with paired resources. Prefer typed
+failure/state identities when a coordinator or producer currently owns display
+text.
+
+#### Remaining localization order after profiles
+
+Complete one commit and verification cycle per item; do not combine them:
+
+1. **Encrypted backup/import/export UI and failures.** Finish the backup branch
+   in `SettingsAccountDialogs.kt` and `SettingsRoute.kt`, then audit `Backup.kt`,
+   `PortableBackupCrypto.kt`, `Exporter.kt` and `ExportScreen.kt`. Preserve the
+   AES/password format, SAF flow, filenames, JSON schema and existing backup
+   compatibility. Provider/user data stays raw. Do not expose raw exception
+   messages as the primary UI error; map known failures to typed app copy while
+   keeping diagnostic causes internal.
+2. **Billing and Premium.** Audit `BillingModels.kt`, `PlayBillingRepository.kt`,
+   `PremiumState.kt`, `PremiumRequiredDialog.kt`, `MobileSettingsSheets.kt` and
+   the mobile/TV Settings consumers. `BillingUiState.message` is known remaining
+   presentation debt. Preserve BillingClient response handling, pending-purchase
+   rules, acknowledgement, device verification and Play-provided formatted
+   prices. A billing behavior change requires Terms/privacy/Play declaration
+   review; localization alone must not change entitlement behavior.
+3. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
+   `MobileLegalComponents.kt` and especially `MobileLegalContent.kt`, whose model
+   currently owns long Greek display copy. Keep publisher placeholders, policy
+   version/effective date, URLs, service names and mandatory TMDB attribution
+   accurate. Localization does not authorize rewriting legal meaning. Any legal
+   substance change requires owner/publisher review and the documentation duties
+   in `docs/MAINTENANCE.md`.
+4. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
+   `MobileDiagnosticsComponents.kt`, `DiagnosticsManager.kt` and diagnostic
+   result producers. Preserve opt-in consent, redaction, one local pending report,
+   no Analytics/ad ID, and disconnected Firebase configuration. Raw diagnostic
+   details are not normal UI copy and must remain redacted.
+5. **System notifications and remaining service copy.** Audit at least
+   `CatalogDownloadService.kt`, `RelayService.kt`, exported/share surfaces and
+   reminder/download notification producers. Notification channel names, titles,
+   progress/errors and accessibility copy follow the app locale; protocol data,
+   provider titles and user content remain raw.
+6. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
+   not only files whose names contain “settings”. Classify each remaining literal
+   as app copy, invariant brand/protocol text, provider/user data, diagnostic data
+   or developer comment. Migrate only app copy, add contracts for every completed
+   surface and verify Greek/English keys, placeholders and plurals.
+7. **Parity inversion and public picker activation.** Only after the full audit,
+   compilation and phone/TV QA: move English to unqualified `main/res/values`,
+   Greek to `main/res/values-el`, change `unqualifiedResLocale` from `el` to `en`,
+   enable the generated locale config and flip
+   `LOCALIZATION_PARITY_COMPLETE=true`. Do not perform this as a mechanical file
+   move without a dedicated plan, review and rollback-safe commit.
+
+#### Required verification for every remaining localization slice
+
+- Add paired feature-owned Greek and QA-English resources; avoid turning
+  `strings_settings.xml` or legacy `strings.xml` into a universal giant file.
+- Check key/type/plural/placeholder parity and unresolved `R.string` references.
+- Extend `scripts/localization_contracts.py` to reject hardcoded app copy and
+  presentation text leaking back into Android-free/state producers.
+- Add focused unit tests for stable persisted identities and typed fallbacks.
+- Run all allowed static gates and `git diff --check`, inspect the exact diff,
+  update this handoff plus `CHANGELOG.md` when behavior changed, then commit the
+  single cohesive slice.
+- Never report compile, emulator or device success unless the owner supplies that
+  evidence or explicitly authorizes the corresponding run.
+
 ## 7. Architecture work to continue afterward
 
 Continue splitting legacy files only through small, behavior-preserving
@@ -421,13 +571,13 @@ extractions. Do not chase line count by moving arbitrary blocks.
 
 Current largest Kotlin files at handoff time include:
 
-- `MainViewModel.kt`: about 1,841 lines.
-- `BrowseRoute.kt`: about 1,298 lines.
-- `PlaybackEngine.kt`: about 974 lines.
-- `PlayerHost.kt`: about 891 lines.
-- `MobilePlaybackOverlay.kt`: about 864 lines.
+- `MainViewModel.kt`: about 1,842 lines.
+- `BrowseRoute.kt`: about 1,338 lines.
+- `PlaybackEngine.kt`: about 978 lines.
+- `PlayerHost.kt`: about 906 lines.
+- `MobilePlaybackOverlay.kt`: about 904 lines.
 - `PlaylistStore.kt`: about 772 lines.
-- `TvLiveBrowseScreen.kt`: about 738 lines.
+- `TvLiveBrowseScreen.kt`: about 743 lines.
 
 The next sensible non-visual ViewModel seam is playlist mutation/management:
 `addPlaylist`, catalog-count persistence, playlist update and playlist deletion.
@@ -481,6 +631,7 @@ After a code change, when no Gradle build was authorized, run the applicable
 static gates:
 
 ```powershell
+python scripts/localization_contracts.py
 python scripts/architecture_audit.py
 python scripts/compatibility_contracts.py
 python scripts/deep_validation_audit.py
@@ -513,17 +664,30 @@ reports under `validation/`.
 The owner can paste the following after attaching or referencing this file:
 
 > Read `docs/NEXT_CHAT_HANDOFF.md`, `README.md`, `CHANGELOG.md`,
-> `docs/MAINTENANCE.md` and `docs/ARCHITECTURE_REFACTOR_PLAN.md` before acting.
+> `docs/MAINTENANCE.md`, `docs/LOCALIZATION_ARCHITECTURE.md` and
+> `docs/ARCHITECTURE_REFACTOR_PLAN.md` completely before acting. Inspect
+> `git status --short` and recent commits first; do not trust an old completion
+> claim without tracing the active code path.
 > Continue as a 30-year senior engineer: one careful responsibility at a time,
 > small patches only, never rewrite a whole file, avoid giant files, preserve
-> public behavior and add focused tests. Every visual change requires a functional
-> HTML preview and my approval before Android implementation. Do not run Gradle or
-> build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate implementation task is Profiles and
+> public/storage behavior and add focused tests/contracts. Extend focused files
+> and feature resources instead of collecting everything in one giant file.
+> Every visual/layout/navigation/focus change requires a functional HTML preview
+> and my approval before Android implementation; a copy-only resource migration
+> does not. Do not run Gradle, compile or build unless I explicitly ask. Never
+> claim runtime success from static checks. Record behavior changes in
+> CHANGELOG/docs and commit each cohesive completed slice. The immediate task is
+> Profiles and
 > account/security-dialog localization across phone and TV. Audit
 > `MobileAccountSyncScreen`, `SettingsAccountDialogs` and the profile/PIN/backup
-> producers first. Keep profile names, PIN material, persisted keys and exported
-> user data untouched; move app-owned labels, states and errors to paired
-> Greek/QA-English resources through typed identities. Preserve encryption,
-> source-scoped favorites/history, TV DPAD focus and exact Back restoration. Do
-> not mix Billing, Legal or Diagnostics into this slice; handle those afterward.
+> producers first. The app has no account/cloud-sync backend: do not translate or
+> preserve false cross-device promises and do not add Supabase/VPS/backend. Trace
+> the active flow and keep it truthful to local profiles and encrypted file
+> backup; stop for approval if that requires a product-flow or visual change.
+> Keep user profile names, PIN material, persisted IDs/keys and exported user data
+> untouched; move app-owned labels, states and errors to paired Greek/QA-English
+> resources through typed identities. Preserve encryption, profile/source-scoped
+> favorites/history, restart ordering, TV Home sync, TV DPAD focus and exact Back
+> restoration. Do not mix Billing, Legal or Diagnostics into this slice. Run the
+> static gates, inspect the diff, update the handoff, and commit only when the
+> slice is cohesive and clean.

@@ -2,8 +2,10 @@
 
 Status: owner-approved design; runtime foundation, navigation/settings, Home,
 Live TV, movie/series browsing, global Search, details/seasons/episodes, Player
-and source onboarding/management are implemented behind the QA/parity rollout
-gate.
+source onboarding/management, full EPG and the active Settings shell plus
+playback/personalization surfaces are implemented behind the QA/parity rollout
+gate. Profiles/account dialogs, backup/export, Billing, Legal, Diagnostics and
+system notifications remain before final parity.
 
 ## Product contract
 
@@ -143,7 +145,10 @@ cohesive vertical slices:
     playback/AFR/buffer dialogs and the category editor. Persisted keys and
     protocol values remain stable; labels and failures cross typed resource
     boundaries.**
-12. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+12. Profiles and account/security dialogs, followed as separate cohesive slices
+    by backup/export, Billing/Premium, Legal/Privacy, Diagnostics and system
+    notifications. Cloud/account sync remains deferred; localization must not
+    turn aspirational cross-device copy into a shipped product promise.
 13. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
