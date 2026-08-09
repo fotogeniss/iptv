@@ -617,6 +617,49 @@ for source_name, source, expected in (
 if "Policy version: 1.1-draft" not in privacy_policy:
     failures.append("in-app legal version drifted from the canonical privacy policy")
 
+diagnostics_models = read(
+    "app/src/main/java/com/prelude/iptv/diagnostics/DiagnosticModels.kt"
+)
+diagnostics_manager = read(
+    "app/src/main/java/com/prelude/iptv/diagnostics/DiagnosticsManager.kt"
+)
+diagnostics_redactor = read(
+    "app/src/main/java/com/prelude/iptv/diagnostics/DiagnosticRedactor.kt"
+)
+diagnostics_screen = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileDiagnosticsScreen.kt"
+)
+diagnostics_components = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileDiagnosticsComponents.kt"
+)
+diagnostics_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/DiagnosticsLocalizationResources.kt"
+)
+if "sealed interface DiagnosticsMessage" not in diagnostics_models:
+    failures.append("typed Diagnostics message boundary missing")
+if "val message: DiagnosticsMessage?" not in diagnostics_models:
+    failures.append("Diagnostics state still transports preformatted display messages")
+if greek_string_literals(diagnostics_manager):
+    failures.append("Diagnostics manager still owns Greek display copy")
+if "DiagnosticsMessage.localizedText" not in diagnostics_mapping:
+    failures.append("Diagnostics resource mapping missing")
+for ui_path, ui_source in (
+    ("MobileDiagnosticsScreen.kt", diagnostics_screen),
+    ("MobileDiagnosticsComponents.kt", diagnostics_components),
+):
+    if greek_string_literals(ui_source):
+        failures.append(f"hardcoded Greek display copy in migrated Diagnostics UI: {ui_path}")
+for stable_raw_detail in (
+    'return "Χωρίς μήνυμα"',
+    'summary = "Απροσδόκητος τερματισμός (${safeType.substringAfterLast(\'.\')})"',
+    'replace(url, "[URL_REDACTED]")',
+    'replace(email, "[EMAIL_REDACTED]")',
+):
+    if stable_raw_detail not in diagnostics_redactor:
+        failures.append(f"raw/redacted diagnostic compatibility changed: {stable_raw_detail}")
+if "ofLocalizedDateTime(FormatStyle.SHORT)" not in diagnostics_components:
+    failures.append("Diagnostics timestamp formatting bypasses the active locale")
+
 profile_presentation = read(
     "app/src/main/java/com/prelude/iptv/ui/profile/ProfilePresentationPolicy.kt"
 )

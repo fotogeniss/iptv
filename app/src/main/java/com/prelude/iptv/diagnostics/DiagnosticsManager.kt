@@ -62,11 +62,11 @@ object DiagnosticsManager {
             collectionEnabled = enabled,
             firebaseHasUnsentReport = if (enabled) mutableState.value.firebaseHasUnsentReport else false,
             message = if (enabled && !firebaseReporter.configured) {
-                "Η άδεια αποθηκεύτηκε. Χρειάζεται σύνδεση Firebase για αποστολή."
+                DiagnosticsMessage.ConsentSavedNeedsFirebase
             } else if (enabled) {
-                "Η αποστολή crash και ANR reports ενεργοποιήθηκε."
+                DiagnosticsMessage.ReportingEnabled
             } else {
-                "Η αποστολή απενεργοποιήθηκε και τα reports του Firebase διαγράφηκαν."
+                DiagnosticsMessage.ReportingDisabled
             },
         )
         if (enabled && firebase != null) {
@@ -100,7 +100,7 @@ object DiagnosticsManager {
         val firebase = firebaseReporter.initializeIfConfigured()
         if (firebase == null) {
             mutableState.value = mutableState.value.copy(
-                message = "Δεν έχει συνδεθεί ακόμη Firebase project. Το report παραμένει μόνο στη συσκευή.",
+                message = DiagnosticsMessage.FirebaseNotConfigured,
             )
             return
         }
@@ -130,7 +130,7 @@ object DiagnosticsManager {
                 pendingLocalReport = null,
                 firebaseHasUnsentReport = false,
                 busy = false,
-                message = if (showMessage) "Το διαγνωστικό report μπήκε στην ουρά αποστολής." else mutableState.value.message,
+                message = if (showMessage) DiagnosticsMessage.ReportQueued else mutableState.value.message,
             )
         }
     }
@@ -146,7 +146,7 @@ object DiagnosticsManager {
             pendingLocalReport = null,
             firebaseHasUnsentReport = false,
             busy = false,
-            message = "Τα εκκρεμή reports διαγράφηκαν από τη συσκευή.",
+            message = DiagnosticsMessage.PendingReportsDeleted,
         )
     }
 

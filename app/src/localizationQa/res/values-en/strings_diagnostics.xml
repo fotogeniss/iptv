@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diagnostics_screen_title">Diagnostics &amp; crashes</string>
+    <string name="diagnostics_section_contents">What is included</string>
+    <string name="diagnostics_section_pending_report">Pending report</string>
+    <string name="diagnostics_footer_optional">Reporting is optional and can be withdrawn at any time.</string>
+
+    <string name="diagnostics_hero_title">App diagnostics</string>
+    <string name="diagnostics_hero_reporting_enabled">Crash reporting is enabled</string>
+    <string name="diagnostics_hero_reporting_disabled">Private by default — disabled</string>
+    <string name="diagnostics_fact_analytics">Analytics</string>
+    <string name="diagnostics_fact_none">None</string>
+    <string name="diagnostics_fact_ad_id">Advertising ID</string>
+    <string name="diagnostics_fact_not_collected">Not collected</string>
+    <string name="diagnostics_fact_reports">Reports</string>
+    <string name="diagnostics_fact_opt_in">Opt-in</string>
+    <string name="diagnostics_fact_local">Local</string>
+
+    <string name="diagnostics_consent_title">Crash &amp; ANR reports</string>
+    <string name="diagnostics_consent_body">Send technical stability information to help identify real problems.</string>
+    <string name="diagnostics_consent_toggle">Send crash and ANR reports</string>
+
+    <string name="diagnostics_privacy_no_source_title">No source details</string>
+    <string name="diagnostics_privacy_no_source_body">We do not add URLs, credentials, media titles or a user identifier.</string>
+    <string name="diagnostics_privacy_no_analytics_title">No Analytics</string>
+    <string name="diagnostics_privacy_no_analytics_body">Firebase Analytics is not installed and viewing behavior is not recorded.</string>
+    <string name="diagnostics_privacy_user_control_title">You are in control</string>
+    <string name="diagnostics_privacy_user_control_body">You can disable collection or delete a pending report.</string>
+
+    <string name="diagnostics_pending_title">A report is pending</string>
+    <string name="diagnostics_pending_firebase_device">Stored by Firebase on this device</string>
+    <string name="diagnostics_send_once">Send once</string>
+    <string name="diagnostics_delete">Delete</string>
+    <string name="diagnostics_previous_run">Previous run</string>
+
+    <string name="diagnostics_setup_title">Firebase connection required</string>
+    <string name="diagnostics_setup_body">Local capture is working. To view reports in Firebase Console, the owner must add app/google-services.json from their own project.</string>
+
+    <string name="diagnostics_message_consent_saved_needs_firebase">Your consent was saved. Connect Firebase to send reports.</string>
+    <string name="diagnostics_message_reporting_enabled">Crash and ANR reporting was enabled.</string>
+    <string name="diagnostics_message_reporting_disabled">Reporting was disabled and pending Firebase reports were deleted.</string>
+    <string name="diagnostics_message_firebase_not_configured">No Firebase project is connected yet. The report remains only on this device.</string>
+    <string name="diagnostics_message_report_queued">The diagnostic report was queued for sending.</string>
+    <string name="diagnostics_message_pending_reports_deleted">Pending reports were deleted from this device.</string>
+</resources>

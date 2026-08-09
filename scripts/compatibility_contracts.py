@@ -73,6 +73,12 @@ subtitle_search_content = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/
 subtitle_wiring = (ROOT / "app/src/main/java/com/prelude/iptv/ui/player/SubtitleWiring.kt").read_text(encoding="utf-8")
 playback_engine = (ROOT / "app/src/main/java/com/prelude/iptv/player/PlaybackEngine.kt").read_text(encoding="utf-8")
 proguard_rules = (ROOT / "app/proguard-rules.pro").read_text(encoding="utf-8")
+android_manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
+diagnostics_manager = (ROOT / "app/src/main/java/com/prelude/iptv/diagnostics/DiagnosticsManager.kt").read_text(encoding="utf-8")
+diagnostics_store = (ROOT / "app/src/main/java/com/prelude/iptv/diagnostics/LocalDiagnosticStore.kt").read_text(encoding="utf-8")
+diagnostics_set_enabled = diagnostics_manager[
+    diagnostics_manager.find("fun setCollectionEnabled"):diagnostics_manager.find("fun refreshPendingState")
+]
 add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/AddPlaylistScreen.kt").read_text(encoding="utf-8")
 tv_add_playlist = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistScreen.kt").read_text(encoding="utf-8")
 tv_add_playlist_components = (ROOT / "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistComponents.kt").read_text(encoding="utf-8")
@@ -233,6 +239,29 @@ source_contracts = {
         "-dontwarn android.os.ProfilingTrigger$Builder" in proguard_rules
         and "-dontwarn android.os.ProfilingTrigger" in proguard_rules
         and "-dontwarn android.os.**" not in proguard_rules
+    ),
+    "Diagnostics Firebase startup remains explicit and consent gated": (
+        'android:name="com.google.firebase.provider.FirebaseInitProvider"' in android_manifest
+        and 'tools:node="remove"' in android_manifest
+        and 'android:name="firebase_crashlytics_collection_enabled"' in android_manifest
+        and 'android:value="false"' in android_manifest
+        and "if (enabled)" in diagnostics_manager
+        and "firebaseReporter.initializeIfConfigured()" in diagnostics_manager
+    ),
+    "Disabling diagnostics still removes unsent Firebase reports": (
+        "if (!enabled) firebase?.deleteUnsentReports()" in diagnostics_set_enabled
+        and "firebaseHasUnsentReport = if (enabled)" in diagnostics_set_enabled
+    ),
+    "Local diagnostics keeps one storage-compatible pending report": all(
+        marker in diagnostics_store
+        for marker in (
+            'const val PREFERENCES = "diagnostics_privacy"',
+            'const val KEY_COLLECTION_ENABLED = "crash_reporting_enabled"',
+            'const val KEY_CAPTURED_AT = "pending_captured_at"',
+            'const val KEY_EXCEPTION_TYPE = "pending_exception_type"',
+            'const val KEY_SUMMARY = "pending_summary"',
+            'const val KEY_STACK = "pending_stack"',
+        )
     ),
     "TV add-playlist route uses the dedicated screen": (
         "TvAddPlaylistScreen(" in add_playlist

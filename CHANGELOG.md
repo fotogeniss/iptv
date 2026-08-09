@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the opt-in Diagnostics and crash-reporting screen with paired Greek
+  and QA-English resources, typed status feedback, locale-aware pending-report
+  timestamps and localized switch accessibility copy. Consent defaults,
+  redaction, local pending-report storage and Firebase initialization/deletion
+  behavior remain unchanged.
 - Localized the in-app Legal and Privacy presentation with paired Greek and
   QA-English resources. Tabs, disclosures, service statuses and summarized terms
   now cross typed resource boundaries while publisher placeholders, policy

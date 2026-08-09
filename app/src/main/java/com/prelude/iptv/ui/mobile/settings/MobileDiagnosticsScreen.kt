@@ -18,11 +18,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.diagnostics.DiagnosticsManager
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.localizedText
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 
 @Composable
@@ -35,7 +38,7 @@ internal fun MobileDiagnosticsScreen(
     LaunchedEffect(Unit) { DiagnosticsManager.refreshPendingState() }
 
     Column(modifier.fillMaxSize().background(IptvColors.Background)) {
-        MobileSettingsFlowHeader("Διαγνωστικά & crashes", onBack)
+        MobileSettingsFlowHeader(stringResource(R.string.diagnostics_screen_title), onBack)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = premiumMobileNavigationContentPadding()),
@@ -47,14 +50,18 @@ internal fun MobileDiagnosticsScreen(
                     DiagnosticsConsentCard(state, DiagnosticsManager::setCollectionEnabled)
                 }
             }
-            item(key = "diagnostics-privacy-title") { DiagnosticsSectionTitle("Τι περιλαμβάνει") }
+            item(key = "diagnostics-privacy-title") {
+                DiagnosticsSectionTitle(stringResource(R.string.diagnostics_section_contents))
+            }
             item(key = "diagnostics-privacy") {
                 Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     DiagnosticsPrivacyCard()
                 }
             }
             if (state.hasPendingReport) {
-                item(key = "diagnostics-pending-title") { DiagnosticsSectionTitle("Εκκρεμές report") }
+                item(key = "diagnostics-pending-title") {
+                    DiagnosticsSectionTitle(stringResource(R.string.diagnostics_section_pending_report))
+                }
                 item(key = "diagnostics-pending") {
                     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                         PendingDiagnosticCard(
@@ -73,9 +80,9 @@ internal fun MobileDiagnosticsScreen(
                 }
             }
             state.message?.let { message ->
-                item(key = "diagnostics-message-$message") {
+                item(key = "diagnostics-message") {
                     Text(
-                        message,
+                        message.localizedText(),
                         color = Color(0xFFFF7A80),
                         fontSize = 10.sp,
                         lineHeight = 14.sp,
@@ -85,7 +92,7 @@ internal fun MobileDiagnosticsScreen(
             }
             item(key = "diagnostics-footer") {
                 Text(
-                    "Η ενεργοποίηση είναι προαιρετική και μπορεί να ανακληθεί οποτεδήποτε.",
+                    stringResource(R.string.diagnostics_footer_optional),
                     color = IptvColors.TextTertiary,
                     fontSize = 9.sp,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp),

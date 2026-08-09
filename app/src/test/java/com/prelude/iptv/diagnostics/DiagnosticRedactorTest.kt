@@ -1,5 +1,6 @@
 package com.prelude.iptv.diagnostics
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -33,5 +34,11 @@ class DiagnosticRedactorTest {
         assertFalse(report.summary.contains("token"))
         assertTrue(report.stackSummary.lines().size <= 24)
         assertTrue(report.exceptionType.contains("IllegalStateException"))
+        assertEquals("Απροσδόκητος τερματισμός (IllegalStateException)", report.summary)
+    }
+
+    @Test
+    fun rawDiagnosticFallbackRemainsStorageCompatible() {
+        assertEquals("Χωρίς μήνυμα", DiagnosticRedactor.redact(null))
     }
 }

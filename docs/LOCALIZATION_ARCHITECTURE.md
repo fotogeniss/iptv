@@ -161,10 +161,15 @@ cohesive vertical slices:
     identities plus paired resources. Publisher/contact placeholders, policy
     version/effective date, service IDs/badges and mandatory TMDB attribution
     remain stable; the canonical long-form policy documents were not rewritten.**
-    Diagnostics, exported/share surfaces and system notifications follow as
-    separate cohesive slices. Account/cloud sync is not part of the current
+15. Diagnostics and crash reporting. **Implemented for the active mobile
+    Settings route. `DiagnosticsState` carries typed app-owned status feedback,
+    while raw redacted pending-report summaries, exception types and stack data
+    remain untranslated diagnostic data. Consent, one-report local retention,
+    storage keys, Firebase initialization/deletion and no-Analytics/ad-ID behavior
+    remain unchanged.** Exported/share surfaces and system notifications follow
+    as separate cohesive slices. Account/cloud sync is not part of the current
     local-only product.
-15. Final hardcoded-string audit, translation parity gate and public picker
+16. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -179,8 +184,8 @@ still bypass resources.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
   boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG/Settings/
-  account-security mappings and hardcoded-copy audits, and the closed public
-  rollout gate.
+  account-security/Billing/Legal/Diagnostics mappings and hardcoded-copy audits,
+  and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

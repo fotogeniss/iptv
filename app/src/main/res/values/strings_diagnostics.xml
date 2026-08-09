@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diagnostics_screen_title">Διαγνωστικά &amp; crashes</string>
+    <string name="diagnostics_section_contents">Τι περιλαμβάνει</string>
+    <string name="diagnostics_section_pending_report">Εκκρεμές report</string>
+    <string name="diagnostics_footer_optional">Η ενεργοποίηση είναι προαιρετική και μπορεί να ανακληθεί οποτεδήποτε.</string>
+
+    <string name="diagnostics_hero_title">Διαγνωστικά εφαρμογής</string>
+    <string name="diagnostics_hero_reporting_enabled">Η αναφορά σφαλμάτων είναι ενεργή</string>
+    <string name="diagnostics_hero_reporting_disabled">Ιδιωτικότητα εξ αρχής — απενεργοποιημένο</string>
+    <string name="diagnostics_fact_analytics">Analytics</string>
+    <string name="diagnostics_fact_none">Κανένα</string>
+    <string name="diagnostics_fact_ad_id">Διαφημιστικό ID</string>
+    <string name="diagnostics_fact_not_collected">Δεν συλλέγεται</string>
+    <string name="diagnostics_fact_reports">Reports</string>
+    <string name="diagnostics_fact_opt_in">Opt-in</string>
+    <string name="diagnostics_fact_local">Τοπικά</string>
+
+    <string name="diagnostics_consent_title">Crash &amp; ANR reports</string>
+    <string name="diagnostics_consent_body">Στείλε τεχνικές πληροφορίες σταθερότητας ώστε να εντοπίζονται πραγματικά προβλήματα.</string>
+    <string name="diagnostics_consent_toggle">Αποστολή crash και ANR reports</string>
+
+    <string name="diagnostics_privacy_no_source_title">Χωρίς στοιχεία λίστας</string>
+    <string name="diagnostics_privacy_no_source_body">Δεν προσθέτουμε URLs, credentials, τίτλους media ή αναγνωριστικό χρήστη.</string>
+    <string name="diagnostics_privacy_no_analytics_title">Χωρίς Analytics</string>
+    <string name="diagnostics_privacy_no_analytics_body">Δεν εγκαθίσταται Firebase Analytics και δεν καταγράφεται συμπεριφορά προβολής.</string>
+    <string name="diagnostics_privacy_user_control_title">Έλεγχος από εσένα</string>
+    <string name="diagnostics_privacy_user_control_body">Μπορείς να απενεργοποιήσεις τη συλλογή ή να διαγράψεις εκκρεμές report.</string>
+
+    <string name="diagnostics_pending_title">Υπάρχει εκκρεμές report</string>
+    <string name="diagnostics_pending_firebase_device">Αποθηκευμένο από το Firebase στη συσκευή</string>
+    <string name="diagnostics_send_once">Αποστολή μία φορά</string>
+    <string name="diagnostics_delete">Διαγραφή</string>
+    <string name="diagnostics_previous_run">Προηγούμενη εκτέλεση</string>
+
+    <string name="diagnostics_setup_title">Απομένει σύνδεση Firebase</string>
+    <string name="diagnostics_setup_body">Η τοπική καταγραφή λειτουργεί. Για να βλέπει ο ιδιοκτήτης τα reports στο Firebase Console, χρειάζεται το app/google-services.json του δικού του project.</string>
+
+    <string name="diagnostics_message_consent_saved_needs_firebase">Η άδεια αποθηκεύτηκε. Χρειάζεται σύνδεση Firebase για αποστολή.</string>
+    <string name="diagnostics_message_reporting_enabled">Η αποστολή crash και ANR reports ενεργοποιήθηκε.</string>
+    <string name="diagnostics_message_reporting_disabled">Η αποστολή απενεργοποιήθηκε και τα reports του Firebase διαγράφηκαν.</string>
+    <string name="diagnostics_message_firebase_not_configured">Δεν έχει συνδεθεί ακόμη Firebase project. Το report παραμένει μόνο στη συσκευή.</string>
+    <string name="diagnostics_message_report_queued">Το διαγνωστικό report μπήκε στην ουρά αποστολής.</string>
+    <string name="diagnostics_message_pending_reports_deleted">Τα εκκρεμή reports διαγράφηκαν από τη συσκευή.</string>
+</resources>

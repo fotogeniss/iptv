@@ -475,8 +475,8 @@ global Search, details/seasons/episodes, shared Player and subtitle/audio flows,
 source onboarding/management, full EPG and the active Settings shell plus
 playback/personalization/category surfaces, local profiles, parental controls and
 encrypted backup/restore, Billing and Premium, and the active in-app Legal and
-Privacy presentation. Provider-owned and user-owned data is intentionally not
-translated.
+Privacy and Diagnostics presentations. Provider-owned, user-owned and raw
+diagnostic data is intentionally not translated.
 
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
@@ -551,27 +551,51 @@ contain Greek display copy and raw display messages.
   but not executed because the owner did not authorize Gradle. Android Studio
   compilation and mobile QA remain pending owner evidence.
 
-#### Immediate next slice: Diagnostics and crash reporting
+#### Completed slice: Diagnostics and crash reporting
+
+- The active route is mobile Settings → `MobileDiagnosticsScreen`; no separate
+  Android TV Diagnostics screen is currently wired. Existing Back handling,
+  conditional pending/setup cards, switch/action enablement and list order are
+  unchanged.
+- `DiagnosticsState.message` now carries a sealed `DiagnosticsMessage` identity.
+  Manager feedback and all screen/component copy map to paired Greek/QA-English
+  resources at the Compose boundary. Pending-report timestamps use the active app
+  locale, and the consent switch has paired accessibility copy.
+- `PendingDiagnosticReport.exceptionType`, `summary` and `stackSummary` remain raw
+  redacted diagnostic data. Existing stored Greek summaries remain displayable;
+  no report schema, SharedPreferences file/key, one-report retention or redaction
+  token changed.
+- Firebase startup remains explicit after opt-in or “send once”; automatic
+  collection stays disabled, turning reporting off still deletes unsent Firebase
+  reports, and Analytics/ad IDs remain absent. These behaviors are now protected
+  by compatibility contracts in addition to focused redactor/state tests.
+- `docs/PRIVACY_POLICY.md`, `docs/PLAY_DATA_SAFETY.md` and
+  `docs/FIREBASE_CRASHLYTICS_SETUP.md` were read as canonical behavior sources and
+  did not require substance changes. No HTML preview was required because this
+  was copy/accessibility-only localization.
+- Static localization/resource parity, compatibility (66/66), architecture
+  (60 passes plus the known `MainViewModel` size warning), deep validation
+  (67 passes plus the documented cleartext compatibility warning), risk,
+  documentation and diff checks pass. Focused redactor/state tests were added or
+  expanded but not executed because the owner did not authorize Gradle. Android
+  Studio compilation and mobile QA remain pending owner evidence.
+
+#### Immediate next slice: Export/share surfaces and system notifications
 
 Complete one commit and verification cycle per item; do not combine them:
 
-1. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
-   `MobileDiagnosticsComponents.kt`, `DiagnosticsManager.kt` and diagnostic
-   result producers. Preserve opt-in consent, redaction, one local pending report,
-   no Analytics/ad ID, and disconnected Firebase configuration. Raw diagnostic
-   details are not normal UI copy and must remain redacted.
-2. **Export/share surfaces, system notifications and remaining service copy.**
+1. **Export/share surfaces, system notifications and remaining service copy.**
    Audit `Exporter.kt`, `ExportScreen.kt`, `CatalogDownloadService.kt`,
    `RelayService.kt` and reminder/download notification producers. Notification
    channel names, titles, progress/errors and accessibility copy follow the app
    locale; protocol data, provider titles, exported user data and filenames
    remain raw.
-3. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
+2. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
    not only files whose names contain “settings”. Classify each remaining literal
    as app copy, invariant brand/protocol text, provider/user data, diagnostic data
    or developer comment. Migrate only app copy, add contracts for every completed
    surface and verify Greek/English keys, placeholders and plurals.
-4. **Parity inversion and public picker activation.** Only after the full audit,
+3. **Parity inversion and public picker activation.** Only after the full audit,
    compilation and phone/TV QA: move English to unqualified `main/res/values`,
    Greek to `main/res/values-el`, change `unqualifiedResLocale` from `el` to `en`,
    enable the generated locale config and flip
@@ -710,12 +734,14 @@ The owner can paste the following after attaching or referencing this file:
 > code/resource and static-contract level, but still requires the owner's normal
 > Android Studio build and mobile/TV QA. Legal and Privacy localization is
 > complete at the code/resource and static-contract level, but still requires the
-> owner's normal Android Studio build and mobile QA. The immediate next task is
-> Diagnostics and crash-reporting localization. Audit
-> `MobileDiagnosticsScreen.kt`, `MobileDiagnosticsComponents.kt`,
-> `DiagnosticsManager.kt` and diagnostic producers; preserve opt-in consent,
-> redaction, one local pending report, no Analytics/ad ID and disconnected
-> Firebase configuration. Do not treat raw diagnostic details as normal UI copy
-> or mix notification/export/share surfaces into that slice. Run the static gates,
-> inspect the diff, update the handoff, and commit only when the slice is cohesive
-> and clean.
+> owner's normal Android Studio build and mobile QA. Diagnostics and
+> crash-reporting localization is complete at the code/resource and
+> static-contract level, but still requires the owner's normal Android Studio
+> build and mobile QA. The immediate next task is export/share surfaces, system
+> notifications and remaining service copy. Audit `Exporter.kt`,
+> `ExportScreen.kt`, `CatalogDownloadService.kt`, `RelayService.kt` and
+> reminder/download notification producers. Localize only app-owned labels,
+> accessibility copy, states and errors; preserve protocol/provider data,
+> filenames and exported user data byte-for-byte. Run the static gates, inspect
+> the diff, update the handoff, and commit only when the slice is cohesive and
+> clean.

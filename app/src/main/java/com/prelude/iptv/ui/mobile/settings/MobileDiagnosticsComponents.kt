@@ -26,20 +26,27 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.diagnostics.DiagnosticsState
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 internal fun MobileDiagnosticsHero(state: DiagnosticsState) {
@@ -61,9 +68,15 @@ internal fun MobileDiagnosticsHero(state: DiagnosticsState) {
             )
             Spacer(Modifier.size(11.dp))
             Column {
-                Text("Διαγνωστικά εφαρμογής", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.diagnostics_hero_title), color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black)
                 Text(
-                    if (state.collectionEnabled) "Η αναφορά σφαλμάτων είναι ενεργή" else "Ιδιωτικότητα εξ αρχής — απενεργοποιημένο",
+                    stringResource(
+                        if (state.collectionEnabled) {
+                            R.string.diagnostics_hero_reporting_enabled
+                        } else {
+                            R.string.diagnostics_hero_reporting_disabled
+                        }
+                    ),
                     color = IptvColors.TextSecondary,
                     fontSize = 11.sp,
                 )
@@ -71,9 +84,27 @@ internal fun MobileDiagnosticsHero(state: DiagnosticsState) {
         }
         Spacer(Modifier.height(17.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DiagnosticsFact("Analytics", "Κανένα", Modifier.weight(1f))
-            DiagnosticsFact("Διαφημιστικό ID", "Δεν συλλέγεται", Modifier.weight(1f))
-            DiagnosticsFact("Reports", if (state.collectionEnabled) "Opt-in" else "Τοπικά", Modifier.weight(1f))
+            DiagnosticsFact(
+                stringResource(R.string.diagnostics_fact_analytics),
+                stringResource(R.string.diagnostics_fact_none),
+                Modifier.weight(1f),
+            )
+            DiagnosticsFact(
+                stringResource(R.string.diagnostics_fact_ad_id),
+                stringResource(R.string.diagnostics_fact_not_collected),
+                Modifier.weight(1f),
+            )
+            DiagnosticsFact(
+                stringResource(R.string.diagnostics_fact_reports),
+                stringResource(
+                    if (state.collectionEnabled) {
+                        R.string.diagnostics_fact_opt_in
+                    } else {
+                        R.string.diagnostics_fact_local
+                    }
+                ),
+                Modifier.weight(1f),
+            )
         }
     }
 }
@@ -96,6 +127,7 @@ internal fun DiagnosticsConsentCard(
     state: DiagnosticsState,
     onEnabledChange: (Boolean) -> Unit,
 ) {
+    val toggleDescription = stringResource(R.string.diagnostics_consent_toggle)
     Row(
         Modifier.fillMaxWidth()
             .background(IptvColors.Surface, RoundedCornerShape(StreamingRadius.Card))
@@ -104,10 +136,10 @@ internal fun DiagnosticsConsentCard(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Crash & ANR reports", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.diagnostics_consent_title), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Στείλε τεχνικές πληροφορίες σταθερότητας ώστε να εντοπίζονται πραγματικά προβλήματα.",
+                stringResource(R.string.diagnostics_consent_body),
                 color = IptvColors.TextSecondary,
                 fontSize = 10.sp,
                 lineHeight = 14.sp,
@@ -117,6 +149,9 @@ internal fun DiagnosticsConsentCard(
         Switch(
             checked = state.collectionEnabled,
             onCheckedChange = onEnabledChange,
+            modifier = Modifier.semantics {
+                contentDescription = toggleDescription
+            },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = IptvColors.Primary,
@@ -138,18 +173,18 @@ internal fun DiagnosticsPrivacyCard() {
     ) {
         DiagnosticsPrivacyLine(
             Icons.Default.Lock,
-            "Χωρίς στοιχεία λίστας",
-            "Δεν προσθέτουμε URLs, credentials, τίτλους media ή αναγνωριστικό χρήστη.",
+            stringResource(R.string.diagnostics_privacy_no_source_title),
+            stringResource(R.string.diagnostics_privacy_no_source_body),
         )
         DiagnosticsPrivacyLine(
             Icons.Default.CloudOff,
-            "Χωρίς Analytics",
-            "Δεν εγκαθίσταται Firebase Analytics και δεν καταγράφεται συμπεριφορά προβολής.",
+            stringResource(R.string.diagnostics_privacy_no_analytics_title),
+            stringResource(R.string.diagnostics_privacy_no_analytics_body),
         )
         DiagnosticsPrivacyLine(
             Icons.Default.CheckCircle,
-            "Έλεγχος από εσένα",
-            "Μπορείς να απενεργοποιήσεις τη συλλογή ή να διαγράψεις εκκρεμές report.",
+            stringResource(R.string.diagnostics_privacy_user_control_title),
+            stringResource(R.string.diagnostics_privacy_user_control_body),
         )
     }
 }
@@ -173,17 +208,21 @@ internal fun PendingDiagnosticCard(
     onDelete: () -> Unit,
 ) {
     val local = state.pendingLocalReport
+    val pendingDescription = if (local != null) {
+        "${formatDiagnosticTime(local.capturedAtMillis)} · ${local.exceptionType.substringAfterLast('.')}"
+    } else {
+        stringResource(R.string.diagnostics_pending_firebase_device)
+    }
     Column(
         Modifier.fillMaxWidth()
             .background(IptvColors.Surface, RoundedCornerShape(StreamingRadius.Card))
             .border(1.dp, Color(0xFFFF5961).copy(alpha = 0.35f), RoundedCornerShape(StreamingRadius.Card))
             .padding(15.dp)
     ) {
-        Text("Υπάρχει εκκρεμές report", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.diagnostics_pending_title), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(5.dp))
         Text(
-            local?.let { "${formatDiagnosticTime(it.capturedAtMillis)} · ${it.exceptionType.substringAfterLast('.')}" }
-                ?: "Αποθηκευμένο από το Firebase στη συσκευή",
+            pendingDescription,
             color = IptvColors.TextSecondary,
             fontSize = 10.sp,
         )
@@ -201,7 +240,7 @@ internal fun PendingDiagnosticCard(
             ) {
                 Icon(Icons.Default.Send, null, modifier = Modifier.size(17.dp))
                 Spacer(Modifier.size(6.dp))
-                Text("Αποστολή μία φορά", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.diagnostics_send_once), fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             OutlinedButton(
                 onClick = onDelete,
@@ -210,7 +249,7 @@ internal fun PendingDiagnosticCard(
             ) {
                 Icon(Icons.Default.DeleteOutline, null, modifier = Modifier.size(17.dp))
                 Spacer(Modifier.size(5.dp))
-                Text("Διαγραφή", fontSize = 10.sp)
+                Text(stringResource(R.string.diagnostics_delete), fontSize = 10.sp)
             }
         }
     }
@@ -224,10 +263,10 @@ internal fun DiagnosticsSetupCard() {
             .border(1.dp, Color(0xFFFFB74D).copy(alpha = 0.35f), RoundedCornerShape(StreamingRadius.Card))
             .padding(15.dp)
     ) {
-        Text("Απομένει σύνδεση Firebase", color = Color(0xFFFFC46B), fontSize = 13.sp, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.diagnostics_setup_title), color = Color(0xFFFFC46B), fontSize = 13.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(5.dp))
         Text(
-            "Η τοπική καταγραφή λειτουργεί. Για να βλέπει ο ιδιοκτήτης τα reports στο Firebase Console, χρειάζεται το app/google-services.json του δικού του project.",
+            stringResource(R.string.diagnostics_setup_body),
             color = IptvColors.TextSecondary,
             fontSize = 10.sp,
             lineHeight = 14.sp,
@@ -235,8 +274,16 @@ internal fun DiagnosticsSetupCard() {
     }
 }
 
-private fun formatDiagnosticTime(timestamp: Long): String = runCatching {
-    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-        .withZone(ZoneId.systemDefault())
-        .format(Instant.ofEpochMilli(timestamp))
-}.getOrDefault("Προηγούμενη εκτέλεση")
+@Composable
+private fun formatDiagnosticTime(timestamp: Long): String {
+    val locale = LocalConfiguration.current.locales[0]
+    val fallback = stringResource(R.string.diagnostics_previous_run)
+    return remember(timestamp, locale) {
+        runCatching {
+            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                .withLocale(locale)
+                .withZone(ZoneId.systemDefault())
+                .format(Instant.ofEpochMilli(timestamp))
+        }.getOrNull()
+    } ?: fallback
+}

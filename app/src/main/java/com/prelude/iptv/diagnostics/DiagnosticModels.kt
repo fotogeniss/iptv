@@ -13,8 +13,17 @@ data class DiagnosticsState(
     val pendingLocalReport: PendingDiagnosticReport? = null,
     val firebaseHasUnsentReport: Boolean? = null,
     val busy: Boolean = false,
-    val message: String? = null,
+    val message: DiagnosticsMessage? = null,
 ) {
     val hasPendingReport: Boolean
         get() = pendingLocalReport != null || firebaseHasUnsentReport == true
+}
+
+sealed interface DiagnosticsMessage {
+    data object ConsentSavedNeedsFirebase : DiagnosticsMessage
+    data object ReportingEnabled : DiagnosticsMessage
+    data object ReportingDisabled : DiagnosticsMessage
+    data object FirebaseNotConfigured : DiagnosticsMessage
+    data object ReportQueued : DiagnosticsMessage
+    data object PendingReportsDeleted : DiagnosticsMessage
 }
