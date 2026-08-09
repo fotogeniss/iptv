@@ -5,6 +5,8 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed QA Kotlin compilation for localized shared routes by explicitly resolving
+  the application `R` class instead of relying on ambiguous wildcard imports.
 - Localized the active mobile and Android TV Settings shell, playback/AFR/buffer
   dialogs, subtitle and audio preferences, category editor, source sheets and
   overview/status surfaces. Persisted preference values remain stable while

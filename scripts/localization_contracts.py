@@ -17,6 +17,20 @@ def read(relative: str) -> str:
     return (ROOT / relative).read_text(encoding="utf-8")
 
 
+for kotlin_path in sorted((ROOT / "app/src/main/java").rglob("*.kt")):
+    kotlin = kotlin_path.read_text(encoding="utf-8")
+    uses_unqualified_app_resource = re.search(r"(?<![\w.])R\.string\.", kotlin)
+    if (
+        uses_unqualified_app_resource
+        and "import com.prelude.iptv.*" in kotlin
+        and "import com.prelude.iptv.R" not in kotlin
+    ):
+        failures.append(
+            "ambiguous app R import for localized strings: "
+            + kotlin_path.relative_to(ROOT).as_posix()
+        )
+
+
 def resource_keys(root: Path, folder: str) -> set[str]:
     keys: set[str] = set()
     for path in sorted((root / folder).glob("strings*.xml")):

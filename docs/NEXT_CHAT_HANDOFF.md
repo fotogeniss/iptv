@@ -75,6 +75,13 @@ of a **30-year senior software engineer**. In practice this means:
 - Codex did not run Gradle for the current localization work because the owner did
   not authorize it. Android Studio compilation and phone/TV checks after
   `e892e2a` remain outstanding.
+- The owner then reported `:app:compileQaKotlin` failures in
+  `BrowseStateComponents.kt`, `DetailRouteHost.kt`, `PlaylistSourcesScreen.kt`,
+  `SettingsFieldComponents.kt` and `SettingsPlaybackDialogs.kt`: wildcard imports
+  exposed several dependency `R` classes, so unqualified `R.string` was
+  ambiguous. The focused fix adds explicit `com.prelude.iptv.R` imports to those
+  five files and a static regression contract. The owner must rerun the QA build;
+  this document does not claim that rebuild has passed.
 - The latest static validation cycle at `e892e2a` reported:
   - localization contracts: pass, including 208 paired Settings keys with
     matching structure and placeholders;

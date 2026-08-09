@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.*
 import androidx.lifecycle.viewmodel.compose.*
 import coil.compose.*
 import com.prelude.iptv.*
+import com.prelude.iptv.R
 import com.prelude.iptv.data.*
 import com.prelude.iptv.ui.*
 import com.prelude.iptv.ui.components.library.*
