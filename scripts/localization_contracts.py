@@ -821,6 +821,22 @@ for key in ("epg_settings_programme_guide", "epg_settings_xmltv_matching"):
     if f"R.string.{key}" not in tv_settings:
         failures.append(f"TV Settings EPG row resource missing: {key}")
 
+export_screen = read("app/src/main/java/com/prelude/iptv/ExportScreen.kt")
+if greek_string_literals(export_screen):
+    failures.append(
+        "hardcoded Greek display copy in migrated Export/Relay UI: "
+        "app/src/main/java/com/prelude/iptv/ExportScreen.kt"
+    )
+
+notification_producers = [
+    "app/src/main/java/com/prelude/iptv/data/CatalogDownloadService.kt",
+    "app/src/main/java/com/prelude/iptv/RelayService.kt",
+    "app/src/main/java/com/prelude/iptv/data/ReminderScheduler.kt",
+]
+for producer_path in notification_producers:
+    if greek_string_literals(read(producer_path)):
+        failures.append(f"hardcoded Greek display copy in notification producer: {producer_path}")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

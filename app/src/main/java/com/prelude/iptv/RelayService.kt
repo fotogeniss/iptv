@@ -43,7 +43,7 @@ class RelayService : Service() {
         val mgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val ch = NotificationChannel(
-                CHANNEL_ID, "Relay", NotificationManager.IMPORTANCE_LOW
+                CHANNEL_ID, getString(R.string.notif_relay_channel_name), NotificationManager.IMPORTANCE_LOW
             )
             mgr.createNotificationChannel(ch)
         }
@@ -51,7 +51,7 @@ class RelayService : Service() {
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             Notification.Builder(this, CHANNEL_ID) else Notification.Builder(this)
         return builder
-            .setContentTitle("Relay ενεργό")
+            .setContentTitle(getString(R.string.notif_relay_title))
             .setContentText("http://$ip:${RelayHub.port}/playlist.m3u")
             .setSmallIcon(android.R.drawable.stat_sys_upload)
             .setOngoing(true)

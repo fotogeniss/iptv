@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.prelude.iptv.MainActivity
+import com.prelude.iptv.R
 import com.prelude.iptv.player.PlayerLaunchRequest
 
 /**
@@ -59,7 +60,11 @@ object ReminderScheduler {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (nm.getNotificationChannel(CH_ID) == null) {
             nm.createNotificationChannel(
-                NotificationChannel(CH_ID, "Υπενθυμίσεις EPG", NotificationManager.IMPORTANCE_HIGH)
+                NotificationChannel(
+                    CH_ID,
+                    ctx.getString(R.string.notif_reminder_channel_name),
+                    NotificationManager.IMPORTANCE_HIGH,
+                )
             )
         }
     }
@@ -69,7 +74,8 @@ object ReminderScheduler {
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
-        val name = intent.getStringExtra(ReminderScheduler.EXTRA_NAME) ?: "Κανάλι"
+        val name = intent.getStringExtra(ReminderScheduler.EXTRA_NAME)
+            ?: ctx.getString(R.string.notif_reminder_fallback_name)
         val title = intent.getStringExtra(ReminderScheduler.EXTRA_TITLE) ?: ""
         val url = intent.getStringExtra(ReminderScheduler.EXTRA_URL) ?: ""
 
@@ -85,8 +91,8 @@ class ReminderReceiver : BroadcastReceiver() {
         )
         val n = androidx.core.app.NotificationCompat.Builder(ctx, ReminderScheduler.channelId())
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setContentTitle("▶ $title")
-            .setContentText("Ξεκινά τώρα στο $name")
+            .setContentTitle(ctx.getString(R.string.notif_reminder_title, title))
+            .setContentText(ctx.getString(R.string.notif_reminder_body, name))
             .setAutoCancel(true)
             .setContentIntent(pi)
             .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)

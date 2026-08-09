@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.prelude.iptv.MainActivity
+import com.prelude.iptv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -85,7 +86,7 @@ class CatalogDownloadService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Λήψη λίστας")
+            .setContentTitle(getString(R.string.notif_catalog_download_title))
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentIntent(open)
             .setOngoing(true)
@@ -96,7 +97,9 @@ class CatalogDownloadService : Service() {
         val bytes = progress?.bytesRead ?: 0L
         if (total != null && total > 0L) {
             val percent = ((bytes.toDouble() / total) * 100).toInt().coerceIn(0, 100)
-            builder.setContentText("$percent% · ${megabytes(bytes)} από ${megabytes(total)}")
+            builder.setContentText(
+                getString(R.string.notif_catalog_download_progress, percent, megabytes(bytes), megabytes(total))
+            )
             builder.setProgress(100, percent, false)
         } else {
             // Άγνωστο μέγεθος: αόριστη μπάρα και μόνο όσα κατέβηκαν. Ένα ψεύτικο
@@ -116,12 +119,12 @@ class CatalogDownloadService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Λήψη λίστας",
+            getString(R.string.notif_catalog_download_channel_name),
             // LOW: χωρίς ήχο και χωρίς αναδυόμενο. Η λήψη είναι ενημέρωση, όχι
             // συμβάν που απαιτεί προσοχή.
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = "Πρόοδος λήψης καταλόγου στο παρασκήνιο"
+            description = getString(R.string.notif_catalog_download_channel_description)
             setShowBadge(false)
         }
         notificationManager().createNotificationChannel(channel)

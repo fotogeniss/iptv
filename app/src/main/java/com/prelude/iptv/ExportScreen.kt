@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,9 +55,9 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
         if (uri != null && content != null) {
             try {
                 ctx.contentResolver.openOutputStream(uri)?.use { it.write(content.toByteArray()) }
-                Toast.makeText(ctx, "✓ Αποθηκεύτηκε", Toast.LENGTH_LONG).show()
+                Toast.makeText(ctx, ctx.getString(R.string.export_toast_saved), Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
-                Toast.makeText(ctx, "Σφάλμα αποθήκευσης", Toast.LENGTH_LONG).show()
+                Toast.makeText(ctx, ctx.getString(R.string.export_toast_save_error), Toast.LENGTH_LONG).show()
             }
         }
         pendingContent = null
@@ -64,10 +66,11 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
     val isMac = vm.currentPlaylist()?.type == PlaylistType.STALKER
 
     // ομαδοποίηση διατηρώντας σειρά
+    val noGroupLabel = stringResource(R.string.export_group_no_group)
     val groups = remember {
         val map = LinkedHashMap<String, MutableList<Int>>()
         all.forEachIndexed { i, ch ->
-            map.getOrPut(ch.group.ifEmpty { "Χωρίς ομάδα" }) { mutableListOf() }.add(i)
+            map.getOrPut(ch.group.ifEmpty { noGroupLabel }) { mutableListOf() }.add(i)
         }
         map
     }
@@ -84,17 +87,24 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
                 Modifier.fillMaxWidth().background(Surf1).padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White) }
-                Text("Εξαγωγή / Relay", color = Color.White, fontWeight = FontWeight.SemiBold)
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.export_back), tint = Color.White) }
+                Text(stringResource(R.string.export_title), color = Color.White, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))
-                Text("${selected.values.count { it }} επιλεγμένα", color = AccSoft, fontSize = 12.sp)
+                Text(
+                    pluralStringResource(
+                        R.plurals.export_selected_count,
+                        selected.values.count { it },
+                        selected.values.count { it }
+                    ),
+                    color = AccSoft, fontSize = 12.sp
+                )
             }
 
             // γρήγορα κουμπιά
             Row(Modifier.padding(8.dp)) {
-                SmallChip("Όλα") { all.indices.forEach { selected[it] = true } }
-                SmallChip("Κανένα") { all.indices.forEach { selected[it] = false } }
-                SmallChip("★ Αγαπημένα") {
+                SmallChip(stringResource(R.string.export_group_all)) { all.indices.forEach { selected[it] = true } }
+                SmallChip(stringResource(R.string.export_group_none)) { all.indices.forEach { selected[it] = false } }
+                SmallChip(stringResource(R.string.export_group_favorites)) {
                     all.indices.forEach { selected[it] = vm.favKey(all[it]) in state.favorites }
                 }
             }
@@ -152,8 +162,7 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
                 Column(Modifier.padding(12.dp)) {
                     if (isMac) {
                         Text(
-                            "MAC portal: μπορείς είτε να φτιάξεις .m3u αρχείο (κάνει resolve τα URLs) " +
-                                "είτε Relay (ζωντανό, κράτα το app ανοιχτό).",
+                            stringResource(R.string.export_mac_notice),
                             color = Color(0xFF8A8A94), fontSize = 12.sp
                         )
                         Spacer(Modifier.height(8.dp))
@@ -175,10 +184,10 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
                         ) {
                             if (generating) {
                                 CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
-                                Spacer(Modifier.width(8.dp)); Text("Δημιουργία…")
+                                Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.export_action_generating))
                             } else {
                                 Icon(Icons.Default.Download, null); Spacer(Modifier.width(8.dp))
-                                Text("Αποθήκευση M3U (διάλεξε φάκελο)")
+                                Text(stringResource(R.string.export_action_save_m3u))
                             }
                         }
                         Spacer(Modifier.height(10.dp))
@@ -192,21 +201,21 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
                                 Button(
                                     onClick = { copyToClipboard(ctx, state.relayUrl) },
                                     colors = ButtonDefaults.buttonColors(containerColor = Surf2)
-                                ) { Icon(Icons.Default.ContentCopy, null); Spacer(Modifier.width(6.dp)); Text("Αντιγραφή URL") }
+                                ) { Icon(Icons.Default.ContentCopy, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.export_action_copy_url)) }
                                 Spacer(Modifier.width(8.dp))
                                 Button(
                                     onClick = { vm.stopRelay() },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7A2E2E))
-                                ) { Text("Διακοπή") }
+                                ) { Text(stringResource(R.string.export_action_stop_relay)) }
                             }
                         } else {
                             OutlinedButton(
                                 onClick = {
                                     val url = vm.startRelay(selectedList())
-                                    Toast.makeText(ctx, "Relay: $url", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(ctx, ctx.getString(R.string.export_toast_relay_started, url), Toast.LENGTH_LONG).show()
                                 },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Icon(Icons.Default.Wifi, null); Spacer(Modifier.width(8.dp)); Text("Εκκίνηση Relay (ζωντανό)") }
+                            ) { Icon(Icons.Default.Wifi, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.export_action_start_relay)) }
                         }
                     } else {
                         Button(
@@ -217,7 +226,7 @@ fun ExportScreen(vm: MainViewModel, onBack: () -> Unit) {
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = Acc)
-                        ) { Icon(Icons.Default.Download, null); Spacer(Modifier.width(8.dp)); Text("Αποθήκευση M3U (διάλεξε φάκελο)") }
+                        ) { Icon(Icons.Default.Download, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.export_action_save_m3u)) }
                     }
                 }
             }
@@ -248,5 +257,5 @@ private fun TriBox(all: Boolean, some: Boolean) {
 private fun copyToClipboard(ctx: Context, text: String) {
     val cb = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
     cb.setPrimaryClip(android.content.ClipData.newPlainText("relay", text))
-    Toast.makeText(ctx, "Αντιγράφηκε", Toast.LENGTH_SHORT).show()
+    Toast.makeText(ctx, ctx.getString(R.string.export_toast_copied), Toast.LENGTH_SHORT).show()
 }

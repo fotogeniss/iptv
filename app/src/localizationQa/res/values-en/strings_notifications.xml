@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_catalog_download_channel_name">Playlist download</string>
+    <string name="notif_catalog_download_channel_description">Background catalog download progress</string>
+    <string name="notif_catalog_download_title">Playlist download</string>
+    <string name="notif_catalog_download_progress">%1$d%% · %2$s of %3$s</string>
+
+    <string name="notif_relay_channel_name">Relay</string>
+    <string name="notif_relay_title">Relay active</string>
+
+    <string name="notif_reminder_channel_name">EPG reminders</string>
+    <string name="notif_reminder_fallback_name">Channel</string>
+    <string name="notif_reminder_title">▶ %1$s</string>
+    <string name="notif_reminder_body">Starting now on %1$s</string>
+</resources>

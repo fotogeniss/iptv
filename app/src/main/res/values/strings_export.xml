@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_back">Πίσω</string>
+    <string name="export_title">Εξαγωγή / Relay</string>
+    <plurals name="export_selected_count">
+        <item quantity="one">%1$d επιλεγμένο</item>
+        <item quantity="other">%1$d επιλεγμένα</item>
+    </plurals>
+    <string name="export_group_all">Όλα</string>
+    <string name="export_group_none">Κανένα</string>
+    <string name="export_group_favorites">★ Αγαπημένα</string>
+    <string name="export_group_no_group">Χωρίς ομάδα</string>
+    <string name="export_mac_notice">MAC portal: μπορείς είτε να φτιάξεις .m3u αρχείο (κάνει resolve τα URLs) είτε Relay (ζωντανό, κράτα το app ανοιχτό).</string>
+    <string name="export_action_generating">Δημιουργία…</string>
+    <string name="export_action_save_m3u">Αποθήκευση M3U (διάλεξε φάκελο)</string>
+    <string name="export_action_copy_url">Αντιγραφή URL</string>
+    <string name="export_action_stop_relay">Διακοπή</string>
+    <string name="export_action_start_relay">Εκκίνηση Relay (ζωντανό)</string>
+    <string name="export_toast_saved">✓ Αποθηκεύτηκε</string>
+    <string name="export_toast_save_error">Σφάλμα αποθήκευσης</string>
+    <string name="export_toast_relay_started">Relay: %1$s</string>
+    <string name="export_toast_copied">Αντιγράφηκε</string>
+</resources>

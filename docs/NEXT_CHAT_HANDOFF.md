@@ -5,7 +5,7 @@ Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
 Latest completed implementation slice in this handoff:
-Profiles, parental controls and encrypted backup/restore localization.
+Library hub (Favorites/My List, Continue watching, History) localization.
 
 This document is the operational source of truth for continuing the current
 Codex collaboration in a fresh chat. Read it together with `README.md`,
@@ -65,7 +65,38 @@ of a **30-year senior software engineer**. In practice this means:
 
 ## 2. Current confirmed state
 
-- The Git worktree was clean at `4c7ee73` when this profile/account-security
+- HEAD is confirmed at `622f90b` (`feat: localize diagnostics and crash
+  reporting`), with `a035d69`, `d1c98a0` and `39d52c0` immediately before it,
+  exactly as this session's brief asserted. This was verified from `git log`
+  and `git rev-parse HEAD`, not merely trusted from a prior document.
+- When this export/relay and notifications slice began, the worktree already
+  had one pre-existing unrelated uncommitted change:
+  `app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt`
+  shows as fully modified (754 insertions/754 deletions) but is a pure
+  line-ending normalization (every line identical content, CRLF/LF only). This
+  file was left untouched by this slice; it is not part of this change and was
+  not committed or reverted.
+- **Commit blocked by the local environment, not by code or verification.**
+  All code/resource changes described below passed every required static
+  gate, but `git add`/`git commit` could not be completed from inside the
+  sandboxed agent workspace: `.git/index.lock` repeatedly appears and cannot
+  be removed from that side (`rm`, `git`'s own cleanup, and repeated retries
+  all return `Operation not permitted`). The owner successfully deleted the
+  lock file directly from Windows once, which confirms this is a Windows-side
+  file-locking/permission boundary on the sandboxed mount's view of `.git`,
+  not a stale git lock the agent can clear itself — **every git command that
+  touches the index (including a plain `git status`) can leave a fresh lock
+  behind that only a Windows-side delete can remove**, so clearing it once is
+  not enough if another git command runs afterward before staging/committing.
+  At the owner's explicit direction, work continued past this blocker rather
+  than stopping to fix git first, so **two cohesive slices are now stacked
+  uncommitted on top of `622f90b`**: export/relay + notifications, and the
+  Library hub. **HEAD still remains `622f90b`.** Before the next commit
+  attempt: delete `.git\index.lock` from Windows if present, then immediately
+  run `git add`/`git commit` for one slice at a time in the same breath as
+  clearing the lock (avoid an intervening plain `git status`, which can
+  re-create and orphan a fresh lock before the add/commit runs).
+- The Git worktree was clean at `4c7ee73` when the profile/account-security
   slice began.
 - The owner previously supplied an Android Studio screenshot confirming a
   **successful QA build in approximately 34 seconds** after commit `1a7b4f4`, and
@@ -478,6 +509,12 @@ encrypted backup/restore, Billing and Premium, and the active in-app Legal and
 Privacy and Diagnostics presentations. Provider-owned, user-owned and raw
 diagnostic data is intentionally not translated.
 
+Export/relay surfaces (`ExportScreen`), the catalog-download/relay/EPG-
+reminder system notifications, and the Library hub (Favorites/My List,
+Continue watching, History) are also migrated at the code/resource and
+static-contract level, but as of this handoff that work is **still
+uncommitted** on top of `622f90b` — see section 2's `.git/index.lock` note.
+
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
 does not mean public English can be enabled: the remaining slices below still
@@ -580,22 +617,125 @@ contain Greek display copy and raw display messages.
   expanded but not executed because the owner did not authorize Gradle. Android
   Studio compilation and mobile QA remain pending owner evidence.
 
-#### Immediate next slice: Export/share surfaces and system notifications
+#### Completed slice (uncommitted): Export/relay surfaces and system notifications
 
-Complete one commit and verification cycle per item; do not combine them:
+- The active route is `ExportScreen` (opened from `BrowseRoute` via
+  `showExport`), backed by the Android-free `ExportRelayCoordinator` and
+  `Exporter.kt`. `Exporter.saveToDownloads` was traced and confirmed **dead
+  code**: nothing on the active export path calls it (the screen saves through
+  the SAF `CreateDocument` launcher instead), so it required no localization
+  and was left untouched.
+- All app-owned `ExportScreen` copy (back/title, selected-count plural, group
+  quick actions, the MAC-portal notice, generate/save/copy/stop/start relay
+  action labels and the saved/error/relay-started/copied toast messages) now
+  comes from paired `strings_export.xml` resources. Channel/channel-count
+  numbers, the raw relay URL, filenames, the `.m3u` extension and the
+  `audio/x-mpegurl` MIME type remain unchanged data.
+- The three active notification producers found by tracing
+  `NotificationChannel(`/`setContentTitle(`/`setContentText(` across the whole
+  `app/src/main/java` tree — `CatalogDownloadService`, `RelayService` and
+  `ReminderScheduler`/`ReminderReceiver` — now build their channel
+  names/descriptions, titles and progress/body text from paired
+  `strings_notifications.xml` resources via `getString(...)`/`ctx.getString(...)`
+  (the same non-Compose Android-boundary pattern already used by
+  `SubtitleWiring.kt`). Notification channel IDs, notification IDs,
+  `PendingIntent` flags, foreground-service lifecycle/`START_*` semantics, the
+  relay URL text and the reminder deep-link intent are unchanged.
+- `scripts/localization_contracts.py` gained a hardcoded-Greek-literal audit
+  for `ExportScreen.kt` and the three notification producers, in addition to
+  the pre-existing global Greek/English resource-parity checks that already
+  cover the two new `strings_export.xml`/`strings_notifications.xml` files.
+- Static verification after this slice: localization contracts pass;
+  compatibility contracts 66/66; architecture audit 60 passes plus the known
+  `MainViewModel` size warning; deep validation 67 passes plus the documented
+  cleartext-HTTP compatibility warning; production-risk inventory 0 critical
+  findings (7 categories checked, run against a temporary read-only copy of
+  `app/src/main/java` because the mounted workspace's I/O latency made the
+  script exceed this session's per-command time budget — the copy was
+  read-only source, not a different codebase); documentation contract passes;
+  `git diff --check` is clean for every file this slice touched. Gradle,
+  compilation and device QA were not run.
+- **This slice is verified but not committed** — see the `.git/index.lock`
+  blocker in section 2. The next session should retry staging/committing
+  before starting new work.
 
-1. **Export/share surfaces, system notifications and remaining service copy.**
-   Audit `Exporter.kt`, `ExportScreen.kt`, `CatalogDownloadService.kt`,
-   `RelayService.kt` and reminder/download notification producers. Notification
-   channel names, titles, progress/errors and accessibility copy follow the app
-   locale; protocol data, provider titles, exported user data and filenames
-   remain raw.
-2. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
+#### Completed slice (uncommitted): Library hub (Favorites/My List, Continue watching, History)
+
+- The active route is `PremiumLibraryScreen` (`app/src/main/java/com/prelude/iptv/ui/PremiumLibraryScreen.kt`),
+  reached from `BrowseLibraryLayer.kt`; it delegates to `TvPremiumLibraryScreen`
+  or `MobilePremiumLibraryScreen` depending on device type. This entire
+  feature area (headers, tabs, sort/manage, rails, cards, info panel, hero
+  copy, empty states) had **no** prior localization pass — it was found
+  during the reconnaissance sweep for the next audit item, not re-touched
+  work.
+- `LibraryHubTab` and `LibrarySort` (`LibraryFoundation.kt`) no longer carry a
+  `val label: String`; a new `LibraryLocalizationResources.kt` adds
+  `labelRes()` mappings for both, plus `LibraryDestination.eyebrowRes()` for
+  the uppercase "eyebrow" label shown above the selected title in the TV info
+  panel and the mobile hero.
+- `libraryRails()` no longer builds Greek rail titles/subtitles itself; it now
+  takes a caller-supplied `LibraryRailLabels` bundle (titles, description
+  subtitles for the "All" tab, and locale-aware pluralized count subtitles for
+  the single-tab views). Both `TvPremiumLibraryScreen` and
+  `MobilePremiumLibraryScreen` build that bundle via the new
+  `libraryRailLabels(content)` composable helper.
+- `libraryDescription()` now returns `String?` (null when neither TMDB nor the
+  provider expose a description) instead of embedding a hardcoded Greek
+  fallback sentence; both call sites (`TvLibraryComponents.kt`,
+  `MobileLibraryComponents.kt`) apply the localized fallback with `?:`.
+  Provider/TMDB titles, descriptions, genres and stored favorite/continue-
+  watching/history entries remain unchanged data; only app-owned labels,
+  actions, headers and empty/fallback copy moved to paired
+  `strings_library.xml` (Greek baseline) / QA-English resources.
+- Static verification: localization contracts pass; compatibility contracts
+  66/66; architecture audit 60 passes plus the known `MainViewModel` size
+  warning; deep validation 67 passes plus the documented cleartext-HTTP
+  compatibility warning; production-risk inventory 0 critical findings (same
+  read-only-copy technique as the export/notifications slice, for the same
+  mounted-workspace I/O reason); documentation contract passes; `git diff
+  --check` is clean for every file this slice touched. Gradle, compilation and
+  device QA were not run.
+- **This slice is also verified but not committed** — see section 2.
+
+#### Next slice: Final release-surface hardcoded-string audit
+
+A reconnaissance sweep this session (`rg` for quoted Greek-Unicode-range
+literals under `app/src/main/java`) found **57 files with 330 occurrences**
+before the Library slice above; Library accounted for 7 of those files (~43
+occurrences) and is now done, leaving **50 files** still to triage. This list
+was not yet individually classified file-by-file — do that first, in this
+order, before editing:
+
+1. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
    not only files whose names contain “settings”. Classify each remaining literal
    as app copy, invariant brand/protocol text, provider/user data, diagnostic data
    or developer comment. Migrate only app copy, add contracts for every completed
-   surface and verify Greek/English keys, placeholders and plurals.
-3. **Parity inversion and public picker activation.** Only after the full audit,
+   surface and verify Greek/English keys, placeholders and plurals. Re-run the
+   same `rg` sweep first since file contents have moved on since this count.
+   Known already-audited/allowed exceptions from earlier slices (do not
+   re-flag): the two classifier literals in `LiveFoundation.kt`, the two in
+   `MobileEpgGuide.kt`, the two in `PlaylistSourceDraft.kt`, the two in
+   `PlaylistConnectionMessagePolicy.kt`, and the documented literals in
+   `MobilePlaybackOverlay.kt`/`TvPlaybackOverlay.kt`. Treat remaining files
+   such as `MainViewModel.kt`, `BrowseRoute.kt`, `SettingsRoute.kt`,
+   `DetailRouteHost.kt`, `ProviderImportScreens.kt`, `Shell.kt`,
+   `SettingsShellComponents.kt`, `SourceOnboardingComponents.kt`,
+   `SourceCardComponents.kt`, `AddPlaylistDialog.kt`, `TextEntryDialog.kt`,
+   `HeroShowcase.kt`, `MobileV2Components.kt`, `MobileMediaRail.kt`,
+   `TvMediaRail.kt`, the activities (`MainActivity.kt`, `MultiviewActivity.kt`,
+   `TvHomePlaybackActivity.kt`), `LegacyMyListChannelPublisher.kt`,
+   `PlayerEpgPanelController.kt`, `CatalogStatusPolicy.kt`,
+   `CatalogPresentationPolicy.kt`, `CatalogLoadCoordinator.kt`,
+   `PlaylistStore.kt`, `MainUiState.kt`, and the data/source/net layer files
+   (`Http.kt`, `StalkerClient.kt`, `Repository.kt`, `M3uParser.kt`,
+   `TmdbClient.kt`, `XtreamClient.kt`, `SubtitleSearchPolicy.kt`,
+   `SubtitleResultNamePolicy.kt`, `EpgManager.kt`, `DiagnosticRedactor.kt`,
+   `VlcBackend.kt`, `PlaybackEngine.kt`, `CatalogNormalizer.kt`, `PinHasher.kt`)
+   as unclassified — each needs its own read-and-classify pass; several of
+   these (data/source/net layer, `DiagnosticRedactor.kt`) are likely to be
+   mostly protocol/diagnostic data rather than app copy, but confirm per file
+   rather than assuming.
+2. **Parity inversion and public picker activation.** Only after the full audit,
    compilation and phone/TV QA: move English to unqualified `main/res/values`,
    Greek to `main/res/values-el`, change `unqualifiedResLocale` from `el` to `en`,
    enable the generated locale config and flip
@@ -737,11 +877,25 @@ The owner can paste the following after attaching or referencing this file:
 > owner's normal Android Studio build and mobile QA. Diagnostics and
 > crash-reporting localization is complete at the code/resource and
 > static-contract level, but still requires the owner's normal Android Studio
-> build and mobile QA. The immediate next task is export/share surfaces, system
-> notifications and remaining service copy. Audit `Exporter.kt`,
-> `ExportScreen.kt`, `CatalogDownloadService.kt`, `RelayService.kt` and
-> reminder/download notification producers. Localize only app-owned labels,
-> accessibility copy, states and errors; preserve protocol/provider data,
-> filenames and exported user data byte-for-byte. Run the static gates, inspect
-> the diff, update the handoff, and commit only when the slice is cohesive and
-> clean.
+> build and mobile QA. Export/relay surfaces and system notification
+> localization (`ExportScreen`, `CatalogDownloadService`, `RelayService`,
+> `ReminderScheduler`/`ReminderReceiver`) and the Library hub localization
+> (`LibraryFoundation`, `TvLibraryHeader`/`TvLibraryComponents`/
+> `TvPremiumLibraryScreen`, `MobilePremiumLibraryScreen`/
+> `MobileLibrarySections`/`MobileLibraryComponents`) are also complete at the
+> code/resource and static-contract level, but as of this handoff **both are
+> uncommitted** because `.git/index.lock` kept reappearing in the working
+> session (every git command touching the index can leave a fresh
+> Windows-side lock the sandbox cannot remove itself) — first retry
+> staging/committing those two slices **separately, one cohesive commit
+> each**, clearing `.git\index.lock` from Windows immediately before each
+> add/commit with no intervening `git status`. Then continue with the final
+> release-surface hardcoded-string audit across every active manifest, Kotlin
+> and XML file; a reconnaissance sweep already found 50 files with
+> unclassified Greek literals outside Library (see the handoff body for the
+> file list). Classify each remaining literal as app copy, invariant
+> brand/protocol text, provider/user data, diagnostic data or developer
+> comment, migrate only app copy, and only after that audit plus compilation
+> and phone/TV QA proceed to parity inversion and public picker activation.
+> Run the static gates, inspect the diff, update the handoff, and commit only
+> when a slice is cohesive and clean.

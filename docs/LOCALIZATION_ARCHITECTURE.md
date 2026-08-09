@@ -4,9 +4,12 @@ Status: owner-approved design; runtime foundation, navigation/settings, Home,
 Live TV, movie/series browsing, global Search, details/seasons/episodes, Player
 source onboarding/management, full EPG and the active Settings shell plus
 playback/personalization surfaces are implemented behind the QA/parity rollout
-gate. Profiles, parental controls and encrypted backup/restore are also
-implemented. Billing, Legal, Diagnostics, exported/share surfaces and system
-notifications remain before final parity.
+gate. Profiles, parental controls and encrypted backup/restore, Billing and
+Premium, Legal and Privacy, Diagnostics and crash reporting, export/relay and
+system notification copy, and the Library hub (Favorites/My List, Continue
+watching, History) are also implemented. The final release-surface
+hardcoded-string audit and public picker activation remain before final
+parity.
 
 ## Product contract
 
@@ -166,10 +169,28 @@ cohesive vertical slices:
     while raw redacted pending-report summaries, exception types and stack data
     remain untranslated diagnostic data. Consent, one-report local retention,
     storage keys, Firebase initialization/deletion and no-Analytics/ad-ID behavior
-    remain unchanged.** Exported/share surfaces and system notifications follow
-    as separate cohesive slices. Account/cloud sync is not part of the current
+    remain unchanged.** Account/cloud sync is not part of the current
     local-only product.
-16. Final hardcoded-string audit, translation parity gate and public picker
+16. Export/relay surfaces and system notifications. **Implemented for the
+    active `ExportScreen` and the `CatalogDownloadService`, `RelayService` and
+    `ReminderScheduler`/`ReminderReceiver` notification producers. Notification
+    channel names/descriptions, titles, progress/body copy and the Export/Relay
+    screen's labels, actions and save/copy/relay toast messages cross paired
+    Greek/QA-English resources. Notification channel IDs, notification IDs,
+    PendingIntent behavior, foreground-service lifecycle, export file
+    format/MIME type, SAF save behavior, relay URLs and provider channel/
+    programme data remain unchanged. `Exporter.kt` has no active display copy
+    (`saveToDownloads` is unused dead code on the current export path).**
+17. Library hub (Favorites/My List, Continue watching, History). **Implemented
+    for mobile and Android TV. `LibraryHubTab` and `LibrarySort` no longer own
+    display labels (`labelRes()` mapping); `LibraryDestination` gets an
+    `eyebrowRes()` mapping for the info-panel eyebrow label;
+    `libraryRails()` receives a caller-supplied `LibraryRailLabels` bundle
+    instead of building Greek titles/subtitles itself; `libraryDescription()`
+    returns null instead of a hardcoded fallback sentence, with the UI
+    boundary supplying the localized fallback. Provider titles/metadata and
+    stored favorite/history/continue-watching data remain untranslated.**
+18. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -184,8 +205,8 @@ still bypass resources.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
   boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG/Settings/
-  account-security/Billing/Legal/Diagnostics mappings and hardcoded-copy audits,
-  and the closed public rollout gate.
+  account-security/Billing/Legal/Diagnostics/Export-notifications/Library
+  mappings and hardcoded-copy audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

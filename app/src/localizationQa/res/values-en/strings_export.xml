@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_back">Back</string>
+    <string name="export_title">Export / Relay</string>
+    <plurals name="export_selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <string name="export_group_all">All</string>
+    <string name="export_group_none">None</string>
+    <string name="export_group_favorites">★ Favorites</string>
+    <string name="export_group_no_group">No group</string>
+    <string name="export_mac_notice">MAC portal: you can either build an .m3u file (resolves the URLs) or use Relay (live, keep the app open).</string>
+    <string name="export_action_generating">Generating…</string>
+    <string name="export_action_save_m3u">Save M3U (choose a folder)</string>
+    <string name="export_action_copy_url">Copy URL</string>
+    <string name="export_action_stop_relay">Stop</string>
+    <string name="export_action_start_relay">Start Relay (live)</string>
+    <string name="export_toast_saved">✓ Saved</string>
+    <string name="export_toast_save_error">Save error</string>
+    <string name="export_toast_relay_started">Relay: %1$s</string>
+    <string name="export_toast_copied">Copied</string>
+</resources>

@@ -5,6 +5,23 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the Library hub (Favorites/My List, Continue watching and History)
+  across mobile and Android TV with paired Greek and QA-English resources:
+  headers, tabs, sort/manage actions, rail titles/subtitles with locale-aware
+  counts, info-panel eyebrow labels, empty states, hero copy and the
+  description fallback sentence. `LibraryHubTab` and `LibrarySort` no longer
+  own display labels, and `libraryRails()`/`libraryDescription()` receive or
+  return typed/localized values instead of hardcoded Greek text. Provider
+  titles, metadata and stored favorite/history/continue-watching data remain
+  unchanged.
+- Localized export/relay and system notification copy with paired Greek and
+  QA-English resources: the Export/Relay screen (labels, group actions, MAC
+  notice, save/copy/stop/start actions and save/copy/relay toast messages) and
+  the catalog-download, relay and EPG-reminder notification channel
+  names/descriptions, titles and progress/body text. Notification channel IDs,
+  notification IDs, PendingIntent behavior, foreground-service lifecycle,
+  export file format/MIME type, SAF save behavior, relay URLs and provider
+  channel/programme data remain unchanged.
 - Localized the opt-in Diagnostics and crash-reporting screen with paired Greek
   and QA-English resources, typed status feedback, locale-aware pending-report
   timestamps and localized switch accessibility copy. Consent defaults,
