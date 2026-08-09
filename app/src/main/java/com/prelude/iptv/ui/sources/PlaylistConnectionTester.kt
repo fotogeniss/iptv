@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 
 data class PlaylistConnectionTestResult(
     val successful: Boolean,
-    val message: String,
+    val failure: PlaylistConnectionFailure? = null,
 )
 
 /**
@@ -18,8 +18,8 @@ data class PlaylistConnectionTestResult(
  * to a complete, currently visible draft.
  */
 suspend fun testPlaylistConnection(draft: PlaylistSourceDraft): PlaylistConnectionTestResult {
-    PlaylistSourceDraftPolicy.validationMessage(draft)?.let { validation ->
-        return PlaylistConnectionTestResult(false, validation)
+    PlaylistSourceDraftPolicy.validation(draft)?.let {
+        return PlaylistConnectionTestResult(false, PlaylistConnectionFailure.UNKNOWN)
     }
 
     return withContext(Dispatchers.IO) {
@@ -49,14 +49,14 @@ suspend fun testPlaylistConnection(draft: PlaylistSourceDraft): PlaylistConnecti
             }
             PlaylistConnectionTestResult(
                 successful = result.first,
-                message = if (result.first) result.second else PlaylistConnectionMessagePolicy.failure(result.second),
+                failure = if (result.first) null else PlaylistConnectionMessagePolicy.failure(result.second),
             )
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             PlaylistConnectionTestResult(
                 successful = false,
-                message = PlaylistConnectionMessagePolicy.failure(error.message),
+                failure = PlaylistConnectionMessagePolicy.failure(error.message),
             )
         }
     }

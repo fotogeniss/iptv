@@ -38,12 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Playlist
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.ui.IptvColors
 
@@ -60,6 +62,7 @@ internal fun MobileEditPlaylistScreen(
     var domain by remember { mutableStateOf(existing.server) }
     var username by remember { mutableStateOf(existing.username) }
     var password by remember { mutableStateOf(existing.password) }
+    val defaultName = stringResource(R.string.sources_default_playlist_name)
     val valid = if (credentialsMode) domain.isNotBlank() && username.isNotBlank() && password.isNotBlank() else url.isNotBlank()
 
     Column(Modifier.fillMaxSize().background(Color(0xFF050505))) {
@@ -67,8 +70,8 @@ internal fun MobileEditPlaylistScreen(
             Modifier.fillMaxWidth().height(76.dp).border(0.5.dp, IptvColors.Divider).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White) }
-            Text("Επεξεργασία λίστας", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.sources_back), tint = Color.White) }
+            Text(stringResource(R.string.sources_edit_playlist), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             Spacer(Modifier.size(48.dp))
         }
 
@@ -76,15 +79,15 @@ internal fun MobileEditPlaylistScreen(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 25.dp)
         ) {
             EditModeCard(
-                title = "URL",
-                tags = "M3U  ·  Xtream URL",
+                title = stringResource(R.string.sources_url_mode),
+                tags = stringResource(R.string.sources_url_mode_tags),
                 selected = !credentialsMode,
                 icon = { Icon(Icons.Default.Link, null, tint = Color.White) },
                 onClick = { credentialsMode = false }
             )
             Spacer(Modifier.height(10.dp))
             EditModeCard(
-                title = "Username & Password",
+                title = stringResource(R.string.sources_credentials_mode),
                 tags = "Xtream",
                 selected = credentialsMode,
                 icon = { Icon(Icons.Default.Lock, null, tint = Color.White) },
@@ -92,22 +95,22 @@ internal fun MobileEditPlaylistScreen(
             )
             Spacer(Modifier.height(24.dp))
 
-            EditField("Όνομα λίστας (προαιρετικό)", name, "Η λίστα μου") { name = it }
+            EditField(stringResource(R.string.sources_playlist_name_optional), name, defaultName) { name = it }
             if (credentialsMode) {
-                EditField("Domain (Xtream)", domain, "https://server.example.com") { domain = it }
+                EditField(stringResource(R.string.sources_xtream_domain), domain, "https://server.example.com") { domain = it }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(Modifier.weight(1f)) { EditField("Username", username, "username") { username = it } }
-                    Box(Modifier.weight(1f)) { EditField("Password", password, "password", password = true) { password = it } }
+                    Box(Modifier.weight(1f)) { EditField(stringResource(R.string.sources_username), username, "username") { username = it } }
+                    Box(Modifier.weight(1f)) { EditField(stringResource(R.string.sources_password), password, "password", password = true) { password = it } }
                 }
             } else {
-                EditField("URL λίστας (M3U ή Xtream)", url, "https://server.example.com/list.m3u", singleLine = false) { url = it }
+                EditField(stringResource(R.string.sources_playlist_url_m3u_xtream), url, "https://server.example.com/list.m3u", singleLine = false) { url = it }
             }
             Spacer(Modifier.height(42.dp))
             Button(
                 onClick = {
                     val updated = if (credentialsMode) {
                         existing.copy(
-                            name = name.ifBlank { "Η λίστα μου" },
+                            name = name.ifBlank { defaultName },
                             type = PlaylistType.XTREAM,
                             source = "",
                             isUrl = true,
@@ -117,7 +120,7 @@ internal fun MobileEditPlaylistScreen(
                         )
                     } else {
                         existing.copy(
-                            name = name.ifBlank { "Η λίστα μου" },
+                            name = name.ifBlank { defaultName },
                             type = PlaylistType.M3U,
                             source = url.trim(),
                             isUrl = true,
@@ -133,7 +136,7 @@ internal fun MobileEditPlaylistScreen(
                 shape = RoundedCornerShape(13.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, disabledContainerColor = Color(0xFF292929))
             ) {
-                Text("Αποθήκευση αλλαγών", fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.sources_save_changes), fontWeight = FontWeight.Black)
             }
             Spacer(Modifier.height(30.dp))
         }

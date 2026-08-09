@@ -21,9 +21,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -102,6 +101,8 @@ fun AddPlaylistScreen(
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     val editing = existing != null
+    val defaultPlaylistName = stringResource(R.string.sources_default_playlist_name)
+    val defaultLocalName = stringResource(R.string.sources_default_local_name)
 
     if (
         existing != null && !isTvDevice() &&
@@ -161,7 +162,7 @@ fun AddPlaylistScreen(
                     val dir = File(ctx.filesDir, "playlists").apply { mkdirs() }
                     val f = File(dir, "pl_${System.currentTimeMillis()}.m3u")
                     val inp = ctx.contentResolver.openInputStream(uri)
-                        ?: return@withContext null to "Δεν άνοιξε το αρχείο."
+                        ?: return@withContext null to ctx.getString(R.string.sources_file_open_failed)
                     inp.use { src -> f.outputStream().use { dst -> src.copyTo(dst) } }
                     // έλεγχος εγκυρότητας στα πρώτα 4KB — αρκεί για το #EXTM3U
                     val head = f.inputStream().use { st ->
@@ -169,13 +170,13 @@ fun AddPlaylistScreen(
                     }
                     if (!head.contains("#EXTINF") && !head.contains("#EXTM3U")) {
                         f.delete()
-                        return@withContext null to "Το αρχείο δεν μοιάζει με M3U."
+                        return@withContext null to ctx.getString(R.string.sources_failure_invalid_m3u)
                     }
                     f.absolutePath to (uri.lastPathSegment?.substringAfterLast('/') ?: "playlist.m3u")
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (e: Exception) {
-                    null to (e.message ?: "σφάλμα ανάγνωσης")
+                    null to (e.message ?: ctx.getString(R.string.sources_read_error))
                 }
             }
             val importedPath = res.first
@@ -198,7 +199,7 @@ fun AddPlaylistScreen(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (e: Exception) {
-                    false to (e.message ?: "σφάλμα")
+                    false to (e.message ?: ctx.getString(R.string.sources_generic_error))
                 }
             }
             testing = false; testOk = res.first; testMsg = res.second
@@ -219,9 +220,9 @@ fun AddPlaylistScreen(
             Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = AHi) }
+            IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.sources_back), tint = AHi) }
             Text(
-                if (editing) "Επεξεργασία πηγής" else "Προσθήκη πηγής",
+                stringResource(if (editing) R.string.sources_edit_source else R.string.sources_add_source),
                 color = AHi, fontSize = 18.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
@@ -236,14 +237,14 @@ fun AddPlaylistScreen(
                 .padding(horizontal = if (isTvDevice()) AppDimens.TvHorizontal else AppDimens.MobileHorizontal)
         ) {
             Text(
-                if (editing) "Ενημέρωσε τα στοιχεία σύνδεσης" else "Σύνδεσε την υπηρεσία σου",
+                stringResource(if (editing) R.string.sources_update_credentials else R.string.sources_connect_service),
                 color = AHi,
                 fontSize = if (isTvDevice()) 28.sp else 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "1. Τύπος πηγής   2. Στοιχεία σύνδεσης   3. Έλεγχος και αποθήκευση",
+                stringResource(R.string.sources_flow_summary),
                 color = ALo,
                 fontSize = 13.sp
             )
@@ -253,7 +254,7 @@ fun AddPlaylistScreen(
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(AElev).padding(4.dp)
             ) {
-                listOf("M3U", "XTREAM", "MAC", "FILE").forEachIndexed { i, label ->
+                listOf("M3U", "XTREAM", "MAC", stringResource(R.string.sources_file_tab)).forEachIndexed { i, label ->
                     val sel = tab == i
                     Box(
                         Modifier.weight(1f).clip(RoundedCornerShape(22.dp))
@@ -280,7 +281,7 @@ fun AddPlaylistScreen(
 
             // ---- επιλογή προφίλ (Xtream / MAC) ----
             if (tab == 1 || tab == 2) {
-                Label("Διάλεξε εικονίδιο προφίλ")
+                Label(stringResource(R.string.sources_profile_icon))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(ProfileColors.size) { i ->
                         val sel = avatar == i
@@ -303,32 +304,32 @@ fun AddPlaylistScreen(
                 Spacer(Modifier.height(18.dp))
             }
 
-            Label("Όνομα")
-            AField(name, "π.χ. Η λίστα μου") { name = it }
+            Label(stringResource(R.string.sources_name))
+            AField(name, stringResource(R.string.sources_name_hint)) { name = it }
 
             when (tab) {
                 0 -> {
-                    Label("URL playlist (M3U/M3U8)", required = true)
+                    Label(stringResource(R.string.sources_playlist_url), required = true)
                     AField(m3uUrl, "https://example.com/list.m3u") { m3uUrl = it }
                 }
                 1 -> {
-                    Label("Server URL", required = true)
+                    Label(stringResource(R.string.sources_server_address), required = true)
                     AField(server, "http://server:8080") { server = it }
-                    Label("Username", required = true)
+                    Label(stringResource(R.string.sources_username), required = true)
                     AField(user, "username") { user = it }
-                    Label("Password", required = true)
+                    Label(stringResource(R.string.sources_password), required = true)
                     AField(pass, "password", isPassword = true) { pass = it }
                 }
                 2 -> {
-                    Label("Portal URL", required = true)
+                    Label(stringResource(R.string.sources_portal_address), required = true)
                     AField(portal, "http://portal.com/c/") { portal = it }
-                    Label("MAC διεύθυνση", required = true)
+                    Label(stringResource(R.string.sources_mac_address), required = true)
                     AField(mac, "00:1A:79:XX:XX:XX") { mac = it }
-                    Label("User-Agent (προαιρετικό)")
-                    AField(ua, "άφησέ το κενό για αυτόματο") { ua = it }
+                    Label(stringResource(R.string.sources_user_agent_optional))
+                    AField(ua, stringResource(R.string.sources_user_agent_auto_hint)) { ua = it }
                 }
                 3 -> {
-                    Label("Αρχείο M3U από τη συσκευή", required = true)
+                    Label(stringResource(R.string.sources_file_from_device), required = true)
                     Row(
                         Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
                             .background(AElev).border(1.dp, ALine, RoundedCornerShape(14.dp))
@@ -340,7 +341,7 @@ fun AddPlaylistScreen(
                         Icon(Icons.AutoMirrored.Filled.InsertDriveFile, null, tint = AAcc2, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(12.dp))
                         Text(
-                            pickedLabel.ifBlank { "Πάτα για επιλογή αρχείου…" },
+                            pickedLabel.ifBlank { stringResource(R.string.sources_tap_select_file) },
                             color = if (pickedLabel.isBlank()) ALo else AHi, fontSize = 14.sp,
                             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
                         )
@@ -352,7 +353,7 @@ fun AddPlaylistScreen(
             }
 
             if (tab != 3) {
-                Label("EPG URL (προαιρετικό, XMLTV)")
+                Label(stringResource(R.string.sources_epg_url_optional_xmltv))
                 AField(epg, "https://example.com/epg.xml") { epg = it }
             }
 
@@ -368,10 +369,10 @@ fun AddPlaylistScreen(
                 ) {
                     if (testing) {
                         CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = AAcc2)
-                        Spacer(Modifier.width(8.dp)); Text("Δοκιμή…")
+                        Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sources_testing))
                     } else {
                         Icon(Icons.Default.Cable, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp)); Text("Δοκιμή σύνδεσης")
+                        Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sources_test_connection))
                     }
                 }
                 testOk?.let { ok ->
@@ -396,8 +397,11 @@ fun AddPlaylistScreen(
 
             Button(
                 onClick = {
-                    val pl = build(tab, name, epg, m3uUrl, server, user, pass, portal, mac, ua, pickedPath, pickedLabel, avatar)
-                    if (pl == null) error = "Συμπλήρωσε τα υποχρεωτικά πεδία (*)." else onAdd(pl)
+                    val pl = build(
+                        tab, name, epg, m3uUrl, server, user, pass, portal, mac,
+                        ua, pickedPath, pickedLabel, avatar, defaultPlaylistName, defaultLocalName,
+                    )
+                    if (pl == null) error = ctx.getString(R.string.sources_complete_required) else onAdd(pl)
                 },
                 enabled = valid,
                 shape = RoundedCornerShape(6.dp),
@@ -413,7 +417,11 @@ fun AddPlaylistScreen(
                     tint = if (valid) Color.White else ALo, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    if (editing) "Αποθήκευση" else if (tab == 1) "Προσθήκη προφίλ" else "Προσθήκη λίστας",
+                    stringResource(
+                        if (editing) R.string.sources_save
+                        else if (tab == 1) R.string.sources_add_profile
+                        else R.string.sources_add_playlist
+                    ),
                     color = if (valid) Color.White else ALo,
                     fontSize = 16.sp, fontWeight = FontWeight.Bold
                 )
@@ -464,7 +472,7 @@ private fun TvField(value: String, hint: String, isPassword: Boolean, onChange: 
         )
     }
     if (editing) TextEntryDialog(
-        title = hint.ifBlank { "Συμπλήρωσε" },
+        title = hint.ifBlank { stringResource(R.string.sources_enter_value) },
         initial = value,
         isPassword = isPassword,
         onDismiss = { editing = false },
@@ -486,7 +494,8 @@ private fun PhoneField(value: String, hint: String, isPassword: Boolean, onChang
                 IconButton(onClick = { reveal = !reveal }) {
                     Icon(
                         if (reveal) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        "Εμφάνιση", tint = ALo, modifier = Modifier.size(20.dp)
+                        stringResource(if (reveal) R.string.sources_hide_password else R.string.sources_show_password),
+                        tint = ALo, modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -505,10 +514,11 @@ private fun build(
     tab: Int, name: String, epg: String, m3uUrl: String,
     server: String, user: String, pass: String,
     portal: String, mac: String, ua: String,
-    filePath: String, fileLabel: String, avatar: Int
+    filePath: String, fileLabel: String, avatar: Int,
+    defaultPlaylistName: String, defaultLocalName: String
 ): Playlist? = when (tab) {
     0 -> if (m3uUrl.isBlank()) null else Playlist(
-        name = name.ifBlank { m3uUrl.substringAfterLast('/').ifBlank { "Playlist" } },
+        name = name.ifBlank { m3uUrl.substringAfterLast('/').ifBlank { defaultPlaylistName } },
         type = PlaylistType.M3U, source = m3uUrl.trim(), isUrl = true, epgUrl = epg.trim(), avatar = avatar
     )
     1 -> if (server.isBlank() || user.isBlank() || pass.isBlank()) null else Playlist(
@@ -522,7 +532,7 @@ private fun build(
         mac = mac.trim(), userAgent = ua.trim(), epgUrl = epg.trim(), avatar = avatar
     )
     else -> if (filePath.isBlank()) null else Playlist(
-        name = name.ifBlank { fileLabel.ifBlank { "Τοπικό M3U" } },
+        name = name.ifBlank { fileLabel.ifBlank { defaultLocalName } },
         type = PlaylistType.M3U, source = filePath, isUrl = false, avatar = avatar
     )
 }

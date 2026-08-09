@@ -344,6 +344,76 @@ for overlay_path in (
     if unexpected:
         failures.append(f"hardcoded Greek display copy in migrated Player overlay: {overlay_path}")
 
+source_draft = read("app/src/main/java/com/prelude/iptv/ui/sources/PlaylistSourceDraft.kt")
+source_connection = read(
+    "app/src/main/java/com/prelude/iptv/ui/sources/PlaylistConnectionMessagePolicy.kt"
+)
+source_submission = read(
+    "app/src/main/java/com/prelude/iptv/ui/sources/PlaylistSourceSubmission.kt"
+)
+source_importer = read("app/src/main/java/com/prelude/iptv/ui/sources/M3uFileImporter.kt")
+source_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/SourceLocalizationResources.kt"
+)
+if "val reason: PlaylistSourceValidationReason" not in source_draft:
+    failures.append("source validation still transports localized display copy")
+if "val kind: PlaylistSourceDetectionKind" not in source_draft:
+    failures.append("source detection still transports localized display copy")
+if "enum class PlaylistConnectionFailure" not in source_connection:
+    failures.append("source connection failures bypass the typed localization boundary")
+if "sealed interface PlaylistSourceSubmissionFailure" not in source_submission:
+    failures.append("source submission failures bypass the typed localization boundary")
+if "enum class M3uImportFailure" not in source_importer:
+    failures.append("M3U import failures bypass the typed localization boundary")
+for mapping in (
+    "PlaylistSourceValidationReason.messageRes",
+    "PlaylistSourceDetectionKind.labelRes",
+    "PlaylistConnectionFailure.messageRes",
+    "PlaylistSourceSubmissionFailure.messageRes",
+    "M3uImportFailure.messageRes",
+    "SettingsSourceStatus.labelRes",
+):
+    if mapping not in source_mapping:
+        failures.append(f"source resource mapping missing: {mapping}")
+
+# These Greek aliases classify provider/paste input; they are not display copy.
+source_policy_greek = {
+    literal for literal in re.findall(r'"(?:\\.|[^"\\])*"', source_draft)
+    if re.search(r"[\u0370-\u03ff\u1f00-\u1fff]", literal)
+}
+if len(source_policy_greek) != 2 or any(
+    "όνομα\\\\s+χρήστη" not in literal and "κωδικός" not in literal
+    for literal in source_policy_greek
+):
+    failures.append("source draft policy contains unexpected Greek display copy")
+connection_classifier_greek = set(greek_string_literals(source_connection))
+if connection_classifier_greek != {'"δεν μοιάζει με m3u"', '"λάθος στοιχεία"'}:
+    failures.append("source connection classifier contains unexpected Greek display copy")
+for pure_source in (source_submission, source_importer):
+    if greek_string_literals(pure_source):
+        failures.append("source policy/import boundary owns Greek display copy")
+
+migrated_source_ui = [
+    "app/src/main/java/com/prelude/iptv/AddPlaylistScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileEditPlaylistScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobilePlaylistManagerScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileSettingsComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileAddPlaylistComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileAddPlaylistScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileSourceDetailsStep.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/sources/MobileSourceOnboardingSteps.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/PlaylistSourcesScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/settings/TvSettingsComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvAddPlaylistScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceDetailsStep.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/sources/TvSourceOnboardingSteps.kt",
+]
+for ui_path in migrated_source_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Source UI: {ui_path}")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

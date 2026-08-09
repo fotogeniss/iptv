@@ -20,6 +20,7 @@ class PlaylistSourceDraftPolicyTest {
                 playlistUrl = "https://example.com/list.m3u",
                 name = "Main",
             ),
+            fallbackName = "Playlist",
         )
         assertEquals(PlaylistType.M3U, remote?.type)
         assertTrue(remote?.isUrl == true)
@@ -30,6 +31,7 @@ class PlaylistSourceDraftPolicyTest {
                 filePath = "C:/app/files/playlists/list.m3u",
                 fileLabel = "list.m3u",
             ),
+            fallbackName = "Local M3U",
         )
         assertEquals(PlaylistType.M3U, local?.type)
         assertFalse(local?.isUrl == true)
@@ -43,6 +45,7 @@ class PlaylistSourceDraftPolicyTest {
                 portal = "https://portal.example.com/c/",
                 macAddress = "001a79abcdef",
             ),
+            fallbackName = "Playlist",
         )
 
         assertEquals(PlaylistType.STALKER, playlist?.type)
@@ -93,7 +96,7 @@ class PlaylistSourceDraftPolicyTest {
         )
         assertEquals(PlaylistSourceField.PASSWORD, PlaylistSourceDraftPolicy.validation(incomplete)?.field)
 
-        val playlist = PlaylistSourceDraftPolicy.build(incomplete.copy(password = "secret"))
+        val playlist = PlaylistSourceDraftPolicy.build(incomplete.copy(password = "secret"), "Playlist")
         assertEquals(PlaylistType.XTREAM, playlist?.type)
         assertEquals("http://provider.example", playlist?.server)
     }
@@ -105,17 +108,21 @@ class PlaylistSourceDraftPolicyTest {
             playlistUrl = "https://example.com/list.m3u",
         )
 
-        val failed = submitPlaylistSource(draft) {
+        val failed = submitPlaylistSource(draft, "Playlist", tester = {
             testCalls += 1
-            PlaylistConnectionTestResult(false, "Ο server δεν απάντησε.")
-        }
+            PlaylistConnectionTestResult(false, PlaylistConnectionFailure.TIMEOUT)
+        })
         assertFalse(failed.successful)
+        assertEquals(
+            PlaylistSourceSubmissionFailure.Connection(PlaylistConnectionFailure.TIMEOUT),
+            failed.failure,
+        )
         assertEquals(1, testCalls)
 
-        val success = submitPlaylistSource(draft) {
+        val success = submitPlaylistSource(draft, "Playlist", tester = {
             testCalls += 1
-            PlaylistConnectionTestResult(true, "Έγκυρο M3U")
-        }
+            PlaylistConnectionTestResult(true)
+        })
         assertTrue(success.successful)
         assertNotNull(success.playlist)
         assertEquals(2, testCalls)
@@ -123,15 +130,15 @@ class PlaylistSourceDraftPolicyTest {
 
     @Test fun providerFailuresBecomeActionableWithoutLeakingRawTransportText() {
         assertEquals(
-            "Δεν βρέθηκε ο server. Έλεγξε προσεκτικά τη διεύθυνση.",
+            PlaylistConnectionFailure.SERVER_NOT_FOUND,
             PlaylistConnectionMessagePolicy.failure("java.net.UnknownHostException: private.provider.test"),
         )
         assertEquals(
-            "Ο server απέρριψε τα στοιχεία. Έλεγξε όνομα χρήστη και κωδικό.",
+            PlaylistConnectionFailure.CREDENTIALS_REJECTED,
             PlaylistConnectionMessagePolicy.failure("HTTP 401 Unauthorized"),
         )
         assertEquals(
-            "Η σύνδεση απέτυχε. Έλεγξε τα στοιχεία και δοκίμασε ξανά.",
+            PlaylistConnectionFailure.UNKNOWN,
             PlaylistConnectionMessagePolicy.failure("internal stack detail"),
         )
     }

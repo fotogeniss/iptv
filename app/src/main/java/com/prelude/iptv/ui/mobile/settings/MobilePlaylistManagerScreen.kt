@@ -35,13 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaylistPreferencePolicy
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.refreshDaysLabelRes
 
 @Composable
 internal fun MobilePlaylistManagerScreen(
@@ -59,32 +63,36 @@ internal fun MobilePlaylistManagerScreen(
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onBack)
+    val displayName = source.name.ifBlank { stringResource(R.string.sources_fallback_name, source.index + 1) }
+    val displayEndpoint = source.endpoint.ifBlank {
+        stringResource(if (source.local) R.string.sources_local_file else R.string.sources_local_source)
+    }
     Column(modifier.fillMaxSize().background(Color(0xFF050505))) {
-        MobileSettingsFlowHeader("Η λίστα μου", onBack)
+        MobileSettingsFlowHeader(displayName, onBack)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 24.dp)) {
-            Text("Ενεργή λίστα", color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.sources_active_playlist), color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(14.dp))
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0xFF131313))
                     .border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(18.dp)).padding(19.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(source.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(displayName, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     SourceBadge(source.typeLabel)
                 }
                 Spacer(Modifier.height(20.dp))
-                SourceFact("Κατάσταση", source.statusLabel)
-                SourceFact("Τύπος", source.typeLabel)
-                SourceFact("Διεύθυνση", source.endpoint)
-                SourceFact("Φορτωμένα στοιχεία", source.channelCount?.toString() ?: "—")
+                SourceFact(stringResource(R.string.sources_status), stringResource(source.status.labelRes()))
+                SourceFact(stringResource(R.string.sources_type), source.typeLabel)
+                SourceFact(stringResource(R.string.sources_address), displayEndpoint)
+                SourceFact(stringResource(R.string.sources_loaded_items), source.channelCount?.toString() ?: "—")
             }
             Spacer(Modifier.height(12.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
                 OutlinedButton(onClick = onEdit, shape = RoundedCornerShape(12.dp)) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp)); Text("  Επεξεργασία")
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.size(6.dp)); Text(stringResource(R.string.sources_edit))
                 }
                 Button(onClick = onDelete, colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary), shape = RoundedCornerShape(12.dp)) {
-                    Icon(Icons.Default.DeleteOutline, null, modifier = Modifier.size(18.dp)); Text("  Διαγραφή")
+                    Icon(Icons.Default.DeleteOutline, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.size(6.dp)); Text(stringResource(R.string.sources_delete))
                 }
             }
             Spacer(Modifier.height(24.dp))
@@ -93,16 +101,16 @@ internal fun MobilePlaylistManagerScreen(
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
                 shape = RoundedCornerShape(13.dp)
-            ) { Icon(Icons.Default.PlayArrow, null); Text("  Άνοιγμα λίστας", fontWeight = FontWeight.Black) }
+            ) { Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.size(6.dp)); Text(stringResource(R.string.sources_open_playlist), fontWeight = FontWeight.Black) }
             Spacer(Modifier.height(9.dp))
             OutlinedButton(onClick = onRefresh, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(13.dp)) {
-                Icon(Icons.Default.Refresh, null); Text("  Ανανέωση περιεχομένου", fontWeight = FontWeight.ExtraBold)
+                Icon(Icons.Default.Refresh, null); Spacer(Modifier.size(6.dp)); Text(stringResource(R.string.sources_refresh_content), fontWeight = FontWeight.ExtraBold)
             }
             TextButton(onClick = onManageAll, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                Text("Όλες οι αποθηκευμένες πηγές", color = IptvColors.TextSecondary, fontSize = 11.sp)
+                Text(stringResource(R.string.sources_all_saved), color = IptvColors.TextSecondary, fontSize = 11.sp)
             }
             Spacer(Modifier.height(27.dp))
-            Text("Προτιμήσεις", color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.sources_preferences), color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(12.dp))
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color(0xFF171717))
@@ -110,8 +118,8 @@ internal fun MobilePlaylistManagerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Αυτόματο άνοιγμα", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Text(if (autoOpen) "Ενεργό" else "Ανενεργό", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                    Text(stringResource(R.string.sources_auto_open), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(if (autoOpen) R.string.sources_enabled else R.string.sources_disabled), color = IptvColors.TextTertiary, fontSize = 10.sp)
                 }
                 Switch(
                     checked = autoOpen,
@@ -120,8 +128,7 @@ internal fun MobilePlaylistManagerScreen(
                 )
             }
             Text(
-                if (autoOpen) "Η τελευταία ενεργή λίστα ανοίγει αυτόματα κατά την εκκίνηση."
-                else "Θα επιλέγεις χειροκίνητα τη λίστα μετά την εκκίνηση.",
+                stringResource(if (autoOpen) R.string.sources_auto_open_on else R.string.sources_auto_open_off),
                 color = IptvColors.TextTertiary, fontSize = 11.sp, lineHeight = 16.sp,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 11.dp)
             )
@@ -130,8 +137,8 @@ internal fun MobilePlaylistManagerScreen(
                     .clickable { onRefreshDaysChange(PlaylistPreferencePolicy.nextRefreshDays(refreshDays)) }.padding(17.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Συχνότητα ενημέρωσης", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                Text(PlaylistPreferencePolicy.refreshDaysLabel(refreshDays), color = IptvColors.TextSecondary, fontSize = 12.sp)
+                Text(stringResource(R.string.sources_refresh_frequency), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(stringResource(refreshDaysLabelRes(refreshDays)), color = IptvColors.TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.height(38.dp))
         }

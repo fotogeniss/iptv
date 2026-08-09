@@ -35,14 +35,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.PlaylistType
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
+import com.prelude.iptv.ui.localization.labelRes
 
 @Composable
 internal fun MobileSettingsSourceCard(
@@ -53,6 +57,10 @@ internal fun MobileSettingsSourceCard(
     onRefresh: (() -> Unit)? = null
 ) {
     var menu by remember { mutableStateOf(false) }
+    val displayName = source.name.ifBlank { stringResource(R.string.sources_fallback_name, source.index + 1) }
+    val displayEndpoint = source.endpoint.ifBlank {
+        stringResource(if (source.local) R.string.sources_local_file else R.string.sources_local_source)
+    }
     Row(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(StreamingRadius.Panel))
@@ -74,7 +82,7 @@ internal fun MobileSettingsSourceCard(
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    source.name,
+                    displayName,
                     color = IptvColors.TextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -90,7 +98,7 @@ internal fun MobileSettingsSourceCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            "ΕΝΕΡΓΗ",
+                            stringResource(R.string.sources_status_active).uppercase(),
                             color = IptvColors.Primary,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold
@@ -99,11 +107,12 @@ internal fun MobileSettingsSourceCard(
                 }
             }
             Spacer(Modifier.height(3.dp))
-            Text(source.endpoint, color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(displayEndpoint, color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(5.dp))
             if (source.loading) {
+                val downloadingLabel = stringResource(R.string.sources_downloading)
                 val progressLabel = source.progressPercent?.let { "$it% · ${source.progressStage}" }
-                    ?: source.progressStage.ifBlank { "Λήψη από την πηγή…" }
+                    ?: source.progressStage.ifBlank { downloadingLabel }
                 Text(progressLabel, color = IptvColors.TextSecondary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(6.dp))
                 val progressPercent = source.progressPercent
@@ -122,8 +131,12 @@ internal fun MobileSettingsSourceCard(
                     )
                 }
             } else {
+                val statusLabel = stringResource(source.status.labelRes())
+                val sourceSummary = source.channelCount?.let {
+                    pluralStringResource(R.plurals.sources_loaded_count, it, it)
+                } ?: statusLabel
                 Text(
-                    source.channelCount?.let { "$it φορτωμένα στοιχεία" } ?: source.statusLabel,
+                    sourceSummary,
                     color = IptvColors.TextSecondary,
                     fontSize = 10.sp
                 )
@@ -131,29 +144,29 @@ internal fun MobileSettingsSourceCard(
         }
         Box {
             IconButton(onClick = { menu = true }, modifier = Modifier.size(38.dp)) {
-                Icon(Icons.Default.MoreVert, "Επιλογές", tint = IptvColors.TextSecondary)
+                Icon(Icons.Default.MoreVert, stringResource(R.string.sources_options), tint = IptvColors.TextSecondary)
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 DropdownMenuItem(
-                    text = { Text("Άνοιγμα") },
+                    text = { Text(stringResource(R.string.sources_open)) },
                     leadingIcon = { Icon(Icons.Default.PlayArrow, null) },
                     onClick = { menu = false; onOpen() }
                 )
                 if (onRefresh != null) {
                     DropdownMenuItem(
-                        text = { Text(if (source.loading) "Ανανέωση σε εξέλιξη" else "Ανανέωση λίστας") },
+                        text = { Text(stringResource(if (source.loading) R.string.sources_refreshing else R.string.sources_refresh_playlist)) },
                         leadingIcon = { Icon(Icons.Default.Refresh, null) },
                         enabled = !source.loading,
                         onClick = { menu = false; onRefresh() }
                     )
                 }
                 DropdownMenuItem(
-                    text = { Text("Επεξεργασία") },
+                    text = { Text(stringResource(R.string.sources_edit)) },
                     leadingIcon = { Icon(Icons.Default.Edit, null) },
                     onClick = { menu = false; onEdit() }
                 )
                 DropdownMenuItem(
-                    text = { Text("Διαγραφή") },
+                    text = { Text(stringResource(R.string.sources_delete)) },
                     leadingIcon = { Icon(Icons.Default.Delete, null) },
                     onClick = { menu = false; onDelete() }
                 )

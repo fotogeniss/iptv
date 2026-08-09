@@ -1,8 +1,9 @@
 # Prelude+ localization architecture
 
 Status: owner-approved design; runtime foundation, navigation/settings, Home,
-Live TV, movie/series browsing, global Search, and details/seasons/episodes are
-implemented behind the QA/parity rollout gate.
+Live TV, movie/series browsing, global Search, details/seasons/episodes, Player
+and source onboarding/management are implemented behind the QA/parity rollout
+gate.
 
 ## Product contract
 
@@ -132,9 +133,12 @@ cohesive vertical slices:
    shared mobile/TV chrome, track menus, OpenSubtitles results, next-episode
    prompts and inline player EPG states. Provider track metadata, subtitle
    filenames and playback diagnostics remain data.**
-9. Source onboarding/management, full EPG and all settings flows.
-10. Profiles, billing, legal, diagnostics, backup/export and system notifications.
-11. Final hardcoded-string audit, translation parity gate and public picker
+9. Source onboarding and source management. **Implemented for mobile and TV;
+   validation, detection, connection, import and status presentation cross typed
+   resource boundaries while provider/source data remains unchanged.**
+10. Full EPG and all remaining settings flows.
+11. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+12. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -148,7 +152,7 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog/Search/Details/Player mappings and
+  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source mappings and
   hardcoded-copy audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key

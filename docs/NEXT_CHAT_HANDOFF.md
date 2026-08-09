@@ -255,6 +255,13 @@ has now been implemented for Android TV.
 - Mobile and TV now use the shared Android-free `PlaylistSourceDraftPolicy` for
   credential detection, normalization, field-level validation and `Playlist`
   construction.
+- All app-owned source onboarding, file-import, connection, edit and management
+  copy now comes from paired feature-owned Greek/QA-English resources. The same
+  resource boundary is used by mobile, TV and the retained legacy edit route.
+- Validation and pasted-source detection expose typed reasons/kinds;
+  connection testing, submission and M3U import expose typed failures; settings
+  source cards expose typed status. Pure policies no longer choose a display
+  language or own localized fallback names.
 - `submitPlaylistSource` is the single validation -> real provider test -> build
   boundary; saving cannot bypass a failed test.
 - Credential drafts and verified results remain transient in memory; only the
@@ -268,8 +275,9 @@ has now been implemented for Android TV.
   cancels an in-flight submission and dialogs/file selection restore focus.
 - The QR phone-pairing concept remains prototype-only. It requires a separate
   transport/security decision and no fake production button was introduced.
-- Static contracts cover the new ownership and focus boundaries. A normal Android
-  Studio build plus phone/TV device QA is still required; Codex did not run Gradle.
+- Static contracts cover the ownership, localization and focus boundaries. A
+  normal Android Studio build plus phone/TV device QA is still required; Codex
+  did not run Gradle.
 
 ### Unified content navigation
 
@@ -359,15 +367,22 @@ has now been implemented for Android TV.
   the caller's locale-aware `Context`. Provider titles/groups, track labels,
   subtitle filenames, OpenSubtitles result names and URL diagnostics remain
   untranslated data.
-- The next cohesive localization slice is source onboarding and source
-  management on mobile and TV, followed by the full EPG and remaining Settings
-  surfaces. Reuse the existing shared `PlaylistSourceDraftPolicy` and
-  `submitPlaylistSource` validation boundary; do not translate provider/source
-  names, URLs, credentials, portal responses or stable method IDs. Keep secret
-  drafts transient and preserve TV focus/Back behavior. This is a copy/resource
-  migration, so it does not require a new HTML preview unless the visual layout
-  itself changes.
-- Player-slice verification completed with localization/resource parity passing,
+- Source onboarding and source management localization is implemented across
+  mobile and TV, including the retained edit route, connection/file failures,
+  statuses, counts and accessibility copy. `PlaylistSourceDraftPolicy`,
+  `PlaylistConnectionMessagePolicy`, `PlaylistSourceSubmission` and
+  `M3uFileImporter` return typed identities; `SourceLocalizationResources.kt`
+  is their Android mapping boundary. Provider/source names, URLs, credentials,
+  provider responses and stable method IDs remain untranslated data, and the
+  existing validation/submission, encrypted persistence and TV focus/Back
+  behavior were preserved.
+- The next cohesive localization slice is the full EPG across mobile and TV,
+  followed by remaining Settings. Do not translate provider EPG titles,
+  descriptions, channel names or programme identifiers. Separate app-owned
+  empty/loading/action/status copy from provider data with typed mappings, and
+  preserve Live/player navigation, TV DPAD focus and Back restoration. This is
+  a copy/resource migration and needs no new HTML preview unless layout changes.
+- Source-slice static verification completed with localization/resource parity passing,
   compatibility contracts 58/58, architecture audit 60 passes plus the known
   `MainViewModel` size warning, deep validation 67 passes plus the documented
   cleartext compatibility warning, zero critical production-risk findings,
@@ -487,10 +502,9 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate implementation task is the movies
-> source onboarding and management localization slice across phone and TV.
-> Preserve the shared draft/validation/submission architecture, Keystore-backed
-> persistence and TV focus/Back behavior. Keep provider/source names, URLs,
-> credentials, portal responses and stable method IDs untouched while moving
-> only app-owned copy, errors and accessibility text to paired Greek/QA-English
-> resources.
+> cohesive completed change. The immediate implementation task is full EPG
+> localization across phone and TV, followed by the remaining Settings surfaces.
+> Keep provider programme/channel titles, descriptions and identifiers untouched;
+> move only app-owned actions, states, errors and accessibility copy to paired
+> Greek/QA-English resources. Preserve Live/player navigation, locale-aware time
+> formatting, TV DPAD focus and exact Back restoration.

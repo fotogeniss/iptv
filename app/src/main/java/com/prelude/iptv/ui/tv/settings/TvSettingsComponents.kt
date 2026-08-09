@@ -40,12 +40,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.PlaylistType
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 import com.prelude.iptv.ui.components.settings.SettingsPage
@@ -108,6 +110,10 @@ internal fun TvSettingsSourceCard(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
+    val displayName = source.name.ifBlank { stringResource(R.string.sources_fallback_name, source.index + 1) }
+    val displayEndpoint = source.endpoint.ifBlank {
+        stringResource(if (source.local) R.string.sources_local_file else R.string.sources_local_source)
+    }
     val scale by animateFloatAsState(
         if (focused) motionScale(Motion.TvFocusScale) else 1f,
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
@@ -140,19 +146,21 @@ internal fun TvSettingsSourceCard(
             }
             Spacer(Modifier.weight(1f))
             Text(
-                if (source.current) "● ΕΝΕΡΓΗ" else source.statusLabel.uppercase(),
+                if (source.current) "● ${stringResource(R.string.sources_status_active).uppercase()}"
+                else stringResource(source.status.labelRes()).uppercase(),
                 color = if (source.current) IptvColors.Primary else IptvColors.TextTertiary,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.ExtraBold
             )
         }
         Spacer(Modifier.height(14.dp))
-        Text(source.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(source.endpoint, color = IptvColors.TextTertiary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(displayName, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(displayEndpoint, color = IptvColors.TextTertiary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(13.dp))
         if (source.loading) {
+            val downloadingLabel = stringResource(R.string.sources_downloading)
             val label = source.progressPercent?.let { "$it% · ${source.progressStage}" }
-                ?: source.progressStage.ifBlank { "Λήψη από την πηγή…" }
+                ?: source.progressStage.ifBlank { downloadingLabel }
             Text(label, color = IptvColors.TextSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(7.dp))
             val progressPercent = source.progressPercent
@@ -171,8 +179,11 @@ internal fun TvSettingsSourceCard(
                 )
             }
         } else {
+            val sourceSummary = source.channelCount?.let {
+                pluralStringResource(R.plurals.sources_loaded_count, it, it)
+            } ?: stringResource(R.string.sources_credentials_saved_locally)
             Text(
-                source.channelCount?.let { "$it φορτωμένα στοιχεία" } ?: "Τα στοιχεία σύνδεσης είναι αποθηκευμένα τοπικά",
+                sourceSummary,
                 color = IptvColors.TextSecondary,
                 fontSize = 11.sp,
                 maxLines = 2
@@ -180,10 +191,10 @@ internal fun TvSettingsSourceCard(
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TvSourceAction(Icons.Default.PlayArrow, "Άνοιγμα", onOpen)
-            if (onRefresh != null) TvSourceAction(Icons.Default.Refresh, "Ανανέωση", onRefresh, enabled = !source.loading)
-            TvSourceAction(Icons.Default.Edit, "Επεξεργασία", onEdit)
-            TvSourceAction(Icons.Default.Delete, "Διαγραφή", onDelete)
+            TvSourceAction(Icons.Default.PlayArrow, stringResource(R.string.sources_open), onOpen)
+            if (onRefresh != null) TvSourceAction(Icons.Default.Refresh, stringResource(R.string.sources_refresh), onRefresh, enabled = !source.loading)
+            TvSourceAction(Icons.Default.Edit, stringResource(R.string.sources_edit), onEdit)
+            TvSourceAction(Icons.Default.Delete, stringResource(R.string.sources_delete), onDelete)
         }
     }
 }
@@ -213,8 +224,8 @@ internal fun TvAddSourceCard(onClick: () -> Unit) {
             Icon(Icons.Default.Add, null, tint = Color.Black, modifier = Modifier.size(26.dp))
         }
         Spacer(Modifier.height(13.dp))
-        Text("Νέα πηγή", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-        Text("M3U, Xtream ή Stalker", color = IptvColors.TextTertiary, fontSize = 11.sp)
+        Text(stringResource(R.string.sources_new_source), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+        Text(stringResource(R.string.sources_supported_types), color = IptvColors.TextTertiary, fontSize = 11.sp)
     }
 }
 

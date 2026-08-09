@@ -11,9 +11,14 @@ enum class PlaylistSourceSubmissionStage {
 data class PlaylistSourceSubmissionResult(
     val playlist: Playlist? = null,
     val validation: PlaylistSourceValidation? = null,
-    val message: String,
+    val failure: PlaylistSourceSubmissionFailure? = null,
 ) {
     val successful: Boolean get() = playlist != null
+}
+
+sealed interface PlaylistSourceSubmissionFailure {
+    data class Connection(val reason: PlaylistConnectionFailure) : PlaylistSourceSubmissionFailure
+    data object Preparation : PlaylistSourceSubmissionFailure
 }
 
 /**
@@ -22,21 +27,26 @@ data class PlaylistSourceSubmissionResult(
  */
 suspend fun submitPlaylistSource(
     draft: PlaylistSourceDraft,
+    fallbackName: String,
     onStage: (PlaylistSourceSubmissionStage) -> Unit = {},
     tester: suspend (PlaylistSourceDraft) -> PlaylistConnectionTestResult = ::testPlaylistConnection,
 ): PlaylistSourceSubmissionResult {
     onStage(PlaylistSourceSubmissionStage.VALIDATING)
     PlaylistSourceDraftPolicy.validation(draft)?.let { validation ->
-        return PlaylistSourceSubmissionResult(validation = validation, message = validation.message)
+        return PlaylistSourceSubmissionResult(validation = validation)
     }
 
     val snapshot = PlaylistSourceDraftPolicy.normalized(draft)
     onStage(PlaylistSourceSubmissionStage.CONNECTING)
     val test = tester(snapshot)
-    if (!test.successful) return PlaylistSourceSubmissionResult(message = test.message)
+    if (!test.successful) return PlaylistSourceSubmissionResult(
+        failure = PlaylistSourceSubmissionFailure.Connection(
+            test.failure ?: PlaylistConnectionFailure.UNKNOWN
+        )
+    )
 
     onStage(PlaylistSourceSubmissionStage.PREPARING)
-    val playlist = PlaylistSourceDraftPolicy.build(snapshot)
-        ?: return PlaylistSourceSubmissionResult(message = "Δεν ήταν δυνατή η προετοιμασία της πηγής.")
-    return PlaylistSourceSubmissionResult(playlist = playlist, message = test.message)
+    val playlist = PlaylistSourceDraftPolicy.build(snapshot, fallbackName)
+        ?: return PlaylistSourceSubmissionResult(failure = PlaylistSourceSubmissionFailure.Preparation)
+    return PlaylistSourceSubmissionResult(playlist = playlist)
 }

@@ -31,10 +31,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.sources.PlaylistSourceSubmissionStage
@@ -57,7 +59,7 @@ internal fun TvSourceOnboardingTopBar(
     Box(Modifier.fillMaxWidth().height(52.dp), contentAlignment = Alignment.Center) {
         if (step == TvSourceOnboardingStep.DETAILS || step == TvSourceOnboardingStep.SUCCESS) {
             TvPlaylistAction(
-                label = "Πίσω",
+                label = stringResource(R.string.sources_back),
                 primary = false,
                 focusRequester = backFocus,
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
@@ -67,7 +69,7 @@ internal fun TvSourceOnboardingTopBar(
         }
         TvPlaylistBrand()
         TvPlaylistAction(
-            label = "Βοήθεια",
+            label = stringResource(R.string.sources_help),
             primary = false,
             focusRequester = helpFocus,
             icon = Icons.Default.HelpOutline,
@@ -108,9 +110,9 @@ internal fun TvSourceChooseStep(
         Modifier.fillMaxSize().padding(top = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("ΠΡΟΣΘΗΚΗ ΠΗΓΗΣ", color = IptvColors.Primary, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+        Text(stringResource(R.string.sources_add_eyebrow), color = IptvColors.Primary, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
         Text(
-            "Τι στοιχεία σου έδωσε ο πάροχος;",
+            stringResource(R.string.sources_provider_question),
             color = IptvColors.TextPrimary,
             fontSize = 39.sp,
             fontWeight = FontWeight.Black,
@@ -118,7 +120,7 @@ internal fun TvSourceChooseStep(
             modifier = Modifier.padding(top = 11.dp),
         )
         Text(
-            "Δεν χρειάζεται να γνωρίζεις τεχνικούς όρους. Διάλεξε αυτό που βλέπεις στα στοιχεία σου.",
+            stringResource(R.string.sources_choose_description),
             color = IptvColors.TextSecondary,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
@@ -142,7 +144,7 @@ internal fun TvSourceChooseStep(
             }
         }
         Text(
-            "Το PRELUDE+ είναι media player. Δεν παρέχει περιεχόμενο, λίστες ή συνδρομές IPTV.",
+            stringResource(R.string.sources_media_player_disclaimer),
             color = IptvColors.TextTertiary,
             fontSize = 9.sp,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -168,11 +170,15 @@ internal fun TvSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
                 CircularProgressIndicator(color = IptvColors.Primary, strokeWidth = 3.dp, modifier = Modifier.size(76.dp))
                 Icon(Icons.Default.Dns, null, tint = Color.White, modifier = Modifier.size(35.dp))
             }
-            Text("Ελέγχουμε τη σύνδεση", color = IptvColors.TextPrimary, fontSize = 31.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
-            Text("Μείνε εδώ για λίγα δευτερόλεπτα.", color = IptvColors.TextSecondary, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
+            Text(stringResource(R.string.sources_checking_title), color = IptvColors.TextPrimary, fontSize = 31.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
+            Text(stringResource(R.string.sources_checking_description_tv), color = IptvColors.TextSecondary, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
         }
         Column(Modifier.weight(1.18f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            listOf("Έλεγχος στοιχείων", "Σύνδεση με τον πάροχο", "Προετοιμασία πηγής").forEachIndexed { index, label ->
+            listOf(
+                stringResource(R.string.sources_stage_validating),
+                stringResource(R.string.sources_stage_connecting),
+                stringResource(R.string.sources_stage_preparing),
+            ).forEachIndexed { index, label ->
                 val done = index < activeIndex
                 val active = index == activeIndex
                 Row(
@@ -191,7 +197,15 @@ internal fun TvSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
                         else Text("${index + 1}", color = if (active) Color.White else IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                     Text(label, color = if (active || done) IptvColors.TextPrimary else IptvColors.TextTertiary, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 14.dp).weight(1f))
-                    Text(if (done) "Ολοκληρώθηκε" else if (active) "Έλεγχος…" else "Αναμονή", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                    Text(
+                        stringResource(
+                            if (done) R.string.sources_completed
+                            else if (active) R.string.sources_checking
+                            else R.string.sources_waiting
+                        ),
+                        color = IptvColors.TextTertiary,
+                        fontSize = 10.sp,
+                    )
                 }
             }
         }
@@ -200,7 +214,6 @@ internal fun TvSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
 
 @Composable
 internal fun TvSourceSuccessStep(
-    providerMessage: String,
     completeFocus: FocusRequester,
     onComplete: () -> Unit,
 ) {
@@ -216,10 +229,10 @@ internal fun TvSourceSuccessStep(
         ) {
             Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF07130C), modifier = Modifier.size(53.dp))
         }
-        Text("Η σύνδεση είναι έτοιμη", color = IptvColors.TextPrimary, fontSize = 36.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
-        Text(providerMessage, color = IptvColors.TextSecondary, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp))
+        Text(stringResource(R.string.sources_connection_ready), color = IptvColors.TextPrimary, fontSize = 36.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
+        Text(stringResource(R.string.sources_connection_verified), color = IptvColors.TextSecondary, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp))
         TvPlaylistAction(
-            label = "Προσθήκη και άνοιγμα",
+            label = stringResource(R.string.sources_add_and_open),
             primary = true,
             focusRequester = completeFocus,
             modifier = Modifier.padding(top = 31.dp).size(width = 310.dp, height = 56.dp),

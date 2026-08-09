@@ -27,16 +27,20 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Playlist
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.messageRes
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.TextEntryDialog
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.requestFocusWithRetry
 import com.prelude.iptv.ui.sources.PlaylistSourceDraft
+import com.prelude.iptv.ui.sources.M3uImportException
 import com.prelude.iptv.ui.sources.PlaylistSourceDraftPolicy
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.sources.PlaylistSourceSubmissionStage
@@ -67,8 +71,9 @@ fun TvAddPlaylistScreen(
     var showQuickTip by remember { mutableStateOf(false) }
     var submissionStage by remember { mutableStateOf(PlaylistSourceSubmissionStage.VALIDATING) }
     var verifiedPlaylist by remember { mutableStateOf<Playlist?>(null) }
-    var successMessage by remember { mutableStateOf("") }
     var submissionJob by remember { mutableStateOf<Job?>(null) }
+    val defaultPlaylistName = stringResource(R.string.sources_default_playlist_name)
+    val defaultLocalName = stringResource(R.string.sources_default_local_name)
 
     val methodFocus = remember { PlaylistSourceMethod.entries.associateWith { FocusRequester() } }
     val inputFocus = remember { TvPlaylistInput.entries.associateWith { FocusRequester() } }
@@ -132,7 +137,11 @@ fun TvAddPlaylistScreen(
             importingFile = false
             result.fold(
                 onSuccess = { imported -> updateDraft(draft.copy(filePath = imported.path, fileLabel = imported.label)) },
-                onFailure = { error -> generalError = error.message ?: "Δεν άνοιξε το αρχείο M3U." },
+                onFailure = { error ->
+                    val messageRes = (error as? M3uImportException)?.reason?.messageRes()
+                        ?: R.string.sources_file_open_failed
+                    generalError = context.getString(messageRes)
+                },
             )
             inputFocus.getValue(TvPlaylistInput.FILE).requestFocusWithRetry()
         }
@@ -193,15 +202,18 @@ fun TvAddPlaylistScreen(
                                 submissionStage = PlaylistSourceSubmissionStage.VALIDATING
                                 showStep(TvSourceOnboardingStep.CHECKING)
                                 submissionJob = scope.launch {
-                                    val result = submitPlaylistSource(snapshot, onStage = { submissionStage = it })
+                                    val result = submitPlaylistSource(
+                                        snapshot,
+                                        if (snapshot.method == PlaylistSourceMethod.FILE) defaultLocalName else defaultPlaylistName,
+                                        onStage = { submissionStage = it },
+                                    )
                                     submissionJob = null
                                     if (result.successful) {
                                         verifiedPlaylist = result.playlist
-                                        successMessage = result.message
                                         showStep(TvSourceOnboardingStep.SUCCESS)
                                     } else {
                                         validation = result.validation
-                                        generalError = result.message.takeIf { result.validation == null }
+                                        generalError = result.failure?.let { context.getString(it.messageRes()) }
                                         showStep(TvSourceOnboardingStep.DETAILS)
                                     }
                                 }
@@ -211,7 +223,6 @@ fun TvAddPlaylistScreen(
 
                     TvSourceOnboardingStep.CHECKING -> TvSourceCheckingStep(submissionStage)
                     TvSourceOnboardingStep.SUCCESS -> TvSourceSuccessStep(
-                        providerMessage = successMessage,
                         completeFocus = completeFocus,
                         onComplete = { verifiedPlaylist?.let(onAdd) },
                     )
@@ -223,7 +234,7 @@ fun TvAddPlaylistScreen(
     val editingInput = editingInputName?.let { runCatching { TvPlaylistInput.valueOf(it) }.getOrNull() }
     if (editingInput != null) {
         TextEntryDialog(
-            title = editingInput.title,
+            title = stringResource(editingInput.titleRes()),
             initial = inputValue(editingInput, draft),
             isPassword = editingInput == TvPlaylistInput.PASSWORD,
             onDismiss = {
@@ -267,18 +278,17 @@ private fun TvSourceQuickTipDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = IptvColors.Surface,
-        title = { Text("Πού βρίσκω τα στοιχεία;", color = IptvColors.TextPrimary, fontWeight = FontWeight.Black) },
+        title = { Text(stringResource(R.string.sources_help_title), color = IptvColors.TextPrimary, fontWeight = FontWeight.Black) },
         text = {
             Text(
-                "Χρησιμοποίησε τα στοιχεία που σου έδωσε ο νόμιμος πάροχος περιεχομένου. " +
-                    "Διάλεξε σύνδεσμο, server και κωδικούς, Portal και MAC ή ένα αρχείο M3U.",
+                stringResource(R.string.sources_help_tv),
                 color = IptvColors.TextSecondary,
                 lineHeight = 19.sp,
             )
         },
         confirmButton = {
             TvDialogTextButton(
-                label = "Κατάλαβα",
+                label = stringResource(R.string.sources_understood),
                 color = IptvColors.Primary,
                 modifier = Modifier.focusRequester(closeFocus),
                 onClick = onDismiss,

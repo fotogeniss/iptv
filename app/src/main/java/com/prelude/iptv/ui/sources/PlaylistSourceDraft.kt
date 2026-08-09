@@ -5,6 +5,7 @@ import com.prelude.iptv.data.PlaylistType
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.util.Locale
 
 enum class PlaylistSourceMethod {
     URL,
@@ -40,13 +41,28 @@ enum class PlaylistSourceField {
 
 data class PlaylistSourceValidation(
     val field: PlaylistSourceField,
-    val message: String,
+    val reason: PlaylistSourceValidationReason,
 )
+
+enum class PlaylistSourceValidationReason {
+    PLAYLIST_URL_REQUIRED,
+    PLAYLIST_URL_INVALID,
+    SERVER_REQUIRED,
+    SERVER_INVALID,
+    USERNAME_REQUIRED,
+    PASSWORD_REQUIRED,
+    PORTAL_REQUIRED,
+    PORTAL_INVALID,
+    MAC_INVALID,
+    FILE_REQUIRED,
+}
 
 data class PlaylistSourceDetection(
     val draft: PlaylistSourceDraft,
-    val description: String,
+    val kind: PlaylistSourceDetectionKind,
 )
+
+enum class PlaylistSourceDetectionKind { PORTAL_MAC, XTREAM, PLAYLIST_URL }
 
 /**
  * Pure source-onboarding rules shared by touch and DPAD surfaces.
@@ -70,7 +86,7 @@ object PlaylistSourceDraftPolicy {
     }
 
     fun formatMac(raw: String): String {
-        val hex = raw.uppercase().filter { it in '0'..'9' || it in 'A'..'F' }.take(12)
+        val hex = raw.uppercase(Locale.ROOT).filter { it in '0'..'9' || it in 'A'..'F' }.take(12)
         return hex.chunked(2).joinToString(":")
     }
 
@@ -96,46 +112,44 @@ object PlaylistSourceDraftPolicy {
         val value = normalized(draft)
         return when (value.method) {
             PlaylistSourceMethod.URL -> when {
-                value.playlistUrl.isBlank() -> invalid(PlaylistSourceField.PLAYLIST_URL, "Συμπλήρωσε τον σύνδεσμο της λίστας.")
-                !isHttpUrl(value.playlistUrl) -> invalid(PlaylistSourceField.PLAYLIST_URL, "Γράψε μια πλήρη διεύθυνση λίστας.")
+                value.playlistUrl.isBlank() -> invalid(PlaylistSourceField.PLAYLIST_URL, PlaylistSourceValidationReason.PLAYLIST_URL_REQUIRED)
+                !isHttpUrl(value.playlistUrl) -> invalid(PlaylistSourceField.PLAYLIST_URL, PlaylistSourceValidationReason.PLAYLIST_URL_INVALID)
                 else -> null
             }
 
             PlaylistSourceMethod.XTREAM -> when {
-                value.server.isBlank() -> invalid(PlaylistSourceField.SERVER, "Συμπλήρωσε τη διεύθυνση του server.")
-                !isHttpUrl(value.server) -> invalid(PlaylistSourceField.SERVER, "Γράψε μια πλήρη διεύθυνση server.")
-                value.username.isBlank() -> invalid(PlaylistSourceField.USERNAME, "Συμπλήρωσε το όνομα χρήστη.")
-                value.password.isBlank() -> invalid(PlaylistSourceField.PASSWORD, "Συμπλήρωσε τον κωδικό.")
+                value.server.isBlank() -> invalid(PlaylistSourceField.SERVER, PlaylistSourceValidationReason.SERVER_REQUIRED)
+                !isHttpUrl(value.server) -> invalid(PlaylistSourceField.SERVER, PlaylistSourceValidationReason.SERVER_INVALID)
+                value.username.isBlank() -> invalid(PlaylistSourceField.USERNAME, PlaylistSourceValidationReason.USERNAME_REQUIRED)
+                value.password.isBlank() -> invalid(PlaylistSourceField.PASSWORD, PlaylistSourceValidationReason.PASSWORD_REQUIRED)
                 else -> null
             }
 
             PlaylistSourceMethod.MAC -> when {
-                value.portal.isBlank() -> invalid(PlaylistSourceField.PORTAL, "Συμπλήρωσε τη διεύθυνση του portal.")
-                !isHttpUrl(value.portal) -> invalid(PlaylistSourceField.PORTAL, "Γράψε μια πλήρη διεύθυνση portal.")
+                value.portal.isBlank() -> invalid(PlaylistSourceField.PORTAL, PlaylistSourceValidationReason.PORTAL_REQUIRED)
+                !isHttpUrl(value.portal) -> invalid(PlaylistSourceField.PORTAL, PlaylistSourceValidationReason.PORTAL_INVALID)
                 !macPattern.matches(value.macAddress) -> invalid(
                     PlaylistSourceField.MAC_ADDRESS,
-                    "Χρησιμοποίησε μορφή 00:1A:79:00:00:00.",
+                    PlaylistSourceValidationReason.MAC_INVALID,
                 )
                 else -> null
             }
 
             PlaylistSourceMethod.FILE -> when {
-                value.filePath.isBlank() -> invalid(PlaylistSourceField.FILE, "Διάλεξε ένα αρχείο M3U ή M3U8.")
+                value.filePath.isBlank() -> invalid(PlaylistSourceField.FILE, PlaylistSourceValidationReason.FILE_REQUIRED)
                 else -> null
             }
         }
     }
 
-    fun validationMessage(draft: PlaylistSourceDraft): String? = validation(draft)?.message
-
-    fun build(draft: PlaylistSourceDraft): Playlist? {
+    fun build(draft: PlaylistSourceDraft, fallbackName: String): Playlist? {
         val value = normalized(draft)
         if (validation(value) != null) return null
         val epg = value.epgUrl.takeIf(String::isNotBlank).orEmpty()
         return when (value.method) {
             PlaylistSourceMethod.URL -> Playlist(
                 name = value.name.ifBlank {
-                    value.playlistUrl.substringBefore('?').substringAfterLast('/').ifBlank { "Playlist" }
+                    value.playlistUrl.substringBefore('?').substringAfterLast('/').ifBlank { fallbackName }
                 },
                 type = PlaylistType.M3U,
                 source = value.playlistUrl,
@@ -162,7 +176,7 @@ object PlaylistSourceDraftPolicy {
             )
 
             PlaylistSourceMethod.FILE -> Playlist(
-                name = value.name.ifBlank { value.fileLabel.ifBlank { "Τοπικό M3U" } },
+                name = value.name.ifBlank { value.fileLabel.ifBlank { fallbackName } },
                 type = PlaylistType.M3U,
                 source = value.filePath,
                 isUrl = false,
@@ -181,7 +195,7 @@ object PlaylistSourceDraftPolicy {
         if (url != null && mac != null) {
             return PlaylistSourceDetection(
                 PlaylistSourceDraft(method = PlaylistSourceMethod.MAC, portal = url, macAddress = mac),
-                "Portal και MAC",
+                PlaylistSourceDetectionKind.PORTAL_MAC,
             )
         }
 
@@ -197,12 +211,12 @@ object PlaylistSourceDraftPolicy {
                         username = username,
                         password = password,
                     ),
-                    "Server και κωδικοί",
+                    PlaylistSourceDetectionKind.XTREAM,
                 )
             }
             return PlaylistSourceDetection(
                 PlaylistSourceDraft(method = PlaylistSourceMethod.URL, playlistUrl = url),
-                "Σύνδεσμος λίστας",
+                PlaylistSourceDetectionKind.PLAYLIST_URL,
             )
         }
 
@@ -217,14 +231,15 @@ object PlaylistSourceDraftPolicy {
                         username = lines[1],
                         password = lines[2],
                     ),
-                    "Server και κωδικοί",
+                    PlaylistSourceDetectionKind.XTREAM,
                 )
             }
         }
         return null
     }
 
-    private fun invalid(field: PlaylistSourceField, message: String) = PlaylistSourceValidation(field, message)
+    private fun invalid(field: PlaylistSourceField, reason: PlaylistSourceValidationReason) =
+        PlaylistSourceValidation(field, reason)
 
     private fun isHttpUrl(value: String): Boolean = runCatching {
         val parsed = URI(value)

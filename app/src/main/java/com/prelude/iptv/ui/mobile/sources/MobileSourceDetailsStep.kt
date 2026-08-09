@@ -42,12 +42,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.messageRes
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceDraft
 import com.prelude.iptv.ui.sources.PlaylistSourceDraftPolicy
@@ -93,7 +96,7 @@ internal fun MobileSourceDetailsStep(
                 Text(content.summaryText, color = IptvColors.TextSecondary, fontSize = 9.5.sp, lineHeight = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             TextButton(onClick = onChangeMethod) {
-                Text("Αλλαγή", color = IptvColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.sources_change), color = IptvColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
             }
         }
 
@@ -108,7 +111,7 @@ internal fun MobileSourceDetailsStep(
 
             when (draft.method) {
                 PlaylistSourceMethod.URL -> MobilePlaylistField(
-                    label = "Σύνδεσμος λίστας",
+                    label = stringResource(R.string.sources_playlist_url),
                     value = draft.playlistUrl,
                     placeholder = "http://example.com/playlist.m3u",
                     onValueChange = { onDraftChange(draft.copy(playlistUrl = it)) },
@@ -119,7 +122,7 @@ internal fun MobileSourceDetailsStep(
 
                 PlaylistSourceMethod.XTREAM -> {
                     MobilePlaylistField(
-                        label = "Διεύθυνση server",
+                        label = stringResource(R.string.sources_server_address),
                         value = draft.server,
                         placeholder = "http://example.com:8080",
                         onValueChange = { onDraftChange(draft.copy(server = it)) },
@@ -129,7 +132,7 @@ internal fun MobileSourceDetailsStep(
                     )
                     Spacer(Modifier.height(13.dp))
                     MobilePlaylistField(
-                        label = "Όνομα χρήστη",
+                        label = stringResource(R.string.sources_username),
                         value = draft.username,
                         placeholder = "Username",
                         onValueChange = { onDraftChange(draft.copy(username = it)) },
@@ -139,7 +142,7 @@ internal fun MobileSourceDetailsStep(
                     )
                     Spacer(Modifier.height(13.dp))
                     MobilePlaylistField(
-                        label = "Κωδικός",
+                        label = stringResource(R.string.sources_password),
                         value = draft.password,
                         placeholder = "Password",
                         onValueChange = { onDraftChange(draft.copy(password = it)) },
@@ -154,7 +157,7 @@ internal fun MobileSourceDetailsStep(
 
                 PlaylistSourceMethod.MAC -> {
                     MobilePlaylistField(
-                        label = "Διεύθυνση portal",
+                        label = stringResource(R.string.sources_portal_address),
                         value = draft.portal,
                         placeholder = "http://portal.example.com/c/",
                         onValueChange = { onDraftChange(draft.copy(portal = it)) },
@@ -164,7 +167,7 @@ internal fun MobileSourceDetailsStep(
                     )
                     Spacer(Modifier.height(13.dp))
                     MobilePlaylistField(
-                        label = "MAC address",
+                        label = stringResource(R.string.sources_mac_address),
                         value = draft.macAddress,
                         placeholder = "00:1A:79:00:00:00",
                         onValueChange = { onDraftChange(draft.copy(macAddress = PlaylistSourceDraftPolicy.formatMac(it))) },
@@ -174,7 +177,7 @@ internal fun MobileSourceDetailsStep(
                     )
                     Spacer(Modifier.height(13.dp))
                     MobilePlaylistField(
-                        label = "User-Agent",
+                        label = stringResource(R.string.sources_user_agent),
                         value = draft.userAgent,
                         placeholder = "MAG250 / custom User-Agent",
                         onValueChange = { onDraftChange(draft.copy(userAgent = it)) },
@@ -201,9 +204,9 @@ internal fun MobileSourceDetailsStep(
                 Column {
                     Spacer(Modifier.height(5.dp))
                     MobilePlaylistField(
-                        label = "Όνομα πηγής",
+                        label = stringResource(R.string.sources_source_name),
                         value = draft.name,
-                        placeholder = "π.χ. Η λίστα μου",
+                        placeholder = stringResource(R.string.sources_playlist_name_hint),
                         onValueChange = { onDraftChange(draft.copy(name = it)) },
                         optional = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -211,7 +214,7 @@ internal fun MobileSourceDetailsStep(
                     if (draft.method != PlaylistSourceMethod.FILE) {
                         Spacer(Modifier.height(13.dp))
                         MobilePlaylistField(
-                            label = "Οδηγός προγράμματος",
+                            label = stringResource(R.string.sources_programme_guide),
                             value = draft.epgUrl,
                             placeholder = "EPG URL",
                             onValueChange = { onDraftChange(draft.copy(epgUrl = it)) },
@@ -240,10 +243,10 @@ internal fun MobileSourceDetailsStep(
                 ),
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
-                Text("Έλεγχος και προσθήκη", fontSize = 15.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.sources_check_and_add), fontSize = 15.sp, fontWeight = FontWeight.Black)
             }
             TextButton(onClick = onExit, modifier = Modifier.fillMaxWidth().height(45.dp)) {
-                Text("Έξοδος", color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.sources_exit), color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -257,7 +260,7 @@ private fun MobilePremiumFilePicker(
     onPick: () -> Unit,
 ) {
     Column {
-        Text("Αρχείο M3U ή M3U8", color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.sources_file_label), color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(7.dp))
         Row(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp))
@@ -272,9 +275,9 @@ private fun MobilePremiumFilePicker(
             Column(Modifier.weight(1f)) {
                 Text(
                     when {
-                        importing -> "Εισαγωγή αρχείου…"
+                        importing -> stringResource(R.string.sources_importing_file)
                         fileLabel.isNotBlank() -> fileLabel
-                        else -> "Επίλεξε αρχείο από τη συσκευή"
+                        else -> stringResource(R.string.sources_select_file)
                     },
                     color = if (fileLabel.isBlank()) IptvColors.TextTertiary else IptvColors.TextPrimary,
                     fontSize = 12.sp,
@@ -282,7 +285,7 @@ private fun MobilePremiumFilePicker(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text("Υποστηρίζονται .m3u και .m3u8", color = IptvColors.TextTertiary, fontSize = 8.5.sp, modifier = Modifier.padding(top = 3.dp))
+                Text(stringResource(R.string.sources_supported_files), color = IptvColors.TextTertiary, fontSize = 8.5.sp, modifier = Modifier.padding(top = 3.dp))
             }
             if (fileLabel.isNotBlank()) Icon(Icons.Default.CheckCircle, null, tint = IptvColors.Success, modifier = Modifier.size(19.dp))
         }
@@ -298,12 +301,14 @@ private data class MobileMethodContent(
     val subtitle: String,
 )
 
+@Composable
 private fun methodContent(method: PlaylistSourceMethod): MobileMethodContent = when (method) {
-    PlaylistSourceMethod.URL -> MobileMethodContent(Icons.Default.Link, "Σύνδεσμος λίστας", "Θα ελέγξουμε ότι η λίστα απαντά πριν αποθηκευτεί.", "Συμπλήρωσε τον σύνδεσμο", "Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.")
-    PlaylistSourceMethod.XTREAM -> MobileMethodContent(Icons.Default.Lock, "Server και κωδικοί", "Χρειαζόμαστε server, username και password.", "Συμπλήρωσε τα στοιχεία σύνδεσης", "Αντέγραψε τα τρία στοιχεία ακριβώς όπως εμφανίζονται στο μήνυμα του παρόχου.")
-    PlaylistSourceMethod.MAC -> MobileMethodContent(Icons.Default.Dns, "Portal και MAC", "Η MAC address μορφοποιείται αυτόματα.", "Συμπλήρωσε Portal και MAC", "Χρησιμοποίησε το Portal URL και τη MAC address που σου έδωσε ο πάροχος.")
-    PlaylistSourceMethod.FILE -> MobileMethodContent(Icons.Default.FolderOpen, "Τοπικό αρχείο", "Το αρχείο διαβάζεται μόνο σε αυτή τη συσκευή.", "Διάλεξε το αρχείο σου", "Υποστηρίζονται αρχεία M3U και M3U8 από τη συσκευή.")
+    PlaylistSourceMethod.URL -> MobileMethodContent(Icons.Default.Link, stringResource(R.string.sources_method_url_summary), stringResource(R.string.sources_method_url_summary_text), stringResource(R.string.sources_method_url_form_title), stringResource(R.string.sources_method_url_form_subtitle))
+    PlaylistSourceMethod.XTREAM -> MobileMethodContent(Icons.Default.Lock, stringResource(R.string.sources_method_xtream_summary), stringResource(R.string.sources_method_xtream_summary_text), stringResource(R.string.sources_method_xtream_form_title), stringResource(R.string.sources_method_xtream_form_subtitle))
+    PlaylistSourceMethod.MAC -> MobileMethodContent(Icons.Default.Dns, stringResource(R.string.sources_method_mac_title), stringResource(R.string.sources_method_mac_summary_text), stringResource(R.string.sources_method_mac_form_title), stringResource(R.string.sources_method_mac_form_subtitle))
+    PlaylistSourceMethod.FILE -> MobileMethodContent(Icons.Default.FolderOpen, stringResource(R.string.sources_method_file_summary), stringResource(R.string.sources_method_file_summary_text), stringResource(R.string.sources_method_file_form_title), stringResource(R.string.sources_method_file_form_subtitle))
 }
 
+@Composable
 private fun PlaylistSourceValidation?.forField(field: PlaylistSourceField): String? =
-    this?.message?.takeIf { this.field == field }
+    this?.takeIf { it.field == field }?.let { stringResource(it.reason.messageRes()) }

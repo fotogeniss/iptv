@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized source onboarding, connection validation, file import, editing and
+  source management across mobile and Android TV. Pure source policies now emit
+  typed validation, detection, connection, submission and status identities;
+  the Android boundary maps them to paired Greek/QA-English resources while
+  provider names, URLs, credentials, responses and stable method IDs remain data.
 - Localized the shared mobile/Android TV player chrome, audio/subtitle panels,
   editable OpenSubtitles search, next-episode prompts, inline programme states
   and playback/subtitle failures. Playback track labels now use the active app

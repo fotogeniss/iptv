@@ -22,8 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prelude.iptv.data.Playlist
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.messageRes
+import com.prelude.iptv.ui.sources.M3uImportException
 import com.prelude.iptv.ui.sources.PlaylistSourceDraft
 import com.prelude.iptv.ui.sources.PlaylistSourceDraftPolicy
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
@@ -60,8 +64,9 @@ fun MobileAddPlaylistScreen(
     var showQuickTip by remember { mutableStateOf(false) }
     var submissionStage by remember { mutableStateOf(PlaylistSourceSubmissionStage.VALIDATING) }
     var verifiedPlaylist by remember { mutableStateOf<Playlist?>(null) }
-    var successMessage by remember { mutableStateOf("") }
     var submissionJob by remember { mutableStateOf<Job?>(null) }
+    val defaultPlaylistName = stringResource(R.string.sources_default_playlist_name)
+    val defaultLocalName = stringResource(R.string.sources_default_local_name)
 
     fun showStep(target: MobileSourceOnboardingStep) {
         stepName = target.name
@@ -98,7 +103,11 @@ fun MobileAddPlaylistScreen(
                 onSuccess = { imported ->
                     updateDraft(draft.copy(filePath = imported.path, fileLabel = imported.label))
                 },
-                onFailure = { error -> generalError = error.message ?: "Δεν άνοιξε το αρχείο M3U." },
+                onFailure = { error ->
+                    val messageRes = (error as? M3uImportException)?.reason?.messageRes()
+                        ?: R.string.sources_file_open_failed
+                    generalError = context.getString(messageRes)
+                },
             )
         }
     }
@@ -132,7 +141,7 @@ fun MobileAddPlaylistScreen(
                     onDetect = {
                         val detection = PlaylistSourceDraftPolicy.detect(smartInput)
                         if (detection == null) {
-                            detectionError = "Δεν αναγνωρίσαμε τα στοιχεία. Διάλεξε παρακάτω τι σου έδωσε ο πάροχος."
+                            detectionError = context.getString(R.string.sources_unrecognized_credentials)
                         } else {
                             updateDraft(detection.draft)
                             detectionError = null
@@ -170,15 +179,18 @@ fun MobileAddPlaylistScreen(
                             submissionStage = PlaylistSourceSubmissionStage.VALIDATING
                             showStep(MobileSourceOnboardingStep.CHECKING)
                             submissionJob = scope.launch {
-                                val result = submitPlaylistSource(snapshot, onStage = { submissionStage = it })
+                                val result = submitPlaylistSource(
+                                    snapshot,
+                                    if (snapshot.method == PlaylistSourceMethod.FILE) defaultLocalName else defaultPlaylistName,
+                                    onStage = { submissionStage = it },
+                                )
                                 submissionJob = null
                                 if (result.successful) {
                                     verifiedPlaylist = result.playlist
-                                    successMessage = result.message
                                     showStep(MobileSourceOnboardingStep.SUCCESS)
                                 } else {
                                     validation = result.validation
-                                    generalError = result.message.takeIf { result.validation == null }
+                                    generalError = result.failure?.let { context.getString(it.messageRes()) }
                                     showStep(MobileSourceOnboardingStep.DETAILS)
                                 }
                             }
@@ -189,7 +201,6 @@ fun MobileAddPlaylistScreen(
 
                 MobileSourceOnboardingStep.CHECKING -> MobileSourceCheckingStep(submissionStage)
                 MobileSourceOnboardingStep.SUCCESS -> MobileSourceSuccessStep(
-                    providerMessage = successMessage,
                     onComplete = { verifiedPlaylist?.let(onAdd) },
                 )
             }

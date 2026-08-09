@@ -40,11 +40,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.sources.PlaylistSourceSubmissionStage
@@ -65,12 +67,12 @@ internal fun MobileSourceOnboardingTopBar(
     Box(Modifier.fillMaxWidth().height(58.dp), contentAlignment = Alignment.Center) {
         if (step == MobileSourceOnboardingStep.DETAILS || step == MobileSourceOnboardingStep.SUCCESS) {
             IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = IptvColors.TextPrimary)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.sources_back), tint = IptvColors.TextPrimary)
             }
         }
         MobilePlaylistBrand()
         IconButton(onClick = onHelp, modifier = Modifier.align(Alignment.CenterEnd)) {
-            Icon(Icons.Default.HelpOutline, "Βοήθεια", tint = IptvColors.TextSecondary)
+            Icon(Icons.Default.HelpOutline, stringResource(R.string.sources_help), tint = IptvColors.TextSecondary)
         }
     }
 }
@@ -110,14 +112,14 @@ internal fun MobileSourceChooseStep(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                "ΠΡΟΣΘΗΚΗ ΠΗΓΗΣ",
+                stringResource(R.string.sources_add_eyebrow),
                 color = IptvColors.Primary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.5.sp,
             )
             Text(
-                "Τι στοιχεία σου έδωσε\nο πάροχος;",
+                stringResource(R.string.sources_provider_question_mobile),
                 color = IptvColors.TextPrimary,
                 fontSize = 29.sp,
                 lineHeight = 32.sp,
@@ -126,7 +128,7 @@ internal fun MobileSourceChooseStep(
                 modifier = Modifier.padding(top = 8.dp),
             )
             Text(
-                "Δεν χρειάζεται να γνωρίζεις τεχνικούς όρους. Επικόλλησε ό,τι σου έστειλε ή διάλεξε τι βλέπεις μπροστά σου.",
+                stringResource(R.string.sources_choose_description_mobile),
                 color = IptvColors.TextSecondary,
                 fontSize = 12.sp,
                 lineHeight = 18.sp,
@@ -145,11 +147,11 @@ internal fun MobileSourceChooseStep(
                 PremiumSourceIcon(Icons.Default.AutoAwesome, selected = true, size = 38)
                 Spacer(Modifier.width(11.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Έξυπνη επικόλληση", color = IptvColors.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Black)
-                    Text("Αναγνωρίζουμε και συμπληρώνουμε τα σωστά πεδία.", color = IptvColors.TextSecondary, fontSize = 10.sp)
+                    Text(stringResource(R.string.sources_smart_paste), color = IptvColors.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.sources_smart_paste_description), color = IptvColors.TextSecondary, fontSize = 10.sp)
                 }
                 Text(
-                    "ΠΡΟΤΕΙΝΟΜΕΝΟ",
+                    stringResource(R.string.sources_recommended),
                     color = Color.Black,
                     fontSize = 7.sp,
                     fontWeight = FontWeight.Black,
@@ -160,7 +162,7 @@ internal fun MobileSourceChooseStep(
             OutlinedTextField(
                 value = smartInput,
                 onValueChange = onSmartInputChange,
-                placeholder = { Text("Επικόλλησε σύνδεσμο ή στοιχεία σύνδεσης…", fontSize = 12.sp) },
+                placeholder = { Text(stringResource(R.string.sources_paste_hint), fontSize = 12.sp) },
                 minLines = 2,
                 maxLines = 4,
                 isError = detectionError != null,
@@ -183,7 +185,7 @@ internal fun MobileSourceChooseStep(
                 colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, contentColor = Color.White),
                 modifier = Modifier.fillMaxWidth().height(48.dp).padding(top = 4.dp),
             ) {
-                Text("Αναγνώριση στοιχείων", fontWeight = FontWeight.Black)
+                Text(stringResource(R.string.sources_detect_credentials), fontWeight = FontWeight.Black)
             }
         }
 
@@ -192,7 +194,7 @@ internal fun MobileSourceChooseStep(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.weight(1f).height(1.dp).background(IptvColors.DividerStrong))
-            Text("ή διάλεξε τι έχεις", color = IptvColors.TextTertiary, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp))
+            Text(stringResource(R.string.sources_choose_alternative), color = IptvColors.TextTertiary, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp))
             Box(Modifier.weight(1f).height(1.dp).background(IptvColors.DividerStrong))
         }
 
@@ -204,7 +206,7 @@ internal fun MobileSourceChooseStep(
             }
         }
         Text(
-            "Το PRELUDE+ είναι media player. Δεν παρέχει περιεχόμενο, λίστες ή συνδρομές IPTV.",
+            stringResource(R.string.sources_media_player_disclaimer),
             color = IptvColors.TextTertiary,
             fontSize = 9.sp,
             lineHeight = 13.sp,
@@ -221,10 +223,10 @@ private fun MobilePremiumMethodCard(
     onClick: () -> Unit,
 ) {
     val content = when (method) {
-        PlaylistSourceMethod.URL -> Triple(Icons.Default.Link, "Έναν σύνδεσμο", "M3U ή get.php URL")
-        PlaylistSourceMethod.XTREAM -> Triple(Icons.Default.Lock, "Server και κωδικούς", "Server, username, password")
-        PlaylistSourceMethod.MAC -> Triple(Icons.Default.Dns, "Portal και MAC", "Portal URL και MAC address")
-        PlaylistSourceMethod.FILE -> Triple(Icons.Default.FolderOpen, "Ένα αρχείο", "M3U ή M3U8 στη συσκευή")
+        PlaylistSourceMethod.URL -> Triple(Icons.Default.Link, stringResource(R.string.sources_method_url_title), stringResource(R.string.sources_method_url_card_subtitle))
+        PlaylistSourceMethod.XTREAM -> Triple(Icons.Default.Lock, stringResource(R.string.sources_method_xtream_title), stringResource(R.string.sources_method_xtream_card_subtitle))
+        PlaylistSourceMethod.MAC -> Triple(Icons.Default.Dns, stringResource(R.string.sources_method_mac_title), stringResource(R.string.sources_method_mac_card_subtitle))
+        PlaylistSourceMethod.FILE -> Triple(Icons.Default.FolderOpen, stringResource(R.string.sources_method_file_title), stringResource(R.string.sources_method_file_card_subtitle))
     }
     Column(
         modifier.height(132.dp).clip(RoundedCornerShape(16.dp))
@@ -270,7 +272,7 @@ internal fun MobileSourceSecurityNote() {
         Icon(Icons.Default.Security, null, tint = IptvColors.Success, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(9.dp))
         Text(
-            "Τα στοιχεία αποθηκεύονται κρυπτογραφημένα σε αυτή τη συσκευή και χρησιμοποιούνται μόνο για την πηγή που πρόσθεσες.",
+            stringResource(R.string.sources_security_note),
             color = IptvColors.TextSecondary,
             fontSize = 9.5.sp,
             lineHeight = 14.sp,
@@ -294,10 +296,14 @@ internal fun MobileSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
             CircularProgressIndicator(color = IptvColors.Primary, strokeWidth = 2.5.dp, modifier = Modifier.size(58.dp))
             Icon(Icons.Default.Dns, null, tint = Color.White, modifier = Modifier.size(27.dp))
         }
-        Text("Ελέγχουμε τη σύνδεση", color = IptvColors.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
-        Text("Μείνε εδώ για λίγα δευτερόλεπτα. Δεν χρειάζεται να κάνεις κάτι άλλο.", color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 9.dp, start = 24.dp, end = 24.dp))
+        Text(stringResource(R.string.sources_checking_title), color = IptvColors.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 25.dp))
+        Text(stringResource(R.string.sources_checking_description), color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 9.dp, start = 24.dp, end = 24.dp))
         Column(Modifier.fillMaxWidth().padding(top = 27.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            listOf("Έλεγχος στοιχείων", "Σύνδεση με τον πάροχο", "Προετοιμασία πηγής").forEachIndexed { index, label ->
+            listOf(
+                stringResource(R.string.sources_stage_validating),
+                stringResource(R.string.sources_stage_connecting),
+                stringResource(R.string.sources_stage_preparing),
+            ).forEachIndexed { index, label ->
                 val done = index < activeIndex
                 val active = index == activeIndex
                 Row(
@@ -312,7 +318,15 @@ internal fun MobileSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
                         else Text("${index + 1}", color = if (active) Color.White else IptvColors.TextTertiary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Text(label, color = if (active || done) IptvColors.TextPrimary else IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 11.dp).weight(1f))
-                    Text(if (done) "Ολοκληρώθηκε" else if (active) "Έλεγχος…" else "Αναμονή", color = IptvColors.TextTertiary, fontSize = 8.5.sp)
+                    Text(
+                        stringResource(
+                            if (done) R.string.sources_completed
+                            else if (active) R.string.sources_checking
+                            else R.string.sources_waiting
+                        ),
+                        color = IptvColors.TextTertiary,
+                        fontSize = 8.5.sp,
+                    )
                 }
             }
         }
@@ -321,7 +335,6 @@ internal fun MobileSourceCheckingStep(stage: PlaylistSourceSubmissionStage) {
 
 @Composable
 internal fun MobileSourceSuccessStep(
-    providerMessage: String,
     onComplete: () -> Unit,
 ) {
     Column(
@@ -335,8 +348,8 @@ internal fun MobileSourceSuccessStep(
         ) {
             Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF07130C), modifier = Modifier.size(45.dp))
         }
-        Text("Η σύνδεση είναι έτοιμη", color = IptvColors.TextPrimary, fontSize = 29.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 25.dp))
-        Text(providerMessage, color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp, start = 18.dp, end = 18.dp))
+        Text(stringResource(R.string.sources_connection_ready), color = IptvColors.TextPrimary, fontSize = 29.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 25.dp))
+        Text(stringResource(R.string.sources_connection_verified), color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp, start = 18.dp, end = 18.dp))
         Spacer(Modifier.height(31.dp))
         Button(
             onClick = onComplete,
@@ -344,7 +357,7 @@ internal fun MobileSourceSuccessStep(
             colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, contentColor = Color.White),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
-            Text("Προσθήκη και άνοιγμα", fontSize = 15.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.sources_add_and_open), fontSize = 15.sp, fontWeight = FontWeight.Black)
         }
     }
 }

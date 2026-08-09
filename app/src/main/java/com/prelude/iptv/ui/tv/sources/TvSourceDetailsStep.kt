@@ -32,10 +32,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.messageRes
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceDraft
 import com.prelude.iptv.ui.sources.PlaylistSourceField
@@ -77,7 +80,7 @@ internal fun TvSourceDetailsStep(
             Text(content.summaryTitle, color = IptvColors.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 19.dp))
             Text(content.summaryText, color = IptvColors.TextSecondary, fontSize = 11.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 7.dp))
             TvPlaylistAction(
-                label = "Αλλαγή τρόπου",
+                label = stringResource(R.string.sources_change_method),
                 primary = false,
                 focusRequester = changeFocus,
                 modifier = Modifier.fillMaxWidth().padding(top = 21.dp).focusProperties { right = firstInput },
@@ -93,7 +96,7 @@ internal fun TvSourceDetailsStep(
             ) {
                 Icon(Icons.Default.Security, null, tint = IptvColors.Success, modifier = Modifier.size(18.dp))
                 Text(
-                    "Τα στοιχεία αποθηκεύονται κρυπτογραφημένα σε αυτή τη συσκευή.",
+                    stringResource(R.string.sources_security_note_tv),
                     color = IptvColors.TextSecondary,
                     fontSize = 9.sp,
                     lineHeight = 13.sp,
@@ -109,7 +112,7 @@ internal fun TvSourceDetailsStep(
         ) {
             when (draft.method) {
                 PlaylistSourceMethod.URL -> TvPlaylistFieldButton(
-                    label = "Σύνδεσμος λίστας",
+                    label = stringResource(R.string.sources_playlist_url),
                     value = draft.playlistUrl,
                     placeholder = "http://example.com/playlist.m3u",
                     focusRequester = inputFocus.getValue(TvPlaylistInput.PLAYLIST_URL),
@@ -120,7 +123,7 @@ internal fun TvSourceDetailsStep(
 
                 PlaylistSourceMethod.XTREAM -> {
                     TvPlaylistFieldButton(
-                        label = "Διεύθυνση server",
+                        label = stringResource(R.string.sources_server_address),
                         value = draft.server,
                         placeholder = "http://example.com:8080",
                         focusRequester = inputFocus.getValue(TvPlaylistInput.SERVER),
@@ -131,7 +134,7 @@ internal fun TvSourceDetailsStep(
                     Spacer(Modifier.height(10.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         TvPlaylistFieldButton(
-                            label = "Όνομα χρήστη",
+                            label = stringResource(R.string.sources_username),
                             value = draft.username,
                             placeholder = "Username",
                             focusRequester = inputFocus.getValue(TvPlaylistInput.USERNAME),
@@ -140,7 +143,7 @@ internal fun TvSourceDetailsStep(
                             onClick = { onEditInput(TvPlaylistInput.USERNAME) },
                         )
                         TvPlaylistFieldButton(
-                            label = "Κωδικός",
+                            label = stringResource(R.string.sources_password),
                             value = draft.password,
                             placeholder = "Password",
                             focusRequester = inputFocus.getValue(TvPlaylistInput.PASSWORD),
@@ -154,7 +157,7 @@ internal fun TvSourceDetailsStep(
 
                 PlaylistSourceMethod.MAC -> {
                     TvPlaylistFieldButton(
-                        label = "Διεύθυνση portal",
+                        label = stringResource(R.string.sources_portal_address),
                         value = draft.portal,
                         placeholder = "http://portal.example.com/c/",
                         focusRequester = inputFocus.getValue(TvPlaylistInput.PORTAL),
@@ -165,7 +168,7 @@ internal fun TvSourceDetailsStep(
                     Spacer(Modifier.height(10.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         TvPlaylistFieldButton(
-                            label = "MAC address",
+                            label = stringResource(R.string.sources_mac_address),
                             value = draft.macAddress,
                             placeholder = "00:1A:79:00:00:00",
                             focusRequester = inputFocus.getValue(TvPlaylistInput.MAC),
@@ -174,7 +177,7 @@ internal fun TvSourceDetailsStep(
                             onClick = { onEditInput(TvPlaylistInput.MAC) },
                         )
                         TvPlaylistFieldButton(
-                            label = "User-Agent",
+                            label = stringResource(R.string.sources_user_agent),
                             value = draft.userAgent,
                             placeholder = "MAG250 / User-Agent",
                             focusRequester = inputFocus.getValue(TvPlaylistInput.USER_AGENT),
@@ -204,9 +207,9 @@ internal fun TvSourceDetailsStep(
             AnimatedVisibility(visible = advancedExpanded, enter = fadeIn(), exit = fadeOut()) {
                 Row(Modifier.fillMaxWidth().padding(top = 5.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     TvPlaylistFieldButton(
-                        label = "Όνομα πηγής",
+                        label = stringResource(R.string.sources_source_name),
                         value = draft.name,
-                        placeholder = "π.χ. Η λίστα μου",
+                        placeholder = stringResource(R.string.sources_playlist_name_hint),
                         focusRequester = inputFocus.getValue(TvPlaylistInput.NAME),
                         modifier = Modifier.weight(1f),
                         optional = true,
@@ -214,7 +217,7 @@ internal fun TvSourceDetailsStep(
                     )
                     if (draft.method != PlaylistSourceMethod.FILE) {
                         TvPlaylistFieldButton(
-                            label = "Οδηγός προγράμματος",
+                            label = stringResource(R.string.sources_programme_guide),
                             value = draft.epgUrl,
                             placeholder = "EPG URL",
                             focusRequester = inputFocus.getValue(TvPlaylistInput.EPG),
@@ -231,7 +234,7 @@ internal fun TvSourceDetailsStep(
             Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth().padding(top = 9.dp), horizontalArrangement = Arrangement.End) {
                 TvPlaylistAction(
-                    label = "Έξοδος",
+                    label = stringResource(R.string.sources_exit),
                     primary = false,
                     focusRequester = exitFocus,
                     modifier = Modifier.width(150.dp).focusProperties { right = submitFocus; up = advancedFocus },
@@ -239,7 +242,7 @@ internal fun TvSourceDetailsStep(
                 )
                 Spacer(Modifier.width(12.dp))
                 TvPlaylistAction(
-                    label = "Έλεγχος και προσθήκη",
+                    label = stringResource(R.string.sources_check_and_add),
                     primary = true,
                     focusRequester = submitFocus,
                     enabled = !importingFile,
@@ -263,17 +266,19 @@ private fun TvPremiumSourceIcon(icon: ImageVector) {
     }
 }
 
-internal enum class TvPlaylistInput(val title: String) {
-    PLAYLIST_URL("Σύνδεσμος λίστας"),
-    SERVER("Διεύθυνση server"),
-    USERNAME("Όνομα χρήστη"),
-    PASSWORD("Κωδικός"),
-    PORTAL("Διεύθυνση portal"),
-    MAC("MAC address"),
-    USER_AGENT("User-Agent"),
-    FILE("Αρχείο M3U"),
-    NAME("Όνομα πηγής"),
-    EPG("Οδηγός προγράμματος"),
+internal enum class TvPlaylistInput { PLAYLIST_URL, SERVER, USERNAME, PASSWORD, PORTAL, MAC, USER_AGENT, FILE, NAME, EPG }
+
+internal fun TvPlaylistInput.titleRes(): Int = when (this) {
+    TvPlaylistInput.PLAYLIST_URL -> R.string.sources_playlist_url
+    TvPlaylistInput.SERVER -> R.string.sources_server_address
+    TvPlaylistInput.USERNAME -> R.string.sources_username
+    TvPlaylistInput.PASSWORD -> R.string.sources_password
+    TvPlaylistInput.PORTAL -> R.string.sources_portal_address
+    TvPlaylistInput.MAC -> R.string.sources_mac_address
+    TvPlaylistInput.USER_AGENT -> R.string.sources_user_agent
+    TvPlaylistInput.FILE -> R.string.sources_file_label
+    TvPlaylistInput.NAME -> R.string.sources_source_name
+    TvPlaylistInput.EPG -> R.string.sources_programme_guide
 }
 
 internal fun firstInputFor(method: PlaylistSourceMethod): TvPlaylistInput = when (method) {
@@ -307,8 +312,9 @@ internal fun inputValue(input: TvPlaylistInput, draft: PlaylistSourceDraft): Str
     TvPlaylistInput.FILE -> ""
 }
 
+@Composable
 private fun PlaylistSourceValidation?.forField(field: PlaylistSourceField): String? =
-    this?.message?.takeIf { this.field == field }
+    this?.takeIf { it.field == field }?.let { stringResource(it.reason.messageRes()) }
 
 private data class TvMethodFormContent(
     val icon: ImageVector,
@@ -318,9 +324,10 @@ private data class TvMethodFormContent(
     val subtitle: String,
 )
 
+@Composable
 private fun tvMethodContent(method: PlaylistSourceMethod): TvMethodFormContent = when (method) {
-    PlaylistSourceMethod.URL -> TvMethodFormContent(Icons.Default.Link, "Σύνδεσμος λίστας", "Θα ελέγξουμε ότι η λίστα απαντά πριν αποθηκευτεί.", "Συμπλήρωσε τον σύνδεσμο", "Επικόλλησε τον σύνδεσμο ακριβώς όπως σου τον έστειλε ο πάροχος.")
-    PlaylistSourceMethod.XTREAM -> TvMethodFormContent(Icons.Default.Lock, "Server και κωδικοί", "Χρειαζόμαστε server, username και password.", "Συμπλήρωσε τα στοιχεία σύνδεσης", "Αντέγραψε τα τρία στοιχεία ακριβώς όπως εμφανίζονται στο μήνυμα του παρόχου.")
-    PlaylistSourceMethod.MAC -> TvMethodFormContent(Icons.Default.Dns, "Portal και MAC", "Η MAC address μορφοποιείται αυτόματα.", "Συμπλήρωσε Portal και MAC", "Χρησιμοποίησε το Portal URL και τη MAC address που σου έδωσε ο πάροχος.")
-    PlaylistSourceMethod.FILE -> TvMethodFormContent(Icons.Default.FolderOpen, "Τοπικό αρχείο", "Το αρχείο διαβάζεται μόνο σε αυτή τη συσκευή.", "Διάλεξε το αρχείο σου", "Υποστηρίζονται αρχεία M3U και M3U8 από τη συσκευή.")
+    PlaylistSourceMethod.URL -> TvMethodFormContent(Icons.Default.Link, stringResource(R.string.sources_method_url_summary), stringResource(R.string.sources_method_url_summary_text), stringResource(R.string.sources_method_url_form_title), stringResource(R.string.sources_method_url_form_subtitle))
+    PlaylistSourceMethod.XTREAM -> TvMethodFormContent(Icons.Default.Lock, stringResource(R.string.sources_method_xtream_summary), stringResource(R.string.sources_method_xtream_summary_text), stringResource(R.string.sources_method_xtream_form_title), stringResource(R.string.sources_method_xtream_form_subtitle))
+    PlaylistSourceMethod.MAC -> TvMethodFormContent(Icons.Default.Dns, stringResource(R.string.sources_method_mac_title), stringResource(R.string.sources_method_mac_summary_text), stringResource(R.string.sources_method_mac_form_title), stringResource(R.string.sources_method_mac_form_subtitle))
+    PlaylistSourceMethod.FILE -> TvMethodFormContent(Icons.Default.FolderOpen, stringResource(R.string.sources_method_file_summary), stringResource(R.string.sources_method_file_summary_text), stringResource(R.string.sources_method_file_form_title), stringResource(R.string.sources_method_file_form_subtitle))
 }

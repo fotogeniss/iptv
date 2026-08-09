@@ -25,12 +25,14 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 
 @Composable
@@ -74,7 +76,7 @@ internal fun MobilePlaylistField(
     Column(modifier) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-            if (optional) Text("Προαιρετικό", color = IptvColors.TextTertiary, fontSize = 9.sp)
+            if (optional) Text(stringResource(R.string.sources_optional), color = IptvColors.TextTertiary, fontSize = 9.sp)
         }
         Spacer(Modifier.height(7.dp))
         OutlinedTextField(
@@ -92,7 +94,9 @@ internal fun MobilePlaylistField(
                     IconButton(onClick = onTogglePassword) {
                         Icon(
                             if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (passwordVisible) "Απόκρυψη κωδικού" else "Εμφάνιση κωδικού",
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.sources_hide_password else R.string.sources_show_password
+                            ),
                             tint = IptvColors.TextSecondary,
                         )
                     }
@@ -132,7 +136,7 @@ internal fun MobilePlaylistAdvancedToggle(expanded: Boolean, onClick: () -> Unit
         )
         Spacer(Modifier.width(6.dp))
         Text(
-            if (expanded) "Λιγότερες επιλογές" else "Περισσότερες επιλογές",
+            stringResource(if (expanded) R.string.sources_fewer_options else R.string.sources_more_options),
             color = IptvColors.TextSecondary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
@@ -147,17 +151,15 @@ internal fun MobilePlaylistQuickTip(onDismiss: () -> Unit) {
         containerColor = IptvColors.Surface,
         titleContentColor = IptvColors.TextPrimary,
         textContentColor = IptvColors.TextSecondary,
-        title = { Text("Πού βρίσκω τα στοιχεία;", fontWeight = FontWeight.Black) },
+        title = { Text(stringResource(R.string.sources_help_title), fontWeight = FontWeight.Black) },
         text = {
             Text(
-                "Χρησιμοποίησε τα στοιχεία που σου έχει δώσει ο νόμιμος πάροχος περιεχομένου. " +
-                    "Για M3U χρειάζεσαι URL, για Xtream server, username και password, ενώ για " +
-                    "MAC/Stalker χρειάζεσαι Portal URL και MAC address.",
+                stringResource(R.string.sources_help_mobile),
                 lineHeight = 20.sp,
             )
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Κατάλαβα", color = IptvColors.Primary, fontWeight = FontWeight.Bold) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.sources_understood), color = IptvColors.Primary, fontWeight = FontWeight.Bold) }
         },
     )
 }

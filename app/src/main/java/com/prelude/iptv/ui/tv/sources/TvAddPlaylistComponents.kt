@@ -44,10 +44,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.tvFocus
@@ -76,10 +78,10 @@ internal fun TvPlaylistMethodCard(
     onSelect: () -> Unit,
 ) {
     val content = when (method) {
-        PlaylistSourceMethod.URL -> TvMethodCardContent(Icons.Default.Link, "Έναν σύνδεσμο", "M3U", "M3U ή get.php URL")
-        PlaylistSourceMethod.XTREAM -> TvMethodCardContent(Icons.Default.Lock, "Server και κωδικούς", "XTREAM", "Server, username, password")
-        PlaylistSourceMethod.MAC -> TvMethodCardContent(Icons.Default.Dns, "Portal και MAC", "STALKER", "Portal URL και MAC address")
-        PlaylistSourceMethod.FILE -> TvMethodCardContent(Icons.Default.FolderOpen, "Ένα αρχείο", "FILE", "M3U ή M3U8 στη συσκευή")
+        PlaylistSourceMethod.URL -> TvMethodCardContent(Icons.Default.Link, stringResource(R.string.sources_method_url_title), "M3U", stringResource(R.string.sources_method_url_card_subtitle))
+        PlaylistSourceMethod.XTREAM -> TvMethodCardContent(Icons.Default.Lock, stringResource(R.string.sources_method_xtream_title), "XTREAM", stringResource(R.string.sources_method_xtream_card_subtitle))
+        PlaylistSourceMethod.MAC -> TvMethodCardContent(Icons.Default.Dns, stringResource(R.string.sources_method_mac_title), "STALKER", stringResource(R.string.sources_method_mac_card_subtitle))
+        PlaylistSourceMethod.FILE -> TvMethodCardContent(Icons.Default.FolderOpen, stringResource(R.string.sources_method_file_title), "FILE", stringResource(R.string.sources_method_file_card_subtitle))
     }
     Row(
         modifier
@@ -157,7 +159,7 @@ internal fun TvPlaylistFormCard(
                 Text(title, color = IptvColors.TextPrimary, fontSize = 19.sp, fontWeight = FontWeight.Black)
                 Text(subtitle, color = IptvColors.TextSecondary, fontSize = 10.sp, modifier = Modifier.padding(top = 4.dp))
             }
-            Text("ΒΗΜΑ 2/2", color = IptvColors.TextTertiary, fontSize = 8.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.sources_step_two), color = IptvColors.TextTertiary, fontSize = 8.sp, fontWeight = FontWeight.Black)
         }
         Spacer(Modifier.height(14.dp))
         content()
@@ -179,7 +181,7 @@ internal fun TvPlaylistFieldButton(
     Column(modifier) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, color = IptvColors.TextSecondary, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
-            if (optional) Text("Προαιρετικό", color = IptvColors.TextTertiary, fontSize = 7.5.sp)
+            if (optional) Text(stringResource(R.string.sources_optional), color = IptvColors.TextTertiary, fontSize = 7.5.sp)
         }
         Spacer(Modifier.height(5.dp))
         Box(
@@ -245,8 +247,8 @@ internal fun TvM3uFileButton(
         Column(Modifier.weight(1f)) {
             Text(
                 when {
-                    importing -> "Εισαγωγή αρχείου…"
-                    fileLabel.isBlank() -> "Επίλεξε αρχείο από τη συσκευή"
+                    importing -> stringResource(R.string.sources_importing_file)
+                    fileLabel.isBlank() -> stringResource(R.string.sources_select_file)
                     else -> fileLabel
                 },
                 color = if (fileLabel.isBlank()) IptvColors.TextSecondary else IptvColors.TextPrimary,
@@ -255,7 +257,7 @@ internal fun TvM3uFileButton(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text("Υποστηρίζονται .m3u και .m3u8", color = IptvColors.TextTertiary, fontSize = 8.sp, modifier = Modifier.padding(top = 3.dp))
+            Text(stringResource(R.string.sources_supported_files), color = IptvColors.TextTertiary, fontSize = 8.sp, modifier = Modifier.padding(top = 3.dp))
         }
         if (fileLabel.isNotBlank()) Icon(Icons.Default.CheckCircle, null, tint = IptvColors.Success, modifier = Modifier.size(20.dp))
     }
@@ -285,7 +287,7 @@ internal fun TvPlaylistAdvancedButton(
         )
         Spacer(Modifier.width(5.dp))
         Text(
-            if (expanded) "Λιγότερες επιλογές" else "Περισσότερες επιλογές",
+            stringResource(if (expanded) R.string.sources_fewer_options else R.string.sources_more_options),
             color = IptvColors.TextSecondary,
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,

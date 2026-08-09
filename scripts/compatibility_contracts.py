@@ -216,12 +216,14 @@ source_contracts = {
         and "#EXTM3U" in shared_m3u_importer
     ),
     "Mobile and TV add-playlist forms atomically test before building": (
-        "submitPlaylistSource(snapshot" in mobile_add_playlist
-        and "submitPlaylistSource(snapshot" in tv_add_playlist
+        "submitPlaylistSource(" in mobile_add_playlist
+        and "defaultLocalName else defaultPlaylistName" in mobile_add_playlist
+        and "submitPlaylistSource(" in tv_add_playlist
+        and "defaultLocalName else defaultPlaylistName" in tv_add_playlist
         and "tester(snapshot)" in playlist_source_submission
-        and "PlaylistSourceDraftPolicy.build(snapshot)" in playlist_source_submission
-        and "Έλεγχος και προσθήκη" in mobile_source_details
-        and "Έλεγχος και προσθήκη" in tv_source_details
+        and "PlaylistSourceDraftPolicy.build(snapshot, fallbackName)" in playlist_source_submission
+        and "R.string.sources_check_and_add" in mobile_source_details
+        and "R.string.sources_check_and_add" in tv_source_details
     ),
     "Connection testing covers every supported source method": all(marker in playlist_connection_tester for marker in [
         "PlaylistSourceMethod.URL -> Repository.testM3u",

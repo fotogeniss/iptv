@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -91,8 +93,8 @@ private fun SourceManagerHeader(sourceCount: Int, onAdd: (Int) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         StreamingScreenHeader(
-            title = "Πηγές",
-            subtitle = "$sourceCount ενεργές πηγές στη συσκευή",
+            title = stringResource(R.string.sources_title),
+            subtitle = pluralStringResource(R.plurals.sources_active_count, sourceCount, sourceCount),
             modifier = Modifier.weight(1f)
         )
         OutlinedButton(
@@ -104,7 +106,7 @@ private fun SourceManagerHeader(sourceCount: Int, onAdd: (Int) -> Unit) {
         ) {
             Icon(Icons.Default.Add, null)
             Spacer(Modifier.width(6.dp))
-            Text("Νέα πηγή")
+            Text(stringResource(R.string.sources_new_source))
         }
     }
 }

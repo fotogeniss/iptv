@@ -12,6 +12,7 @@ data class SettingsSourceUi(
     val name: String,
     val type: PlaylistType,
     val endpoint: String,
+    val local: Boolean,
     val channelCount: Int?,
     val current: Boolean,
     val loading: Boolean = false,
@@ -25,14 +26,16 @@ data class SettingsSourceUi(
             PlaylistType.STALKER -> "PORTAL"
         }
 
-    val statusLabel: String
+    val status: SettingsSourceStatus
         get() = when {
-            loading -> progressPercent?.let { "$it%" } ?: "Φόρτωση"
-            current && channelCount != null && channelCount > 0 -> "Ενεργή"
-            current -> "Επιλεγμένη"
-            else -> "Αποθηκευμένη"
+            loading -> SettingsSourceStatus.Loading
+            current && channelCount != null && channelCount > 0 -> SettingsSourceStatus.Active
+            current -> SettingsSourceStatus.Selected
+            else -> SettingsSourceStatus.Saved
         }
 }
+
+enum class SettingsSourceStatus { Loading, Active, Selected, Saved }
 
 enum class SettingsPage {
     Sources,
@@ -51,9 +54,10 @@ fun buildSettingsSources(
     val progress = sourceProgress[PlaylistIdentity.stableId(playlist)]
     SettingsSourceUi(
         index = index,
-        name = playlist.name.ifBlank { "Πηγή ${index + 1}" },
+        name = playlist.name,
         type = playlist.type,
         endpoint = maskedEndpoint(playlist),
+        local = playlist.type == PlaylistType.M3U && !playlist.isUrl,
         channelCount = if (index == currentIndex && currentChannelCount > 0) currentChannelCount else null,
         current = index == currentIndex,
         loading = progress?.active == true,
@@ -80,8 +84,7 @@ private fun maskedEndpoint(playlist: Playlist): String {
         PlaylistType.XTREAM -> playlist.server
         PlaylistType.STALKER -> playlist.portal
     }.trim()
-    if (raw.isBlank()) return "Τοπική πηγή"
-    if (!playlist.isUrl && playlist.type == PlaylistType.M3U) return "Τοπικό αρχείο"
+    if (raw.isBlank() || (!playlist.isUrl && playlist.type == PlaylistType.M3U)) return ""
 
     return runCatching {
         val normalized = if (raw.contains("://")) raw else "https://$raw"

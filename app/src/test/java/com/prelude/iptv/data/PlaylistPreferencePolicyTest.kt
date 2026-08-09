@@ -20,13 +20,6 @@ class PlaylistPreferencePolicyTest {
     }
 
     @Test
-    fun labelsUseNormalizedValues() {
-        assertEquals("Καθημερινά", PlaylistPreferencePolicy.refreshDaysLabel(1))
-        assertEquals("Κάθε 3 ημέρες", PlaylistPreferencePolicy.refreshDaysLabel(99))
-        assertEquals("Εβδομαδιαία", PlaylistPreferencePolicy.refreshDaysLabel(7))
-    }
-
-    @Test
     fun automaticOpenRequiresEnabledNonEmptySourceAndSingleExecution() {
         assertTrue(PlaylistPreferencePolicy.shouldAutoOpen(false, true, true))
         assertFalse(PlaylistPreferencePolicy.shouldAutoOpen(true, true, true))

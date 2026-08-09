@@ -11,12 +11,6 @@ object PlaylistPreferencePolicy {
         return refreshOptions[(refreshOptions.indexOf(normalized) + 1) % refreshOptions.size]
     }
 
-    fun refreshDaysLabel(days: Int): String = when (normalizeRefreshDays(days)) {
-        1 -> "Καθημερινά"
-        7 -> "Εβδομαδιαία"
-        else -> "Κάθε 3 ημέρες"
-    }
-
     fun shouldAutoOpen(alreadyOpened: Boolean, enabled: Boolean, hasSources: Boolean): Boolean =
         !alreadyOpened && enabled && hasSources
 }
