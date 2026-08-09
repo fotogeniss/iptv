@@ -414,6 +414,89 @@ for ui_path in migrated_source_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Source UI: {ui_path}")
 
+epg_presentation = read(
+    "app/src/main/java/com/prelude/iptv/ui/epg/EpgPresentationState.kt"
+)
+epg_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/EpgLocalizationResources.kt"
+)
+epg_coordinator = read(
+    "app/src/main/java/com/prelude/iptv/ui/coordinator/MainEpgCoordinator.kt"
+)
+epg_directory = read("app/src/main/java/com/prelude/iptv/data/EpgSourceDirectory.kt")
+epg_manager = read("app/src/main/java/com/prelude/iptv/data/EpgManager.kt")
+epg_foundation = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/epg/EpgFoundation.kt"
+)
+main_ui_state = read("app/src/main/java/com/prelude/iptv/ui/MainUiState.kt")
+for typed_boundary in (
+    "sealed interface EpgStatus",
+    "enum class EpgFilter",
+    "enum class EpgSourceKind",
+    "data class EpgSourceOption",
+):
+    if typed_boundary not in epg_presentation:
+        failures.append(f"typed EPG presentation boundary missing: {typed_boundary}")
+if "val epgSources: List<EpgSourceOption>" not in main_ui_state:
+    failures.append("EPG sources still transport preformatted display labels")
+if "val epgStatus: EpgStatus" not in main_ui_state:
+    failures.append("EPG status still transports localized display copy")
+if greek_string_literals(epg_coordinator):
+    failures.append("EPG coordinator still owns Greek display copy")
+if "EpgStatus." not in epg_coordinator or "EpgSourceOption(" not in epg_coordinator:
+    failures.append("EPG coordinator bypasses typed presentation state")
+if "val label:" in epg_directory or "Locale.ROOT" not in epg_directory:
+    failures.append("EPG source directory mixes display copy or locale-sensitive protocol casing")
+if "enum class EpgLoadFailure" not in epg_manager or "EpgLoadException" not in epg_manager:
+    failures.append("EPG load failures bypass the typed data boundary")
+if greek_string_literals(epg_manager):
+    failures.append("EPG manager still throws or owns Greek display copy")
+if "DateFormat.getTimeFormat(LocalContext.current)" not in epg_foundation:
+    failures.append("EPG time formatting does not follow the active Android locale")
+if "localizedEpgRuntime(minutes)" not in epg_foundation:
+    failures.append("EPG runtime is still formatted outside the resource boundary")
+for mapping in (
+    "EpgFilter.labelRes",
+    "EpgStatus.localizedText",
+    "EpgSourceOption.localizedLabel",
+    "localizedEpgRuntime",
+):
+    if mapping not in epg_mapping:
+        failures.append(f"EPG resource mapping missing: {mapping}")
+
+migrated_epg_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/mobile/epg/MobileEpgGuide.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/epg/MobileEpgHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/epg/MobileEpgProgramCard.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/epg/MobileEpgScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileEpgSettingsScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/epg/TvEpgDock.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/epg/TvEpgHero.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/epg/TvEpgProgramCell.kt",
+]
+for ui_path in migrated_epg_ui:
+    literals = greek_string_literals(read(ui_path))
+    if ui_path.endswith("MobileEpgGuide.kt"):
+        # Provider programme text classifiers, not app-owned display copy.
+        literals = [literal for literal in literals if literal not in {'"ταιν"', '"αθλη"'}]
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated EPG UI: {ui_path}")
+
+adaptive_settings = read("app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt")
+mobile_settings = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobilePremiumSettingsScreen.kt"
+)
+tv_settings = read(
+    "app/src/main/java/com/prelude/iptv/ui/tv/settings/TvPremiumSettingsScreen.kt"
+)
+if "epgStatus: EpgStatus" not in adaptive_settings or "epgSources: List<EpgSourceOption>" not in adaptive_settings:
+    failures.append("adaptive Settings route bypasses typed EPG presentation state")
+if "epgStatus: EpgStatus" not in mobile_settings or "epgSources: List<EpgSourceOption>" not in mobile_settings:
+    failures.append("mobile Settings route bypasses typed EPG presentation state")
+for key in ("epg_settings_programme_guide", "epg_settings_xmltv_matching"):
+    if f"R.string.{key}" not in tv_settings:
+        failures.append(f"TV Settings EPG row resource missing: {key}")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

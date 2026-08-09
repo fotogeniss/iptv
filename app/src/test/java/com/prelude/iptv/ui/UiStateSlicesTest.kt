@@ -4,6 +4,9 @@ import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.data.SourceLoadProgress
+import com.prelude.iptv.ui.epg.EpgSourceKind
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -41,11 +44,15 @@ class UiStateSlicesTest {
         val base = UiState(playlists = listOf(source), channels = listOf(Channel("One")))
         val updated = base.copy(
             epgLoaded = true,
-            epgSources = listOf("Provider" to "https://example/guide.xml"),
-            epgStatus = "Ready"
+            epgSources = listOf(EpgSourceOption(EpgSourceKind.XtreamProvider, "https://example/guide.xml")),
+            epgStatus = EpgStatus.Ready(matches = 1),
         )
 
         assertEquals(base.toSettingsUiState(), updated.toSettingsUiState())
+        assertEquals(
+            base.toCatalogUiState(),
+            base.copy(epgStatus = EpgStatus.Ready(matches = 1)).toCatalogUiState(),
+        )
         assertNotEquals(base.toEpgUiState(), updated.toEpgUiState())
     }
 

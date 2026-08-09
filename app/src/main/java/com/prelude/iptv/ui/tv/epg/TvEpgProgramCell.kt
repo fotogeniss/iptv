@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -38,11 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.EpgProgramVisualState
 import com.prelude.iptv.ui.components.epg.EpgWindow
 import com.prelude.iptv.ui.components.epg.epgProgress
 import com.prelude.iptv.ui.components.epg.epgTime
+import com.prelude.iptv.ui.components.epg.epgTimeRange
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
@@ -114,13 +117,13 @@ internal fun TvProgramCell(
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "${epgTime(programme.startMs)} – ${epgTime(programme.stopMs)}",
+                    epgTimeRange(programme),
                     color = Color.White.copy(alpha = 0.62f),
                     fontSize = 9.sp
                 )
                 if (live) {
                     Spacer(Modifier.width(8.dp))
-                    Text("LIVE", color = IptvColors.Primary, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.epg_live), color = IptvColors.Primary, fontSize = 8.sp, fontWeight = FontWeight.Black)
                 }
             }
             if (live) {
@@ -138,7 +141,7 @@ internal fun TvProgramCell(
         if (state == EpgProgramVisualState.Selected) {
             Icon(
                 Icons.Default.Check,
-                contentDescription = "Επιλεγμένο",
+                contentDescription = stringResource(R.string.epg_selected),
                 tint = IptvColors.Success,
                 modifier = Modifier.align(Alignment.TopEnd).size(14.dp)
             )

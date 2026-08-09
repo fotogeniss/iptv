@@ -12,6 +12,9 @@ import com.prelude.iptv.data.PlaylistStore
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.data.Repository
 import com.prelude.iptv.ui.UiState
+import com.prelude.iptv.ui.epg.EpgSourceKind
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +51,6 @@ internal class MainEpgCoordinator(
     private enum class LoadPath { STALE, DISK, NETWORK, FAILED }
     private data class LoadResult(
         val path: LoadPath,
-        val error: String = "",
         val snapshot: EpgManager.Snapshot? = null,
     )
 
@@ -58,7 +60,7 @@ internal class MainEpgCoordinator(
         store.epgEnabled = enabled
         if (!enabled) {
             cancelLoad(clearManager = true)
-            state.value = state.value.copy(epgLoaded = false, epgStatus = "")
+            state.value = state.value.copy(epgLoaded = false, epgStatus = EpgStatus.Idle)
         } else {
             currentPlaylist()?.let(::loadIfAny)
         }
@@ -87,13 +89,13 @@ internal class MainEpgCoordinator(
     fun loadIfAny(playlist: Playlist) {
         if (!store.epgEnabled) {
             cancelLoad(clearManager = true)
-            state.value = state.value.copy(epgLoaded = false, epgStatus = "")
+            state.value = state.value.copy(epgLoaded = false, epgStatus = EpgStatus.Idle)
             return
         }
         val url = EpgSelectionPolicy.normalizeRemoteUrl(autoUrl(playlist))
         if (url == null) {
             cancelLoad(clearManager = true)
-            state.value = state.value.copy(epgLoaded = false, epgStatus = "")
+            state.value = state.value.copy(epgLoaded = false, epgStatus = EpgStatus.Idle)
             return
         }
         if (EpgManager.currentSource() == url && EpgManager.isLoaded()) {
@@ -102,8 +104,10 @@ internal class MainEpgCoordinator(
             // (το match count μεγαλώνει καθώς φορτώνουν κανάλια). Μία φορά αρκεί.
             state.value = state.value.copy(
                 epgLoaded = true,
-                epgStatus = if (state.value.epgStatus.startsWith("✓")) state.value.epgStatus
-                else "✓ EPG: ταιριάζει σε ${matchCount()} κανάλια",
+                epgStatus = when (val current = state.value.epgStatus) {
+                    is EpgStatus.Ready, is EpgStatus.Saved -> current
+                    else -> EpgStatus.Ready(matchCount())
+                },
             )
             return
         }
@@ -113,11 +117,7 @@ internal class MainEpgCoordinator(
         val keepsExistingGuide = EpgManager.isLoaded()
         state.value = state.value.copy(
             epgLoaded = keepsExistingGuide,
-            epgStatus = if (keepsExistingGuide) {
-                "Λήψη νέου EPG… · το τρέχον παραμένει ενεργό"
-            } else {
-                "Λήψη EPG…"
-            },
+            epgStatus = if (keepsExistingGuide) EpgStatus.LoadingWithExistingGuide else EpgStatus.Loading,
         )
         loadJob = scope.launch {
             val result = withContext(Dispatchers.IO) {
@@ -143,8 +143,8 @@ internal class MainEpgCoordinator(
                         }
                     } catch (error: CancellationException) {
                         throw error
-                    } catch (error: Exception) {
-                        LoadResult(LoadPath.FAILED, error.message.orEmpty())
+                    } catch (_: Exception) {
+                        LoadResult(LoadPath.FAILED)
                     }
                 }
             }
@@ -154,8 +154,7 @@ internal class MainEpgCoordinator(
                 LoadPath.STALE -> Unit
                 LoadPath.FAILED -> state.value = state.value.copy(
                     epgLoaded = EpgManager.isLoaded(),
-                    epgStatus = "✗ EPG: ${result.error.ifBlank { "απέτυχε η λήψη" }}" +
-                        if (EpgManager.isLoaded()) " · διατηρήθηκε το προηγούμενο" else "",
+                    epgStatus = EpgStatus.LoadFailed(EpgManager.isLoaded()),
                 )
                 LoadPath.DISK, LoadPath.NETWORK -> {
                     val snapshot = result.snapshot ?: return@launch
@@ -173,9 +172,8 @@ internal class MainEpgCoordinator(
                     state.value = state.value.copy(
                         epgLoaded = true,
                         epgStatus = when {
-                            matches == 0 -> "⚠ EPG φορτώθηκε αλλά δεν ταιριάζει με τα tvg-id"
-                            result.path == LoadPath.DISK -> "✓ EPG: ταιριάζει σε $matches κανάλια · από δίσκο"
-                            else -> "✓ EPG: ταιριάζει σε $matches κανάλια"
+                            matches == 0 -> EpgStatus.LoadedWithoutMatches
+                            else -> EpgStatus.Ready(matches, fromDisk = result.path == LoadPath.DISK)
                         },
                     )
                 }
@@ -188,24 +186,27 @@ internal class MainEpgCoordinator(
         val playlist = currentPlaylist() ?: return
         val sourceId = PlaylistIdentity.stableId(playlist)
         cancelSearch()
-        val found = LinkedHashMap<String, String>()
+        val found = LinkedHashMap<String, EpgSourceOption>()
         if (playlist.epgUrl.isNotBlank()) {
-            found[playlist.epgUrl.trim()] = "Από τις ρυθμίσεις της λίστας"
+            val url = playlist.epgUrl.trim()
+            found[url] = EpgSourceOption(EpgSourceKind.PlaylistSettings, url)
         }
         val embeddedUrl = m3uEpgUrl()
-        if (embeddedUrl.isNotBlank()) found[embeddedUrl] = "Δηλωμένο μέσα στο M3U (url-tvg)"
+        if (embeddedUrl.isNotBlank()) {
+            found[embeddedUrl] = EpgSourceOption(EpgSourceKind.EmbeddedM3u, embeddedUrl)
+        }
         if (playlist.type == PlaylistType.XTREAM) {
             val xtreamUrl = Repository.xtreamXmltvUrl(playlist)
             if (xtreamUrl.isNotBlank()) {
-                found.putIfAbsent(xtreamUrl, "Xtream — xmltv.php του παρόχου")
+                found.putIfAbsent(xtreamUrl, EpgSourceOption(EpgSourceKind.XtreamProvider, xtreamUrl))
             }
         }
         EpgManager.currentSource()?.takeIf(String::isNotBlank)?.let {
-            found.putIfAbsent(it, "Ήδη φορτωμένο")
+            found.putIfAbsent(it, EpgSourceOption(EpgSourceKind.Current, it))
         }
         state.value = state.value.copy(
-            epgSources = found.map { it.value to it.key },
-            epgStatus = "Αναζήτηση γνωστών δημόσιων XMLTV πηγών…",
+            epgSources = found.values.toList(),
+            epgStatus = EpgStatus.Discovering,
         )
 
         val liveSnapshot = liveChannels().ifEmpty {
@@ -223,15 +224,22 @@ internal class MainEpgCoordinator(
             }
             if (currentSourceId() != sourceId) return@launch
             publicSources.forEach { candidate ->
-                found.putIfAbsent(candidate.url, candidate.label)
+                found.putIfAbsent(
+                    candidate.url,
+                    EpgSourceOption(
+                        kind = EpgSourceKind.PublicDirectory,
+                        url = candidate.url,
+                        host = candidate.host,
+                        matchedChannels = candidate.matchedChannels,
+                    ),
+                )
             }
             state.value = state.value.copy(
-                epgSources = found.map { it.value to it.key },
+                epgSources = found.values.toList(),
                 epgStatus = when {
-                    found.isNotEmpty() -> "Βρέθηκαν ${found.size} πηγές EPG"
-                    liveSnapshot.none { it.tvgId.isNotBlank() } ->
-                        "Δεν υπάρχουν tvg-id στα κανάλια για ασφαλή αντιστοίχιση δημόσιου EPG."
-                    else -> "Δεν βρέθηκε συμβατή πηγή EPG για αυτή τη λίστα."
+                    found.isNotEmpty() -> EpgStatus.SourcesFound(found.size)
+                    liveSnapshot.none { it.tvgId.isNotBlank() } -> EpgStatus.DiscoveryNeedsChannelIds
+                    else -> EpgStatus.DiscoveryNoMatch
                 },
             )
             searchJob = null
@@ -240,7 +248,7 @@ internal class MainEpgCoordinator(
 
     fun closeSearch() {
         cancelSearch()
-        state.value = state.value.copy(epgSources = emptyList(), epgStatus = "")
+        state.value = state.value.copy(epgSources = emptyList(), epgStatus = EpgStatus.Idle)
     }
 
     fun useSource(rawUrl: String) {
@@ -248,7 +256,7 @@ internal class MainEpgCoordinator(
         if (url == null) {
             state.value = state.value.copy(
                 epgLoaded = EpgManager.isLoaded(),
-                epgStatus = "✗ Δώσε έγκυρο http/https URL EPG.",
+                epgStatus = EpgStatus.InvalidUrl,
             )
             return
         }
@@ -258,11 +266,7 @@ internal class MainEpgCoordinator(
         val keepsExistingGuide = EpgManager.isLoaded()
         state.value = state.value.copy(
             epgLoaded = keepsExistingGuide,
-            epgStatus = if (keepsExistingGuide) {
-                "Κατέβασμα νέου EPG… · το τρέχον παραμένει ενεργό"
-            } else {
-                "Κατέβασμα EPG…"
-            },
+            epgStatus = if (keepsExistingGuide) EpgStatus.DownloadingWithExistingGuide else EpgStatus.Downloading,
         )
         loadJob = scope.launch {
             val result = withContext(Dispatchers.IO) {
@@ -279,8 +283,8 @@ internal class MainEpgCoordinator(
                         }
                     } catch (error: CancellationException) {
                         throw error
-                    } catch (error: Exception) {
-                        LoadResult(LoadPath.FAILED, error.message.orEmpty())
+                    } catch (_: Exception) {
+                        LoadResult(LoadPath.FAILED)
                     }
                 }
             }
@@ -289,9 +293,7 @@ internal class MainEpgCoordinator(
             if (result.path == LoadPath.FAILED) {
                 state.value = state.value.copy(
                     epgLoaded = EpgManager.isLoaded(),
-                    epgStatus = "✗ Απέτυχε το κατέβασμα" +
-                        result.error.takeIf(String::isNotBlank)?.let { ": $it" }.orEmpty() +
-                        if (EpgManager.isLoaded()) " · διατηρήθηκε το προηγούμενο" else "",
+                    epgStatus = EpgStatus.DownloadFailed(EpgManager.isLoaded()),
                 )
                 if (generation == loadGeneration.get()) loadJob = null
                 return@launch
@@ -319,11 +321,7 @@ internal class MainEpgCoordinator(
             val matches = matchCount()
             state.value = state.value.copy(
                 epgLoaded = true,
-                epgStatus = if (matches > 0) {
-                    "✓ Αποθηκεύτηκε και ταιριάζει σε $matches κανάλια"
-                } else {
-                    "⚠ Αποθηκεύτηκε, αλλά δεν ταιριάζει με τα tvg-id της λίστας."
-                },
+                epgStatus = if (matches > 0) EpgStatus.Saved(matches) else EpgStatus.SavedWithoutMatches,
             )
             if (generation == loadGeneration.get()) loadJob = null
         }

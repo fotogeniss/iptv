@@ -2,6 +2,7 @@
 
 package com.prelude.iptv.ui.components.epg
 
+import android.text.format.DateFormat
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,13 +40,12 @@ import coil.compose.AsyncImage
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
 import com.prelude.iptv.ui.IptvColors
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
+import com.prelude.iptv.ui.localization.localizedEpgRuntime
+import kotlinx.coroutines.delay
+import java.util.Calendar
+import java.util.Date
 
 @Immutable
 data class EpgWindow(
@@ -99,15 +100,18 @@ fun programmesFor(channel: Channel, window: EpgWindow): List<EpgManager.Prog> =
     if (channel.tvgId.isBlank()) emptyList()
     else EpgManager.programmes(channel.tvgId, window.startMs, window.endMs)
 
+@Composable
 fun epgTime(ms: Long): String =
-    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(ms))
+    DateFormat.getTimeFormat(LocalContext.current).format(Date(ms))
 
+@Composable
 fun epgTimeRange(programme: EpgManager.Prog): String =
     "${epgTime(programme.startMs)} – ${epgTime(programme.stopMs)}"
 
+@Composable
 fun epgRuntime(programme: EpgManager.Prog): String {
     val minutes = ((programme.stopMs - programme.startMs) / 60_000L).coerceAtLeast(1L)
-    return if (minutes >= 60) "${minutes / 60}ω ${minutes % 60}λ" else "${minutes}λ"
+    return localizedEpgRuntime(minutes)
 }
 
 fun epgProgress(programme: EpgManager.Prog, nowMs: Long): Float {

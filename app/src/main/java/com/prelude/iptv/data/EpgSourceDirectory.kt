@@ -3,6 +3,7 @@ package com.prelude.iptv.data
 import com.prelude.iptv.net.Http
 import org.json.JSONArray
 import java.net.URI
+import java.util.Locale
 
 /**
  * Finds public XMLTV guides that explicitly advertise support for the current
@@ -14,8 +15,8 @@ object EpgSourceDirectory {
     private const val CACHE_TTL_MS = 6L * 60L * 60L * 1000L
 
     data class Candidate(
-        val label: String,
         val url: String,
+        val host: String,
         val matchedChannels: Int
     )
 
@@ -28,7 +29,7 @@ object EpgSourceDirectory {
             .map { it.tvgId.trim() }
             .filter { it.isNotEmpty() }
             .flatMap { id -> sequenceOf(id, id.substringBefore('@')) }
-            .map { it.lowercase() }
+            .map { it.lowercase(Locale.ROOT) }
             .toSet()
         if (wanted.isEmpty()) return emptyList()
 
@@ -40,8 +41,8 @@ object EpgSourceDirectory {
             if (channel.isEmpty()) continue
             val feed = row.optString("feed").trim()
             val ids = buildSet {
-                add(channel.lowercase())
-                if (feed.isNotEmpty()) add("$channel@$feed".lowercase())
+                add(channel.lowercase(Locale.ROOT))
+                if (feed.isNotEmpty()) add("$channel@$feed".lowercase(Locale.ROOT))
             }
             if (ids.none(wanted::contains)) continue
 
@@ -49,20 +50,20 @@ object EpgSourceDirectory {
             for (sourceIndex in 0 until sources.length()) {
                 val source = sources.optJSONObject(sourceIndex) ?: continue
                 val url = source.optString("url").trim()
-                val format = source.optString("format").trim().uppercase()
+                val format = source.optString("format").trim().uppercase(Locale.ROOT)
                 if (url.isEmpty() || (format.isNotEmpty() && format != "XML" && format != "GZIP")) continue
                 matches.getOrPut(url) { linkedSetOf() }.add(channel)
             }
         }
 
         return matches.map { (url, channelIds) ->
-            val host = runCatching { URI(url).host }.getOrNull().orEmpty().ifBlank { "δημόσια πηγή" }
+            val host = runCatching { URI(url).host }.getOrNull().orEmpty()
             Candidate(
-                label = "iptv-org · $host · ${channelIds.size} αντιστοιχίσεις",
                 url = url,
+                host = host,
                 matchedChannels = channelIds.size
             )
-        }.sortedWith(compareByDescending<Candidate> { it.matchedChannels }.thenBy { it.label })
+        }.sortedWith(compareByDescending<Candidate> { it.matchedChannels }.thenBy { it.host })
     }
 
     @Synchronized

@@ -1,0 +1,89 @@
+<resources>
+    <string name="epg_back">Πίσω</string>
+    <string name="epg_home">Αρχική</string>
+    <string name="epg_title">Οδηγός TV</string>
+    <string name="epg_touch_guide">Πρόγραμμα σχεδιασμένο για αφή</string>
+    <string name="epg_today">Σήμερα</string>
+    <string name="epg_tab_now">Τώρα</string>
+    <string name="epg_tab_later">Αργότερα</string>
+    <string name="epg_tab_all">Όλα</string>
+    <string name="epg_tab_movies">Ταινίες</string>
+    <string name="epg_tab_sports">Αθλητικά</string>
+    <string name="epg_now_badge">ΤΩΡΑ</string>
+    <string name="epg_no_program_filter">Δεν υπάρχει πρόγραμμα σε αυτό το φίλτρο.</string>
+    <string name="epg_live_tv">Live TV</string>
+    <string name="epg_playing_now">ΠΑΙΖΕΙ ΤΩΡΑ</string>
+    <string name="epg_programme">ΠΡΟΓΡΑΜΜΑ</string>
+    <string name="epg_next_with_title">Επόμενο · %1$s  %2$s</string>
+    <string name="epg_next_at">ΕΠΟΜΕΝΟ · %1$s</string>
+    <string name="epg_reminder">Υπενθύμιση</string>
+    <string name="epg_watch">Παρακολούθηση</string>
+    <string name="epg_open_channel">Άνοιγμα καναλιού</string>
+    <string name="epg_empty">Δεν υπάρχει διαθέσιμο πρόγραμμα EPG</string>
+    <string name="epg_return">Επιστροφή</string>
+    <string name="epg_program_action">Ενέργεια προγράμματος</string>
+    <string name="epg_selected">Επιλεγμένο</string>
+    <string name="epg_live">LIVE</string>
+    <string name="epg_live_header">EPG LIVE</string>
+    <string name="epg_now_channel">ΤΩΡΑ · %1$s</string>
+    <string name="epg_guide_channel">ΟΔΗΓΟΣ TV · %1$s</string>
+    <string name="epg_cinematic_preview">ΚΙΝΗΜΑΤΟΓΡΑΦΙΚΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΕΠΙΚΑΛΥΨΗ EPG</string>
+    <string name="epg_dpad_instruction">DPAD για πλοήγηση · OK για ενέργεια</string>
+    <string name="epg_shift_back_30">30 λεπτά πίσω</string>
+    <string name="epg_shift_forward_30">30 λεπτά μπροστά</string>
+    <string name="epg_duration_minutes">%1$d λεπ.</string>
+    <string name="epg_duration_hours_minutes">%1$d ώ. %2$d λεπ.</string>
+
+    <string name="epg_settings_details">Στοιχεία EPG</string>
+    <string name="epg_settings_loaded">EPG φορτωμένο</string>
+    <string name="epg_settings_not_loaded">Δεν έχει φορτωθεί EPG</string>
+    <string name="epg_settings_xmltv_url">XMLTV URL</string>
+    <string name="epg_settings_auto_discovery">Αυτόματη εύρεση EPG</string>
+    <string name="epg_settings_save_load">Αποθήκευση και φόρτωση</string>
+    <string name="epg_settings_sources_title">Πηγές EPG για αυτή τη λίστα</string>
+    <string name="epg_settings_saved_source">Αποθηκευμένη πηγή XMLTV</string>
+    <string name="epg_settings_unknown_source">ΠΗΓΗ</string>
+    <string name="epg_settings_programme_guide">Οδηγός προγράμματος</string>
+    <string name="epg_settings_xmltv_matching">XMLTV και αντιστοίχιση καναλιών</string>
+
+    <string name="epg_source_playlist_settings">Από τις ρυθμίσεις της λίστας</string>
+    <string name="epg_source_embedded_m3u">Δηλωμένο μέσα στο M3U (url-tvg)</string>
+    <string name="epg_source_xtream">Xtream · xmltv.php του παρόχου</string>
+    <string name="epg_source_current">Ήδη φορτωμένο</string>
+    <string name="epg_source_public">Δημόσια πηγή</string>
+    <plurals name="epg_source_public_matches">
+        <item quantity="one">iptv-org · %1$s · %2$d αντιστοίχιση</item>
+        <item quantity="other">iptv-org · %1$s · %2$d αντιστοιχίσεις</item>
+    </plurals>
+
+    <string name="epg_status_loading">Λήψη EPG…</string>
+    <string name="epg_status_loading_keep">Λήψη νέου EPG… · το τρέχον παραμένει ενεργό</string>
+    <string name="epg_status_load_failed">✗ Απέτυχε η λήψη EPG.</string>
+    <string name="epg_status_load_failed_keep">✗ Απέτυχε η λήψη EPG · διατηρήθηκε το προηγούμενο.</string>
+    <string name="epg_status_no_matches">⚠ Το EPG φορτώθηκε αλλά δεν ταιριάζει με τα tvg-id.</string>
+    <plurals name="epg_status_ready">
+        <item quantity="one">✓ Το EPG ταιριάζει σε %1$d κανάλι</item>
+        <item quantity="other">✓ Το EPG ταιριάζει σε %1$d κανάλια</item>
+    </plurals>
+    <plurals name="epg_status_ready_disk">
+        <item quantity="one">✓ Το EPG ταιριάζει σε %1$d κανάλι · από δίσκο</item>
+        <item quantity="other">✓ Το EPG ταιριάζει σε %1$d κανάλια · από δίσκο</item>
+    </plurals>
+    <string name="epg_status_discovering">Αναζήτηση γνωστών δημόσιων XMLTV πηγών…</string>
+    <plurals name="epg_status_sources_found">
+        <item quantity="one">Βρέθηκε %1$d πηγή EPG</item>
+        <item quantity="other">Βρέθηκαν %1$d πηγές EPG</item>
+    </plurals>
+    <string name="epg_status_missing_channel_ids">Δεν υπάρχουν tvg-id στα κανάλια για ασφαλή αντιστοίχιση δημόσιου EPG.</string>
+    <string name="epg_status_no_compatible_source">Δεν βρέθηκε συμβατή πηγή EPG για αυτή τη λίστα.</string>
+    <string name="epg_status_invalid_url">✗ Δώσε έγκυρο http/https URL EPG.</string>
+    <string name="epg_status_downloading">Κατέβασμα EPG…</string>
+    <string name="epg_status_downloading_keep">Κατέβασμα νέου EPG… · το τρέχον παραμένει ενεργό</string>
+    <string name="epg_status_download_failed">✗ Απέτυχε το κατέβασμα EPG.</string>
+    <string name="epg_status_download_failed_keep">✗ Απέτυχε το κατέβασμα EPG · διατηρήθηκε το προηγούμενο.</string>
+    <plurals name="epg_status_saved">
+        <item quantity="one">✓ Αποθηκεύτηκε και ταιριάζει σε %1$d κανάλι</item>
+        <item quantity="other">✓ Αποθηκεύτηκε και ταιριάζει σε %1$d κανάλια</item>
+    </plurals>
+    <string name="epg_status_saved_no_matches">⚠ Αποθηκεύτηκε, αλλά δεν ταιριάζει με τα tvg-id της λίστας.</string>
+</resources>

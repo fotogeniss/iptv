@@ -35,12 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.EpgChannelLogo
 import com.prelude.iptv.ui.components.epg.EpgProgramVisualState
@@ -123,21 +125,21 @@ private fun TvEpgDockHeader(
         verticalAlignment = Alignment.Top
     ) {
         Column {
-            Text("Οδηγός TV", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
-            Text("DPAD για πλοήγηση · OK για ενέργεια", color = IptvColors.TextTertiary, fontSize = 9.sp, letterSpacing = 0.7.sp)
+            Text(stringResource(R.string.epg_title), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.epg_dpad_instruction), color = IptvColors.TextTertiary, fontSize = 9.sp, letterSpacing = 0.7.sp)
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             TvDockTool(onClick = { onShiftTimeline(-30) }) {
-                Icon(Icons.Default.ChevronLeft, "−30 λεπτά", tint = Color.White, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.ChevronLeft, stringResource(R.string.epg_shift_back_30), tint = Color.White, modifier = Modifier.size(18.dp))
             }
             TvDockTool(onClick = onJumpToNow) {
-                Icon(Icons.Default.MyLocation, "Τώρα", tint = IptvColors.Primary, modifier = Modifier.size(15.dp))
+                Icon(Icons.Default.MyLocation, stringResource(R.string.epg_tab_now), tint = IptvColors.Primary, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Τώρα", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.epg_tab_now), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             TvDockTool(onClick = { onShiftTimeline(30) }) {
-                Icon(Icons.Default.ChevronRight, "+30 λεπτά", tint = Color.White, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.ChevronRight, stringResource(R.string.epg_shift_forward_30), tint = Color.White, modifier = Modifier.size(18.dp))
             }
         }
     }

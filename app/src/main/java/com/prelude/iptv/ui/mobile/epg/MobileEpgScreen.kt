@@ -22,6 +22,7 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.epgWindow
 import com.prelude.iptv.ui.components.epg.programmesFor
 import com.prelude.iptv.ui.components.epg.rememberEpgNow
+import com.prelude.iptv.ui.epg.EpgFilter
 
 @Composable
 fun MobileEpgScreen(
@@ -47,7 +48,7 @@ fun MobileEpgScreen(
 
     var selectedChannelIndex by remember(channels, window) { mutableStateOf(initialChannel) }
     var selectedProgrammeIndex by remember(channels, window) { mutableStateOf(initialProgramme) }
-    var selectedTab by remember { mutableStateOf(MobileEpgTab.Now) }
+    var selectedTab by remember { mutableStateOf(EpgFilter.Now) }
     var selectedTimeMs by remember(window) { mutableStateOf(nowMs) }
 
     val selectedChannel = channels.getOrNull(selectedChannelIndex) ?: channels.firstOrNull()

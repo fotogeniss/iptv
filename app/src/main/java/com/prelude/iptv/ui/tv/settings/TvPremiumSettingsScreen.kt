@@ -334,7 +334,13 @@ private fun TvPlaybackPage(
         TvRowData("Απόθεμα αναπαραγωγής", "Πόση εικόνα κρατά ο player μπροστά — ταχύτητα ή σταθερότητα", Icons.Default.Settings, buffer) { onDialog("buffer") },
         TvRowData("Αρχική Android TV", "Δημοσίευση του Συνέχισε να βλέπεις χωρίς URLs ή credentials", Icons.Default.Movie, checked = tvHomeEnabled, action = onToggleTvHome),
         TvRowData("Κανάλι Η λίστα μου", "Source-scoped αγαπημένα με ασφαλή launcher links", Icons.Default.Favorite, checked = tvHomeMyListEnabled, action = onToggleTvHomeMyList),
-        TvRowData("Οδηγός προγράμματος", "XMLTV και αντιστοίχιση καναλιών", Icons.Default.CalendarMonth, checked = epg, action = onToggleEpg),
+        TvRowData(
+            stringResource(R.string.epg_settings_programme_guide),
+            stringResource(R.string.epg_settings_xmltv_matching),
+            Icons.Default.CalendarMonth,
+            checked = epg,
+            action = onToggleEpg,
+        ),
         TvRowData("TMDB metadata", "Αφίσες, backdrops και βαθμολογίες", Icons.Default.Movie, if (tmdb) "Συνδεδεμένο" else "Ρύθμιση") { onDialog("tmdb") },
         TvRowData("OpenSubtitles", "API key και λογαριασμός", Icons.Default.Subtitles, if (subs) "Συνδεδεμένο" else "Ρύθμιση") { onDialog("subs") },
         TvRowData("Εκκαθάριση TMDB cache", "Δεν επηρεάζει λίστες ή ιστορικό", Icons.Default.CleaningServices, action = onClearCache)

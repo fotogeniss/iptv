@@ -9,16 +9,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.prelude.iptv.R
+import com.prelude.iptv.category.CategoryEditorState
+import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.SourceLoadProgress
 import com.prelude.iptv.ui.components.settings.buildSettingsSources
 import com.prelude.iptv.ui.components.settings.playerModeLabel
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 import com.prelude.iptv.ui.mobile.settings.MobilePremiumSettingsScreen
-import com.prelude.iptv.category.CategoryEditorState
-import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.ui.tv.settings.TvPremiumSettingsScreen
 
 @Composable
@@ -36,8 +40,8 @@ fun AdaptiveSettingsScreen(
     fontScale: Float,
     epgEnabled: Boolean,
     epgLoaded: Boolean,
-    epgStatus: String,
-    epgSources: List<Pair<String, String>>,
+    epgStatus: EpgStatus,
+    epgSources: List<EpgSourceOption>,
     tmdbConfigured: Boolean,
     subtitlesConfigured: Boolean,
     version: String,
@@ -109,7 +113,7 @@ fun AdaptiveSettingsScreen(
             epgStatus = epgStatus,
             epgSources = epgSources,
             currentEpgUrl = activePlaylist?.epgUrl.orEmpty(),
-            currentSourceType = sources.firstOrNull { it.current }?.typeLabel ?: "ΠΗΓΗ",
+            currentSourceType = sources.firstOrNull { it.current }?.typeLabel ?: stringResource(R.string.epg_settings_unknown_source),
             tmdbConfigured = tmdbConfigured,
             subtitlesConfigured = subtitlesConfigured,
             version = version,

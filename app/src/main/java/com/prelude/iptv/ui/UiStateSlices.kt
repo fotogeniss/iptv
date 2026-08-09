@@ -3,6 +3,8 @@ package com.prelude.iptv.ui
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.SourceLoadProgress
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 
 /**
  * Small read models exposed to Compose route boundaries.
@@ -35,7 +37,6 @@ data class CatalogUiState(
     val favorites: Set<String> = emptySet(),
     val chooseContent: Boolean = false,
     val epgLoaded: Boolean = false,
-    val epgStatus: String = "",
     val pickCategories: Boolean = false,
     val categories: List<Pair<String, String>> = emptyList(),
     val askLoadMode: Boolean = false,
@@ -60,8 +61,8 @@ data class SettingsUiState(
 
 data class EpgUiState(
     val loaded: Boolean = false,
-    val sources: List<Pair<String, String>> = emptyList(),
-    val status: String = ""
+    val sources: List<EpgSourceOption> = emptyList(),
+    val status: EpgStatus = EpgStatus.Idle,
 )
 
 data class ExportUiState(
@@ -93,7 +94,6 @@ internal fun UiState.toCatalogUiState() = CatalogUiState(
     favorites = favorites,
     chooseContent = chooseContent,
     epgLoaded = epgLoaded,
-    epgStatus = epgStatus,
     pickCategories = pickCategories,
     categories = categories,
     askLoadMode = askLoadMode,

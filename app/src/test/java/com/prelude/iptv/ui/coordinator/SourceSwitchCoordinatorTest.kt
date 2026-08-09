@@ -5,6 +5,9 @@ import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistIdentity
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.ui.UiState
+import com.prelude.iptv.ui.epg.EpgSourceKind
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -126,8 +129,8 @@ class SourceSwitchCoordinatorTest {
             status = "old status",
             favorites = setOf("old favorite"),
             epgLoaded = true,
-            epgSources = listOf("Old" to "old.xml"),
-            epgStatus = "old epg",
+            epgSources = listOf(EpgSourceOption(EpgSourceKind.Current, "old.xml")),
+            epgStatus = EpgStatus.Ready(matches = 1),
             pickCategories = true,
             categories = listOf("1" to "Old"),
             askLoadMode = true,
@@ -167,7 +170,7 @@ class SourceSwitchCoordinatorTest {
         assertEquals("", next.status)
         assertFalse(next.epgLoaded)
         assertTrue(next.epgSources.isEmpty())
-        assertEquals("", next.epgStatus)
+        assertEquals(EpgStatus.Idle, next.epgStatus)
         assertFalse(next.pickCategories)
         assertTrue(next.categories.isEmpty())
         assertFalse(next.askLoadMode)

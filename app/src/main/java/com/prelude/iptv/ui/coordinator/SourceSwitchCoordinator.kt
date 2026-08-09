@@ -3,6 +3,7 @@ package com.prelude.iptv.ui.coordinator
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistIdentity
 import com.prelude.iptv.ui.UiState
+import com.prelude.iptv.ui.epg.EpgStatus
 
 /**
  * Monotonic generation boundary for source-scoped asynchronous work.
@@ -70,7 +71,7 @@ internal object SourceSwitchStatePolicy {
         status = "",
         epgLoaded = false,
         epgSources = emptyList(),
-        epgStatus = "",
+        epgStatus = EpgStatus.Idle,
         askRefreshMode = false,
         askLoadMode = false,
         pickCategories = false,

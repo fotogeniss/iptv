@@ -63,6 +63,8 @@ import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.ui.mobile.home.MobileEditHomeScreen
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,8 +75,8 @@ fun MobilePremiumSettingsScreen(
     fontScale: Float,
     epgEnabled: Boolean,
     epgLoaded: Boolean,
-    epgStatus: String,
-    epgSources: List<Pair<String, String>>,
+    epgStatus: EpgStatus,
+    epgSources: List<EpgSourceOption>,
     currentEpgUrl: String,
     currentSourceType: String,
     tmdbConfigured: Boolean,

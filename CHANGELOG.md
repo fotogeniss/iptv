@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the full EPG experience across mobile and Android TV, including
+  guide filters, programme actions, empty/accessibility states, locale-aware
+  time and duration formatting, XMLTV discovery/loading and active EPG settings.
+  EPG status, source labels and load failures now cross typed boundaries while
+  provider programme/channel content, identifiers, URLs and hosts remain data.
 - Localized source onboarding, connection validation, file import, editing and
   source management across mobile and Android TV. Pure source policies now emit
   typed validation, detection, connection, submission and status identities;

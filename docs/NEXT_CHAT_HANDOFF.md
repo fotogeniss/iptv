@@ -376,13 +376,23 @@ has now been implemented for Android TV.
   provider responses and stable method IDs remain untranslated data, and the
   existing validation/submission, encrypted persistence and TV focus/Back
   behavior were preserved.
-- The next cohesive localization slice is the full EPG across mobile and TV,
-  followed by remaining Settings. Do not translate provider EPG titles,
-  descriptions, channel names or programme identifiers. Separate app-owned
-  empty/loading/action/status copy from provider data with typed mappings, and
-  preserve Live/player navigation, TV DPAD focus and Back restoration. This is
-  a copy/resource migration and needs no new HTML preview unless layout changes.
-- Source-slice static verification completed with localization/resource parity passing,
+- Full EPG localization is implemented across the active mobile and Android TV
+  guide routes plus mobile EPG settings and the TV EPG settings row. Filters,
+  programme actions, empty/accessibility states, discovery/download feedback,
+  source labels, time and duration formatting now come from paired
+  Greek/QA-English resources. `EpgStatus`, `EpgSourceOption` and
+  `EpgLoadFailure` keep presentation copy out of state, coordination and data
+  layers. Provider programme titles/descriptions, channel names, identifiers,
+  URLs and hosts remain untranslated data. Live/player navigation and the
+  existing TV focus/Back graph were not structurally changed.
+- The next cohesive localization slice is all remaining Settings surfaces.
+  Inventory active mobile and TV routes first, keep preference keys and provider
+  values as stable data, introduce typed identities wherever state currently
+  carries display sentences, and preserve immediate persistence, dialogs, TV
+  DPAD focus and Back restoration. This is a copy/resource migration and needs
+  no new HTML preview unless layout changes.
+- EPG-slice static verification completed with 69 paired EPG resource keys and
+  matching plural/placeholder structure, localization contracts passing,
   compatibility contracts 58/58, architecture audit 60 passes plus the known
   `MainViewModel` size warning, deep validation 67 passes plus the documented
   cleartext compatibility warning, zero critical production-risk findings,
@@ -502,9 +512,11 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate implementation task is full EPG
-> localization across phone and TV, followed by the remaining Settings surfaces.
-> Keep provider programme/channel titles, descriptions and identifiers untouched;
-> move only app-owned actions, states, errors and accessibility copy to paired
-> Greek/QA-English resources. Preserve Live/player navigation, locale-aware time
-> formatting, TV DPAD focus and exact Back restoration.
+> cohesive completed change. The immediate implementation task is localization
+> of all remaining Settings surfaces across phone and TV. Inventory the active
+> routes before editing; keep preference keys, protocol/provider values and user
+> data untouched; move app-owned labels, descriptions, dialogs, errors and
+> accessibility copy to paired Greek/QA-English resources through typed mappings
+> where state currently owns display sentences. Preserve immediate persistence,
+> TV DPAD focus and exact Back restoration. After Settings, continue with
+> profiles, billing, legal, diagnostics, backup/export and system notifications.

@@ -11,6 +11,10 @@ import java.io.File
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 
+enum class EpgLoadFailure { EMPTY_URL, NO_PROGRAMMES }
+
+class EpgLoadException(val reason: EpgLoadFailure) : Exception()
+
 /**
  * XMLTV EPG: κατέβασμα, parse, ευρετήριο και ερωτήματα.
  *
@@ -84,9 +88,9 @@ object EpgManager {
     /** Downloads/parses without mutating the guide currently visible to the UI. */
     fun fetchSnapshot(url: String): Snapshot {
         val u = url.trim()
-        if (u.isEmpty()) throw IllegalArgumentException("Κενό URL EPG")
+        if (u.isEmpty()) throw EpgLoadException(EpgLoadFailure.EMPTY_URL)
         val parsed = Http.stream(u).use { parse(it) }
-        if (parsed.isEmpty()) throw RuntimeException("Το XMLTV δεν περιείχε προγράμματα")
+        if (parsed.isEmpty()) throw EpgLoadException(EpgLoadFailure.NO_PROGRAMMES)
         return Snapshot(parsed, u, System.currentTimeMillis())
     }
 

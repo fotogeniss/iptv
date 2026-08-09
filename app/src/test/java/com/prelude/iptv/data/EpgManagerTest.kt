@@ -3,6 +3,7 @@ package com.prelude.iptv.data
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 /**
@@ -11,6 +12,14 @@ import org.junit.Test
  * αλλιώς το «τι παίζει τώρα» και το grid δείχνουν λάθος πρόγραμμα.
  */
 class EpgManagerTest {
+
+    @Test fun `empty guide URL reports a typed failure`() {
+        val failure = assertThrows(EpgLoadException::class.java) {
+            EpgManager.fetchSnapshot(" ")
+        }
+
+        assertEquals(EpgLoadFailure.EMPTY_URL, failure.reason)
+    }
 
     // ---- parseXmltvTime: το πιο εύθραυστο κομμάτι (timezones) ----
 

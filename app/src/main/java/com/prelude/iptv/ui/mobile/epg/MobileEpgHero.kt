@@ -36,12 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.EpgChannelLogo
 import com.prelude.iptv.ui.components.epg.EpgCinematicBackdrop
@@ -52,6 +54,7 @@ import com.prelude.iptv.ui.components.epg.epgTime
 import com.prelude.iptv.ui.components.epg.epgTimeRange
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
+import com.prelude.iptv.ui.localization.localizedUppercase
 
 @Composable
 internal fun MobileEpgHero(
@@ -76,7 +79,7 @@ internal fun MobileEpgHero(
                 onClick = onBack,
                 modifier = Modifier.clip(CircleShape).background(Color.Black.copy(alpha = 0.34f))
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.epg_back), tint = Color.White)
             }
             Spacer(Modifier.weight(1f))
             Row(
@@ -88,7 +91,7 @@ internal fun MobileEpgHero(
             ) {
                 Box(Modifier.size(6.dp).background(IptvColors.Primary, CircleShape))
                 Spacer(Modifier.width(7.dp))
-                Text("TV GUIDE", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+                Text(localizedUppercase(stringResource(R.string.epg_title)), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
             }
         }
 
@@ -114,7 +117,10 @@ internal fun MobileEpgHero(
                     Column(Modifier.weight(1f)) {
                         Text(heroChannel.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(
-                            if (heroProgramme != null && nowMs in heroProgramme.startMs until heroProgramme.stopMs) "ΠΑΙΖΕΙ ΤΩΡΑ" else "ΠΡΟΓΡΑΜΜΑ",
+                            stringResource(
+                                if (heroProgramme != null && nowMs in heroProgramme.startMs until heroProgramme.stopMs) R.string.epg_playing_now
+                                else R.string.epg_programme
+                            ),
                             color = if (heroProgramme != null && nowMs in heroProgramme.startMs until heroProgramme.stopMs) IptvColors.Success else IptvColors.TextSecondary,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
@@ -162,7 +168,7 @@ internal fun MobileEpgHero(
                 if (heroNextProgramme != null) {
                     Spacer(Modifier.height(10.dp))
                     Text(
-                        "Επόμενο · ${epgTime(heroNextProgramme.startMs)}  ${heroNextProgramme.title}",
+                        stringResource(R.string.epg_next_with_title, epgTime(heroNextProgramme.startMs), heroNextProgramme.title),
                         color = Color.White.copy(alpha = 0.72f),
                         fontSize = 10.sp,
                         maxLines = 1,
@@ -181,7 +187,7 @@ internal fun MobileEpgHero(
                         Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(21.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            if (heroProgramme != null && heroProgramme.startMs > nowMs) "Υπενθύμιση" else "Παρακολούθηση",
+                            stringResource(if (heroProgramme != null && heroProgramme.startMs > nowMs) R.string.epg_reminder else R.string.epg_watch),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -192,7 +198,7 @@ internal fun MobileEpgHero(
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(47.dp)
                     ) {
-                        Icon(Icons.Default.LiveTv, "Άνοιγμα καναλιού", tint = Color.White)
+                        Icon(Icons.Default.LiveTv, stringResource(R.string.epg_open_channel), tint = Color.White)
                     }
                 }
             }
@@ -204,9 +210,9 @@ internal fun MobileEpgHero(
 internal fun MobileEpgEmptyState(onBack: () -> Unit) {
     Box(Modifier.fillMaxSize().background(IptvColors.Background), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Δεν υπάρχει διαθέσιμο πρόγραμμα EPG", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.epg_empty), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(12.dp))
-            Button(onClick = onBack) { Text("Επιστροφή") }
+            Button(onClick = onBack) { Text(stringResource(R.string.epg_return)) }
         }
     }
 }

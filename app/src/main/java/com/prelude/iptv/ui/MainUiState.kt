@@ -3,6 +3,8 @@ package com.prelude.iptv.ui
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.SourceLoadProgress
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
 
 data class UiState(
     val playlists: List<Playlist> = emptyList(),
@@ -35,9 +37,8 @@ data class UiState(
     val relayRunning: Boolean = false,
     val relayUrl: String = "",
     val epgLoaded: Boolean = false,
-    /** αποτέλεσμα αναζήτησης EPG: (ετικέτα, url) */
-    val epgSources: List<Pair<String, String>> = emptyList(),
-    val epgStatus: String = "",
+    val epgSources: List<EpgSourceOption> = emptyList(),
+    val epgStatus: EpgStatus = EpgStatus.Idle,
     // επιλογή κατηγοριών πριν τη φόρτωση
     val pickCategories: Boolean = false,
     val categories: List<Pair<String, String>> = emptyList(),

@@ -27,25 +27,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.EpgChannelLogo
 import com.prelude.iptv.ui.components.epg.EpgWindow
 import com.prelude.iptv.ui.components.epg.epgTime
+import com.prelude.iptv.ui.epg.EpgFilter
+import com.prelude.iptv.ui.localization.labelRes
 import java.util.Calendar
-
-internal enum class MobileEpgTab(val label: String) {
-    Now("Τώρα"),
-    Later("Αργότερα"),
-    All("Όλα"),
-    Movies("Ταινίες"),
-    Sports("Αθλητικά")
-}
+import java.util.Locale
 
 @Immutable
 internal data class MobileIndexedProgramme(
@@ -57,9 +54,9 @@ internal data class MobileIndexedProgramme(
 internal fun MobileEpgGuideHeader(
     window: EpgWindow,
     nowMs: Long,
-    selectedTab: MobileEpgTab,
+    selectedTab: EpgFilter,
     selectedTimeMs: Long,
-    onTabSelected: (MobileEpgTab) -> Unit,
+    onTabSelected: (EpgFilter) -> Unit,
     onTimeSelected: (Long) -> Unit
 ) {
     Column(
@@ -82,12 +79,12 @@ internal fun MobileEpgGuideHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("TV Guide", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black, letterSpacing = (-0.5).sp)
-                Text("Touch-first πρόγραμμα", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                Text(stringResource(R.string.epg_title), color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Black, letterSpacing = (-0.5).sp)
+                Text(stringResource(R.string.epg_touch_guide), color = IptvColors.TextTertiary, fontSize = 10.sp)
             }
             Spacer(Modifier.weight(1f))
             Text(
-                "Σήμερα",
+                stringResource(R.string.epg_today),
                 color = Color.White,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
@@ -102,10 +99,10 @@ internal fun MobileEpgGuideHeader(
             contentPadding = PaddingValues(horizontal = 17.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            itemsIndexed(MobileEpgTab.entries) { _, tab ->
+            itemsIndexed(EpgFilter.entries) { _, tab ->
                 val selected = tab == selectedTab
                 Text(
-                    tab.label,
+                    stringResource(tab.labelRes()),
                     color = if (selected) Color.Black else IptvColors.TextSecondary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -142,7 +139,7 @@ internal fun MobileEpgGuideHeader(
                 ) {
                     Text(epgTime(timeMs), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(3.dp))
-                    Text(if (isNow) "ΤΩΡΑ" else "", color = IptvColors.Primary, fontSize = 7.sp, fontWeight = FontWeight.Black)
+                    Text(if (isNow) stringResource(R.string.epg_now_badge) else "", color = IptvColors.Primary, fontSize = 7.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -189,7 +186,7 @@ internal fun MobileEpgChannelCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    channel.group.ifBlank { "Live TV" },
+                    channel.group.ifBlank { stringResource(R.string.epg_live_tv) },
                     color = IptvColors.TextTertiary,
                     fontSize = 9.sp,
                     maxLines = 1,
@@ -203,7 +200,7 @@ internal fun MobileEpgChannelCard(
         Spacer(Modifier.height(10.dp))
         if (programmes.isEmpty()) {
             Text(
-                "Δεν υπάρχει πρόγραμμα σε αυτό το φίλτρο.",
+                stringResource(R.string.epg_no_program_filter),
                 color = IptvColors.TextTertiary,
                 fontSize = 11.sp,
                 modifier = Modifier.padding(horizontal = 74.dp, vertical = 18.dp)
@@ -241,10 +238,10 @@ internal fun MobileEpgGuideFooter() {
 internal fun filteredMobileProgrammes(
     channel: Channel,
     programmes: List<EpgManager.Prog>,
-    tab: MobileEpgTab,
+    tab: EpgFilter,
     nowMs: Long
 ): List<MobileIndexedProgramme> {
-    val descriptor = "${channel.name} ${channel.group} ${channel.genre}".lowercase()
+    val descriptor = "${channel.name} ${channel.group} ${channel.genre}".lowercase(Locale.ROOT)
     val currentIndex = programmes.indexOfFirst { nowMs in it.startMs until it.stopMs }
     val nextIndex = when {
         currentIndex >= 0 -> currentIndex + 1
@@ -252,11 +249,11 @@ internal fun filteredMobileProgrammes(
     }
     return programmes.mapIndexedNotNull { index, programme ->
         val include = when (tab) {
-            MobileEpgTab.Now -> index == currentIndex || index == nextIndex
-            MobileEpgTab.Later -> programme.startMs > nowMs
-            MobileEpgTab.All -> true
-            MobileEpgTab.Movies -> listOf("movie", "cinema", "film", "ταιν").any { descriptor.contains(it) }
-            MobileEpgTab.Sports -> listOf("sport", "sports", "αθλη").any { descriptor.contains(it) }
+            EpgFilter.Now -> index == currentIndex || index == nextIndex
+            EpgFilter.Later -> programme.startMs > nowMs
+            EpgFilter.All -> true
+            EpgFilter.Movies -> listOf("movie", "cinema", "film", "ταιν").any { descriptor.contains(it) }
+            EpgFilter.Sports -> listOf("sport", "sports", "αθλη").any { descriptor.contains(it) }
         }
         if (include) MobileIndexedProgramme(index, programme) else null
     }

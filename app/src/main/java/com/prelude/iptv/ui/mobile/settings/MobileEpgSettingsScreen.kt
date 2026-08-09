@@ -38,11 +38,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.epg.EpgSourceOption
+import com.prelude.iptv.ui.epg.EpgStatus
+import com.prelude.iptv.ui.localization.localizedLabel
+import com.prelude.iptv.ui.localization.localizedText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +57,8 @@ internal fun MobileEpgSettingsScreen(
     loaded: Boolean,
     sourceType: String,
     currentUrl: String,
-    status: String,
-    discoveredSources: List<Pair<String, String>>,
+    status: EpgStatus,
+    discoveredSources: List<EpgSourceOption>,
     onEnabledChange: (Boolean) -> Unit,
     onDiscover: () -> Unit,
     onUseUrl: (String) -> Unit,
@@ -64,6 +70,8 @@ internal fun MobileEpgSettingsScreen(
     var url by remember { mutableStateOf(currentUrl) }
     var sourcePickerOpen by remember { mutableStateOf(false) }
     var discoverRequested by remember { mutableStateOf(false) }
+    val statusText = status.localizedText()
+    val savedSourceFallback = stringResource(R.string.epg_settings_saved_source)
     LaunchedEffect(currentUrl) { if (url.isBlank()) url = currentUrl }
     LaunchedEffect(discoveredSources, discoverRequested) {
         if (discoverRequested && discoveredSources.isNotEmpty()) sourcePickerOpen = true
@@ -72,7 +80,7 @@ internal fun MobileEpgSettingsScreen(
     Column(modifier.fillMaxSize().background(Color(0xFF050505))) {
         MobileSettingsFlowHeader("EPG", onBack = { onCloseDiscovery(); onBack() })
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp)) {
-            Text("Στοιχεία EPG", color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.epg_settings_details), color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(13.dp))
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF15151B)).padding(17.dp),
@@ -81,7 +89,7 @@ internal fun MobileEpgSettingsScreen(
                 Column(Modifier.weight(1f)) {
                     Text(sourceType, color = IptvColors.TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(8.dp))
-                    Text(if (loaded) "EPG φορτωμένο" else "Δεν έχει φορτωθεί EPG", color = if (loaded) Color(0xFF55C780) else IptvColors.TextTertiary, fontSize = 12.sp)
+                    Text(stringResource(if (loaded) R.string.epg_settings_loaded else R.string.epg_settings_not_loaded), color = if (loaded) Color(0xFF55C780) else IptvColors.TextTertiary, fontSize = 12.sp)
                 }
                 Switch(
                     checked = enabled,
@@ -92,7 +100,7 @@ internal fun MobileEpgSettingsScreen(
 
             if (enabled) {
                 Spacer(Modifier.height(25.dp))
-                Text("XMLTV URL", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.epg_settings_xmltv_url), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(9.dp))
                 OutlinedTextField(
                     value = url,
@@ -115,9 +123,9 @@ internal fun MobileEpgSettingsScreen(
                     onClick = { discoverRequested = true; onDiscover() },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(13.dp)
-                ) { Text("Αυτόματη εύρεση EPG", fontWeight = FontWeight.ExtraBold) }
-                if (status.isNotBlank()) {
-                    Text(status, color = IptvColors.TextSecondary, fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(horizontal = 6.dp, vertical = 12.dp))
+                ) { Text(stringResource(R.string.epg_settings_auto_discovery), fontWeight = FontWeight.ExtraBold) }
+                if (statusText.isNotBlank()) {
+                    Text(statusText, color = IptvColors.TextSecondary, fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(horizontal = 6.dp, vertical = 12.dp))
                 }
                 Spacer(Modifier.weight(1f))
                 Button(
@@ -126,7 +134,7 @@ internal fun MobileEpgSettingsScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(13.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, disabledContainerColor = Color(0xFF2A2A2A))
-                ) { Text("Αποθήκευση και φόρτωση", fontWeight = FontWeight.Black) }
+                ) { Text(stringResource(R.string.epg_settings_save_load), fontWeight = FontWeight.Black) }
             }
         }
     }
@@ -137,21 +145,21 @@ internal fun MobileEpgSettingsScreen(
             containerColor = Color(0xFF080808),
             contentColor = Color.White
         ) {
-            Text("Πηγές EPG για αυτή τη λίστα", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Text(stringResource(R.string.epg_settings_sources_title), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
             LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
-                items(discoveredSources, key = { it.second }) { (label, candidateUrl) ->
+                items(discoveredSources, key = { it.url }) { candidate ->
                     Row(
                         Modifier.fillMaxWidth().padding(vertical = 5.dp).clip(RoundedCornerShape(14.dp))
                             .background(Color(0xFF171717)).clickable {
-                                url = candidateUrl
+                                url = candidate.url
                                 sourcePickerOpen = false
                             }.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(Icons.Default.CalendarMonth, null, tint = IptvColors.Primary, modifier = Modifier.size(22.dp))
                         Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                            Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                            Text(maskEpgUrl(candidateUrl), color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(candidate.localizedLabel(), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text(maskEpgUrl(candidate.url, savedSourceFallback), color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }
@@ -161,8 +169,8 @@ internal fun MobileEpgSettingsScreen(
     }
 }
 
-private fun maskEpgUrl(url: String): String = runCatching {
+private fun maskEpgUrl(url: String, fallback: String): String = runCatching {
     val uri = java.net.URI(url)
     val port = uri.port.takeIf { it > 0 }?.let { ":$it" }.orEmpty()
     "${uri.scheme}://${uri.host.orEmpty()}$port/${uri.path.orEmpty().substringAfterLast('/')}"
-}.getOrDefault("Αποθηκευμένη πηγή XMLTV")
+}.getOrDefault(fallback)

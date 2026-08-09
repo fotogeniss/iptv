@@ -24,6 +24,7 @@ import com.prelude.iptv.ui.coordinator.SeriesLoadCoordinator
 import com.prelude.iptv.ui.coordinator.SourceGenerationGate
 import com.prelude.iptv.ui.coordinator.SourceSwitchCoordinator
 import com.prelude.iptv.ui.coordinator.SourceSwitchStatePolicy
+import com.prelude.iptv.ui.epg.EpgStatus
 import com.prelude.iptv.ui.policy.CatalogPresentationPolicy
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
@@ -1483,7 +1484,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             loadedSections = emptySet(),
             epgLoaded = false,
             epgSources = emptyList(),
-            epgStatus = "",
+            epgStatus = EpgStatus.Idle,
             chooseContent = false,
             askRefreshMode = false,
             askLoadMode = false,

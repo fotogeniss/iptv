@@ -31,14 +31,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.EpgManager
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.epg.epgProgress
-import com.prelude.iptv.ui.components.epg.epgTime
+import com.prelude.iptv.ui.components.epg.epgTimeRange
 import com.prelude.iptv.ui.design.Motion
 import com.prelude.iptv.ui.design.motionDuration
 import com.prelude.iptv.ui.design.motionScale
@@ -102,12 +104,12 @@ internal fun MobileProgramCard(
         Column(Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "${epgTime(programme.startMs)} – ${epgTime(programme.stopMs)}",
+                    epgTimeRange(programme),
                     color = Color.White.copy(alpha = 0.66f),
                     fontSize = 9.sp
                 )
                 Spacer(Modifier.weight(1f))
-                if (live) Text("LIVE", color = IptvColors.Primary, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                if (live) Text(stringResource(R.string.epg_live), color = IptvColors.Primary, fontSize = 8.sp, fontWeight = FontWeight.Black)
             }
             Spacer(Modifier.height(7.dp))
             Text(
@@ -142,7 +144,7 @@ internal fun MobileProgramCard(
         ) {
             Icon(
                 Icons.Default.PlayArrow,
-                contentDescription = "Ενέργεια προγράμματος",
+                contentDescription = stringResource(R.string.epg_program_action),
                 tint = if (selected) Color.Black else Color.White,
                 modifier = Modifier.size(17.dp)
             )

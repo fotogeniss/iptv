@@ -121,8 +121,7 @@ cohesive vertical slices:
 3. Home. **Implemented for mobile and TV, including shared empty/recovery
    states; public visibility remains gated.**
 4. Live TV. **Implemented for mobile and TV, including inline programme copy,
-   Multiview failures and category/PIN actions; the full EPG screens remain a
-   later slice.**
+   Multiview failures and category/PIN actions.**
 5. Movie and series browsing. **Implemented for mobile and TV; provider titles,
    categories and metadata remain data.**
 6. Global Search. **Implemented for mobile and TV, including typed headings,
@@ -136,9 +135,12 @@ cohesive vertical slices:
 9. Source onboarding and source management. **Implemented for mobile and TV;
    validation, detection, connection, import and status presentation cross typed
    resource boundaries while provider/source data remains unchanged.**
-10. Full EPG and all remaining settings flows.
-11. Profiles, billing, legal, diagnostics, backup/export and system notifications.
-12. Final hardcoded-string audit, translation parity gate and public picker
+10. Full EPG. **Implemented for mobile and TV, including active EPG settings,
+    typed loading/discovery/source states and locale-aware time/duration
+    formatting; provider programme/channel data remains untranslated.**
+11. All remaining settings flows.
+12. Profiles, billing, legal, diagnostics, backup/export and system notifications.
+13. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No
@@ -152,8 +154,8 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source mappings and
-  hardcoded-copy audits, and the closed public rollout gate.
+  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG
+  mappings and hardcoded-copy audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.
