@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the in-app Legal and Privacy presentation with paired Greek and
+  QA-English resources. Tabs, disclosures, service statuses and summarized terms
+  now cross typed resource boundaries while publisher placeholders, policy
+  version/effective date, service identities and mandatory TMDB attribution stay
+  unchanged in meaning.
 - Localized Billing and Premium purchase, restore, pending, entitlement and
   feature-gate copy across mobile and Android TV. Billing producers now expose
   typed message identities while Play-formatted prices and provider debug details

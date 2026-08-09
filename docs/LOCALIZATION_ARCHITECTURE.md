@@ -155,10 +155,16 @@ cohesive vertical slices:
     typed message identities, while Play-formatted prices and provider debug
     details remain untranslated data. Purchase, restore, pending,
     acknowledgement, device verification and entitlement behavior remain
-    unchanged.** Legal/Privacy, Diagnostics, exported/share surfaces and system
-    notifications follow as separate cohesive slices. Account/cloud sync is not
-    part of the current local-only product.
-14. Final hardcoded-string audit, translation parity gate and public picker
+    unchanged.**
+14. Legal and Privacy. **Implemented for the active mobile Settings route. Tabs,
+    disclosures, service summaries/statuses and in-app term summaries use typed
+    identities plus paired resources. Publisher/contact placeholders, policy
+    version/effective date, service IDs/badges and mandatory TMDB attribution
+    remain stable; the canonical long-form policy documents were not rewritten.**
+    Diagnostics, exported/share surfaces and system notifications follow as
+    separate cohesive slices. Account/cloud sync is not part of the current
+    local-only product.
+15. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
 The Greek baseline and QA English translation for each slice land together. No

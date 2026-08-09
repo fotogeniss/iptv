@@ -557,6 +557,66 @@ if "formattedPrice" not in billing_dialog or "formattedPrice" not in read(
 ):
     failures.append("Billing/Premium UI no longer preserves Play-formatted prices")
 
+legal_content = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileLegalContent.kt"
+)
+legal_components = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileLegalComponents.kt"
+)
+legal_screen = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileLegalPrivacyScreen.kt"
+)
+legal_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/LegalLocalizationResources.kt"
+)
+legal_greek_resources = read("app/src/main/res/values/strings_legal.xml")
+legal_english_resources = read("app/src/localizationQa/res/values-en/strings_legal.xml")
+privacy_policy = read("docs/PRIVACY_POLICY.md")
+terms_of_use = read("docs/TERMS_OF_USE.md")
+for typed_boundary in (
+    "enum class MobileLegalTab",
+    "enum class MobileLegalDisclosure",
+    "enum class MobileLegalService",
+    "enum class MobileLegalTerm",
+):
+    if typed_boundary not in legal_content:
+        failures.append(f"typed Legal/Privacy boundary missing: {typed_boundary}")
+if greek_string_literals(legal_content):
+    failures.append("Legal/Privacy content model still owns Greek display copy")
+for mapping in (
+    "MobileLegalTab.labelRes",
+    "MobileLegalDisclosure.resources",
+    "MobileLegalService.resources",
+    "MobileLegalTerm.resources",
+):
+    if mapping not in legal_mapping:
+        failures.append(f"Legal/Privacy resource mapping missing: {mapping}")
+for ui_path, ui_source in (
+    ("MobileLegalPrivacyScreen.kt", legal_screen),
+    ("MobileLegalComponents.kt", legal_components),
+):
+    if greek_string_literals(ui_source):
+        failures.append(f"hardcoded Greek display copy in migrated Legal/Privacy UI: {ui_path}")
+for stable_fact in (
+    'const val POLICY_VERSION = "1.1-draft"',
+    'const val EFFECTIVE_DATE = "2026-08-02"',
+    'const val PUBLISHER_LEGAL_NAME = ""',
+    'const val PRIVACY_EMAIL = ""',
+    'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+):
+    if stable_fact not in legal_content:
+        failures.append(f"Legal/Privacy stable fact changed or missing: {stable_fact}")
+for source_name, source, expected in (
+    ("Greek legal resources", legal_greek_resources, "2 Αυγούστου 2026"),
+    ("QA-English legal resources", legal_english_resources, "2 August 2026"),
+    ("privacy policy", privacy_policy, "Effective date: 2 August 2026"),
+    ("terms of use", terms_of_use, "Effective date: 2 August 2026"),
+):
+    if expected not in source:
+        failures.append(f"Legal effective date drift in {source_name}")
+if "Policy version: 1.1-draft" not in privacy_policy:
+    failures.append("in-app legal version drifted from the canonical privacy policy")
+
 profile_presentation = read(
     "app/src/main/java/com/prelude/iptv/ui/profile/ProfilePresentationPolicy.kt"
 )

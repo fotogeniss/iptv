@@ -34,10 +34,14 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.resources
 
 @Composable
 internal fun MobileLegalHero() {
@@ -54,7 +58,7 @@ internal fun MobileLegalHero() {
             Box(Modifier.size(7.dp).background(Color(0xFFFF5961), RoundedCornerShape(50)))
             Spacer(Modifier.width(8.dp))
             Text(
-                "PRELUDE+ PRIVACY",
+                stringResource(R.string.legal_privacy_eyebrow),
                 color = Color(0xFFFF5961),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Black,
@@ -63,7 +67,7 @@ internal fun MobileLegalHero() {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            "Τα δεδομένα σου,\nυπό τον έλεγχό σου.",
+            stringResource(R.string.legal_privacy_hero_title),
             color = IptvColors.TextPrimary,
             fontSize = 28.sp,
             lineHeight = 30.sp,
@@ -71,16 +75,31 @@ internal fun MobileLegalHero() {
         )
         Spacer(Modifier.height(9.dp))
         Text(
-            "Το PRELUDE+ λειτουργεί χωρίς λογαριασμό και χωρίς cloud συγχρονισμό. Οι λίστες, τα αγαπημένα και η πρόοδος προβολής αποθηκεύονται τοπικά στη συσκευή.",
+            stringResource(R.string.legal_privacy_hero_body),
             color = IptvColors.TextSecondary,
             fontSize = 11.sp,
             lineHeight = 16.sp,
         )
         Spacer(Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MobileLegalFact(Icons.Default.Check, "Χωρίς analytics", "Δεν υπάρχει SDK παρακολούθησης", Modifier.weight(1f))
-            MobileLegalFact(Icons.Default.Check, "Χωρίς διαφημίσεις", "Δεν δημιουργείται διαφημιστικό προφίλ", Modifier.weight(1f))
-            MobileLegalFact(Icons.Default.CloudOff, "Χωρίς sync", "Δεν υπάρχει cloud λογαριασμός", Modifier.weight(1f))
+            MobileLegalFact(
+                Icons.Default.Check,
+                stringResource(R.string.legal_fact_no_analytics_title),
+                stringResource(R.string.legal_fact_no_analytics_body),
+                Modifier.weight(1f),
+            )
+            MobileLegalFact(
+                Icons.Default.Check,
+                stringResource(R.string.legal_fact_no_ads_title),
+                stringResource(R.string.legal_fact_no_ads_body),
+                Modifier.weight(1f),
+            )
+            MobileLegalFact(
+                Icons.Default.CloudOff,
+                stringResource(R.string.legal_fact_no_sync_title),
+                stringResource(R.string.legal_fact_no_sync_body),
+                Modifier.weight(1f),
+            )
         }
     }
 }
@@ -128,7 +147,7 @@ internal fun MobileLegalTabs(selected: MobileLegalTab, onSelected: (MobileLegalT
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    tab.label,
+                    stringResource(tab.labelRes()),
                     color = if (active) Color(0xFF111111) else IptvColors.TextTertiary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black,
@@ -163,6 +182,7 @@ internal fun MobileLegalDisclosureCard(
     ) {
         disclosures.forEachIndexed { index, disclosure ->
             val isExpanded = disclosure.id in expanded
+            val copy = disclosure.resources()
             Row(
                 Modifier.fillMaxWidth().clickable { onToggle(disclosure.id) }.padding(13.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -175,8 +195,8 @@ internal fun MobileLegalDisclosureCard(
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(disclosure.title, color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Text(disclosure.summary, color = IptvColors.TextTertiary, fontSize = 9.sp, lineHeight = 13.sp)
+                    Text(stringResource(copy.title), color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(copy.summary), color = IptvColors.TextTertiary, fontSize = 9.sp, lineHeight = 13.sp)
                 }
                 Icon(
                     Icons.Default.ChevronRight,
@@ -187,7 +207,7 @@ internal fun MobileLegalDisclosureCard(
             }
             AnimatedVisibility(isExpanded) {
                 Text(
-                    disclosure.details,
+                    stringResource(copy.details),
                     color = IptvColors.TextSecondary,
                     fontSize = 10.sp,
                     lineHeight = 15.sp,
@@ -224,10 +244,11 @@ internal fun MobileLegalTermsCard(terms: List<MobileLegalTerm>) {
             .border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(17.dp)).padding(17.dp)
     ) {
         terms.forEachIndexed { index, term ->
+            val copy = term.resources()
             if (index > 0) Spacer(Modifier.height(18.dp))
-            Text(term.title, color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(copy.title), color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(6.dp))
-            Text(term.body, color = IptvColors.TextSecondary, fontSize = 10.sp, lineHeight = 16.sp)
+            Text(stringResource(copy.body), color = IptvColors.TextSecondary, fontSize = 10.sp, lineHeight = 16.sp)
         }
     }
 }
@@ -239,6 +260,7 @@ internal fun MobileLegalServicesCard(services: List<MobileLegalService>) {
             .border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(17.dp))
     ) {
         services.forEachIndexed { index, service ->
+            val copy = service.resources()
             Row(Modifier.fillMaxWidth().padding(15.dp), verticalAlignment = Alignment.Top) {
                 Box(
                     Modifier.size(44.dp).background(IptvColors.SurfaceRaised, RoundedCornerShape(13.dp)),
@@ -248,11 +270,11 @@ internal fun MobileLegalServicesCard(services: List<MobileLegalService>) {
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(service.title, color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(copy.title), color = IptvColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(4.dp))
-                    Text(service.description, color = IptvColors.TextTertiary, fontSize = 9.sp, lineHeight = 13.sp)
+                    Text(stringResource(copy.description), color = IptvColors.TextTertiary, fontSize = 9.sp, lineHeight = 13.sp)
                     Spacer(Modifier.height(7.dp))
-                    Text(service.status, color = Color(0xFFFF5961), fontSize = 8.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(copy.status), color = Color(0xFFFF5961), fontSize = 8.sp, fontWeight = FontWeight.Black)
                 }
             }
             if (index != services.lastIndex) {

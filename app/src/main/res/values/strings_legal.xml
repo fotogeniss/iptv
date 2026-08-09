@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="legal_privacy_eyebrow">PRELUDE+ PRIVACY</string>
+    <string name="legal_privacy_hero_title">Τα δεδομένα σου,\nυπό τον έλεγχό σου.</string>
+    <string name="legal_privacy_hero_body">Το PRELUDE+ λειτουργεί χωρίς λογαριασμό και χωρίς cloud συγχρονισμό. Οι λίστες, τα αγαπημένα και η πρόοδος προβολής αποθηκεύονται τοπικά στη συσκευή.</string>
+    <string name="legal_fact_no_analytics_title">Χωρίς analytics</string>
+    <string name="legal_fact_no_analytics_body">Δεν υπάρχει SDK παρακολούθησης</string>
+    <string name="legal_fact_no_ads_title">Χωρίς διαφημίσεις</string>
+    <string name="legal_fact_no_ads_body">Δεν δημιουργείται διαφημιστικό προφίλ</string>
+    <string name="legal_fact_no_sync_title">Χωρίς sync</string>
+    <string name="legal_fact_no_sync_body">Δεν υπάρχει cloud λογαριασμός</string>
+
+    <string name="legal_tab_privacy">Απόρρητο</string>
+    <string name="legal_tab_terms">Όροι</string>
+    <string name="legal_tab_services">Υπηρεσίες</string>
+    <string name="legal_section_local_storage">Τι αποθηκεύεται στη συσκευή</string>
+    <string name="legal_section_network">Τι αποστέλλεται εκτός συσκευής</string>
+    <string name="legal_section_terms">Όροι χρήσης</string>
+    <string name="legal_section_services">Εξωτερικές υπηρεσίες</string>
+
+    <string name="legal_disclosure_sources_title">Λίστες και πηγές</string>
+    <string name="legal_disclosure_sources_summary">URL, στοιχεία σύνδεσης και ρυθμίσεις παρόχου</string>
+    <string name="legal_disclosure_sources_details">Τα ευαίσθητα στοιχεία σύνδεσης αποθηκεύονται κρυπτογραφημένα με κλειδιά του Android Keystore. Δεν συγχρονίζονται σε server του PRELUDE+.</string>
+    <string name="legal_disclosure_preferences_title">Προτιμήσεις προβολής</string>
+    <string name="legal_disclosure_preferences_summary">Αγαπημένα, ιστορικό, πρόοδος και ρυθμίσεις</string>
+    <string name="legal_disclosure_preferences_details">Χρησιμοποιούνται μόνο για λειτουργίες στη συσκευή, όπως συνέχιση προβολής και εξατομίκευση. Διαγράφονται από τις αντίστοιχες ρυθμίσεις, με εκκαθάριση δεδομένων Android ή με απεγκατάσταση.</string>
+    <string name="legal_disclosure_cache_title">Cache μεταδεδομένων</string>
+    <string name="legal_disclosure_cache_summary">Αφίσες, περιγραφές, EPG και προσωρινά αρχεία</string>
+    <string name="legal_disclosure_cache_details">Η cache κρατά προσωρινά δεδομένα για ταχύτερη λειτουργία και μπορεί να καθαριστεί χωρίς να διαγραφούν οι αποθηκευμένες πηγές.</string>
+    <string name="legal_disclosure_network_title">Αιτήματα που ξεκινάς εσύ</string>
+    <string name="legal_disclosure_network_summary">IPTV, TMDB, OpenSubtitles και Google Play</string>
+    <string name="legal_disclosure_network_details">Η εφαρμογή συνδέεται απευθείας στις πηγές που προσθέτεις. Για μεταδεδομένα ή υπότιτλους αποστέλλονται στοιχεία αναζήτησης, όπως τίτλος, έτος, σεζόν και επεισόδιο, στις αντίστοιχες υπηρεσίες.</string>
+    <string name="legal_disclosure_diagnostics_title">Προαιρετικά διαγνωστικά σταθερότητας</string>
+    <string name="legal_disclosure_diagnostics_summary">Crash και ANR reports μόνο μετά από δική σου επιλογή</string>
+    <string name="legal_disclosure_diagnostics_details">Η συλλογή είναι κλειστή εξ αρχής. Αν την ενεργοποιήσεις ή επιλέξεις αποστολή μία φορά, μπορεί να σταλούν στο Firebase Crashlytics τεχνικά στοιχεία όπως exception, stack trace, έκδοση εφαρμογής, μοντέλο συσκευής και έκδοση Android. Δεν προσθέτουμε URLs λιστών, credentials, τίτλους media, προφίλ ή analytics events.</string>
+
+    <string name="legal_http_notice_title">Σημαντικό για HTTP λίστες</string>
+    <string name="legal_http_notice_body">Ορισμένοι IPTV providers λειτουργούν μόνο με μη κρυπτογραφημένο HTTP. Σε αυτή την περίπτωση το δίκτυο μπορεί να δει τη διεύθυνση και την κίνηση προς τον πάροχο. Προτίμησε HTTPS όπου υποστηρίζεται.</string>
+    <string name="legal_release_notice_title">Χρειάζεται πριν τη δημοσίευση</string>
+    <string name="legal_release_notice_body">Δεν έχουν οριστεί ακόμη το νόμιμο όνομα εκδότη και το email απορρήτου. Θα προστεθούν πριν από δημόσια έκδοση — δεν χρησιμοποιούνται ψεύτικα ή προσωρινά στοιχεία.</string>
+    <string name="legal_tmdb_attribution_title">Αναφορά TMDB</string>
+
+    <string name="legal_term_player_only_title">1. Ανεξάρτητος media player</string>
+    <string name="legal_term_player_only_body">Το PRELUDE+ δεν παρέχει, δεν φιλοξενεί και δεν πωλεί τηλεοπτικά κανάλια, λίστες, συνδρομές ή οπτικοακουστικό περιεχόμενο.</string>
+    <string name="legal_term_user_sources_title">2. Πηγές του χρήστη</string>
+    <string name="legal_term_user_sources_body">Προσθέτεις μόνο πηγές και περιεχόμενο για τα οποία έχεις νόμιμη άδεια πρόσβασης. Εσύ ευθύνεσαι για τη νομιμότητα, τη διαθεσιμότητα και τους όρους του παρόχου σου.</string>
+    <string name="legal_term_credential_security_title">3. Ασφάλεια στοιχείων</string>
+    <string name="legal_term_credential_security_body">Εσύ ευθύνεσαι για την ασφάλεια των κωδικών παρόχου, των PIN και των password-protected backup που δημιουργείς ή κοινοποιείς.</string>
+    <string name="legal_term_third_party_services_title">4. Υπηρεσίες τρίτων</string>
+    <string name="legal_term_third_party_services_body">Οι IPTV providers, το TMDB, το OpenSubtitles, το Google Play και το προαιρετικό Firebase Crashlytics είναι ανεξάρτητες υπηρεσίες. Η διαθεσιμότητα και οι πρακτικές τους διέπονται από τους δικούς τους όρους.</string>
+    <string name="legal_term_premium_purchases_title">5. Αγορές Premium</string>
+    <string name="legal_term_premium_purchases_body">Οι αγορές διεκπεραιώνονται από το Google Play. Τιμή, φόροι, αποδείξεις, επιστροφές χρημάτων και λογαριασμός πληρωμών ελέγχονται από τη Google και την εφαρμοστέα νομοθεσία.</string>
+    <string name="legal_term_availability_title">6. Διαθεσιμότητα</string>
+    <string name="legal_term_availability_body">Streams, EPG, υπότιτλοι και metadata μπορεί να είναι ελλιπή ή μη διαθέσιμα λόγω δικτύου, συσκευής ή τρίτου παρόχου. Δεν εγγυόμαστε αδιάλειπτη λειτουργία υπηρεσιών τρίτων.</string>
+    <string name="legal_term_changes_title">7. Αλλαγές</string>
+    <string name="legal_term_changes_body">Κάθε ουσιώδης αλλαγή στις πρακτικές δεδομένων ή στους όρους θα συνοδεύεται από νέα ημερομηνία ισχύος και ενημερωμένη έκδοση πολιτικής.</string>
+
+    <string name="legal_service_iptv_title">Ο πάροχος της λίστας σου</string>
+    <string name="legal_service_iptv_description">Λήψη καταλόγου, EPG και ροής. Τα δεδομένα πηγαίνουν απευθείας στον server που επέλεξες.</string>
+    <string name="legal_service_iptv_status">ΕΛΕΓΧΕΤΑΙ ΑΠΟ ΤΟΝ ΧΡΗΣΤΗ</string>
+    <string name="legal_service_tmdb_title">The Movie Database</string>
+    <string name="legal_service_tmdb_description">Αναζήτηση αφισών, βαθμολογιών, περιγραφών, ηθοποιών και στοιχείων επεισοδίων.</string>
+    <string name="legal_service_tmdb_status">ΠΡΟΑΙΡΕΤΙΚΟ API KEY</string>
+    <string name="legal_service_opensubtitles_title">OpenSubtitles</string>
+    <string name="legal_service_opensubtitles_description">Αυτόματη ή χειροκίνητη αναζήτηση και λήψη υποτίτλων με βάση την ταυτότητα του τίτλου.</string>
+    <string name="legal_service_opensubtitles_status">ΠΡΟΑΙΡΕΤΙΚΗ ΣΥΝΔΕΣΗ</string>
+    <string name="legal_service_google_play_title">Google Play</string>
+    <string name="legal_service_google_play_description">Διεκπεραίωση αγοράς, αποκατάσταση αγοράς και κατάσταση Premium.</string>
+    <string name="legal_service_google_play_status">ΜΟΝΟ ΓΙΑ ΑΓΟΡΕΣ</string>
+    <string name="legal_service_crashlytics_title">Firebase Crashlytics</string>
+    <string name="legal_service_crashlytics_description">Προαιρετική αποστολή τεχνικών crash και ANR reports για διάγνωση προβλημάτων σταθερότητας.</string>
+    <string name="legal_service_crashlytics_status">OPT-IN · ΧΩΡΙΣ ANALYTICS</string>
+
+    <string name="legal_effective_date">2 Αυγούστου 2026</string>
+    <string name="legal_footer_policy">Ισχύς: %1$s  ·  Πολιτική %2$s</string>
+    <string name="legal_privacy_contact_pending">Στοιχεία επικοινωνίας απορρήτου: εκκρεμούν για release</string>
+    <string name="legal_app_version">PRELUDE+ %1$s</string>
+</resources>

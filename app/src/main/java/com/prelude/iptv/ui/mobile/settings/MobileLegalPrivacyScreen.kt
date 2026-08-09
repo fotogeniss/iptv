@@ -20,10 +20,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 
@@ -39,7 +41,7 @@ internal fun MobileLegalPrivacyScreen(
     var expandedDisclosures by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     Column(modifier.fillMaxSize().background(IptvColors.Background)) {
-        MobileSettingsFlowHeader("Νομικά & απόρρητο", onBack)
+        MobileSettingsFlowHeader(stringResource(R.string.settings_legal_privacy), onBack)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = premiumMobileNavigationContentPadding()),
@@ -72,8 +74,8 @@ internal fun MobileLegalPrivacyScreen(
 
                     if (!MobileLegalContent.identityConfigured) {
                         MobileLegalNotice(
-                            title = "Χρειάζεται πριν τη δημοσίευση",
-                            body = "Δεν έχουν οριστεί ακόμη το νόμιμο όνομα εκδότη και το email απορρήτου. Θα προστεθούν πριν από δημόσια έκδοση — δεν χρησιμοποιούνται ψεύτικα ή προσωρινά στοιχεία.",
+                            title = stringResource(R.string.legal_release_notice_title),
+                            body = stringResource(R.string.legal_release_notice_body),
                             warning = true,
                         )
                     }
@@ -87,36 +89,36 @@ internal fun MobileLegalPrivacyScreen(
 
 @Composable
 private fun MobilePrivacyTab(expanded: Set<String>, onToggle: (String) -> Unit) {
-    MobileLegalSectionTitle("Τι αποθηκεύεται στη συσκευή")
+    MobileLegalSectionTitle(stringResource(R.string.legal_section_local_storage))
     MobileLegalDisclosureCard(
         disclosures = MobileLegalContent.localDisclosures,
         expanded = expanded,
         onToggle = onToggle,
     )
-    MobileLegalSectionTitle("Τι αποστέλλεται εκτός συσκευής")
+    MobileLegalSectionTitle(stringResource(R.string.legal_section_network))
     MobileLegalDisclosureCard(
         disclosures = MobileLegalContent.networkDisclosures,
         expanded = expanded,
         onToggle = onToggle,
     )
     MobileLegalNotice(
-        title = "Σημαντικό για HTTP λίστες",
-        body = "Ορισμένοι IPTV providers λειτουργούν μόνο με μη κρυπτογραφημένο HTTP. Σε αυτή την περίπτωση το δίκτυο μπορεί να δει τη διεύθυνση και την κίνηση προς τον πάροχο. Προτίμησε HTTPS όπου υποστηρίζεται.",
+        title = stringResource(R.string.legal_http_notice_title),
+        body = stringResource(R.string.legal_http_notice_body),
     )
 }
 
 @Composable
 private fun MobileTermsTab() {
-    MobileLegalSectionTitle("Όροι χρήσης")
+    MobileLegalSectionTitle(stringResource(R.string.legal_section_terms))
     MobileLegalTermsCard(MobileLegalContent.terms)
 }
 
 @Composable
 private fun MobileServicesTab() {
-    MobileLegalSectionTitle("Εξωτερικές υπηρεσίες")
+    MobileLegalSectionTitle(stringResource(R.string.legal_section_services))
     MobileLegalServicesCard(MobileLegalContent.services)
     MobileLegalNotice(
-        title = "Αναφορά TMDB",
+        title = stringResource(R.string.legal_tmdb_attribution_title),
         body = MobileLegalContent.TMDB_ATTRIBUTION,
     )
 }
@@ -125,7 +127,11 @@ private fun MobileServicesTab() {
 private fun MobileLegalFooter(version: String) {
     Spacer(Modifier.height(24.dp))
     Text(
-        "Ισχύς: ${MobileLegalContent.EFFECTIVE_DATE}  ·  Πολιτική ${MobileLegalContent.POLICY_VERSION}",
+        stringResource(
+            R.string.legal_footer_policy,
+            stringResource(R.string.legal_effective_date),
+            MobileLegalContent.POLICY_VERSION,
+        ),
         color = IptvColors.TextTertiary,
         fontSize = 9.sp,
         lineHeight = 14.sp,
@@ -136,7 +142,7 @@ private fun MobileLegalFooter(version: String) {
         if (MobileLegalContent.identityConfigured) {
             "${MobileLegalContent.PUBLISHER_LEGAL_NAME}  ·  ${MobileLegalContent.PRIVACY_EMAIL}"
         } else {
-            "Στοιχεία επικοινωνίας απορρήτου: εκκρεμούν για release"
+            stringResource(R.string.legal_privacy_contact_pending)
         },
         color = if (MobileLegalContent.identityConfigured) Color(0xFFFF5961) else IptvColors.Warning,
         fontSize = 9.sp,
@@ -145,7 +151,7 @@ private fun MobileLegalFooter(version: String) {
         modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
     )
     Text(
-        "PRELUDE+ ${version.ifBlank { "—" }}",
+        stringResource(R.string.legal_app_version, version.ifBlank { "—" }),
         color = IptvColors.TextTertiary,
         fontSize = 8.sp,
         textAlign = TextAlign.Center,

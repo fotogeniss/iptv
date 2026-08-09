@@ -8,13 +8,21 @@ import org.junit.Test
 class MobileLegalContentTest {
     @Test
     fun navigationTabsAndContentIdsStayUnique() {
-        assertEquals(MobileLegalTab.entries.size, MobileLegalTab.entries.map { it.label }.toSet().size)
+        assertEquals(
+            listOf(MobileLegalTab.PRIVACY, MobileLegalTab.TERMS, MobileLegalTab.SERVICES),
+            MobileLegalTab.entries.toList(),
+        )
 
         val disclosureIds = MobileLegalContent.localDisclosures.map { it.id } +
             MobileLegalContent.networkDisclosures.map { it.id }
+        assertEquals(listOf("sources", "preferences", "cache", "network", "diagnostics"), disclosureIds)
         assertEquals(disclosureIds.size, disclosureIds.toSet().size)
 
         val serviceIds = MobileLegalContent.services.map { it.id }
+        assertEquals(
+            listOf("iptv", "tmdb", "opensubtitles", "google_play", "firebase_crashlytics"),
+            serviceIds,
+        )
         assertEquals(serviceIds.size, serviceIds.toSet().size)
     }
 
@@ -25,6 +33,7 @@ class MobileLegalContentTest {
         assertTrue("tmdb" in serviceIds)
         assertTrue("opensubtitles" in serviceIds)
         assertTrue("google_play" in serviceIds)
+        assertTrue("firebase_crashlytics" in serviceIds)
     }
 
     @Test
@@ -39,5 +48,11 @@ class MobileLegalContentTest {
             MobileLegalContent.TMDB_ATTRIBUTION,
         )
     }
-}
 
+    @Test
+    fun legalVersionAndEffectiveDateStayAlignedWithCanonicalDocuments() {
+        assertEquals("1.1-draft", MobileLegalContent.POLICY_VERSION)
+        assertEquals("2026-08-02", MobileLegalContent.EFFECTIVE_DATE)
+        assertEquals(MobileLegalTerm.entries.toList(), MobileLegalContent.terms)
+    }
+}

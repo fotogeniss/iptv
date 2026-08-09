@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="legal_privacy_eyebrow">PRELUDE+ PRIVACY</string>
+    <string name="legal_privacy_hero_title">Your data,\nunder your control.</string>
+    <string name="legal_privacy_hero_body">PRELUDE+ works without an account or cloud synchronization. Your sources, favorites and watch progress are stored locally on your device.</string>
+    <string name="legal_fact_no_analytics_title">No analytics</string>
+    <string name="legal_fact_no_analytics_body">No tracking SDK is present</string>
+    <string name="legal_fact_no_ads_title">No ads</string>
+    <string name="legal_fact_no_ads_body">No advertising profile is created</string>
+    <string name="legal_fact_no_sync_title">No sync</string>
+    <string name="legal_fact_no_sync_body">There is no cloud account</string>
+
+    <string name="legal_tab_privacy">Privacy</string>
+    <string name="legal_tab_terms">Terms</string>
+    <string name="legal_tab_services">Services</string>
+    <string name="legal_section_local_storage">What is stored on your device</string>
+    <string name="legal_section_network">What is sent off your device</string>
+    <string name="legal_section_terms">Terms of use</string>
+    <string name="legal_section_services">External services</string>
+
+    <string name="legal_disclosure_sources_title">Sources and providers</string>
+    <string name="legal_disclosure_sources_summary">URLs, sign-in details and provider settings</string>
+    <string name="legal_disclosure_sources_details">Sensitive sign-in details are encrypted with keys held by Android Keystore. They are not synchronized to a PRELUDE+ server.</string>
+    <string name="legal_disclosure_preferences_title">Viewing preferences</string>
+    <string name="legal_disclosure_preferences_summary">Favorites, history, progress and settings</string>
+    <string name="legal_disclosure_preferences_details">They are used only for on-device features such as resuming playback and personalization. They are removed through the relevant settings, by clearing Android app data or by uninstalling the app.</string>
+    <string name="legal_disclosure_cache_title">Metadata cache</string>
+    <string name="legal_disclosure_cache_summary">Artwork, descriptions, EPG and temporary files</string>
+    <string name="legal_disclosure_cache_details">The cache keeps temporary data for faster operation and can be cleared without deleting your saved sources.</string>
+    <string name="legal_disclosure_network_title">Requests you initiate</string>
+    <string name="legal_disclosure_network_summary">IPTV, TMDB, OpenSubtitles and Google Play</string>
+    <string name="legal_disclosure_network_details">The app connects directly to sources you add. For metadata or subtitles, search details such as title, year, season and episode are sent to the relevant services.</string>
+    <string name="legal_disclosure_diagnostics_title">Optional stability diagnostics</string>
+    <string name="legal_disclosure_diagnostics_summary">Crash and ANR reports only after you choose</string>
+    <string name="legal_disclosure_diagnostics_details">Collection is off by default. If you enable it or choose to send once, technical details such as an exception, stack trace, app version, device model and Android version may be sent to Firebase Crashlytics. We do not add source URLs, credentials, media titles, profiles or analytics events.</string>
+
+    <string name="legal_http_notice_title">Important information about HTTP sources</string>
+    <string name="legal_http_notice_body">Some IPTV providers work only over unencrypted HTTP. In that case, the network may be able to see the address and traffic to the provider. Prefer HTTPS where supported.</string>
+    <string name="legal_release_notice_title">Required before publication</string>
+    <string name="legal_release_notice_body">The publisher legal name and privacy email have not been configured yet. They will be added before public release—false or temporary details are not used.</string>
+    <string name="legal_tmdb_attribution_title">TMDB attribution</string>
+
+    <string name="legal_term_player_only_title">1. Independent media player</string>
+    <string name="legal_term_player_only_body">PRELUDE+ does not provide, host or sell television channels, playlists, subscriptions or audiovisual content.</string>
+    <string name="legal_term_user_sources_title">2. User sources</string>
+    <string name="legal_term_user_sources_body">Add only sources and content that you are legally authorized to access. You are responsible for legality, availability and compliance with your provider terms.</string>
+    <string name="legal_term_credential_security_title">3. Credential security</string>
+    <string name="legal_term_credential_security_body">You are responsible for securing provider credentials, PINs and password-protected backups that you create or share.</string>
+    <string name="legal_term_third_party_services_title">4. Third-party services</string>
+    <string name="legal_term_third_party_services_body">IPTV providers, TMDB, OpenSubtitles, Google Play and optional Firebase Crashlytics are independent services. Their availability and practices are governed by their own terms.</string>
+    <string name="legal_term_premium_purchases_title">5. Premium purchases</string>
+    <string name="legal_term_premium_purchases_body">Purchases are processed by Google Play. Price, taxes, receipts, refunds and payment-account management are controlled by Google and applicable law.</string>
+    <string name="legal_term_availability_title">6. Availability</string>
+    <string name="legal_term_availability_body">Streams, EPG, subtitles and metadata may be incomplete or unavailable because of the network, device or a third-party provider. We do not guarantee uninterrupted operation of third-party services.</string>
+    <string name="legal_term_changes_title">7. Changes</string>
+    <string name="legal_term_changes_body">Any material change to data practices or terms will include a new effective date and an updated policy version.</string>
+
+    <string name="legal_service_iptv_title">Your source provider</string>
+    <string name="legal_service_iptv_description">Catalog, EPG and stream delivery. Data goes directly to the server you selected.</string>
+    <string name="legal_service_iptv_status">USER CONTROLLED</string>
+    <string name="legal_service_tmdb_title">The Movie Database</string>
+    <string name="legal_service_tmdb_description">Search for artwork, ratings, descriptions, cast and episode information.</string>
+    <string name="legal_service_tmdb_status">OPTIONAL API KEY</string>
+    <string name="legal_service_opensubtitles_title">OpenSubtitles</string>
+    <string name="legal_service_opensubtitles_description">Automatic or manual subtitle search and download based on the title identity.</string>
+    <string name="legal_service_opensubtitles_status">OPTIONAL SIGN-IN</string>
+    <string name="legal_service_google_play_title">Google Play</string>
+    <string name="legal_service_google_play_description">Purchase processing, purchase restoration and Premium status.</string>
+    <string name="legal_service_google_play_status">PURCHASES ONLY</string>
+    <string name="legal_service_crashlytics_title">Firebase Crashlytics</string>
+    <string name="legal_service_crashlytics_description">Optional technical crash and ANR reports for diagnosing stability problems.</string>
+    <string name="legal_service_crashlytics_status">OPT-IN · NO ANALYTICS</string>
+
+    <string name="legal_effective_date">2 August 2026</string>
+    <string name="legal_footer_policy">Effective: %1$s  ·  Policy %2$s</string>
+    <string name="legal_privacy_contact_pending">Privacy contact details: pending for release</string>
+    <string name="legal_app_version">PRELUDE+ %1$s</string>
+</resources>

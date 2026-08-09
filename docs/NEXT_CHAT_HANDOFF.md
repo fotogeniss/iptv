@@ -474,8 +474,9 @@ contracts: runtime/primary navigation, Home, Live TV, movie/series browsing,
 global Search, details/seasons/episodes, shared Player and subtitle/audio flows,
 source onboarding/management, full EPG and the active Settings shell plus
 playback/personalization/category surfaces, local profiles, parental controls and
-encrypted backup/restore, Billing and Premium. Provider-owned and user-owned data
-is intentionally not translated.
+encrypted backup/restore, Billing and Premium, and the active in-app Legal and
+Privacy presentation. Provider-owned and user-owned data is intentionally not
+translated.
 
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
@@ -525,34 +526,52 @@ contain Greek display copy and raw display messages.
   were not executed because the owner did not authorize Gradle. Android Studio
   compilation and mobile/TV QA remain pending owner evidence.
 
-#### Immediate next slice: Legal and privacy
+#### Completed slice: Legal and privacy
+
+- The active route is mobile Settings → `MobileLegalPrivacyScreen`; no separate
+  Android TV Legal/Privacy screen is currently wired. Existing Back handling,
+  sticky tabs, disclosure expansion IDs/order, scrolling and layout are unchanged.
+- `MobileLegalTab`, `MobileLegalDisclosure`, `MobileLegalService` and
+  `MobileLegalTerm` are typed identities. Their app-owned labels, summaries,
+  details, statuses and term copy map to paired Greek/QA-English resources at the
+  Compose boundary instead of living as Greek strings in `MobileLegalContent`.
+- The five disclosure IDs, five service IDs/badges, seven-term order,
+  `1.1-draft` policy version, effective date identity `2026-08-02`, empty
+  publisher/privacy-contact placeholders and exact mandatory English TMDB
+  attribution remain protected by focused tests/static contracts.
+- `docs/PRIVACY_POLICY.md`, `docs/TERMS_OF_USE.md` and
+  `docs/PLAY_DATA_SAFETY.md` were read as the canonical sources. Their legal
+  substance was not rewritten; publisher/legal review and the public policy URL
+  remain release blockers. No HTML preview was required because this was
+  copy-only localization.
+- Static localization/resource parity, compatibility (63/63), architecture
+  (60 passes plus the known `MainViewModel` size warning), deep validation
+  (67 passes plus the documented cleartext compatibility warning), risk,
+  documentation and diff checks pass. Focused legal-content tests were expanded
+  but not executed because the owner did not authorize Gradle. Android Studio
+  compilation and mobile QA remain pending owner evidence.
+
+#### Immediate next slice: Diagnostics and crash reporting
 
 Complete one commit and verification cycle per item; do not combine them:
 
-1. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
-   `MobileLegalComponents.kt` and especially `MobileLegalContent.kt`, whose model
-   currently owns long Greek display copy. Keep publisher placeholders, policy
-   version/effective date, URLs, service names and mandatory TMDB attribution
-   accurate. Localization does not authorize rewriting legal meaning. Any legal
-   substance change requires owner/publisher review and the documentation duties
-   in `docs/MAINTENANCE.md`.
-2. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
+1. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
    `MobileDiagnosticsComponents.kt`, `DiagnosticsManager.kt` and diagnostic
    result producers. Preserve opt-in consent, redaction, one local pending report,
    no Analytics/ad ID, and disconnected Firebase configuration. Raw diagnostic
    details are not normal UI copy and must remain redacted.
-3. **Export/share surfaces, system notifications and remaining service copy.**
+2. **Export/share surfaces, system notifications and remaining service copy.**
    Audit `Exporter.kt`, `ExportScreen.kt`, `CatalogDownloadService.kt`,
    `RelayService.kt` and reminder/download notification producers. Notification
    channel names, titles, progress/errors and accessibility copy follow the app
    locale; protocol data, provider titles, exported user data and filenames
    remain raw.
-5. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
+3. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
    not only files whose names contain “settings”. Classify each remaining literal
    as app copy, invariant brand/protocol text, provider/user data, diagnostic data
    or developer comment. Migrate only app copy, add contracts for every completed
    surface and verify Greek/English keys, placeholders and plurals.
-6. **Parity inversion and public picker activation.** Only after the full audit,
+4. **Parity inversion and public picker activation.** Only after the full audit,
    compilation and phone/TV QA: move English to unqualified `main/res/values`,
    Greek to `main/res/values-el`, change `unqualifiedResLocale` from `el` to `en`,
    enable the generated locale config and flip
@@ -689,11 +708,14 @@ The owner can paste the following after attaching or referencing this file:
 > static-contract level, but still require the owner's normal Android Studio build
 > and phone/TV QA. Billing and Premium localization is complete at the
 > code/resource and static-contract level, but still requires the owner's normal
-> Android Studio build and mobile/TV QA. The immediate next task is Legal and
-> privacy localization. Audit `MobileLegalPrivacyScreen.kt`,
-> `MobileLegalComponents.kt` and `MobileLegalContent.kt`; preserve policy meaning,
-> publisher placeholders, dates, URLs, service names and mandatory attribution.
-> Any legal substance change requires owner review. Do not mix Diagnostics,
-> notifications or exported/share surfaces into that slice. Run the static gates,
+> Android Studio build and mobile/TV QA. Legal and Privacy localization is
+> complete at the code/resource and static-contract level, but still requires the
+> owner's normal Android Studio build and mobile QA. The immediate next task is
+> Diagnostics and crash-reporting localization. Audit
+> `MobileDiagnosticsScreen.kt`, `MobileDiagnosticsComponents.kt`,
+> `DiagnosticsManager.kt` and diagnostic producers; preserve opt-in consent,
+> redaction, one local pending report, no Analytics/ad ID and disconnected
+> Firebase configuration. Do not treat raw diagnostic details as normal UI copy
+> or mix notification/export/share surfaces into that slice. Run the static gates,
 > inspect the diff, update the handoff, and commit only when the slice is cohesive
 > and clean.
