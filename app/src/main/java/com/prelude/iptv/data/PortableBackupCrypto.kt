@@ -42,7 +42,9 @@ internal object PortableBackupCrypto {
     fun decrypt(payload: EncryptedBackupPayload, password: String): String {
         requirePassword(password)
         return try {
-            require(payload.iterations in 50_000..1_000_000) { "Μη έγκυρες παράμετροι κρυπτογράφησης" }
+            if (payload.iterations !in 50_000..1_000_000) {
+                throw BackupException(BackupFailure.InvalidCryptoParameters)
+            }
             val salt = Base64.getDecoder().decode(payload.salt)
             val iv = Base64.getDecoder().decode(payload.iv)
             val ciphertext = Base64.getDecoder().decode(payload.ciphertext)
@@ -54,16 +56,16 @@ internal object PortableBackupCrypto {
             )
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (_: AEADBadTagException) {
-            throw IllegalArgumentException("Λάθος κωδικός αντιγράφου ασφαλείας")
-        } catch (e: IllegalArgumentException) {
+            throw BackupException(BackupFailure.WrongPassword)
+        } catch (e: BackupException) {
             throw e
-        } catch (_: Exception) {
-            throw IllegalArgumentException("Το αντίγραφο είναι κατεστραμμένο ή ο κωδικός είναι λάθος")
+        } catch (e: Exception) {
+            throw BackupException(BackupFailure.CorruptOrWrongPassword, e)
         }
     }
 
     fun requirePassword(password: String) {
-        require(password.length >= 6) { "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες" }
+        if (password.length < 6) throw BackupException(BackupFailure.PasswordTooShort)
     }
 
     private fun deriveKey(password: String, salt: ByteArray, iterations: Int): SecretKeySpec {

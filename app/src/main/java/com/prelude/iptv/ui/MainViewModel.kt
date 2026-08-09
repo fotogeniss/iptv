@@ -26,6 +26,7 @@ import com.prelude.iptv.ui.coordinator.SourceSwitchCoordinator
 import com.prelude.iptv.ui.coordinator.SourceSwitchStatePolicy
 import com.prelude.iptv.ui.epg.EpgStatus
 import com.prelude.iptv.ui.policy.CatalogPresentationPolicy
+import com.prelude.iptv.ui.profile.ProfileDisplayName
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
 import kotlinx.coroutines.CancellationException
@@ -1630,6 +1631,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun activeProfileId(): Int = profileSettings.activeProfileId()
 
     fun activeProfileName(): String = profileSettings.activeProfileName()
+
+    fun activeProfileDisplayName(): ProfileDisplayName =
+        profileSettings.activeProfileDisplayName()
 
     fun profileNeedsPin(p: com.prelude.iptv.data.PlaylistStore.Profile): Boolean =
         profileSettings.profileNeedsPin(p)

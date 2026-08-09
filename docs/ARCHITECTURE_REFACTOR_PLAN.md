@@ -180,3 +180,14 @@ The codebase now has explicit seams, but the two legacy files are still large. F
 - TV-to-phone QR pairing remains outside the Android implementation until its
   transport, expiry, authentication and credential-handling model receive a
   separate security decision; no inert or simulated production action was added.
+
+## Completed account/security presentation boundary - Unreleased
+
+- Added typed profile display identities so the app-owned primary label is
+  localized at the UI boundary while names entered by users remain untouched.
+- Replaced backup exception sentences with typed failure identities and mapped
+  them to paired resources at the Settings boundary; raw exception details are
+  no longer primary UI copy.
+- Preserved profile IDs/keys, switch-and-restart ordering, parental unlock TTL,
+  profile/source-scoped cleanup, TV Home scheduling and the portable backup
+  envelope, encryption parameters and legacy import compatibility.

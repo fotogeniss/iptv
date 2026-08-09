@@ -5,6 +5,8 @@ import com.prelude.iptv.data.PlaylistStore
 import com.prelude.iptv.tvhome.TvHomeSyncScheduler
 import com.prelude.iptv.ui.LoadPolicy
 import com.prelude.iptv.ui.UiState
+import com.prelude.iptv.ui.profile.ProfileDisplayName
+import com.prelude.iptv.ui.profile.ProfilePresentationPolicy
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -36,7 +38,13 @@ internal class ProfileSettingsCoordinator(
     fun activeProfileId(): Int = store.activeProfile
 
     fun activeProfileName(): String =
-        store.profiles().firstOrNull { it.id == store.activeProfile }?.name ?: "Κύριος"
+        store.profiles().firstOrNull { it.id == store.activeProfile }?.name
+            ?: PlaylistStore.LEGACY_PRIMARY_PROFILE_NAME
+
+    fun activeProfileDisplayName(): ProfileDisplayName =
+        store.profiles().firstOrNull { it.id == store.activeProfile }
+            ?.let(ProfilePresentationPolicy::displayName)
+            ?: ProfileDisplayName.Primary
 
     /**
      * Χρειάζεται PIN για να ΜΠΕΙΣ σε αυτό το προφίλ;
@@ -51,7 +59,7 @@ internal class ProfileSettingsCoordinator(
         val id = (list.maxOfOrNull { it.id } ?: 0) + 1
         list.add(
             PlaylistStore.Profile(
-                id, name.trim().ifBlank { "Προφίλ $id" }, protectedProfile
+                id, name.trim().ifBlank { PlaylistStore.legacyGeneratedProfileName(id) }, protectedProfile
             )
         )
         store.saveProfiles(list)

@@ -57,12 +57,12 @@ object Backup {
     fun import(ctx: Context, json: String, password: String): Int {
         val root = parseRoot(json)
         if (root.optString("app") != MAGIC) {
-            throw IllegalArgumentException("Δεν είναι αρχείο αντιγράφου αυτής της εφαρμογής")
+            throw BackupException(BackupFailure.NotPreludeBackup)
         }
 
         val version = root.optInt("version", 1)
         if (version > VERSION) {
-            throw IllegalArgumentException("Το αρχείο είναι από νεότερη έκδοση της εφαρμογής")
+            throw BackupException(BackupFailure.NewerAppVersion)
         }
 
         val payload = if (root.optBoolean("encrypted", false)) {
@@ -74,7 +74,7 @@ object Backup {
         }
 
         val entries = payload.optJSONArray("entries")
-            ?: throw IllegalArgumentException("Το αρχείο δεν περιέχει δεδομένα")
+            ?: throw BackupException(BackupFailure.MissingData)
         val secureEntries = payload.optJSONArray("secureEntries") ?: JSONArray()
 
         val prefs = ctx.getSharedPreferences(PlaylistStore.PREFS, Context.MODE_PRIVATE)
@@ -150,7 +150,7 @@ object Backup {
             }
             count++
         }
-        if (!editor.commit()) throw IllegalStateException("Αποτυχία εγγραφής αντιγράφου")
+        if (!editor.commit()) throw BackupException(BackupFailure.WriteFailed)
         return count
     }
 
@@ -169,7 +169,7 @@ object Backup {
 
     private fun parseRoot(json: String): JSONObject =
         runCatching { JSONObject(json) }.getOrElse {
-            throw IllegalArgumentException("Δεν είναι έγκυρο αρχείο JSON")
+            throw BackupException(BackupFailure.InvalidJson, it)
         }
 
 }

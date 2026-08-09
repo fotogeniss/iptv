@@ -33,10 +33,14 @@ import androidx.lifecycle.compose.*
 import androidx.lifecycle.viewmodel.compose.*
 import coil.compose.*
 import com.prelude.iptv.*
+import com.prelude.iptv.R
 import com.prelude.iptv.data.*
 import com.prelude.iptv.ui.*
 import com.prelude.iptv.ui.components.library.*
 import com.prelude.iptv.ui.design.*
+import com.prelude.iptv.ui.localization.localizedBackupFailure
+import com.prelude.iptv.ui.localization.localizedBackupRestoreSuccess
+import com.prelude.iptv.ui.localization.localizedProfileName
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +53,7 @@ internal fun SettingsTab(
     onNavigationCollapsedChange: (Boolean) -> Unit = {}
 ) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
+    val activeProfileName = localizedProfileName(vm.activeProfileDisplayName())
     val st by vm.settingsState.collectAsStateWithLifecycle()
     val catalog by vm.catalogState.collectAsStateWithLifecycle()
     val epg by vm.epgState.collectAsStateWithLifecycle()
@@ -79,12 +84,12 @@ internal fun SettingsTab(
     ) { uri ->
         if (uri != null) runCatching {
             val output = ctx.contentResolver.openOutputStream(uri)
-                ?: error("Δεν ήταν δυνατό να ανοιχτεί το αρχείο προορισμού")
+                ?: throw BackupException(BackupFailure.DestinationUnavailable)
             output.use {
                 it.write(com.prelude.iptv.data.Backup.export(ctx, pendingBackupPassword).toByteArray())
             }
-        }.onSuccess { toast(ctx, "✓ Το κρυπτογραφημένο αντίγραφο αποθηκεύτηκε") }
-            .onFailure { toast(ctx, "Σφάλμα: ${it.message}") }
+        }.onSuccess { toast(ctx, ctx.getString(R.string.account_backup_exported)) }
+            .onFailure { toast(ctx, ctx.localizedBackupFailure(it)) }
         pendingBackupPassword = ""
     }
     val importBackup = rememberLauncherForActivityResult(
@@ -92,19 +97,19 @@ internal fun SettingsTab(
     ) { uri ->
         if (uri != null) runCatching {
             val input = ctx.contentResolver.openInputStream(uri)
-                ?: error("Δεν ήταν δυνατό να ανοιχτεί το αντίγραφο ασφαλείας")
+                ?: throw BackupException(BackupFailure.SourceUnavailable)
             val txt = input.bufferedReader().use { it.readText() }
             com.prelude.iptv.data.Backup.import(ctx, txt, pendingBackupPassword)
         }.onSuccess { n ->
             // Το ViewModel διαβάζει τα prefs στο init: χωρίς restart θα έδειχνε
             // ΤΑ ΠΑΛΙΑ δεδομένα ενώ ο δίσκος έχει τα νέα (σιωπηλή ασυνέπεια).
-            toast(ctx, "✓ Επαναφορά $n ρυθμίσεων — επανεκκίνηση…")
+            toast(ctx, ctx.localizedBackupRestoreSuccess(n))
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 val launch = ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)
                     ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 if (launch != null) ctx.startActivity(launch)
             }, 700)
-        }.onFailure { toast(ctx, "Σφάλμα: ${it.message}") }
+        }.onFailure { toast(ctx, ctx.localizedBackupFailure(it)) }
         pendingBackupPassword = ""
     }
 
@@ -121,7 +126,7 @@ internal fun SettingsTab(
         currentIndex = st.currentIndex,
         currentChannelCount = st.currentChannelCount,
         sourceProgress = st.sourceProgress,
-        profileName = vm.activeProfileName(),
+        profileName = activeProfileName,
         playerMode = playerMode,
         autoFrameRateMode = autoFrameRateMode,
         bufferProfile = bufferProfile,

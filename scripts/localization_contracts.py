@@ -45,6 +45,37 @@ def resource_keys(root: Path, folder: str) -> set[str]:
     return keys
 
 
+def format_placeholders(text: str) -> tuple[str, ...]:
+    return tuple(sorted(re.findall(r"%(?:\d+\$)?[dfs]", text)))
+
+
+def resource_shapes(root: Path, folder: str) -> dict[str, tuple[object, ...]]:
+    shapes: dict[str, tuple[object, ...]] = {}
+    for path in sorted((root / folder).glob("strings*.xml")):
+        tree = ET.parse(path)
+        for node in tree.getroot():
+            name = node.attrib.get("name")
+            if not name or node.attrib.get("translatable") == "false":
+                continue
+            if node.tag == "plurals":
+                items = tuple(
+                    sorted(
+                        (
+                            item.attrib.get("quantity", ""),
+                            format_placeholders("".join(item.itertext())),
+                        )
+                        for item in node
+                    )
+                )
+                shapes[name] = (node.tag, items)
+            else:
+                shapes[name] = (
+                    node.tag,
+                    format_placeholders("".join(node.itertext())),
+                )
+    return shapes
+
+
 greek = resource_keys(RES, "values")
 english = resource_keys(QA_RES, "values-en")
 missing_english = sorted(greek - english)
@@ -53,6 +84,11 @@ if missing_english:
     failures.append("missing QA English keys: " + ", ".join(missing_english))
 if extra_english:
     failures.append("QA English-only keys: " + ", ".join(extra_english))
+greek_shapes = resource_shapes(RES, "values")
+english_shapes = resource_shapes(QA_RES, "values-en")
+for key in sorted(greek & english):
+    if greek_shapes.get(key) != english_shapes.get(key):
+        failures.append(f"Greek/QA-English resource structure mismatch: {key}")
 if any((RES / "values-en").glob("strings*.xml")) or any((RES / "values-el").glob("strings*.xml")):
     failures.append("partial public locale folders bypass the release-safe staging gate")
 
@@ -489,6 +525,65 @@ for ui_path in migrated_settings_ui:
     literals = greek_string_literals(read(ui_path))
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Settings UI: {ui_path}")
+
+profile_presentation = read(
+    "app/src/main/java/com/prelude/iptv/ui/profile/ProfilePresentationPolicy.kt"
+)
+profile_coordinator = read(
+    "app/src/main/java/com/prelude/iptv/ui/coordinator/ProfileSettingsCoordinator.kt"
+)
+account_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/AccountSecurityLocalizationResources.kt"
+)
+backup_failure = read("app/src/main/java/com/prelude/iptv/data/BackupFailure.kt")
+backup_data = read("app/src/main/java/com/prelude/iptv/data/Backup.kt")
+backup_crypto = read("app/src/main/java/com/prelude/iptv/data/PortableBackupCrypto.kt")
+settings_route = read("app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt")
+
+for typed_boundary in (
+    "sealed interface ProfileDisplayName",
+    "data object Primary",
+    "data class Stored",
+):
+    if typed_boundary not in profile_presentation:
+        failures.append(f"typed profile-name boundary missing: {typed_boundary}")
+if "activeProfileDisplayName(): ProfileDisplayName" not in profile_coordinator:
+    failures.append("profile coordinator still exposes only preformatted display names")
+if greek_string_literals(profile_coordinator):
+    failures.append("profile coordinator still owns Greek display copy")
+if "enum class BackupFailure" not in backup_failure or "class BackupException" not in backup_failure:
+    failures.append("backup failures bypass the typed data boundary")
+if greek_string_literals(backup_data) or greek_string_literals(backup_crypto):
+    failures.append("backup producers still own Greek display errors")
+for mapping in (
+    "localizedProfileName",
+    "BackupFailure.messageRes",
+    "localizedBackupFailure",
+    "localizedBackupRestoreSuccess",
+):
+    if mapping not in account_mapping:
+        failures.append(f"account/security resource mapping missing: {mapping}")
+if "localizedBackupFailure(it)" not in settings_route or "${it.message}" in settings_route:
+    failures.append("backup route leaks raw exception messages instead of typed app copy")
+if "localizedProfileName(vm.activeProfileDisplayName())" not in settings_route:
+    failures.append("Settings route bypasses the typed primary-profile display boundary")
+
+migrated_account_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/PremiumProfileGate.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileAccountSyncScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/SettingsAccountDialogs.kt",
+]
+for ui_path in migrated_account_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated account/security UI: {ui_path}")
+
+account_screen = read(
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileAccountSyncScreen.kt"
+)
+for false_promise in ("Ένας λογαριασμός", "Σε όλες τις συσκευές", "Συγχρόνισε"):
+    if false_promise in account_screen:
+        failures.append(f"deferred cloud/account promise remains active: {false_promise}")
 
 epg_presentation = read(
     "app/src/main/java/com/prelude/iptv/ui/epg/EpgPresentationState.kt"

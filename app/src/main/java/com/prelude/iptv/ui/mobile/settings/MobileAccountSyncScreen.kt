@@ -43,10 +43,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import kotlinx.coroutines.delay
 
@@ -60,12 +63,8 @@ internal fun MobileAccountSyncScreen(
     BackHandler(onBack = onBack)
     var page by remember { mutableIntStateOf(0) }
     var dragX by remember { mutableFloatStateOf(0f) }
-    val pages = listOf(
-        AccountPage(Icons.Default.AccountCircle, "Ένας λογαριασμός", "Οι πηγές, τα αγαπημένα και η πρόοδός σου σε ένα προσωπικό προφίλ."),
-        AccountPage(Icons.Default.Devices, "Σε όλες τις συσκευές", "Συνέχισε από εκεί που σταμάτησες σε κινητό, tablet και τηλεόραση."),
-        AccountPage(Icons.Default.Sync, "Τα δεδομένα σου μαζί σου", "Συγχρόνισε προτιμήσεις και Premium κατάσταση με ασφαλή τρόπο.")
-    )
-    val current = pages[page]
+    val pages = AccountPageIdentity.entries
+    val current = pages[page].content()
 
     LaunchedEffect(page) {
         delay(5_000)
@@ -77,7 +76,13 @@ internal fun MobileAccountSyncScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(Modifier.fillMaxWidth().height(76.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = Color.White) }
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    stringResource(R.string.settings_back),
+                    tint = Color.White,
+                )
+            }
             Spacer(Modifier.weight(1f))
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -85,8 +90,8 @@ internal fun MobileAccountSyncScreen(
             Text("PRELUDE+", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
         }
         Spacer(Modifier.height(30.dp))
-        Text("Ο media player σου", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black)
-        Text("Σε όλες τις συσκευές", color = Color(0xFFD5D5D5), fontSize = 21.sp)
+        Text(stringResource(R.string.account_overview_title), color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.account_overview_subtitle), color = Color(0xFFD5D5D5), fontSize = 21.sp)
         Spacer(Modifier.height(28.dp))
         Box(
             Modifier.fillMaxWidth().weight(1f)
@@ -110,9 +115,9 @@ internal fun MobileAccountSyncScreen(
                     contentAlignment = Alignment.Center
                 ) { Icon(current.icon, null, tint = Color.White, modifier = Modifier.size(72.dp)) }
                 Spacer(Modifier.height(24.dp))
-                Text(current.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(current.titleRes), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 Spacer(Modifier.height(9.dp))
-                Text(current.body, color = Color(0xFFD0D0D0), fontSize = 13.sp, lineHeight = 19.sp, textAlign = TextAlign.Center)
+                Text(stringResource(current.bodyRes), color = Color(0xFFD0D0D0), fontSize = 13.sp, lineHeight = 19.sp, textAlign = TextAlign.Center)
             }
         }
         Row(Modifier.padding(vertical = 15.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -129,11 +134,33 @@ internal fun MobileAccountSyncScreen(
             modifier = Modifier.fillMaxWidth().height(49.dp),
             shape = RoundedCornerShape(13.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary)
-        ) { Text("Διαχείριση προφίλ $profileName", fontWeight = FontWeight.Black) }
+        ) { Text(stringResource(R.string.account_manage_profile_named, profileName), fontWeight = FontWeight.Black) }
         TextButton(onClick = onBack, modifier = Modifier.padding(bottom = 10.dp)) {
-            Text("Πίσω", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.settings_back), color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }
 
-private data class AccountPage(val icon: ImageVector, val title: String, val body: String)
+private data class AccountPage(
+    val icon: ImageVector,
+    @StringRes val titleRes: Int,
+    @StringRes val bodyRes: Int,
+)
+
+private fun AccountPageIdentity.content(): AccountPage = when (this) {
+    AccountPageIdentity.LocalProfiles -> AccountPage(
+        Icons.Default.AccountCircle,
+        R.string.account_page_profiles_title,
+        R.string.account_page_profiles_body,
+    )
+    AccountPageIdentity.DeviceLocal -> AccountPage(
+        Icons.Default.Devices,
+        R.string.account_page_device_title,
+        R.string.account_page_device_body,
+    )
+    AccountPageIdentity.EncryptedBackup -> AccountPage(
+        Icons.Default.Sync,
+        R.string.account_page_backup_title,
+        R.string.account_page_backup_body,
+    )
+}

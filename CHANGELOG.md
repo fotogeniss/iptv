@@ -5,6 +5,10 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized local profiles, parental PIN and encrypted backup flows across
+  mobile and Android TV. Removed inactive account/cloud-sync promises, kept
+  user profile names and persisted storage unchanged, and mapped backup
+  failures through typed Greek/QA-English UI copy without exposing raw errors.
 - Fixed QA Kotlin compilation in the retained provider EPG dialog by consuming
   typed EPG statuses and source options through their localized UI mappings.
 - Fixed QA Kotlin compilation for localized shared routes by explicitly resolving

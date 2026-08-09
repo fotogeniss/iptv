@@ -5,6 +5,18 @@ import org.junit.Test
 
 class AccountCarouselPolicyTest {
     @Test
+    fun pageIdentitiesStayTruthfulAndOrdered() {
+        assertEquals(
+            listOf(
+                AccountPageIdentity.LocalProfiles,
+                AccountPageIdentity.DeviceLocal,
+                AccountPageIdentity.EncryptedBackup,
+            ),
+            AccountPageIdentity.entries,
+        )
+    }
+
+    @Test
     fun automaticAdvanceWrapsAtLastPage() {
         assertEquals(1, AccountCarouselPolicy.nextPage(0, 3))
         assertEquals(0, AccountCarouselPolicy.nextPage(2, 3))

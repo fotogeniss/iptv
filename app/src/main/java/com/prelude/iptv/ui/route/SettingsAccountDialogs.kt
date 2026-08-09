@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -33,10 +34,13 @@ import androidx.lifecycle.compose.*
 import androidx.lifecycle.viewmodel.compose.*
 import coil.compose.*
 import com.prelude.iptv.*
+import com.prelude.iptv.R
 import com.prelude.iptv.data.*
 import com.prelude.iptv.ui.*
 import com.prelude.iptv.ui.components.library.*
 import com.prelude.iptv.ui.design.*
+import com.prelude.iptv.ui.localization.localizedProfileName
+import com.prelude.iptv.ui.profile.ProfilePresentationPolicy
 import kotlinx.coroutines.*
 
 
@@ -61,7 +65,7 @@ internal fun SettingsAccountDialogs(
 
             val switchTo: (Int) -> Unit = { id ->
                 vm.setActiveProfile(id)
-                toast(ctx, "Αλλαγή προφίλ — επανεκκίνηση…")
+                toast(ctx, ctx.getString(R.string.account_profile_switch_restart))
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     val launch = ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)
                         ?.putExtra(AppRouteContract.EXTRA_SKIP_PROFILE_GATE, true)
@@ -72,10 +76,10 @@ internal fun SettingsAccountDialogs(
 
             askPinFor?.let { id ->
                 PinDialog(
-                    title = "PIN για αλλαγή προφίλ",
+                    title = stringResource(R.string.account_profile_switch_pin_title),
                     onOk = { pin ->
                         if (vm.checkPin(pin)) { askPinFor = null; dialog = ""; switchTo(id) }
-                        else toast(ctx, "Λάθος PIN")
+                        else toast(ctx, ctx.getString(R.string.account_profile_wrong_pin))
                     },
                     onCancel = { askPinFor = null }
                 )
@@ -83,12 +87,24 @@ internal fun SettingsAccountDialogs(
 
             AlertDialog(
                 onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-                title = { Text(if (adding) "Νέο προφίλ" else "Προφίλ", color = TextHi) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (adding) R.string.account_profile_new_title
+                            else R.string.account_profiles_title
+                        ),
+                        color = TextHi,
+                    )
+                },
                 text = {
                     Column {
                         if (adding) {
                             val fN = rememberInitialFocus()
-                            SettingField("Όνομα", newName, modifier = Modifier.focusRequester(fN)) { newName = it }
+                            SettingField(
+                                stringResource(R.string.account_profile_name_label),
+                                newName,
+                                modifier = Modifier.focusRequester(fN),
+                            ) { newName = it }
                             Row(
                                 Modifier.fillMaxWidth().tvFocus(RoundedCornerShape(8.dp))
                                     .clickable { newProtected = !newProtected }.padding(vertical = 8.dp),
@@ -97,19 +113,20 @@ internal fun SettingsAccountDialogs(
                                 Checkbox(checked = newProtected, onCheckedChange = { newProtected = it },
                                     colors = CheckboxDefaults.colors(checkedColor = Accent))
                                 Column {
-                                    Text("Προστασία με PIN", color = TextHi, fontSize = 13.sp)
-                                    Text("Θα ζητά το PIN για είσοδο σε αυτό το προφίλ",
+                                    Text(stringResource(R.string.account_profile_pin_protection), color = TextHi, fontSize = 13.sp)
+                                    Text(stringResource(R.string.account_profile_pin_protection_body),
                                         color = TextLo, fontSize = 11.sp)
                                 }
                             }
                         } else {
                             Text(
-                                "Κάθε προφίλ έχει δικά του αγαπημένα, «συνέχισε να βλέπεις» και κλειδώματα. Οι λίστες είναι κοινές.",
+                                stringResource(R.string.account_profiles_local_data_body),
                                 color = TextMid, fontSize = 12.sp, lineHeight = 17.sp
                             )
                             Spacer(Modifier.height(10.dp))
                             val fP = rememberInitialFocus()
                             profiles.forEachIndexed { i, p ->
+                                val displayName = localizedProfileName(ProfilePresentationPolicy.displayName(p))
                                 Row(
                                     Modifier.fillMaxWidth()
                                         .then(if (i == 0) Modifier.focusRequester(fP) else Modifier)
@@ -128,16 +145,17 @@ internal fun SettingsAccountDialogs(
                                     )
                                     Spacer(Modifier.width(10.dp))
                                     Text(
-                                        (if (p.protected) "🔒 " else "") + p.name,
+                                        (if (p.protected) "🔒 " else "") + displayName,
                                         color = if (p.id == active) TextHi else TextMid,
                                         fontWeight = if (p.id == active) FontWeight.Bold else FontWeight.Normal,
                                         modifier = Modifier.weight(1f)
                                     )
                                     if (p.id != 0) IconButton(onClick = {
-                                        vm.deleteProfile(p.id); toast(ctx, "Διαγράφηκε: ${p.name}")
+                                        vm.deleteProfile(p.id)
+                                        toast(ctx, ctx.getString(R.string.account_profile_deleted, p.name))
                                         dialog = ""
                                     }, modifier = Modifier.size(28.dp).tvFocus(RoundedCornerShape(6.dp))) {
-                                        Icon(Icons.Default.Delete, "Διαγραφή", tint = TextLo,
+                                        Icon(Icons.Default.Delete, stringResource(R.string.settings_delete), tint = TextLo,
                                             modifier = Modifier.size(16.dp))
                                     }
                                 }
@@ -150,26 +168,29 @@ internal fun SettingsAccountDialogs(
                         enabled = newName.isNotBlank(),
                         onClick = {
                             if (newProtected && !vm.hasParentalPin())
-                                toast(ctx, "Όρισε πρώτα PIN στον Γονικό έλεγχο")
+                                toast(ctx, ctx.getString(R.string.account_profile_set_pin_first))
                             else { vm.addProfile(newName, newProtected); adding = false; newName = ""; newProtected = false }
                         },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))
-                    ) { Text("Προσθήκη", color = AccentSoft, fontWeight = FontWeight.Bold) }
+                    ) { Text(stringResource(R.string.account_profile_add), color = AccentSoft, fontWeight = FontWeight.Bold) }
                     else TextButton(onClick = { adding = true },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                        Text("+ Νέο προφίλ", color = AccentSoft)
+                        Text(stringResource(R.string.account_profile_add_new), color = AccentSoft)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { if (adding) adding = false else dialog = "" },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                        Text(if (adding) "Πίσω" else "Κλείσιμο", color = TextMid)
+                        Text(
+                            stringResource(if (adding) R.string.settings_back else R.string.settings_close),
+                            color = TextMid,
+                        )
                     }
                 }
             )
         }
         "backup" -> {
-            var passwordMode by remember { mutableStateOf("") }
+            var passwordMode by remember { mutableStateOf<BackupPasswordMode?>(null) }
             var backupPassword by remember { mutableStateOf("") }
             val passwordFocus = rememberInitialFocus()
             AlertDialog(
@@ -177,71 +198,81 @@ internal fun SettingsAccountDialogs(
                 containerColor = BgElev2,
                 title = {
                     Text(
-                        if (passwordMode.isBlank()) "Ασφαλές αντίγραφο"
-                        else if (passwordMode == "export") "Κωδικός εξαγωγής" else "Κωδικός επαναφοράς",
+                        stringResource(
+                            when (passwordMode) {
+                                null -> R.string.account_backup_title
+                                BackupPasswordMode.Export -> R.string.account_backup_export_password_title
+                                BackupPasswordMode.Restore -> R.string.account_backup_restore_password_title
+                            }
+                        ),
                         color = TextHi
                     )
                 },
                 text = {
-                    if (passwordMode.isBlank()) {
+                    if (passwordMode == null) {
                         Column {
                             val fB = rememberInitialFocus()
                             Text(
-                                "Όλα τα δεδομένα — μαζί με λίστες και credentials — κρυπτογραφούνται με AES-256. Ο κωδικός δεν αποθηκεύεται και δεν μπορεί να ανακτηθεί.",
+                                stringResource(R.string.account_backup_description),
                                 color = TextMid, fontSize = 12.sp, lineHeight = 17.sp
                             )
                             Spacer(Modifier.height(12.dp))
                             Button(
-                                onClick = { passwordMode = "export" },
+                                onClick = { passwordMode = BackupPasswordMode.Export },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Accent),
                                 modifier = Modifier.fillMaxWidth()
                                     .focusRequester(fB).tvFocus(RoundedCornerShape(12.dp), tint = false)
-                            ) { Text("Εξαγωγή κρυπτογραφημένου αρχείου", fontWeight = FontWeight.Bold) }
+                            ) { Text(stringResource(R.string.account_backup_export_file), fontWeight = FontWeight.Bold) }
                             Spacer(Modifier.height(8.dp))
                             OutlinedButton(
-                                onClick = { passwordMode = "import" },
+                                onClick = { passwordMode = BackupPasswordMode.Restore },
                                 shape = RoundedCornerShape(12.dp),
                                 border = BorderStroke(1.dp, Line),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextHi),
                                 modifier = Modifier.fillMaxWidth().tvFocus(RoundedCornerShape(12.dp))
-                            ) { Text("Επαναφορά από αρχείο") }
+                            ) { Text(stringResource(R.string.account_backup_restore_file)) }
                             Spacer(Modifier.height(10.dp))
                             Text(
-                                "Χρησιμοποίησε κωδικό τουλάχιστον 6 χαρακτήρων. Για παλιά μη κρυπτογραφημένα backups ο κωδικός αγνοείται.",
+                                stringResource(R.string.account_backup_legacy_note),
                                 color = TextLo, fontSize = 11.sp, lineHeight = 15.sp
                             )
                         }
                     } else {
                         Column {
                             Text(
-                                if (passwordMode == "export")
-                                    "Θα χρειαστείς ακριβώς τον ίδιο κωδικό για επαναφορά."
-                                else "Δώσε τον κωδικό με τον οποίο δημιουργήθηκε το αρχείο.",
+                                stringResource(
+                                    if (passwordMode == BackupPasswordMode.Export)
+                                        R.string.account_backup_export_password_body
+                                    else R.string.account_backup_restore_password_body
+                                ),
                                 color = TextMid, fontSize = 12.sp, lineHeight = 17.sp
                             )
                             Spacer(Modifier.height(10.dp))
                             SettingField(
-                                "Κωδικός backup", backupPassword, isPassword = true,
+                                stringResource(R.string.account_backup_password_label), backupPassword, isPassword = true,
                                 modifier = Modifier.focusRequester(passwordFocus)
                             ) { backupPassword = it }
                         }
                     }
                 },
                 confirmButton = {
-                    if (passwordMode.isNotBlank()) {
+                    if (passwordMode != null) {
                         TextButton(
                             enabled = backupPassword.length >= 6,
                             onClick = {
                                 val password = backupPassword
                                 dialog = ""
-                                if (passwordMode == "export") onExportBackup(password)
+                                if (passwordMode == BackupPasswordMode.Export) onExportBackup(password)
                                 else onImportBackup(password)
                             },
                             modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))
                         ) {
                             Text(
-                                if (passwordMode == "export") "Εξαγωγή" else "Επιλογή αρχείου",
+                                stringResource(
+                                    if (passwordMode == BackupPasswordMode.Export) R.string.account_backup_export
+                                    else R.string.account_backup_choose_file
+                                ),
                                 color = AccentSoft, fontWeight = FontWeight.Bold
                             )
                         }
@@ -250,11 +281,16 @@ internal fun SettingsAccountDialogs(
                 dismissButton = {
                     TextButton(
                         onClick = {
-                            if (passwordMode.isBlank()) dialog = ""
-                            else { passwordMode = ""; backupPassword = "" }
+                            if (passwordMode == null) dialog = ""
+                            else { passwordMode = null; backupPassword = "" }
                         },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))
-                    ) { Text(if (passwordMode.isBlank()) "Κλείσιμο" else "Πίσω", color = TextMid) }
+                    ) {
+                        Text(
+                            stringResource(if (passwordMode == null) R.string.settings_close else R.string.settings_back),
+                            color = TextMid,
+                        )
+                    }
                 }
             )
         }
@@ -263,12 +299,14 @@ internal fun SettingsAccountDialogs(
             val fPin = rememberInitialFocus()
             AlertDialog(
                 onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-                title = { Text("Γονικός έλεγχος", color = TextHi) },
+                title = { Text(stringResource(R.string.account_parental_title), color = TextHi) },
                 text = {
                     Column {
                         Text(
-                            if (vm.hasParentalPin()) "Υπάρχει PIN. Δώσε νέο για αλλαγή."
-                            else "Όρισε 4-6ψήφιο PIN. Μετά: κράτησε πατημένο ένα group στη λίστα για να το κλειδώσεις 🔒.",
+                            stringResource(
+                                if (vm.hasParentalPin()) R.string.account_parental_change_pin_body
+                                else R.string.account_parental_create_pin_body
+                            ),
                             color = TextMid, fontSize = 12.sp, lineHeight = 17.sp
                         )
                         Spacer(Modifier.height(8.dp))
@@ -280,18 +318,27 @@ internal fun SettingsAccountDialogs(
                 },
                 confirmButton = {
                     TextButton(enabled = newPin.length >= 4,
-                        onClick = { vm.setParentalPin(newPin); toast(ctx, "✓ Το PIN ορίστηκε"); dialog = "" },
+                        onClick = {
+                            vm.setParentalPin(newPin)
+                            toast(ctx, ctx.getString(R.string.account_parental_pin_saved))
+                            dialog = ""
+                        },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                        Text("Αποθήκευση", color = AccentSoft, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.settings_save), color = AccentSoft, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { dialog = "" },
                         modifier = Modifier.tvFocus(RoundedCornerShape(8.dp))) {
-                        Text("Άκυρο", color = TextMid)
+                        Text(stringResource(R.string.settings_cancel), color = TextMid)
                     }
                 }
             )
         }
     }
+}
+
+private enum class BackupPasswordMode {
+    Export,
+    Restore,
 }

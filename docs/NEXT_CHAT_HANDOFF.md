@@ -4,8 +4,8 @@ Last verified workspace date: **2026-08-09**
 Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
-Latest completed implementation commit before this documentation handoff:
-`e892e2a feat: localize settings experience`
+Latest completed implementation slice in this handoff:
+Profiles, parental controls and encrypted backup/restore localization.
 
 This document is the operational source of truth for continuing the current
 Codex collaboration in a fresh chat. Read it together with `README.md`,
@@ -65,16 +65,16 @@ of a **30-year senior software engineer**. In practice this means:
 
 ## 2. Current confirmed state
 
-- The Git worktree was clean immediately after commit `e892e2a` and before this
-  documentation-only handoff update began.
+- The Git worktree was clean at `4c7ee73` when this profile/account-security
+  slice began.
 - The owner previously supplied an Android Studio screenshot confirming a
   **successful QA build in approximately 34 seconds** after commit `1a7b4f4`, and
   later reported another localization checkpoint built without errors. Those are
   owner-provided historical build results; they do **not** prove that the current
-  `e892e2a` Settings slice compiles or passes device QA.
+  profile/account-security slice compiles or passes device QA.
 - Codex did not run Gradle for the current localization work because the owner did
-  not authorize it. Android Studio compilation and phone/TV checks after
-  `e892e2a` remain outstanding.
+  not authorize it. Android Studio compilation and phone/TV checks for the
+  current head remain outstanding.
 - The owner then reported `:app:compileQaKotlin` failures in
   `BrowseStateComponents.kt`, `DetailRouteHost.kt`, `PlaylistSourcesScreen.kt`,
   `SettingsFieldComponents.kt` and `SettingsPlaybackDialogs.kt`: wildcard imports
@@ -89,12 +89,13 @@ of a **30-year senior software engineer**. In practice this means:
   `EpgStatus` loading identities, `localizedText()`, `localizedLabel()` and the
   source's raw URL, with a regression contract. A new owner QA build is still
   required after this fix.
-- The latest static validation cycle at `e892e2a` reported:
-  - localization contracts: pass, including 208 paired Settings keys with
-    matching structure and placeholders;
+- The latest static validation cycle for profiles/account security reported:
+  - localization contracts: pass, including 58 paired account/security resources
+    with matching key/type/placeholder structure;
   - architecture audit: 60 passes, one known size warning for `MainViewModel`, no
     failures;
-  - compatibility contracts: 58/58;
+  - compatibility contracts: 63/63, including profile switch/cleanup ordering,
+    parental TTL, backup format/crypto constants and TV dialog focus boundaries;
   - deep validation: 67 passes, one documented cleartext-HTTP compatibility
     warning, no failures;
   - production-risk inventory: zero critical findings;
@@ -441,12 +442,14 @@ has now been implemented for Android TV.
   codes and `CategoryEditorFailure` keep persisted identities and presentation
   copy separate. Existing preference keys, immediate persistence, TV focus and
   dialog Back behavior were not changed.
-- The next cohesive localization slice is Profiles and the account/security
-  dialogs. Audit `MobileAccountSyncScreen`, `SettingsAccountDialogs` and their
-  profile/PIN/backup producers before editing. Move app-owned state messages to
-  typed identities, keep names/PIN material and exported user data untouched,
-  preserve encryption and source-scoped favorites/history, and do not mix the
-  later Billing, Legal or Diagnostics migrations into that slice.
+- Profiles, parental controls and encrypted backup/restore are localized across
+  the active mobile and Android TV routes, including the startup profile gate,
+  shared dialogs, SAF completion states and typed backup failures. The active
+  account carousel now states that profiles and progress are local and that
+  transfer requires a manual encrypted file; it no longer promises an account,
+  cloud backend or automatic cross-device synchronization. User-created profile
+  names, PIN material, persisted IDs/keys, switch/restart ordering, cleanup,
+  TV Home scheduling and backup compatibility remain unchanged.
 - Settings-slice static verification completed with 208 paired Settings
   resource keys and matching plural/placeholder structure, localization
   contracts passing, compatibility contracts 58/58, architecture audit 60
@@ -470,94 +473,67 @@ typed or stable presentation boundaries where needed, and static localization
 contracts: runtime/primary navigation, Home, Live TV, movie/series browsing,
 global Search, details/seasons/episodes, shared Player and subtitle/audio flows,
 source onboarding/management, full EPG and the active Settings shell plus
-playback/personalization/category surfaces. Provider-owned and user-owned data is
-intentionally not translated.
+playback/personalization/category surfaces, local profiles, parental controls and
+encrypted backup/restore. Provider-owned and user-owned data is intentionally
+not translated.
 
 “Complete” here means the code/resource migration and static gates are complete.
 It does not mean that the current head has compiled or passed device QA. It also
 does not mean public English can be enabled: the remaining slices below still
 contain Greek display copy and raw display messages.
 
-#### Immediate next slice: profiles and account/security dialogs
+#### Completed slice: profiles and account/security
 
-Work on this slice alone. Inspect these active boundaries before editing:
+- `MobileAccountSyncScreen` is active from mobile Settings. Its existing
+  carousel layout, swipe behavior and controls remain intact, but its three
+  typed page identities now describe local profiles, device-local state and
+  manual encrypted backup instead of account/cloud synchronization.
+- `PremiumProfileGate` and the shared profile/PIN/backup dialogs use paired
+  feature resources on mobile and Android TV. The primary profile uses an
+  app-owned typed display identity; every non-primary stored name passes through
+  unchanged as user data.
+- `BackupFailure` and `BackupException` replace producer-owned display sentences.
+  The Settings boundary maps known failures to localized copy and no longer
+  exposes raw exception messages as the primary error.
+- No profile ID/key, PIN handling, JSON field, filename, PBKDF2/AES-GCM parameter,
+  legacy import rule, switch/restart step, cleanup step, TV Home schedule or
+  DPAD/Back/focus modifier changed.
 
-- `app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileAccountSyncScreen.kt`
-- `app/src/main/java/com/prelude/iptv/ui/route/SettingsAccountDialogs.kt`
-- `app/src/main/java/com/prelude/iptv/ui/coordinator/ProfileSettingsCoordinator.kt`
-- `app/src/main/java/com/prelude/iptv/ui/route/SettingsRoute.kt`
-- profile/PIN defaults and persistence in `PlaylistStore` and their focused tests
-
-Important product truth: cloud/account synchronization is deferred and there is
-no publisher backend. `MobileAccountSyncScreen` currently contains aspirational
-cross-device/synchronization claims. Do not merely translate those claims and do
-not add a backend. First trace whether the screen is active, then keep the flow
-truthful to the implemented local profiles, source-scoped favorites/history and
-encrypted file backup. If correcting that promise changes the approved product
-flow or visual hierarchy, stop for owner approval and provide an HTML preview.
-
-Preserve these contracts:
-
-- profile names entered by the user are raw user data and must not be translated;
-- existing persisted profile names/IDs and the primary profile cannot be silently
-  renamed or migrated;
-- PIN material never enters resources, logs, analytics or display diagnostics;
-- protected-profile entry and parental unlock TTL behavior stay unchanged;
-- switching profile keeps the existing restart/order semantics and TV Home sync;
-- deletion keeps profile-scoped favorites/history cleanup and never affects a
-  different profile;
-- TV dialogs retain deterministic initial focus, DPAD traversal and exact Back
-  restoration.
-
-App-created fallback/default names such as the primary profile and unnamed
-profile fallback are localization debt, but persisted user-visible values make
-them migration-sensitive. Model a stable identity or inject display copy at the
-UI boundary; do not rewrite stored names globally. Replace app-owned dialog,
-toast, accessibility and error sentences with paired resources. Prefer typed
-failure/state identities when a coordinator or producer currently owns display
-text.
-
-#### Remaining localization order after profiles
+#### Immediate next slice: Billing and Premium
 
 Complete one commit and verification cycle per item; do not combine them:
 
-1. **Encrypted backup/import/export UI and failures.** Finish the backup branch
-   in `SettingsAccountDialogs.kt` and `SettingsRoute.kt`, then audit `Backup.kt`,
-   `PortableBackupCrypto.kt`, `Exporter.kt` and `ExportScreen.kt`. Preserve the
-   AES/password format, SAF flow, filenames, JSON schema and existing backup
-   compatibility. Provider/user data stays raw. Do not expose raw exception
-   messages as the primary UI error; map known failures to typed app copy while
-   keeping diagnostic causes internal.
-2. **Billing and Premium.** Audit `BillingModels.kt`, `PlayBillingRepository.kt`,
+1. **Billing and Premium.** Audit `BillingModels.kt`, `PlayBillingRepository.kt`,
    `PremiumState.kt`, `PremiumRequiredDialog.kt`, `MobileSettingsSheets.kt` and
    the mobile/TV Settings consumers. `BillingUiState.message` is known remaining
    presentation debt. Preserve BillingClient response handling, pending-purchase
    rules, acknowledgement, device verification and Play-provided formatted
    prices. A billing behavior change requires Terms/privacy/Play declaration
    review; localization alone must not change entitlement behavior.
-3. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
+2. **Legal and privacy.** Audit `MobileLegalPrivacyScreen.kt`,
    `MobileLegalComponents.kt` and especially `MobileLegalContent.kt`, whose model
    currently owns long Greek display copy. Keep publisher placeholders, policy
    version/effective date, URLs, service names and mandatory TMDB attribution
    accurate. Localization does not authorize rewriting legal meaning. Any legal
    substance change requires owner/publisher review and the documentation duties
    in `docs/MAINTENANCE.md`.
-4. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
+3. **Diagnostics and crash reporting.** Audit `MobileDiagnosticsScreen.kt`,
    `MobileDiagnosticsComponents.kt`, `DiagnosticsManager.kt` and diagnostic
    result producers. Preserve opt-in consent, redaction, one local pending report,
    no Analytics/ad ID, and disconnected Firebase configuration. Raw diagnostic
    details are not normal UI copy and must remain redacted.
-5. **System notifications and remaining service copy.** Audit at least
-   `CatalogDownloadService.kt`, `RelayService.kt`, exported/share surfaces and
-   reminder/download notification producers. Notification channel names, titles,
-   progress/errors and accessibility copy follow the app locale; protocol data,
-   provider titles and user content remain raw.
-6. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
+4. **Export/share surfaces, system notifications and remaining service copy.**
+   Audit `Exporter.kt`, `ExportScreen.kt`, `CatalogDownloadService.kt`,
+   `RelayService.kt` and reminder/download notification producers. Notification
+   channel names, titles, progress/errors and accessibility copy follow the app
+   locale; protocol data, provider titles, exported user data and filenames
+   remain raw.
+5. **Final release-surface audit.** Search all active manifests, Kotlin and XML,
    not only files whose names contain “settings”. Classify each remaining literal
    as app copy, invariant brand/protocol text, provider/user data, diagnostic data
    or developer comment. Migrate only app copy, add contracts for every completed
    surface and verify Greek/English keys, placeholders and plurals.
-7. **Parity inversion and public picker activation.** Only after the full audit,
+6. **Parity inversion and public picker activation.** Only after the full audit,
    compilation and phone/TV QA: move English to unqualified `main/res/values`,
    Greek to `main/res/values-el`, change `unqualifiedResLocale` from `el` to `en`,
    enable the generated locale config and flip
@@ -690,18 +666,15 @@ The owner can paste the following after attaching or referencing this file:
 > and my approval before Android implementation; a copy-only resource migration
 > does not. Do not run Gradle, compile or build unless I explicitly ask. Never
 > claim runtime success from static checks. Record behavior changes in
-> CHANGELOG/docs and commit each cohesive completed slice. The immediate task is
-> Profiles and
-> account/security-dialog localization across phone and TV. Audit
-> `MobileAccountSyncScreen`, `SettingsAccountDialogs` and the profile/PIN/backup
-> producers first. The app has no account/cloud-sync backend: do not translate or
-> preserve false cross-device promises and do not add Supabase/VPS/backend. Trace
-> the active flow and keep it truthful to local profiles and encrypted file
-> backup; stop for approval if that requires a product-flow or visual change.
-> Keep user profile names, PIN material, persisted IDs/keys and exported user data
-> untouched; move app-owned labels, states and errors to paired Greek/QA-English
-> resources through typed identities. Preserve encryption, profile/source-scoped
-> favorites/history, restart ordering, TV Home sync, TV DPAD focus and exact Back
-> restoration. Do not mix Billing, Legal or Diagnostics into this slice. Run the
+> CHANGELOG/docs and commit each cohesive completed slice. Profiles, parental PIN
+> and encrypted backup/restore localization are complete at the code/resource and
+> static-contract level, but still require the owner's normal Android Studio build
+> and phone/TV QA. The immediate next task is Billing and Premium localization.
+> Audit `BillingModels.kt`, `PlayBillingRepository.kt`, `PremiumState.kt`,
+> `PremiumRequiredDialog.kt`, `MobileSettingsSheets.kt` and the mobile/TV Settings
+> consumers. Replace producer-owned display messages with typed identities while
+> preserving BillingClient responses, pending-purchase handling, acknowledgement,
+> verification, entitlement behavior and Play-formatted prices. Do not mix Legal,
+> Diagnostics, notifications or exported/share surfaces into that slice. Run the
 > static gates, inspect the diff, update the handoff, and commit only when the
 > slice is cohesive and clean.

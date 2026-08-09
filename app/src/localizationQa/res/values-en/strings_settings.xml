@@ -2,7 +2,7 @@
     <string name="settings_nav_sources">Sources</string>
     <string name="settings_nav_playback">Playback</string>
     <string name="settings_nav_appearance">Appearance</string>
-    <string name="settings_nav_account">Account</string>
+    <string name="settings_nav_account">Profiles &amp; security</string>
     <string name="settings_nav_about">About</string>
     <string name="settings_group_personalization">Personalization</string>
     <string name="settings_appearance_title">Appearance &amp; accessibility</string>
@@ -50,7 +50,7 @@
     <string name="settings_premium_subtitle">Multiple sources, Multiview, online subtitles, profiles and personalization.</string>
     <string name="settings_discover_premium">Discover Premium</string>
     <string name="settings_group_general">General</string>
-    <string name="settings_group_account_security">Account &amp; security</string>
+    <string name="settings_group_account_security">Profiles &amp; security</string>
     <string name="settings_group_support">Support</string>
     <string name="settings_group_app_status">App status</string>
     <string name="settings_my_sources">My sources</string>
@@ -204,7 +204,7 @@
     <string name="settings_restore_purchases_subtitle">Checks purchases for the active Google Play account</string>
     <string name="settings_profile_separate_data">Separate favorites and history</string>
     <string name="settings_backup">Backup</string>
-    <string name="settings_backup_subtitle">Export or restore JSON</string>
+    <string name="settings_backup_subtitle">Export or restore an encrypted file</string>
     <string name="settings_share_package_subtitle">Sends the package identifier</string>
     <string name="settings_about_prelude">About Prelude</string>
     <string name="settings_about_prelude_subtitle">Premium streaming UI on the existing playback and data layer</string>

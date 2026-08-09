@@ -1,0 +1,67 @@
+<resources>
+    <string name="account_primary_profile_name">Primary</string>
+    <string name="account_overview_title">Your media player</string>
+    <string name="account_overview_subtitle">With your data under your control</string>
+    <string name="account_page_profiles_title">Local profiles</string>
+    <string name="account_page_profiles_body">Each profile keeps separate favorites and history for every source on this device.</string>
+    <string name="account_page_device_title">Only on this device</string>
+    <string name="account_page_device_body">Profiles and progress do not sync automatically with other devices.</string>
+    <string name="account_page_backup_title">Encrypted backup file</string>
+    <string name="account_page_backup_body">Manually export and restore a password-protected file, without an account or cloud backend.</string>
+    <string name="account_manage_profile_named">Manage profile %1$s</string>
+
+    <string name="account_profiles_title">Profiles</string>
+    <string name="account_profile_new_title">New profile</string>
+    <string name="account_profile_name_label">Name</string>
+    <string name="account_profile_pin_protection">PIN protection</string>
+    <string name="account_profile_pin_protection_body">The parental PIN will be required to enter this profile</string>
+    <string name="account_profiles_local_data_body">Each profile keeps separate favorites, history and locked categories. Sources remain shared on this device.</string>
+    <string name="account_profile_switch_pin_title">PIN to switch profile</string>
+    <string name="account_profile_switch_restart">Switching profile — restarting…</string>
+    <string name="account_profile_wrong_pin">Incorrect PIN</string>
+    <string name="account_profile_deleted">Deleted: %1$s</string>
+    <string name="account_profile_set_pin_first">Set a PIN in Parental controls first</string>
+    <string name="account_profile_add">Add</string>
+    <string name="account_profile_add_new">+ New profile</string>
+
+    <string name="account_parental_title">Parental controls</string>
+    <string name="account_parental_change_pin_body">A PIN is set. Enter a new one to change it.</string>
+    <string name="account_parental_create_pin_body">Set a 4–6 digit PIN. Then press and hold a category to lock it.</string>
+    <string name="account_parental_pin_saved">PIN set</string>
+
+    <string name="account_gate_question">Who’s watching?</string>
+    <string name="account_gate_manage_profiles">Manage profiles</string>
+    <string name="account_gate_unlock_profile">Unlock %1$s</string>
+    <string name="account_gate_enter_parental_pin">Enter the parental PIN.</string>
+    <string name="account_gate_enter">Enter</string>
+
+    <string name="account_backup_title">Secure backup</string>
+    <string name="account_backup_export_password_title">Export password</string>
+    <string name="account_backup_restore_password_title">Restore password</string>
+    <string name="account_backup_description">Settings, profiles, sources and credentials are stored in an AES-256-GCM encrypted file. The password is not stored and cannot be recovered.</string>
+    <string name="account_backup_export_file">Export encrypted file</string>
+    <string name="account_backup_restore_file">Restore from file</string>
+    <string name="account_backup_legacy_note">Use a password of at least 6 characters. The password is ignored for an old unencrypted backup.</string>
+    <string name="account_backup_export_password_body">You will need exactly the same password to restore the file.</string>
+    <string name="account_backup_restore_password_body">Enter the password used to create the file.</string>
+    <string name="account_backup_password_label">Backup password</string>
+    <string name="account_backup_export">Export</string>
+    <string name="account_backup_choose_file">Choose file</string>
+    <string name="account_backup_exported">Encrypted backup saved</string>
+    <plurals name="account_backup_restored_restart">
+        <item quantity="one">Restored %1$d setting — restarting…</item>
+        <item quantity="other">Restored %1$d settings — restarting…</item>
+    </plurals>
+    <string name="account_backup_error_password_short">The password must contain at least 6 characters.</string>
+    <string name="account_backup_error_wrong_app">This file is not a Prelude+ backup.</string>
+    <string name="account_backup_error_newer_version">This file was created by a newer app version.</string>
+    <string name="account_backup_error_missing_data">This file does not contain restore data.</string>
+    <string name="account_backup_error_invalid_json">The selected file is not valid JSON.</string>
+    <string name="account_backup_error_crypto_parameters">The file’s encryption parameters are invalid.</string>
+    <string name="account_backup_error_wrong_password">The backup password is incorrect.</string>
+    <string name="account_backup_error_corrupt_or_password">The backup is corrupted or the password is incorrect.</string>
+    <string name="account_backup_error_destination">The destination file could not be opened.</string>
+    <string name="account_backup_error_source">The backup file could not be opened.</string>
+    <string name="account_backup_error_write">The backup could not be written.</string>
+    <string name="account_backup_error_unknown">The backup operation could not be completed.</string>
+</resources>

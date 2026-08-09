@@ -66,6 +66,7 @@ import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
 import com.prelude.iptv.ui.localization.catalogRailLabels
 import com.prelude.iptv.ui.localization.localizedCatalogProgress
+import com.prelude.iptv.ui.localization.localizedProfileName
 import com.prelude.iptv.ui.status.CatalogStatusKind
 import com.prelude.iptv.ui.status.CatalogStatusPolicy
 import com.prelude.iptv.ui.design.Motion
@@ -106,6 +107,7 @@ internal fun BrowseScreen(
 ) {
     val state by vm.catalogState.collectAsStateWithLifecycle()
     val ctx = androidx.compose.ui.platform.LocalContext.current
+    val activeProfileName = localizedProfileName(vm.activeProfileDisplayName())
     val scope = rememberCoroutineScope()
     var epgChannel by remember { mutableStateOf<Channel?>(null) }
     var showExport by remember { mutableStateOf(false) }
@@ -712,9 +714,7 @@ internal fun BrowseScreen(
                     channels = channels,
                     continueWatching = catalogContinue,
                     favoriteKeys = state.favorites,
-                    // memoized: το activeProfileName() διαβάζει προφίλ από δίσκο —
-                    // δεν χρειάζεται σε κάθε recomposition (άλλαγή προφίλ = recreate).
-                    profileName = remember { vm.activeProfileName() },
+                    profileName = activeProfileName,
                     tmdbFor = vm::tmdb,
                     onPlay = { channel ->
                         if (channel.kind == "series") {
@@ -1111,7 +1111,7 @@ internal fun BrowseScreen(
                     .onFocusChanged { navRailFocused = it.hasFocus }
             ) {
             PremiumTvNavigationRail(
-                profileName = remember { vm.activeProfileName() },
+                profileName = activeProfileName,
                 currentContentType = state.contentType,
                 homeSelected = isCatalogHome,
                 libraryDestination = libraryDestination,

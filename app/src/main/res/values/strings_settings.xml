@@ -2,7 +2,7 @@
     <string name="settings_nav_sources">Πηγές</string>
     <string name="settings_nav_playback">Αναπαραγωγή</string>
     <string name="settings_nav_appearance">Εμφάνιση</string>
-    <string name="settings_nav_account">Λογαριασμός</string>
+    <string name="settings_nav_account">Προφίλ &amp; ασφάλεια</string>
     <string name="settings_nav_about">Σχετικά</string>
     <string name="settings_group_personalization">Εξατομίκευση</string>
     <string name="settings_appearance_title">Εμφάνιση &amp; προσβασιμότητα</string>
@@ -50,7 +50,7 @@
     <string name="settings_premium_subtitle">Πολλαπλές πηγές, Multiview, online υπότιτλοι, προφίλ και εξατομίκευση.</string>
     <string name="settings_discover_premium">Ανακάλυψε το Premium</string>
     <string name="settings_group_general">Γενικά</string>
-    <string name="settings_group_account_security">Λογαριασμός &amp; ασφάλεια</string>
+    <string name="settings_group_account_security">Προφίλ &amp; ασφάλεια</string>
     <string name="settings_group_support">Υποστήριξη</string>
     <string name="settings_group_app_status">Κατάσταση εφαρμογής</string>
     <string name="settings_my_sources">Οι πηγές μου</string>
@@ -204,7 +204,7 @@
     <string name="settings_restore_purchases_subtitle">Έλεγχος των αγορών του ενεργού λογαριασμού Google Play</string>
     <string name="settings_profile_separate_data">Ξεχωριστά αγαπημένα και ιστορικό</string>
     <string name="settings_backup">Αντίγραφο ασφαλείας</string>
-    <string name="settings_backup_subtitle">Εξαγωγή ή επαναφορά JSON</string>
+    <string name="settings_backup_subtitle">Εξαγωγή ή επαναφορά κρυπτογραφημένου αρχείου</string>
     <string name="settings_share_package_subtitle">Αποστολή package identifier</string>
     <string name="settings_about_prelude">Σχετικά με το Prelude</string>
     <string name="settings_about_prelude_subtitle">Premium streaming UI πάνω στο υπάρχον playback και data layer</string>

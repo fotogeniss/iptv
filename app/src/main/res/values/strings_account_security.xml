@@ -1,0 +1,67 @@
+<resources>
+    <string name="account_primary_profile_name">Κύριο</string>
+    <string name="account_overview_title">Ο media player σου</string>
+    <string name="account_overview_subtitle">Με δεδομένα υπό τον έλεγχό σου</string>
+    <string name="account_page_profiles_title">Τοπικά προφίλ</string>
+    <string name="account_page_profiles_body">Κάθε προφίλ κρατά σε αυτή τη συσκευή ξεχωριστά αγαπημένα και ιστορικό για κάθε πηγή.</string>
+    <string name="account_page_device_title">Μόνο σε αυτή τη συσκευή</string>
+    <string name="account_page_device_body">Τα προφίλ και η πρόοδος δεν συγχρονίζονται αυτόματα με άλλες συσκευές.</string>
+    <string name="account_page_backup_title">Κρυπτογραφημένο αρχείο backup</string>
+    <string name="account_page_backup_body">Εξάγεις και επαναφέρεις χειροκίνητα ένα αρχείο με κωδικό, χωρίς λογαριασμό ή cloud backend.</string>
+    <string name="account_manage_profile_named">Διαχείριση προφίλ %1$s</string>
+
+    <string name="account_profiles_title">Προφίλ</string>
+    <string name="account_profile_new_title">Νέο προφίλ</string>
+    <string name="account_profile_name_label">Όνομα</string>
+    <string name="account_profile_pin_protection">Προστασία με PIN</string>
+    <string name="account_profile_pin_protection_body">Θα ζητά το parental PIN για είσοδο σε αυτό το προφίλ</string>
+    <string name="account_profiles_local_data_body">Κάθε προφίλ κρατά ξεχωριστά αγαπημένα, ιστορικό και κλειδωμένες κατηγορίες. Οι πηγές παραμένουν κοινές σε αυτή τη συσκευή.</string>
+    <string name="account_profile_switch_pin_title">PIN για αλλαγή προφίλ</string>
+    <string name="account_profile_switch_restart">Αλλαγή προφίλ — επανεκκίνηση…</string>
+    <string name="account_profile_wrong_pin">Λάθος PIN</string>
+    <string name="account_profile_deleted">Διαγράφηκε: %1$s</string>
+    <string name="account_profile_set_pin_first">Όρισε πρώτα PIN στον Γονικό έλεγχο</string>
+    <string name="account_profile_add">Προσθήκη</string>
+    <string name="account_profile_add_new">+ Νέο προφίλ</string>
+
+    <string name="account_parental_title">Γονικός έλεγχος</string>
+    <string name="account_parental_change_pin_body">Υπάρχει PIN. Δώσε νέο για αλλαγή.</string>
+    <string name="account_parental_create_pin_body">Όρισε 4–6ψήφιο PIN. Μετά κράτησε πατημένη μια κατηγορία για να την κλειδώσεις.</string>
+    <string name="account_parental_pin_saved">Το PIN ορίστηκε</string>
+
+    <string name="account_gate_question">Ποιος παρακολουθεί;</string>
+    <string name="account_gate_manage_profiles">Διαχείριση προφίλ</string>
+    <string name="account_gate_unlock_profile">Ξεκλείδωμα %1$s</string>
+    <string name="account_gate_enter_parental_pin">Πληκτρολόγησε το parental PIN.</string>
+    <string name="account_gate_enter">Είσοδος</string>
+
+    <string name="account_backup_title">Ασφαλές αντίγραφο</string>
+    <string name="account_backup_export_password_title">Κωδικός εξαγωγής</string>
+    <string name="account_backup_restore_password_title">Κωδικός επαναφοράς</string>
+    <string name="account_backup_description">Οι ρυθμίσεις, τα προφίλ, οι πηγές και τα credentials αποθηκεύονται σε κρυπτογραφημένο αρχείο AES-256-GCM. Ο κωδικός δεν αποθηκεύεται και δεν μπορεί να ανακτηθεί.</string>
+    <string name="account_backup_export_file">Εξαγωγή κρυπτογραφημένου αρχείου</string>
+    <string name="account_backup_restore_file">Επαναφορά από αρχείο</string>
+    <string name="account_backup_legacy_note">Χρησιμοποίησε κωδικό τουλάχιστον 6 χαρακτήρων. Σε παλιό μη κρυπτογραφημένο backup ο κωδικός αγνοείται.</string>
+    <string name="account_backup_export_password_body">Θα χρειαστείς ακριβώς τον ίδιο κωδικό για επαναφορά.</string>
+    <string name="account_backup_restore_password_body">Δώσε τον κωδικό με τον οποίο δημιουργήθηκε το αρχείο.</string>
+    <string name="account_backup_password_label">Κωδικός backup</string>
+    <string name="account_backup_export">Εξαγωγή</string>
+    <string name="account_backup_choose_file">Επιλογή αρχείου</string>
+    <string name="account_backup_exported">Το κρυπτογραφημένο αντίγραφο αποθηκεύτηκε</string>
+    <plurals name="account_backup_restored_restart">
+        <item quantity="one">Επαναφέρθηκε %1$d ρύθμιση — επανεκκίνηση…</item>
+        <item quantity="other">Επαναφέρθηκαν %1$d ρυθμίσεις — επανεκκίνηση…</item>
+    </plurals>
+    <string name="account_backup_error_password_short">Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.</string>
+    <string name="account_backup_error_wrong_app">Το αρχείο δεν είναι αντίγραφο ασφαλείας του Prelude+.</string>
+    <string name="account_backup_error_newer_version">Το αρχείο δημιουργήθηκε από νεότερη έκδοση της εφαρμογής.</string>
+    <string name="account_backup_error_missing_data">Το αρχείο δεν περιέχει δεδομένα επαναφοράς.</string>
+    <string name="account_backup_error_invalid_json">Το επιλεγμένο αρχείο δεν είναι έγκυρο JSON.</string>
+    <string name="account_backup_error_crypto_parameters">Οι παράμετροι κρυπτογράφησης του αρχείου δεν είναι έγκυρες.</string>
+    <string name="account_backup_error_wrong_password">Ο κωδικός του αντιγράφου ασφαλείας είναι λάθος.</string>
+    <string name="account_backup_error_corrupt_or_password">Το αντίγραφο είναι κατεστραμμένο ή ο κωδικός είναι λάθος.</string>
+    <string name="account_backup_error_destination">Δεν ήταν δυνατό να ανοιχτεί το αρχείο προορισμού.</string>
+    <string name="account_backup_error_source">Δεν ήταν δυνατό να ανοιχτεί το αντίγραφο ασφαλείας.</string>
+    <string name="account_backup_error_write">Η εγγραφή του αντιγράφου ασφαλείας απέτυχε.</string>
+    <string name="account_backup_error_unknown">Το αντίγραφο ασφαλείας δεν μπόρεσε να ολοκληρωθεί.</string>
+</resources>

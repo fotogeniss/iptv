@@ -38,12 +38,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaylistStore
+import com.prelude.iptv.ui.localization.localizedProfileName
+import com.prelude.iptv.ui.profile.ProfilePresentationPolicy
 
 private val ProfileBackground = IptvColors.Background
 private val ProfileSurface = IptvColors.Surface
@@ -80,7 +84,7 @@ fun PremiumProfileGate(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Ποιος παρακολουθεί;",
+                stringResource(R.string.account_gate_question),
                 color = Color.White,
                 fontSize = 34.sp,
                 fontWeight = FontWeight.Medium
@@ -93,8 +97,10 @@ fun PremiumProfileGate(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 itemsIndexed(profiles, key = { _, p -> p.id }) { index, profile ->
+                    val displayName = localizedProfileName(ProfilePresentationPolicy.displayName(profile))
                     ProfileCard(
                         profile = profile,
+                        displayName = displayName,
                         active = profile.id == activeProfileId,
                         modifier = if (index == 0) Modifier.focusRequester(initialFocus) else Modifier,
                         onClick = {
@@ -112,14 +118,14 @@ fun PremiumProfileGate(
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                 modifier = Modifier.tvFocus(RoundedCornerShape(4.dp), tint = false)
             ) {
-                Text("Διαχείριση προφίλ", letterSpacing = 1.sp)
+                Text(stringResource(R.string.account_gate_manage_profiles), letterSpacing = 1.sp)
             }
         }
     }
 
     pending?.let { profile ->
         ProfilePinDialog(
-            profileName = profile.name,
+            profileName = localizedProfileName(ProfilePresentationPolicy.displayName(profile)),
             verifyPin = verifyPin,
             onSuccess = {
                 pending = null
@@ -133,6 +139,7 @@ fun PremiumProfileGate(
 @Composable
 private fun ProfileCard(
     profile: PlaylistStore.Profile,
+    displayName: String,
     active: Boolean,
     modifier: Modifier,
     onClick: () -> Unit
@@ -170,7 +177,7 @@ private fun ProfileCard(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                profile.name.trim().firstOrNull()?.uppercase() ?: "?",
+                displayName.trim().firstOrNull()?.uppercase() ?: "?",
                 color = Color.White,
                 fontSize = 52.sp,
                 fontWeight = FontWeight.Black
@@ -191,7 +198,7 @@ private fun ProfileCard(
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            profile.name,
+            displayName,
             color = if (active) Color.White else Color(0xFFB8B8BE),
             fontSize = 16.sp,
             fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
@@ -215,10 +222,10 @@ private fun ProfilePinDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = ProfileSurface,
-        title = { Text("Ξεκλείδωμα $profileName", color = Color.White) },
+        title = { Text(stringResource(R.string.account_gate_unlock_profile, profileName), color = Color.White) },
         text = {
             Column {
-                Text("Πληκτρολόγησε το γονικό PIN.", color = Color(0xFFB8B8BE), fontSize = 13.sp)
+                Text(stringResource(R.string.account_gate_enter_parental_pin), color = Color(0xFFB8B8BE), fontSize = 13.sp)
                 Spacer(Modifier.height(14.dp))
                 OutlinedTextField(
                     value = pin,
@@ -232,7 +239,7 @@ private fun ProfilePinDialog(
                     label = { Text("PIN") },
                     visualTransformation = PasswordVisualTransformation(),
                     isError = error,
-                    supportingText = { if (error) Text("Λάθος PIN") },
+                    supportingText = { if (error) Text(stringResource(R.string.account_profile_wrong_pin)) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
@@ -252,13 +259,13 @@ private fun ProfilePinDialog(
                 },
                 enabled = pin.length >= 4,
                 modifier = Modifier.tvFocus(RoundedCornerShape(4.dp), tint = false)
-            ) { Text("Είσοδος") }
+            ) { Text(stringResource(R.string.account_gate_enter)) }
         },
         dismissButton = {
             OutlinedButton(
                 onClick = onDismiss,
                 modifier = Modifier.tvFocus(RoundedCornerShape(4.dp), tint = false)
-            ) { Text("Ακύρωση") }
+            ) { Text(stringResource(R.string.settings_cancel)) }
         }
     )
 }

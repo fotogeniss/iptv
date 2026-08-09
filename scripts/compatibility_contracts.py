@@ -86,6 +86,19 @@ playlist_connection_tester = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sour
 shared_m3u_importer = (ROOT / "app/src/main/java/com/prelude/iptv/ui/sources/M3uFileImporter.kt").read_text(encoding="utf-8")
 playlist_store = (ROOT / "app/src/main/java/com/prelude/iptv/data/PlaylistStore.kt").read_text(encoding="utf-8")
 main_activity = (ROOT / "app/src/main/java/com/prelude/iptv/MainActivity.kt").read_text(encoding="utf-8")
+profile_settings = (ROOT / "app/src/main/java/com/prelude/iptv/ui/coordinator/ProfileSettingsCoordinator.kt").read_text(encoding="utf-8")
+backup = (ROOT / "app/src/main/java/com/prelude/iptv/data/Backup.kt").read_text(encoding="utf-8")
+backup_crypto = (ROOT / "app/src/main/java/com/prelude/iptv/data/PortableBackupCrypto.kt").read_text(encoding="utf-8")
+settings_account_dialogs = (ROOT / "app/src/main/java/com/prelude/iptv/ui/route/SettingsAccountDialogs.kt").read_text(encoding="utf-8")
+delete_profile_body = profile_settings[
+    profile_settings.find("fun deleteProfile"):profile_settings.find("fun setActiveProfile")
+]
+delete_profile_order = [
+    delete_profile_body.find("store.saveProfiles(remaining)"),
+    delete_profile_body.find("store.wipeProfile(id)"),
+    delete_profile_body.find("if (store.activeProfile == id) store.activeProfile = 0"),
+    delete_profile_body.find("TvHomeSyncScheduler.schedule(app)"),
+]
 playlist_sources = (ROOT / "app/src/main/java/com/prelude/iptv/ui/route/PlaylistSourcesScreen.kt").read_text(encoding="utf-8")
 main_vm = TARGETS["MainViewModel"].read_text(encoding="utf-8")
 select_start = main_vm.find("    fun selectPlaylist(i: Int)")
@@ -93,6 +106,32 @@ select_end = main_vm.find("    fun saveFontScale", select_start)
 select_body = main_vm[select_start:select_end]
 
 source_contracts = {
+    "Profile switch keeps persistence before TV Home synchronization": (
+        profile_settings.find("store.activeProfile = id")
+        < profile_settings.find("TvHomeSyncScheduler.schedule(app)", profile_settings.find("fun setActiveProfile"))
+    ),
+    "Profile deletion keeps scoped wipe and active fallback before TV Home synchronization": (
+        all(index >= 0 for index in delete_profile_order)
+        and delete_profile_order == sorted(delete_profile_order)
+    ),
+    "Parental unlock TTL remains thirty minutes": "private val unlockTtlMs = 30 * 60 * 1000L" in profile_settings,
+    "Portable backup envelope and crypto parameters remain compatible": all(
+        marker in backup + backup_crypto
+        for marker in (
+            'private const val VERSION = 2',
+            'private const val MAGIC = "UltimateIPTV-Backup"',
+            'private const val ITERATIONS = 210_000',
+            'private const val KEY_BITS = 256',
+            'private const val SALT_BYTES = 16',
+            'private const val IV_BYTES = 12',
+            'private const val TAG_BITS = 128',
+        )
+    ),
+    "Profile and backup dialogs retain explicit TV focus boundaries": (
+        settings_account_dialogs.count("rememberInitialFocus()") >= 4
+        and "Modifier.focusRequester(fP)" in settings_account_dialogs
+        and settings_account_dialogs.count(".tvFocus(") >= 10
+    ),
     "External PlayerActivity keeps its manifest launch class": "class PlayerActivity : AppCompatActivity()" in player,
     "External PlayerActivity rejects malformed launch intents": "if (request == null)" in player and "finish()" in player,
     "External PlayerActivity delegates to the shared playback overlay": "TvPlaybackOverlay(" in player,

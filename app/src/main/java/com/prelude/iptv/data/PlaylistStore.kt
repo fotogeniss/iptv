@@ -22,6 +22,11 @@ class PlaylistStore(context: Context) {
     companion object {
         /** ΕΝΑ σημείο αλήθειας για το όνομα των prefs (το χρησιμοποιεί και το Backup). */
         const val PREFS = "upl_prefs"
+
+        /** Existing synthesized value; kept stable for persisted-profile and backup compatibility. */
+        const val LEGACY_PRIMARY_PROFILE_NAME = "Κύριος"
+
+        fun legacyGeneratedProfileName(id: Int): String = "Προφίλ $id"
     }
 
     init {
@@ -48,14 +53,14 @@ class PlaylistStore(context: Context) {
 
     fun profiles(): MutableList<Profile> {
         val raw = prefs.getString("profiles", "") ?: ""
-        if (raw.isBlank()) return mutableListOf(Profile(0, "Κύριος", false))
+        if (raw.isBlank()) return mutableListOf(Profile(0, LEGACY_PRIMARY_PROFILE_NAME, false))
         val arr = runCatching { JSONArray(raw) }.getOrDefault(JSONArray())
         val out = ArrayList<Profile>()
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
             out.add(Profile(o.optInt("id"), o.optString("name"), o.optBoolean("protected")))
         }
-        return if (out.isEmpty()) mutableListOf(Profile(0, "Κύριος", false)) else out
+        return if (out.isEmpty()) mutableListOf(Profile(0, LEGACY_PRIMARY_PROFILE_NAME, false)) else out
     }
 
     fun saveProfiles(list: List<Profile>) {

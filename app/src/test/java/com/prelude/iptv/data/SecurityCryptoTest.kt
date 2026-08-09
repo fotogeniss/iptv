@@ -22,8 +22,18 @@ class SecurityCryptoTest {
         val original = "credentials-and-history"
         val encrypted = PortableBackupCrypto.encrypt(original, "strong-pass")
         assertEquals(original, PortableBackupCrypto.decrypt(encrypted, "strong-pass"))
-        assertThrows(IllegalArgumentException::class.java) {
+        val failure = assertThrows(BackupException::class.java) {
             PortableBackupCrypto.decrypt(encrypted, "wrong-pass")
         }
+        assertEquals(BackupFailure.WrongPassword, failure.failure)
+    }
+
+    @Test
+    fun portableBackupRejectsShortPasswordWithTypedFailure() {
+        val failure = assertThrows(BackupException::class.java) {
+            PortableBackupCrypto.encrypt("payload", "short")
+        }
+
+        assertEquals(BackupFailure.PasswordTooShort, failure.failure)
     }
 }

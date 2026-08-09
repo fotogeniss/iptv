@@ -4,8 +4,9 @@ Status: owner-approved design; runtime foundation, navigation/settings, Home,
 Live TV, movie/series browsing, global Search, details/seasons/episodes, Player
 source onboarding/management, full EPG and the active Settings shell plus
 playback/personalization surfaces are implemented behind the QA/parity rollout
-gate. Profiles/account dialogs, backup/export, Billing, Legal, Diagnostics and
-system notifications remain before final parity.
+gate. Profiles, parental controls and encrypted backup/restore are also
+implemented. Billing, Legal, Diagnostics, exported/share surfaces and system
+notifications remain before final parity.
 
 ## Product contract
 
@@ -145,10 +146,12 @@ cohesive vertical slices:
     playback/AFR/buffer dialogs and the category editor. Persisted keys and
     protocol values remain stable; labels and failures cross typed resource
     boundaries.**
-12. Profiles and account/security dialogs, followed as separate cohesive slices
-    by backup/export, Billing/Premium, Legal/Privacy, Diagnostics and system
-    notifications. Cloud/account sync remains deferred; localization must not
-    turn aspirational cross-device copy into a shipped product promise.
+12. Profiles, parental controls and encrypted backup/restore. **Implemented for
+    mobile and TV, with local-only product copy, typed profile-name identities
+    and typed backup failures. User profile names, PIN material, persisted keys
+    and the portable backup format remain unchanged.** Billing/Premium,
+    Legal/Privacy, Diagnostics, exported/share surfaces and system notifications
+    follow as separate cohesive slices. Cloud/account sync remains deferred.
 13. Final hardcoded-string audit, translation parity gate and public picker
    activation.
 
@@ -163,8 +166,9 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG/Settings
-  mappings and hardcoded-copy audits, and the closed public rollout gate.
+  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG/Settings/
+  account-security mappings and hardcoded-copy audits, and the closed public
+  rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key
   parity.

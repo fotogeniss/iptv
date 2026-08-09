@@ -1,5 +1,11 @@
 package com.prelude.iptv.ui.mobile.settings
 
+internal enum class AccountPageIdentity {
+    LocalProfiles,
+    DeviceLocal,
+    EncryptedBackup,
+}
+
 internal object AccountCarouselPolicy {
     fun nextPage(current: Int, pageCount: Int): Int =
         if (pageCount <= 0) 0 else (current.coerceIn(0, pageCount - 1) + 1) % pageCount
