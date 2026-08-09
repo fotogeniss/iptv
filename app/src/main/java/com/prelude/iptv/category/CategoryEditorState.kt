@@ -1,10 +1,12 @@
 package com.prelude.iptv.category
 
+enum class CategoryEditorFailure { LoadFailed }
+
 data class CategoryEditorSection(
     val available: List<CategoryOption> = emptyList(),
     val layout: CategoryLayout = CategoryLayout(),
     val loading: Boolean = false,
-    val error: String? = null,
+    val error: CategoryEditorFailure? = null,
 ) {
     val entries: List<CategoryEntry> get() = CategoryLayoutPolicy.resolve(available, layout)
     val deletedEntries: List<CategoryOption> get() = CategoryLayoutPolicy.deleted(available, layout)

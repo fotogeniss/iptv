@@ -1,5 +1,7 @@
 package com.prelude.iptv.player
 
+import java.util.Locale
+
 /** Πόσο απόθεμα εικόνας κρατά ο player μπροστά από τη στιγμή που παίζει. */
 enum class BufferProfile(val storageValue: String) {
     /** Ελάχιστη καθυστέρηση: γρήγορη αλλαγή καναλιού, λιγότερη αντοχή. */
@@ -58,13 +60,6 @@ object BufferPolicy {
     }
 
     fun fromStorage(value: String?): BufferProfile =
-        BufferProfile.entries.firstOrNull { it.storageValue == value?.trim()?.lowercase() }
+        BufferProfile.entries.firstOrNull { it.storageValue == value?.trim()?.lowercase(Locale.ROOT) }
             ?: BufferProfile.NORMAL
-
-    /** Σύντομη περιγραφή για τη λίστα ρυθμίσεων. */
-    fun label(profile: BufferProfile): String = when (profile) {
-        BufferProfile.LOW -> "Χαμηλό — γρήγορη αλλαγή καναλιού"
-        BufferProfile.NORMAL -> "Κανονικό — ισορροπία"
-        BufferProfile.HIGH -> "Υψηλό — για ασταθές δίκτυο"
-    }
 }

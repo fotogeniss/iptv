@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the active mobile and Android TV Settings shell, playback/AFR/buffer
+  dialogs, subtitle and audio preferences, category editor, source sheets and
+  overview/status surfaces. Persisted preference values remain stable while
+  player modes, frame-rate modes, buffer profiles, language codes and category
+  failures now cross typed/resource-owned presentation boundaries.
 - Localized the full EPG experience across mobile and Android TV, including
   guide filters, programme actions, empty/accessibility states, locale-aware
   time and duration formatting, XMLTV discovery/loading and active EPG settings.

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -34,9 +35,15 @@ import androidx.lifecycle.viewmodel.compose.*
 import coil.compose.*
 import com.prelude.iptv.*
 import com.prelude.iptv.data.*
+import com.prelude.iptv.player.BufferProfile
 import com.prelude.iptv.ui.*
+import com.prelude.iptv.ui.components.settings.AutoFrameRateOption
+import com.prelude.iptv.ui.components.settings.PlayerModeOption
 import com.prelude.iptv.ui.components.library.*
 import com.prelude.iptv.ui.design.*
+import com.prelude.iptv.ui.localization.descriptionRes
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.titleRes
 import kotlinx.coroutines.*
 
 
@@ -60,7 +67,7 @@ internal fun SettingsPlaybackDialogs(
     when (dialog) {
         "font" -> AlertDialog(
             onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-            title = { Text("Μέγεθος γραμματοσειράς", color = TextHi) },
+            title = { Text(stringResource(R.string.settings_text_size), color = TextHi) },
             text = {
                 // αρχικό focus: χωρίς αυτό, το dialog άνοιγε «νεκρό» σε TV
                 val fFont = rememberInitialFocus()
@@ -72,80 +79,63 @@ internal fun SettingsPlaybackDialogs(
                 }
             },
             confirmButton = {
-                TvDialogTextButton(label = "Εντάξει", color = AccentSoft, onClick = { dialog = "" })
+                TvDialogTextButton(label = stringResource(R.string.settings_done), color = AccentSoft, onClick = { dialog = "" })
             }
         )
         "player" -> AlertDialog(
             onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-            title = { Text("Player αναπαραγωγής", color = TextHi) },
+            title = { Text(stringResource(R.string.settings_player_mode_title), color = TextHi) },
             text = {
                 Column {
                     val fPl = rememberInitialFocus()   // αλλιώς «νεκρό» dialog σε TV
-                    listOf(
-                        "auto" to "Αυτόματο (1 → 2 αν χρειαστεί)",
-                        "exo" to "Εσωτερικός 1 (ExoPlayer)",
-                        "vlc" to "Εσωτερικός 2 (VLC)"
-                    ).forEachIndexed { fi, (k, label) ->
+                    PlayerModeOption.entries.forEachIndexed { fi, option ->
                         Row(
                             Modifier.fillMaxWidth()
                                 .then(if (fi == 0) Modifier.focusRequester(fPl) else Modifier)
                                 .tvFocus(RoundedCornerShape(8.dp)).clickable {
-                                    playerMode = k; store.playerMode = k
+                                    playerMode = option.storageValue; store.playerMode = option.storageValue
                                 }.padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(selected = playerMode == k, onClick = {
-                                playerMode = k; store.playerMode = k
+                            RadioButton(selected = playerMode == option.storageValue, onClick = {
+                                playerMode = option.storageValue; store.playerMode = option.storageValue
                             }, colors = RadioButtonDefaults.colors(selectedColor = Accent))
-                            Text(label, color = TextHi, fontSize = 14.sp)
+                            Text(stringResource(option.labelRes()), color = TextHi, fontSize = 14.sp)
                         }
                     }
                 }
             },
-            confirmButton = { TvDialogTextButton(label = "Εντάξει", color = AccentSoft, onClick = { dialog = "" }) }
+            confirmButton = { TvDialogTextButton(label = stringResource(R.string.settings_done), color = AccentSoft, onClick = { dialog = "" }) }
         )
         "buffer" -> AlertDialog(
             onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-            title = { Text("Απόθεμα αναπαραγωγής", color = TextHi) },
+            title = { Text(stringResource(R.string.settings_buffer_title), color = TextHi) },
             text = {
                 Column {
                     val firstFocus = rememberInitialFocus()
-                    listOf(
-                        Triple(
-                            "low", "Χαμηλό",
-                            "Γρήγορη αλλαγή καναλιού. Σε ασταθές δίκτυο μπορεί να διακόπτεται."
-                        ),
-                        Triple(
-                            "normal", "Κανονικό",
-                            "Ισορροπία ταχύτητας και σταθερότητας. Προτεινόμενο."
-                        ),
-                        Triple(
-                            "high", "Υψηλό",
-                            "Αντέχει κακή σύνδεση. Τα κανάλια αργούν λίγο περισσότερο να ανοίξουν."
-                        )
-                    ).forEachIndexed { index, (key, label, description) ->
+                    BufferProfile.entries.forEachIndexed { index, profile ->
                         Row(
                             Modifier.fillMaxWidth()
                                 .then(if (index == 0) Modifier.focusRequester(firstFocus) else Modifier)
                                 .tvFocus(RoundedCornerShape(8.dp))
                                 .clickable {
-                                    bufferProfile = key
-                                    store.bufferProfile = key
+                                    bufferProfile = profile.storageValue
+                                    store.bufferProfile = profile.storageValue
                                 }
                                 .padding(vertical = 9.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = bufferProfile == key,
+                                selected = bufferProfile == profile.storageValue,
                                 onClick = {
-                                    bufferProfile = key
-                                    store.bufferProfile = key
+                                    bufferProfile = profile.storageValue
+                                    store.bufferProfile = profile.storageValue
                                 },
                                 colors = RadioButtonDefaults.colors(selectedColor = Accent)
                             )
                             Column(Modifier.padding(start = 4.dp)) {
-                                Text(label, color = TextHi, fontSize = 14.sp)
-                                Text(description, color = TextMid, fontSize = 11.sp)
+                                Text(stringResource(profile.titleRes()), color = TextHi, fontSize = 14.sp)
+                                Text(stringResource(profile.descriptionRes()), color = TextMid, fontSize = 11.sp)
                             }
                         }
                     }
@@ -153,7 +143,7 @@ internal fun SettingsPlaybackDialogs(
                     // μπορεί να αλλάξει σε ροή που ήδη παίζει. Καλύτερα να το πει
                     // παρά να φανεί σαν να μην έκανε τίποτα.
                     Text(
-                        "Ισχύει από το επόμενο κανάλι ή ταινία που θα ανοίξεις.",
+                        stringResource(R.string.settings_buffer_applies_next),
                         color = TextMid,
                         fontSize = 11.sp,
                         modifier = Modifier.padding(top = 10.dp)
@@ -161,49 +151,45 @@ internal fun SettingsPlaybackDialogs(
                 }
             },
             confirmButton = {
-                TvDialogTextButton(label = "Εντάξει", color = AccentSoft, onClick = { dialog = "" })
+                TvDialogTextButton(label = stringResource(R.string.settings_done), color = AccentSoft, onClick = { dialog = "" })
             }
         )
         "afr" -> AlertDialog(
             onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-            title = { Text("Αυτόματη συχνότητα καρέ", color = TextHi) },
+            title = { Text(stringResource(R.string.settings_afr_title), color = TextHi) },
             text = {
                 Column {
                     val firstFocus = rememberInitialFocus()
-                    listOf(
-                        Triple("off", "Απενεργοποιημένο", "Η τηλεόραση μένει στη συχνότητα συστήματος."),
-                        Triple("seamless", "Ομαλή αλλαγή", "Αλλάζει μόνο όταν η TV το υποστηρίζει χωρίς μαύρη οθόνη."),
-                        Triple("always", "Πλήρης αντιστοίχιση", "Ταιριάζει 24/25/30/50/60 fps· μπορεί να εμφανιστεί στιγμιαία μαύρη οθόνη.")
-                    ).forEachIndexed { index, (key, label, description) ->
+                    AutoFrameRateOption.entries.forEachIndexed { index, option ->
                         Row(
                             Modifier.fillMaxWidth()
                                 .then(if (index == 0) Modifier.focusRequester(firstFocus) else Modifier)
                                 .tvFocus(RoundedCornerShape(8.dp))
                                 .clickable {
-                                    autoFrameRateMode = key
-                                    store.autoFrameRateMode = key
+                                    autoFrameRateMode = option.storageValue
+                                    store.autoFrameRateMode = option.storageValue
                                 }
                                 .padding(vertical = 9.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = autoFrameRateMode == key,
+                                selected = autoFrameRateMode == option.storageValue,
                                 onClick = {
-                                    autoFrameRateMode = key
-                                    store.autoFrameRateMode = key
+                                    autoFrameRateMode = option.storageValue
+                                    store.autoFrameRateMode = option.storageValue
                                 },
                                 colors = RadioButtonDefaults.colors(selectedColor = Accent)
                             )
                             Column(Modifier.padding(start = 4.dp)) {
-                                Text(label, color = TextHi, fontSize = 14.sp)
-                                Text(description, color = TextMid, fontSize = 11.sp)
+                                Text(stringResource(option.labelRes()), color = TextHi, fontSize = 14.sp)
+                                Text(stringResource(option.descriptionRes()), color = TextMid, fontSize = 11.sp)
                             }
                         }
                     }
                 }
             },
             confirmButton = {
-                TvDialogTextButton(label = "Εντάξει", color = AccentSoft, onClick = { dialog = "" })
+                TvDialogTextButton(label = stringResource(R.string.settings_done), color = AccentSoft, onClick = { dialog = "" })
             }
         )
         "tmdb" -> {
@@ -214,22 +200,22 @@ internal fun SettingsPlaybackDialogs(
                 text = {
                     Column {
                         val fT = rememberInitialFocus()
-                        Text("Δωρεάν key (v3): themoviedb.org → Settings → API. Γεμίζει βαθμολογίες, εικόνες και φωτό ηθοποιών.",
+                        Text(stringResource(R.string.settings_tmdb_key_help),
                             color = TextMid, fontSize = 12.sp)
                         Spacer(Modifier.height(8.dp))
-                        SettingField("API Key", key, modifier = Modifier.focusRequester(fT)) { key = it }
+                        SettingField(stringResource(R.string.settings_api_key), key, modifier = Modifier.focusRequester(fT)) { key = it }
                     }
                 },
                 confirmButton = {
                     TvDialogTextButton(
-                        label = "Αποθήκευση",
+                        label = stringResource(R.string.settings_save),
                         color = AccentSoft,
                         onClick = {
-                            vm.saveTmdbKey(key.trim()); toast(ctx, "Αποθηκεύτηκε"); dialog = ""
+                            vm.saveTmdbKey(key.trim()); toast(ctx, ctx.getString(R.string.settings_saved)); dialog = ""
                         }
                     )
                 },
-                dismissButton = { TvDialogTextButton(label = "Άκυρο", color = TextMid, onClick = { dialog = "" }) }
+                dismissButton = { TvDialogTextButton(label = stringResource(R.string.settings_cancel), color = TextMid, onClick = { dialog = "" }) }
             )
         }
         "subs" -> {
@@ -239,29 +225,29 @@ internal fun SettingsPlaybackDialogs(
             var pass by remember { mutableStateOf(p0) }
             AlertDialog(
                 onDismissRequest = { dialog = "" }, containerColor = BgElev2,
-                title = { Text("Υπότιτλοι (OpenSubtitles)", color = TextHi) },
+                title = { Text(stringResource(R.string.settings_subtitles_dialog_title), color = TextHi) },
                 text = {
                     Column {
                         val fS = rememberInitialFocus()
-                        Text("Δωρεάν API key: opensubtitles.com → Consumers. Το login δίνει quota για λήψη.",
+                        Text(stringResource(R.string.settings_subtitles_key_help),
                             color = TextMid, fontSize = 12.sp)
                         Spacer(Modifier.height(8.dp))
-                        SettingField("API Key", key, modifier = Modifier.focusRequester(fS)) { key = it }
-                        SettingField("Username", user) { user = it }
-                        SettingField("Password", pass, isPassword = true) { pass = it }
+                        SettingField(stringResource(R.string.settings_api_key), key, modifier = Modifier.focusRequester(fS)) { key = it }
+                        SettingField(stringResource(R.string.settings_username), user) { user = it }
+                        SettingField(stringResource(R.string.settings_password), pass, isPassword = true) { pass = it }
                     }
                 },
                 confirmButton = {
                     TvDialogTextButton(
-                        label = "Αποθήκευση",
+                        label = stringResource(R.string.settings_save),
                         color = AccentSoft,
                         onClick = {
                             vm.saveSubSettings(key.trim(), user.trim(), pass.trim())
-                            toast(ctx, "Αποθηκεύτηκε"); dialog = ""
+                            toast(ctx, ctx.getString(R.string.settings_saved)); dialog = ""
                         }
                     )
                 },
-                dismissButton = { TvDialogTextButton(label = "Άκυρο", color = TextMid, onClick = { dialog = "" }) }
+                dismissButton = { TvDialogTextButton(label = stringResource(R.string.settings_cancel), color = TextMid, onClick = { dialog = "" }) }
             )
         }
     }

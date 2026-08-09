@@ -7,13 +7,12 @@ class PlaybackPreferencePolicyTest {
     @Test
     fun unknownLanguageFallsBackToAutomatic() {
         assertEquals("", PlaybackPreferencePolicy.normalizeLanguage("unknown"))
-        assertEquals("Αυτόματα", PlaybackPreferencePolicy.languageLabel("unknown"))
     }
 
     @Test
     fun languageCodesAreNormalized() {
         assertEquals("el", PlaybackPreferencePolicy.normalizeLanguage(" EL "))
-        assertEquals("Ελληνικά", PlaybackPreferencePolicy.languageLabel("el"))
+        assertEquals(listOf("", "el", "en", "es", "fr", "de", "it", "pt", "ar"), PlaybackPreferencePolicy.languages.map { it.code })
     }
 
     @Test

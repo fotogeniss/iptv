@@ -34,10 +34,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 
@@ -52,7 +54,7 @@ internal fun MobileSettingsTopBar(onNotifications: () -> Unit) {
     ) {
         Spacer(Modifier.size(42.dp))
         Text(
-            "Ρυθμίσεις",
+            stringResource(R.string.settings_title),
             modifier = Modifier.weight(1f),
             color = IptvColors.TextPrimary,
             fontSize = 20.sp,
@@ -63,7 +65,7 @@ internal fun MobileSettingsTopBar(onNotifications: () -> Unit) {
             IconButton(onClick = onNotifications, modifier = Modifier.size(42.dp)) {
                 Icon(
                     Icons.Default.NotificationsNone,
-                    contentDescription = "Ειδοποιήσεις",
+                    contentDescription = stringResource(R.string.settings_notifications),
                     tint = IptvColors.TextPrimary,
                     modifier = Modifier.size(25.dp)
                 )
@@ -95,7 +97,7 @@ internal fun MobileSettingsAccountHero(
     ) {
         Column(Modifier.fillMaxWidth(0.78f)) {
             Text(
-                "Το PRELUDE+\nστα μέτρα σου",
+                stringResource(R.string.settings_hero_title),
                 color = IptvColors.TextPrimary,
                 fontSize = 27.sp,
                 lineHeight = 29.sp,
@@ -103,7 +105,7 @@ internal fun MobileSettingsAccountHero(
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Προφίλ, ασφάλεια και προσωπικές επιλογές σε ένα σημείο.",
+                stringResource(R.string.settings_hero_subtitle),
                 color = IptvColors.TextSecondary,
                 fontSize = 11.sp,
                 lineHeight = 16.sp
@@ -125,7 +127,7 @@ internal fun MobileSettingsAccountHero(
                     Text(profileName.take(1).uppercase(), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.width(8.dp))
-                Text("Διαχείριση προφίλ", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.settings_manage_profile), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
             }
         }
     }
@@ -160,7 +162,7 @@ internal fun MobileSettingsPremiumCard(onClick: () -> Unit) {
         }
         Spacer(Modifier.height(15.dp))
         Text(
-            "Όλες οι δυνατότητες.\nΧωρίς περιορισμούς.",
+            stringResource(R.string.settings_premium_title),
             color = Color.White,
             fontSize = 22.sp,
             lineHeight = 25.sp,
@@ -168,7 +170,7 @@ internal fun MobileSettingsPremiumCard(onClick: () -> Unit) {
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            "Πολλαπλές πηγές, Multiview, online υπότιτλοι, προφίλ και εξατομίκευση.",
+            stringResource(R.string.settings_premium_subtitle),
             color = IptvColors.TextSecondary,
             fontSize = 10.sp,
             lineHeight = 15.sp
@@ -180,7 +182,7 @@ internal fun MobileSettingsPremiumCard(onClick: () -> Unit) {
             shape = RoundedCornerShape(13.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, contentColor = Color.White)
         ) {
-            Text("Ανακάλυψε το Premium", fontSize = 13.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.settings_discover_premium), fontSize = 13.sp, fontWeight = FontWeight.Black)
         }
     }
 }

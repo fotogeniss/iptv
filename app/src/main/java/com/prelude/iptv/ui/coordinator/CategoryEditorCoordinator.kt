@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.coordinator
 
+import com.prelude.iptv.category.CategoryEditorFailure
 import com.prelude.iptv.category.CategoryEditorSection
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
@@ -67,7 +68,7 @@ class CategoryEditorCoordinator(
                         updateSection(type) { current ->
                             current.copy(
                                 loading = false,
-                                error = error.message ?: "Αποτυχία φόρτωσης",
+                                error = CategoryEditorFailure.LoadFailed,
                             )
                         }
                     }

@@ -414,6 +414,68 @@ for ui_path in migrated_source_ui:
     if literals:
         failures.append(f"hardcoded Greek display copy in migrated Source UI: {ui_path}")
 
+playback_preferences = read(
+    "app/src/main/java/com/prelude/iptv/data/PlaybackPreferencePolicy.kt"
+)
+buffer_policy = read("app/src/main/java/com/prelude/iptv/player/BufferPolicy.kt")
+settings_foundation = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/settings/SettingsFoundation.kt"
+)
+settings_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/SettingsLocalizationResources.kt"
+)
+settings_playback_preferences = read(
+    "app/src/main/java/com/prelude/iptv/ui/components/settings/SettingsPlaybackPreference.kt"
+)
+category_state = read(
+    "app/src/main/java/com/prelude/iptv/category/CategoryEditorState.kt"
+)
+category_coordinator = read(
+    "app/src/main/java/com/prelude/iptv/ui/coordinator/CategoryEditorCoordinator.kt"
+)
+if "data class Language(val code: String)" not in playback_preferences:
+    failures.append("playback language preferences still own localized display labels")
+if "languageLabel(" in playback_preferences or "subtitleSizeLabel(" in playback_preferences:
+    failures.append("playback preference policy still formats localized display copy")
+if "fun label(" in buffer_policy:
+    failures.append("buffer policy still owns localized display copy")
+if "playerModeLabel(" in settings_foundation or "autoFrameRateLabel(" in settings_foundation:
+    failures.append("Settings foundation still formats localized mode labels")
+for typed_boundary in ("enum class PlayerModeOption", "enum class AutoFrameRateOption"):
+    if typed_boundary not in settings_playback_preferences:
+        failures.append(f"typed Settings playback preference missing: {typed_boundary}")
+if "Locale.ROOT" not in settings_playback_preferences or "Locale.ROOT" not in playback_preferences:
+    failures.append("Settings preference identities use locale-sensitive protocol normalization")
+for mapping in (
+    "localizedPlayerMode",
+    "localizedAutoFrameRate",
+    "BufferProfile.labelRes",
+    "preferenceLanguageLabelRes",
+    "subtitleSizeLabelRes",
+):
+    if mapping not in settings_mapping:
+        failures.append(f"Settings resource mapping missing: {mapping}")
+if "enum class CategoryEditorFailure" not in category_state:
+    failures.append("category editor failure bypasses typed presentation state")
+if greek_string_literals(category_coordinator):
+    failures.append("category editor coordinator still owns Greek display copy")
+
+migrated_settings_ui = [
+    "app/src/main/java/com/prelude/iptv/ui/AdaptiveSettingsScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileEditCategoriesScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobilePlayerSettingsScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobilePremiumSettingsScreen.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileSettingsFlowHeader.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileSettingsOverviewComponents.kt",
+    "app/src/main/java/com/prelude/iptv/ui/mobile/settings/MobileSettingsSheets.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/SettingsPlaybackDialogs.kt",
+    "app/src/main/java/com/prelude/iptv/ui/tv/settings/TvPremiumSettingsScreen.kt",
+]
+for ui_path in migrated_settings_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Settings UI: {ui_path}")
+
 epg_presentation = read(
     "app/src/main/java/com/prelude/iptv/ui/epg/EpgPresentationState.kt"
 )

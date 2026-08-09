@@ -18,10 +18,13 @@ import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.SourceLoadProgress
+import com.prelude.iptv.player.BufferPolicy
 import com.prelude.iptv.ui.components.settings.buildSettingsSources
-import com.prelude.iptv.ui.components.settings.playerModeLabel
 import com.prelude.iptv.ui.epg.EpgSourceOption
 import com.prelude.iptv.ui.epg.EpgStatus
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedAutoFrameRate
+import com.prelude.iptv.ui.localization.localizedPlayerMode
 import com.prelude.iptv.ui.mobile.settings.MobilePremiumSettingsScreen
 import com.prelude.iptv.ui.tv.settings.TvPremiumSettingsScreen
 
@@ -70,11 +73,9 @@ fun AdaptiveSettingsScreen(
     val sources = buildSettingsSources(playlists, currentIndex, currentChannelCount, sourceProgress)
     val activePlaylist = playlists.getOrNull(currentIndex)
     var pendingDelete by remember { mutableStateOf<com.prelude.iptv.ui.components.settings.SettingsSourceUi?>(null) }
-    val playerLabel = playerModeLabel(playerMode)
-    val autoFrameRateLabel = com.prelude.iptv.ui.components.settings.autoFrameRateLabel(autoFrameRateMode)
-    val bufferLabel = com.prelude.iptv.player.BufferPolicy.label(
-        com.prelude.iptv.player.BufferPolicy.fromStorage(bufferProfile)
-    )
+    val playerLabel = localizedPlayerMode(playerMode)
+    val autoFrameRateLabel = localizedAutoFrameRate(autoFrameRateMode)
+    val bufferLabel = stringResource(BufferPolicy.fromStorage(bufferProfile).labelRes())
     if (isTvDevice()) {
         TvPremiumSettingsScreen(
             sources = sources,
@@ -143,23 +144,23 @@ fun AdaptiveSettingsScreen(
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
             containerColor = IptvColors.SurfaceRaised,
-            title = { Text("Διαγραφή πηγής;", color = Color.White, fontWeight = FontWeight.ExtraBold) },
+            title = { Text(stringResource(R.string.settings_delete_source_title), color = Color.White, fontWeight = FontWeight.ExtraBold) },
             text = {
                 Text(
-                    "Η πηγή «${source.name}» και το δικό της ιστορικό θα αφαιρεθούν. Τα στοιχεία άλλων πηγών δεν επηρεάζονται.",
+                    stringResource(R.string.settings_delete_source_message, source.name),
                     color = IptvColors.TextSecondary
                 )
             },
             confirmButton = {
                 TvDialogTextButton(
-                    label = "Διαγραφή",
+                    label = stringResource(R.string.settings_delete),
                     color = IptvColors.Error,
                     modifier = Modifier.focusRequester(deleteFocus),
                     onClick = { onDeleteSource(source.index); pendingDelete = null }
                 )
             },
             dismissButton = {
-                TvDialogTextButton(label = "Ακύρωση", color = Color.White, onClick = { pendingDelete = null })
+                TvDialogTextButton(label = stringResource(R.string.settings_cancel), color = Color.White, onClick = { pendingDelete = null })
             }
         )
     }

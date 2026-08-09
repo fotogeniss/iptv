@@ -23,10 +23,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prelude.iptv.R
 import com.prelude.iptv.billing.PreludeBilling
 import com.prelude.iptv.billing.PremiumTier
 import com.prelude.iptv.billing.PurchaseState
@@ -55,8 +57,8 @@ internal fun MobileSourcesSheet(
         contentColor = IptvColors.TextPrimary
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
-            Text("Οι πηγές μου", fontSize = 22.sp, fontWeight = FontWeight.Black)
-            Text("Οι κωδικοί παραμένουν κρυφοί στη συσκευή", color = IptvColors.TextTertiary, fontSize = 11.sp)
+            Text(stringResource(R.string.settings_my_sources), fontSize = 22.sp, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.settings_sources_secure_device), color = IptvColors.TextTertiary, fontSize = 11.sp)
             Spacer(Modifier.height(14.dp))
             sources.forEach { source ->
                 MobileSettingsSourceCard(
@@ -75,7 +77,7 @@ internal fun MobileSourcesSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
             ) {
                 Icon(Icons.Default.Add, null)
-                Text("  Προσθήκη νέας πηγής", fontWeight = FontWeight.ExtraBold)
+                Text("  ${stringResource(R.string.settings_add_new_source)}", fontWeight = FontWeight.ExtraBold)
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -94,12 +96,12 @@ internal fun MobileAddSourceSheet(
         contentColor = IptvColors.TextPrimary
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 8.dp)) {
-            Text("Νέα πηγή", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
-            Text("Επίλεξε τον πραγματικό τύπο σύνδεσης", color = IptvColors.TextTertiary, fontSize = 12.sp)
+            Text(stringResource(R.string.settings_new_source), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.settings_choose_connection_type), color = IptvColors.TextTertiary, fontSize = 12.sp)
             Spacer(Modifier.height(14.dp))
-            SourceTypeButton("M3U playlist", "URL ή τοπικό αρχείο") { onSelectType(0) }
-            SourceTypeButton("Xtream Codes", "Server, username και password") { onSelectType(1) }
-            SourceTypeButton("Stalker Portal", "Portal URL και MAC address") { onSelectType(2) }
+            SourceTypeButton("M3U playlist", stringResource(R.string.sources_method_url_card_subtitle)) { onSelectType(0) }
+            SourceTypeButton("Xtream Codes", stringResource(R.string.sources_method_xtream_card_subtitle)) { onSelectType(1) }
+            SourceTypeButton("Stalker Portal", stringResource(R.string.sources_method_mac_card_subtitle)) { onSelectType(2) }
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -126,9 +128,9 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
             Text("PRELUDE+ Premium", fontSize = 24.sp, fontWeight = FontWeight.Black)
             Text(
                 when {
-                    qaAccess -> "Πλήρης πρόσβαση ιδιοκτήτη · QA build"
-                    premiumActive -> "Ενεργό σε αυτή τη συσκευή"
-                    else -> "Μία αγορά. Όλες οι προηγμένες δυνατότητες."
+                    qaAccess -> stringResource(R.string.settings_premium_owner_qa)
+                    premiumActive -> stringResource(R.string.settings_premium_active_device)
+                    else -> stringResource(R.string.settings_premium_all_features)
                 },
                 color = if (premiumActive) Color(0xFF5AC98B) else IptvColors.TextSecondary,
                 fontSize = 12.sp,
@@ -136,11 +138,11 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
             )
             Spacer(Modifier.height(16.dp))
             listOf(
-                "Πολλαπλές πηγές περιεχομένου",
-                "Multiview ζωντανών καναλιών",
-                "Online αναζήτηση υποτίτλων",
-                "Πολλαπλά και προστατευμένα προφίλ",
-                "Προτάσεις και εξατομίκευση αρχικής"
+                stringResource(R.string.settings_premium_benefit_sources),
+                stringResource(R.string.settings_premium_benefit_multiview),
+                stringResource(R.string.settings_premium_benefit_subtitles),
+                stringResource(R.string.settings_premium_benefit_profiles),
+                stringResource(R.string.settings_premium_benefit_home)
             ).forEach { benefit ->
                 Text(
                     "•  $benefit",
@@ -180,10 +182,10 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
                 } else {
                     Text(
                         when {
-                            qaAccess -> "QA · Όλα ξεκλειδωμένα"
-                            premiumActive -> "Premium ενεργό"
-                            premiumOffer != null -> "Αγορά ${premiumOffer.formattedPrice}"
-                            else -> "Μη διαθέσιμο στο Google Play"
+                            qaAccess -> stringResource(R.string.settings_premium_qa_unlocked)
+                            premiumActive -> stringResource(R.string.settings_premium_active)
+                            premiumOffer != null -> stringResource(R.string.settings_premium_buy, premiumOffer.formattedPrice)
+                            else -> stringResource(R.string.settings_premium_unavailable)
                         },
                         fontWeight = FontWeight.ExtraBold,
                     )
@@ -196,10 +198,10 @@ internal fun MobilePremiumSheet(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(StreamingRadius.Card),
             ) {
-                Text("Επαναφορά αγορών", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.settings_restore_purchases), fontWeight = FontWeight.Bold)
             }
             Text(
-                "Η αγορά και η επαναφορά γίνονται αποκλειστικά μέσω Google Play.",
+                stringResource(R.string.settings_premium_google_play_note),
                 color = IptvColors.TextTertiary,
                 fontSize = 9.sp,
                 modifier = Modifier.padding(top = 9.dp),
@@ -218,9 +220,15 @@ internal fun MobileInfoSheet(info: MobileSettingsInfo, onDismiss: () -> Unit) {
         contentColor = IptvColors.TextPrimary
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
-            Text(info.title, fontSize = 22.sp, fontWeight = FontWeight.Black)
+            val title = when (info) {
+                MobileSettingsInfo.Help -> stringResource(R.string.settings_help_center)
+            }
+            val body = when (info) {
+                MobileSettingsInfo.Help -> stringResource(R.string.settings_help_body)
+            }
+            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Black)
             Spacer(Modifier.height(12.dp))
-            Text(info.body, color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp)
+            Text(body, color = IptvColors.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp)
             Spacer(Modifier.height(28.dp))
         }
     }
@@ -237,9 +245,4 @@ private fun SourceTypeButton(title: String, subtitle: String, onClick: () -> Uni
     )
 }
 
-internal enum class MobileSettingsInfo(val title: String, val body: String) {
-    Help(
-        "Κέντρο βοήθειας",
-        "Διαχειρίσου τις πηγές σου από την πρώτη ενότητα. Για προβλήματα αναπαραγωγής δοκίμασε πρώτα την αυτόματη επιλογή player και έλεγξε ότι η πηγή σου λειτουργεί."
-    )
-}
+internal enum class MobileSettingsInfo { Help }

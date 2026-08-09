@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.coordinator
 
+import com.prelude.iptv.category.CategoryEditorFailure
 import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistIdentity
@@ -12,6 +13,22 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CategoryEditorCoordinatorTest {
+    @Test fun `load failure is exposed as typed presentation state`() = runTest {
+        val playlist = playlist()
+        val coordinator = coordinator(
+            playlist = { playlist },
+            scope = this,
+            loadCategories = { _, _ -> error("provider detail must not become display copy") },
+        )
+
+        coordinator.open()
+        advanceUntilIdle()
+
+        coordinator.state.value.sections.values.forEach { section ->
+            assertEquals(CategoryEditorFailure.LoadFailed, section.error)
+        }
+    }
+
     @Test fun `open loads all category sections while preserving stored layouts`() = runTest {
         val playlist = playlist()
         val sourceId = PlaylistIdentity.stableId(playlist)

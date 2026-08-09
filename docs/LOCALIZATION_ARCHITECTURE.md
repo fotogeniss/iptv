@@ -138,7 +138,11 @@ cohesive vertical slices:
 10. Full EPG. **Implemented for mobile and TV, including active EPG settings,
     typed loading/discovery/source states and locale-aware time/duration
     formatting; provider programme/channel data remains untranslated.**
-11. All remaining settings flows.
+11. Settings shell and playback/personalization preferences. **Implemented for
+    mobile and TV, including directly opened source/Premium/help sheets,
+    playback/AFR/buffer dialogs and the category editor. Persisted keys and
+    protocol values remain stable; labels and failures cross typed resource
+    boundaries.**
 12. Profiles, billing, legal, diagnostics, backup/export and system notifications.
 13. Final hardcoded-string audit, translation parity gate and public picker
    activation.
@@ -154,7 +158,7 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG
+  boundaries, migrated Home/Live/catalog/Search/Details/Player/Source/EPG/Settings
   mappings and hardcoded-copy audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key

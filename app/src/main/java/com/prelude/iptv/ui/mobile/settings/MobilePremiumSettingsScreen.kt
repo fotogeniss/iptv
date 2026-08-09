@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -284,7 +285,7 @@ fun MobilePremiumSettingsScreen(
     ) {
         item(key = "settings-top") {
             MobileSettingsTopBar {
-                Toast.makeText(context, "Δεν υπάρχουν νέες ειδοποιήσεις", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.settings_no_new_notifications), Toast.LENGTH_SHORT).show()
             }
         }
         item(key = "settings-account") {
@@ -295,11 +296,11 @@ fun MobilePremiumSettingsScreen(
         }
 
         item(key = "settings-general") {
-            MobileSettingsGroupTitle("Γενικά")
+            MobileSettingsGroupTitle(stringResource(R.string.settings_group_general))
             MobileSettingsRows {
                 MobileOverviewRow(
-                    title = "Οι πηγές μου",
-                    subtitle = "M3U, Xtream Codes και Stalker Portal",
+                    title = stringResource(R.string.settings_my_sources),
+                    subtitle = stringResource(R.string.settings_my_sources_subtitle),
                     icon = Icons.Default.Storage,
                     value = sourceSummary(sources),
                     primary = true,
@@ -309,31 +310,31 @@ fun MobilePremiumSettingsScreen(
                     }
                 )
                 MobileOverviewRow(
-                    title = "Player",
-                    subtitle = "Αναπαραγωγή, ποιότητα και συμπεριφορά",
+                    title = stringResource(R.string.settings_player),
+                    subtitle = stringResource(R.string.settings_player_subtitle),
                     icon = Icons.Default.PlayCircle,
                     value = playerLabel,
                     onClick = { playerSettingsOpen = true }
                 )
                 MobileOverviewRow(
-                    title = "Οδηγός προγράμματος",
-                    subtitle = "EPG, XMLTV και αυτόματη ανανέωση",
+                    title = stringResource(R.string.epg_settings_programme_guide),
+                    subtitle = stringResource(R.string.settings_epg_subtitle),
                     icon = Icons.Default.CalendarMonth,
-                    value = if (epgEnabled) "Ενεργό" else "Ανενεργό",
+                    value = stringResource(if (epgEnabled) R.string.settings_enabled else R.string.settings_disabled),
                     onClick = { epgSettingsOpen = true }
                 )
                 MobileOverviewRow(
-                    title = "Υπότιτλοι",
-                    subtitle = "Γλώσσα, εμφάνιση και online αναζήτηση",
+                    title = stringResource(R.string.settings_subtitles),
+                    subtitle = stringResource(R.string.settings_subtitles_subtitle),
                     icon = Icons.Default.Subtitles,
-                    value = if (subtitlesConfigured) "Έτοιμο" else "Ρύθμιση",
+                    value = stringResource(if (subtitlesConfigured) R.string.settings_ready else R.string.settings_configure),
                     onClick = { onDialog("subs") }
                 )
                 MobileOverviewRow(
-                    title = "Πληροφορίες περιεχομένου",
-                    subtitle = "Αφίσες, backdrops και βαθμολογίες",
+                    title = stringResource(R.string.settings_content_info),
+                    subtitle = stringResource(R.string.settings_content_info_subtitle),
                     icon = Icons.Default.Movie,
-                    value = if (tmdbConfigured) "Έτοιμο" else "Ρύθμιση",
+                    value = stringResource(if (tmdbConfigured) R.string.settings_ready else R.string.settings_configure),
                     onClick = { onDialog("tmdb") }
                 )
             }
@@ -352,14 +353,14 @@ fun MobilePremiumSettingsScreen(
                     )
                 }
                 MobileOverviewRow(
-                    title = "Επεξεργασία αρχικής",
-                    subtitle = "Σειρά και ορατότητα ενοτήτων",
+                    title = stringResource(R.string.settings_edit_home),
+                    subtitle = stringResource(R.string.settings_edit_home_subtitle),
                     icon = Icons.Default.Tune,
                     onClick = { onEditCategories(); editingHome = true }
                 )
                 MobileOverviewRow(
-                    title = "Επεξεργασία κατηγοριών",
-                    subtitle = "Live TV, ταινίες και σειρές",
+                    title = stringResource(R.string.settings_edit_categories),
+                    subtitle = stringResource(R.string.settings_edit_categories_subtitle),
                     icon = Icons.Default.Category,
                     onClick = { onEditCategories(); editingCategories = true }
                 )
@@ -374,24 +375,24 @@ fun MobilePremiumSettingsScreen(
         }
 
         item(key = "settings-security") {
-            MobileSettingsGroupTitle("Λογαριασμός & ασφάλεια")
+            MobileSettingsGroupTitle(stringResource(R.string.settings_group_account_security))
             MobileSettingsRows {
                 MobileOverviewRow(
-                    title = "Προφίλ",
-                    subtitle = "Αγαπημένα και ιστορικό ανά χρήστη",
+                    title = stringResource(R.string.settings_profile),
+                    subtitle = stringResource(R.string.settings_profile_subtitle),
                     icon = Icons.Default.AccountCircle,
                     value = profileName,
                     onClick = { onDialog("profiles") }
                 )
                 MobileOverviewRow(
-                    title = "Γονικός έλεγχος",
-                    subtitle = "PIN και κλειδωμένες κατηγορίες",
+                    title = stringResource(R.string.settings_parental_control),
+                    subtitle = stringResource(R.string.settings_parental_control_subtitle),
                     icon = Icons.Default.Lock,
                     onClick = { onDialog("pin") }
                 )
                 MobileOverviewRow(
-                    title = "Backup & επαναφορά",
-                    subtitle = "Ρυθμίσεις, προφίλ και πηγές",
+                    title = stringResource(R.string.settings_backup_restore),
+                    subtitle = stringResource(R.string.settings_backup_restore_subtitle),
                     icon = Icons.Default.Backup,
                     onClick = { onDialog("backup") }
                 )
@@ -399,41 +400,41 @@ fun MobilePremiumSettingsScreen(
         }
 
         item(key = "settings-support") {
-            MobileSettingsGroupTitle("Υποστήριξη")
+            MobileSettingsGroupTitle(stringResource(R.string.settings_group_support))
             MobileSettingsRows {
                 MobileOverviewRow(
-                    title = "Κέντρο βοήθειας",
-                    subtitle = "Οδηγοί και χρήσιμες πληροφορίες",
+                    title = stringResource(R.string.settings_help_center),
+                    subtitle = stringResource(R.string.settings_help_center_subtitle),
                     icon = Icons.Default.Info,
                     onClick = { infoSheet = MobileSettingsInfo.Help }
                 )
                 MobileOverviewRow(
-                    title = "Αξιολόγησε την εφαρμογή",
-                    subtitle = "Η γνώμη σου μας βοηθά να βελτιωνόμαστε",
+                    title = stringResource(R.string.settings_rate_app),
+                    subtitle = stringResource(R.string.settings_rate_app_subtitle),
                     icon = Icons.Default.Star,
                     onClick = { openStoreReview(context) }
                 )
                 MobileOverviewRow(
-                    title = "Διαγνωστικά & crashes",
-                    subtitle = "Προαιρετικά crash και ANR reports με έλεγχο απορρήτου",
+                    title = stringResource(R.string.settings_diagnostics),
+                    subtitle = stringResource(R.string.settings_diagnostics_subtitle),
                     icon = Icons.Default.BugReport,
                     onClick = { diagnosticsOpen = true }
                 )
                 MobileOverviewRow(
-                    title = "Νομικά & απόρρητο",
-                    subtitle = "Όροι χρήσης και πολιτική απορρήτου",
+                    title = stringResource(R.string.settings_legal_privacy),
+                    subtitle = stringResource(R.string.settings_legal_privacy_subtitle),
                     icon = Icons.Default.Description,
                     onClick = { legalPrivacyOpen = true }
                 )
                 MobileOverviewRow(
-                    title = "Κοινοποίηση εφαρμογής",
-                    subtitle = "Μοιράσου το PRELUDE+",
+                    title = stringResource(R.string.settings_share_app),
+                    subtitle = stringResource(R.string.settings_share_app_subtitle),
                     icon = Icons.Default.Share,
                     onClick = onShare
                 )
                 MobileOverviewRow(
-                    title = "Εκκαθάριση metadata cache",
-                    subtitle = "Αφαιρεί προσωρινές εικόνες και πληροφορίες",
+                    title = stringResource(R.string.settings_clear_metadata_cache),
+                    subtitle = stringResource(R.string.settings_clear_metadata_cache_subtitle),
                     icon = Icons.Default.CleaningServices,
                     onClick = onClearTmdbCache
                 )
@@ -441,21 +442,21 @@ fun MobilePremiumSettingsScreen(
         }
 
         item(key = "settings-health") {
-            MobileSettingsGroupTitle("Κατάσταση εφαρμογής")
+            MobileSettingsGroupTitle(stringResource(R.string.settings_group_app_status))
             Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                     MobileSettingsStatusCard(
-                        "Πηγή",
-                        if (sources.any { it.current }) "Συνδεδεμένη" else "Χωρίς πηγή",
+                        stringResource(R.string.settings_source_status),
+                        stringResource(if (sources.any { it.current }) R.string.settings_connected_feminine else R.string.settings_no_source),
                         sources.any { it.current },
                         Modifier.weight(1f)
                     )
-                    MobileSettingsStatusCard("EPG", if (epgEnabled) "Ενεργό" else "Ανενεργό", epgEnabled, Modifier.weight(1f))
+                    MobileSettingsStatusCard("EPG", stringResource(if (epgEnabled) R.string.settings_enabled else R.string.settings_disabled), epgEnabled, Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(9.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                     MobileSettingsStatusCard("Player", playerLabel, true, Modifier.weight(1f))
-                    MobileSettingsStatusCard("Έκδοση", version.ifBlank { "—" }, false, Modifier.weight(1f))
+                    MobileSettingsStatusCard(stringResource(R.string.settings_version), version.ifBlank { "—" }, false, Modifier.weight(1f))
                 }
             }
         }
@@ -463,7 +464,7 @@ fun MobilePremiumSettingsScreen(
         item(key = "settings-footer") {
             Column(Modifier.fillMaxWidth().padding(top = 31.dp, bottom = 12.dp)) {
                 Text(
-                    "Χρησιμοποιείς το PRELUDE+ ${version.ifBlank { "—" }}",
+                    stringResource(R.string.settings_using_version, version.ifBlank { "—" }),
                     color = IptvColors.TextTertiary,
                     fontSize = 10.sp,
                     modifier = Modifier.padding(horizontal = 20.dp)
@@ -472,7 +473,7 @@ fun MobilePremiumSettingsScreen(
                     onClick = { premiumSheet = true },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Text("Επαναφορά αγορών", color = IptvColors.TextSecondary, fontSize = 11.sp)
+                    Text(stringResource(R.string.settings_restore_purchases), color = IptvColors.TextSecondary, fontSize = 11.sp)
                 }
             }
         }
@@ -517,10 +518,11 @@ fun MobilePremiumSettingsScreen(
     }
 }
 
-private fun sourceSummary(sources: List<SettingsSourceUi>): String = when (sources.size) {
-    0 -> "Καμία"
-    1 -> "1 ενεργή"
-    else -> "${sources.size} πηγές"
+@Composable
+private fun sourceSummary(sources: List<SettingsSourceUi>): String = if (sources.isEmpty()) {
+    stringResource(R.string.settings_source_none)
+} else {
+    pluralStringResource(R.plurals.settings_source_summary, sources.size, sources.size)
 }
 
 private fun openStoreReview(context: Context) {

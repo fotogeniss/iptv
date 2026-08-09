@@ -84,6 +84,7 @@ import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedUppercase
 
 @Composable
 fun TvPremiumSettingsScreen(
@@ -179,7 +180,7 @@ fun TvPremiumSettingsScreen(
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(profileName, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1)
-                        Text("Κύριο προφίλ", color = IptvColors.TextTertiary, fontSize = 10.sp)
+                        Text(stringResource(R.string.settings_primary_profile), color = IptvColors.TextTertiary, fontSize = 10.sp)
                     }
                 }
             }
@@ -197,7 +198,7 @@ fun TvPremiumSettingsScreen(
             }
             if (railExpanded) {
                 Spacer(Modifier.height(24.dp))
-                Text("v$version · Production", color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1)
+                Text(stringResource(R.string.settings_version_environment, version, stringResource(R.string.settings_production)), color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1)
             }
         }
 
@@ -230,16 +231,16 @@ fun TvPremiumSettingsScreen(
         AlertDialog(
             onDismissRequest = { addPicker = false },
             containerColor = IptvColors.SurfaceRaised,
-            title = { Text("Νέα πηγή", color = Color.White, fontWeight = FontWeight.ExtraBold) },
+            title = { Text(stringResource(R.string.settings_new_source), color = Color.White, fontWeight = FontWeight.ExtraBold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    SourceTypeRow("M3U playlist", "URL ή τοπικό αρχείο", Modifier.focusRequester(addSourceFocus)) { addPicker = false; onAddSource(0) }
-                    SourceTypeRow("Xtream Codes", "Server, username και password") { addPicker = false; onAddSource(1) }
-                    SourceTypeRow("Stalker Portal", "Portal URL και MAC address") { addPicker = false; onAddSource(2) }
+                    SourceTypeRow("M3U playlist", stringResource(R.string.sources_method_url_card_subtitle), Modifier.focusRequester(addSourceFocus)) { addPicker = false; onAddSource(0) }
+                    SourceTypeRow("Xtream Codes", stringResource(R.string.sources_method_xtream_card_subtitle)) { addPicker = false; onAddSource(1) }
+                    SourceTypeRow("Stalker Portal", stringResource(R.string.sources_method_mac_card_subtitle)) { addPicker = false; onAddSource(2) }
                 }
             },
             confirmButton = {},
-            dismissButton = { TvDialogTextButton(label = "Κλείσιμο", color = Color.White, onClick = { addPicker = false }) }
+            dismissButton = { TvDialogTextButton(label = stringResource(R.string.settings_close), color = Color.White, onClick = { addPicker = false }) }
         )
     }
 
@@ -268,9 +269,9 @@ private fun TvSourcesPage(
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    Text("ΡΥΘΜΙΣΕΙΣ", color = IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                    Text("Πηγές περιεχομένου", color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.ExtraBold)
-                    Text("M3U, Xtream και Stalker με ασφαλή απόκρυψη credentials.", color = IptvColors.TextSecondary, fontSize = 13.sp)
+                    Text(localizedUppercase(stringResource(R.string.settings_title)), color = IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
+                    Text(stringResource(R.string.settings_sources_title), color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(stringResource(R.string.settings_sources_subtitle), color = IptvColors.TextSecondary, fontSize = 13.sp)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     val current = sources.firstOrNull { it.current }
@@ -281,11 +282,11 @@ private fun TvSourcesPage(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                     ) {
                         Icon(Icons.Default.Refresh, null)
-                        Text("  Ανανέωση", fontWeight = FontWeight.ExtraBold)
+                        Text("  ${stringResource(R.string.settings_refresh)}", fontWeight = FontWeight.ExtraBold)
                     }
                     Button(onClick = onAdd, colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)) {
                         Icon(Icons.Default.Add, null)
-                        Text("  Νέα πηγή", fontWeight = FontWeight.ExtraBold)
+                        Text("  ${stringResource(R.string.settings_new_source)}", fontWeight = FontWeight.ExtraBold)
                     }
                 }
             }
@@ -307,12 +308,12 @@ private fun TvSourcesPage(
             Spacer(Modifier.height(28.dp))
         }
         item {
-            SettingsSectionHeader("Υγεία συστήματος", "Πραγματική κατάσταση από το αποθηκευμένο app state")
+            SettingsSectionHeader(stringResource(R.string.settings_system_health), stringResource(R.string.settings_system_health_subtitle))
             Spacer(Modifier.height(13.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SettingsHealthCard("Αποθηκευμένες πηγές", sources.size.toString(), Modifier.weight(1f))
-                SettingsHealthCard("Ενεργές τώρα", sources.count { it.current }.toString(), Modifier.weight(1f))
-                SettingsHealthCard("Φορτωμένα στοιχεία", sources.firstOrNull { it.current }?.channelCount?.toString() ?: "—", Modifier.weight(1f))
+                SettingsHealthCard(stringResource(R.string.settings_saved_sources), sources.size.toString(), Modifier.weight(1f))
+                SettingsHealthCard(stringResource(R.string.settings_active_now), sources.count { it.current }.toString(), Modifier.weight(1f))
+                SettingsHealthCard(stringResource(R.string.settings_loaded_items), sources.firstOrNull { it.current }?.channelCount?.toString() ?: "—", Modifier.weight(1f))
             }
         }
     }
@@ -326,14 +327,14 @@ private fun TvPlaybackPage(
     onDialog: (String) -> Unit, onToggleEpg: () -> Unit, onToggleTvHome: () -> Unit,
     onToggleTvHomeMyList: () -> Unit, onClearCache: () -> Unit
 ) = TvSettingsRows(
-    title = "Αναπαραγωγή & δεδομένα",
-    subtitle = "Player engines, EPG και metadata services",
+    title = stringResource(R.string.settings_playback_data_title),
+    subtitle = stringResource(R.string.settings_playback_data_subtitle),
     rows = listOf(
-        TvRowData("Player αναπαραγωγής", "Αυτόματο fallback μεταξύ ExoPlayer και VLC", Icons.Default.PlayCircle, player) { onDialog("player") },
-        TvRowData("Auto Frame Rate", "Αντιστοίχιση 24/25/30/50/60 Hz στη συχνότητα του περιεχομένου", Icons.Default.Settings, autoFrameRate) { onDialog("afr") },
-        TvRowData("Απόθεμα αναπαραγωγής", "Πόση εικόνα κρατά ο player μπροστά — ταχύτητα ή σταθερότητα", Icons.Default.Settings, buffer) { onDialog("buffer") },
-        TvRowData("Αρχική Android TV", "Δημοσίευση του Συνέχισε να βλέπεις χωρίς URLs ή credentials", Icons.Default.Movie, checked = tvHomeEnabled, action = onToggleTvHome),
-        TvRowData("Κανάλι Η λίστα μου", "Source-scoped αγαπημένα με ασφαλή launcher links", Icons.Default.Favorite, checked = tvHomeMyListEnabled, action = onToggleTvHomeMyList),
+        TvRowData(stringResource(R.string.settings_player_mode_title), stringResource(R.string.settings_player_mode_subtitle), Icons.Default.PlayCircle, player) { onDialog("player") },
+        TvRowData("Auto Frame Rate", stringResource(R.string.settings_afr_subtitle), Icons.Default.Settings, autoFrameRate) { onDialog("afr") },
+        TvRowData(stringResource(R.string.settings_buffer_title), stringResource(R.string.settings_buffer_subtitle), Icons.Default.Settings, buffer) { onDialog("buffer") },
+        TvRowData(stringResource(R.string.settings_tv_home), stringResource(R.string.settings_tv_home_subtitle), Icons.Default.Movie, checked = tvHomeEnabled, action = onToggleTvHome),
+        TvRowData(stringResource(R.string.settings_tv_my_list), stringResource(R.string.settings_tv_my_list_subtitle), Icons.Default.Favorite, checked = tvHomeMyListEnabled, action = onToggleTvHomeMyList),
         TvRowData(
             stringResource(R.string.epg_settings_programme_guide),
             stringResource(R.string.epg_settings_xmltv_matching),
@@ -341,9 +342,9 @@ private fun TvPlaybackPage(
             checked = epg,
             action = onToggleEpg,
         ),
-        TvRowData("TMDB metadata", "Αφίσες, backdrops και βαθμολογίες", Icons.Default.Movie, if (tmdb) "Συνδεδεμένο" else "Ρύθμιση") { onDialog("tmdb") },
-        TvRowData("OpenSubtitles", "API key και λογαριασμός", Icons.Default.Subtitles, if (subs) "Συνδεδεμένο" else "Ρύθμιση") { onDialog("subs") },
-        TvRowData("Εκκαθάριση TMDB cache", "Δεν επηρεάζει λίστες ή ιστορικό", Icons.Default.CleaningServices, action = onClearCache)
+        TvRowData(stringResource(R.string.settings_tmdb_metadata), stringResource(R.string.settings_tmdb_metadata_subtitle), Icons.Default.Movie, stringResource(if (tmdb) R.string.settings_connected else R.string.settings_configure)) { onDialog("tmdb") },
+        TvRowData("OpenSubtitles", stringResource(R.string.settings_opensubtitles_subtitle), Icons.Default.Subtitles, stringResource(if (subs) R.string.settings_connected else R.string.settings_configure)) { onDialog("subs") },
+        TvRowData(stringResource(R.string.settings_clear_tmdb_cache), stringResource(R.string.settings_clear_tmdb_cache_subtitle), Icons.Default.CleaningServices, action = onClearCache)
     )
 )
 
@@ -389,32 +390,32 @@ private fun TvAccountPage(profile: String, onDialog: (String) -> Unit, onShare: 
     val activity = context.billingActivity()
 
     TvSettingsRows(
-        "Λογαριασμός & ασφάλεια",
-        "Προφίλ, Premium, parental control και αντίγραφα ασφαλείας",
+        stringResource(R.string.settings_group_account_security),
+        stringResource(R.string.settings_account_security_subtitle),
         listOf(
             TvRowData(
                 "PRELUDE+ Premium",
                 when {
-                    qaAccess -> "Πλήρης πρόσβαση ιδιοκτήτη · QA build"
+                    qaAccess -> stringResource(R.string.settings_premium_owner_qa)
                     billing.message != null -> billing.message
-                    premiumActive -> "Η αγορά είναι ενεργή"
-                    else -> "Μία αγορά μέσω Google Play"
+                    premiumActive -> stringResource(R.string.settings_premium_purchase_active)
+                    else -> stringResource(R.string.settings_premium_single_purchase)
                 }.orEmpty(),
                 Icons.Default.Star,
-                if (qaAccess) "QA" else if (premiumActive) "ΕΝΕΡΓΟ" else billing.offer?.formattedPrice.orEmpty(),
+                if (qaAccess) "QA" else if (premiumActive) stringResource(R.string.settings_premium_active_badge) else billing.offer?.formattedPrice.orEmpty(),
             ) {
                 if (!qaAccess) activity?.let(repository::launchPremiumPurchase) ?: repository.start()
             },
             TvRowData(
-                "Επαναφορά αγορών",
-                "Έλεγχος των αγορών του ενεργού λογαριασμού Google Play",
+                stringResource(R.string.settings_restore_purchases),
+                stringResource(R.string.settings_restore_purchases_subtitle),
                 Icons.Default.Refresh,
                 action = { if (!qaAccess) repository.restorePurchases() },
             ),
-            TvRowData("Προφίλ: $profile", "Ξεχωριστά αγαπημένα και ιστορικό", Icons.Default.AccountCircle) { onDialog("profiles") },
-            TvRowData("Γονικός έλεγχος", "PIN και κλειδωμένες κατηγορίες", Icons.Default.Lock) { onDialog("pin") },
-            TvRowData("Αντίγραφο ασφαλείας", "Εξαγωγή ή επαναφορά JSON", Icons.Default.Backup) { onDialog("backup") },
-            TvRowData("Κοινοποίηση εφαρμογής", "Αποστολή package identifier", Icons.Default.Share, action = onShare),
+            TvRowData(stringResource(R.string.settings_profile_named, profile), stringResource(R.string.settings_profile_separate_data), Icons.Default.AccountCircle) { onDialog("profiles") },
+            TvRowData(stringResource(R.string.settings_parental_control), stringResource(R.string.settings_parental_control_subtitle), Icons.Default.Lock) { onDialog("pin") },
+            TvRowData(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_subtitle), Icons.Default.Backup) { onDialog("backup") },
+            TvRowData(stringResource(R.string.settings_share_app), stringResource(R.string.settings_share_package_subtitle), Icons.Default.Share, action = onShare),
         )
     )
 }
@@ -423,11 +424,11 @@ private fun TvAccountPage(profile: String, onDialog: (String) -> Unit, onShare: 
 private fun TvAboutPage(version: String, sourceCount: Int, player: String, epg: Boolean) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(40.dp)) {
         item {
-            SettingsSectionHeader("Σχετικά με το Prelude", "Premium streaming UI πάνω στο υπάρχον playback και data layer")
+            SettingsSectionHeader(stringResource(R.string.settings_about_prelude), stringResource(R.string.settings_about_prelude_subtitle))
             Spacer(Modifier.height(22.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SettingsHealthCard("Έκδοση", version, Modifier.weight(1f))
-                SettingsHealthCard("Πηγές", sourceCount.toString(), Modifier.weight(1f))
+                SettingsHealthCard(stringResource(R.string.settings_version), version, Modifier.weight(1f))
+                SettingsHealthCard(stringResource(R.string.settings_nav_sources), sourceCount.toString(), Modifier.weight(1f))
                 SettingsHealthCard("Player", player, Modifier.weight(1f))
                 SettingsHealthCard("EPG", if (epg) "ON" else "OFF", Modifier.weight(1f))
             }

@@ -66,18 +66,6 @@ fun buildSettingsSources(
     )
 }
 
-fun playerModeLabel(mode: String): String = when (mode) {
-    "exo" -> "ExoPlayer"
-    "vlc" -> "VLC"
-    else -> "Αυτόματο"
-}
-
-fun autoFrameRateLabel(mode: String): String = when (mode) {
-    "seamless" -> "Ομαλό"
-    "always" -> "Πλήρες"
-    else -> "OFF"
-}
-
 private fun maskedEndpoint(playlist: Playlist): String {
     val raw = when (playlist.type) {
         PlaylistType.M3U -> playlist.source

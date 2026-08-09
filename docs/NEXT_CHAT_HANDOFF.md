@@ -385,20 +385,27 @@ has now been implemented for Android TV.
   layers. Provider programme titles/descriptions, channel names, identifiers,
   URLs and hosts remain untranslated data. Live/player navigation and the
   existing TV focus/Back graph were not structurally changed.
-- The next cohesive localization slice is all remaining Settings surfaces.
-  Inventory active mobile and TV routes first, keep preference keys and provider
-  values as stable data, introduce typed identities wherever state currently
-  carries display sentences, and preserve immediate persistence, dialogs, TV
-  DPAD focus and Back restoration. This is a copy/resource migration and needs
-  no new HTML preview unless layout changes.
-- EPG-slice static verification completed with 69 paired EPG resource keys and
-  matching plural/placeholder structure, localization contracts passing,
-  compatibility contracts 58/58, architecture audit 60 passes plus the known
-  `MainViewModel` size warning, deep validation 67 passes plus the documented
-  cleartext compatibility warning, zero critical production-risk findings,
-  documentation parity and a clean diff check. Codex did not run Gradle, compile
-  or package; the next owner must treat Android Studio compilation and phone/TV
-  device behavior as still unverified until the owner supplies that evidence.
+- The active Settings shell is localized across mobile and Android TV, including
+  overview/status copy, directly opened source/Premium/help sheets,
+  playback/AFR/buffer dialogs, subtitle/audio preference pickers and category
+  editing. `PlayerModeOption`, `AutoFrameRateOption`, `BufferProfile`, language
+  codes and `CategoryEditorFailure` keep persisted identities and presentation
+  copy separate. Existing preference keys, immediate persistence, TV focus and
+  dialog Back behavior were not changed.
+- The next cohesive localization slice is Profiles and the account/security
+  dialogs. Audit `MobileAccountSyncScreen`, `SettingsAccountDialogs` and their
+  profile/PIN/backup producers before editing. Move app-owned state messages to
+  typed identities, keep names/PIN material and exported user data untouched,
+  preserve encryption and source-scoped favorites/history, and do not mix the
+  later Billing, Legal or Diagnostics migrations into that slice.
+- Settings-slice static verification completed with 208 paired Settings
+  resource keys and matching plural/placeholder structure, localization
+  contracts passing, compatibility contracts 58/58, architecture audit 60
+  passes plus the known `MainViewModel` size warning, deep validation 67 passes
+  plus the documented cleartext compatibility warning, zero critical
+  production-risk findings, documentation parity and a clean diff check. Codex
+  did not run Gradle, compile or package; Android Studio compilation plus phone
+  and TV behavior remain unverified until the owner supplies that evidence.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.
@@ -512,11 +519,11 @@ The owner can paste the following after attaching or referencing this file:
 > public behavior and add focused tests. Every visual change requires a functional
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
-> cohesive completed change. The immediate implementation task is localization
-> of all remaining Settings surfaces across phone and TV. Inventory the active
-> routes before editing; keep preference keys, protocol/provider values and user
-> data untouched; move app-owned labels, descriptions, dialogs, errors and
-> accessibility copy to paired Greek/QA-English resources through typed mappings
-> where state currently owns display sentences. Preserve immediate persistence,
-> TV DPAD focus and exact Back restoration. After Settings, continue with
-> profiles, billing, legal, diagnostics, backup/export and system notifications.
+> cohesive completed change. The immediate implementation task is Profiles and
+> account/security-dialog localization across phone and TV. Audit
+> `MobileAccountSyncScreen`, `SettingsAccountDialogs` and the profile/PIN/backup
+> producers first. Keep profile names, PIN material, persisted keys and exported
+> user data untouched; move app-owned labels, states and errors to paired
+> Greek/QA-English resources through typed identities. Preserve encryption,
+> source-scoped favorites/history, TV DPAD focus and exact Back restoration. Do
+> not mix Billing, Legal or Diagnostics into this slice; handle those afterward.

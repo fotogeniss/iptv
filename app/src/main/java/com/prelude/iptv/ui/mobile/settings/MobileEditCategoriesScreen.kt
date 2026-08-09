@@ -23,10 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
@@ -54,10 +56,10 @@ internal fun MobileEditCategoriesScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = IptvColors.TextPrimary)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_back), tint = IptvColors.TextPrimary)
             }
             Text(
-                "Επεξεργασία κατηγοριών",
+                stringResource(R.string.settings_edit_categories),
                 color = IptvColors.TextPrimary,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Black,
@@ -69,7 +71,11 @@ internal fun MobileEditCategoriesScreen(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            listOf("live" to "Live TV", "vod" to "Ταινίες", "series" to "Σειρές").forEach { (id, label) ->
+            listOf(
+                "live" to stringResource(R.string.settings_categories_live),
+                "vod" to stringResource(R.string.settings_categories_movies),
+                "series" to stringResource(R.string.settings_categories_series),
+            ).forEach { (id, label) ->
                 FilterChip(
                     selected = type == id,
                     onClick = { type = id },
@@ -89,7 +95,7 @@ internal fun MobileEditCategoriesScreen(
                 CircularProgressIndicator(color = IptvColors.Primary)
             }
             section.error != null -> Box(Modifier.weight(1f).fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(section.error, color = IptvColors.TextSecondary)
+                Text(stringResource(R.string.settings_category_load_failed), color = IptvColors.TextSecondary)
             }
             else -> LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -113,7 +119,7 @@ internal fun MobileEditCategoriesScreen(
                         }) {
                             Icon(
                                 if (entry.visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                if (entry.visible) "Απόκρυψη" else "Εμφάνιση",
+                                stringResource(if (entry.visible) R.string.settings_category_hide else R.string.settings_category_show),
                                 tint = if (entry.visible) IptvColors.TextPrimary else IptvColors.TextTertiary,
                             )
                         }
@@ -129,11 +135,11 @@ internal fun MobileEditCategoriesScreen(
                         IconButton(onClick = {
                             onLayoutChange(type, CategoryLayoutPolicy.delete(section.layout, entry.option.id))
                         }) {
-                            Icon(Icons.Default.DeleteOutline, "Διαγραφή", tint = IptvColors.Primary)
+                            Icon(Icons.Default.DeleteOutline, stringResource(R.string.settings_category_delete), tint = IptvColors.Primary)
                         }
                         Icon(
                             Icons.Default.DragHandle,
-                            "Μετακίνηση",
+                            stringResource(R.string.settings_category_move),
                             tint = IptvColors.TextSecondary,
                             modifier = Modifier
                                 .size(30.dp)
@@ -168,7 +174,7 @@ internal fun MobileEditCategoriesScreen(
                     ) {
                         Icon(Icons.Default.Add, null)
                         Spacer(Modifier.width(6.dp))
-                        Text("Προσθήκη ομάδας")
+                        Text(stringResource(R.string.settings_category_add_group))
                     }
                 }
             }
@@ -180,13 +186,13 @@ internal fun MobileEditCategoriesScreen(
             colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary),
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth().padding(16.dp).height(54.dp),
-        ) { Text("Αποθήκευση", fontWeight = FontWeight.Black) }
+        ) { Text(stringResource(R.string.settings_save), fontWeight = FontWeight.Black) }
     }
 
     if (addOpen) {
         AlertDialog(
             onDismissRequest = { addOpen = false },
-            title = { Text("Προσθήκη ομάδας") },
+            title = { Text(stringResource(R.string.settings_category_add_group)) },
             text = {
                 LazyColumn(Modifier.heightIn(max = 420.dp)) {
                     items(section.deletedEntries.size) { index ->
@@ -202,7 +208,7 @@ internal fun MobileEditCategoriesScreen(
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { addOpen = false }) { Text("Κλείσιμο") } },
+            dismissButton = { TextButton(onClick = { addOpen = false }) { Text(stringResource(R.string.settings_close)) } },
         )
     }
 }
