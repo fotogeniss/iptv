@@ -1,0 +1,119 @@
+<resources>
+    <string name="player_close">Κλείσιμο</string>
+    <string name="player_exit">Έξοδος</string>
+    <string name="player_play">Αναπαραγωγή</string>
+    <string name="player_pause">Παύση</string>
+    <string name="player_settings">Ρυθμίσεις</string>
+    <string name="player_subtitles">Υπότιτλοι</string>
+    <string name="player_audio">Ήχος</string>
+    <string name="player_subtitles_audio">Υπότιτλοι &amp; ήχος</string>
+    <string name="player_live">ΖΩΝΤΑΝΑ</string>
+    <string name="player_fullscreen">Πλήρης οθόνη</string>
+    <string name="player_exit_fullscreen">Έξοδος από πλήρη οθόνη</string>
+    <string name="player_loading">Φόρτωση…</string>
+    <string name="player_source_unavailable">Η πηγή δεν έδωσε διεύθυνση για αυτό το περιεχόμενο</string>
+    <string name="player_playback_failed">Δεν ήταν δυνατή η αναπαραγωγή</string>
+    <string name="player_brightness">Φωτεινότητα</string>
+    <string name="player_volume">Ένταση</string>
+    <string name="player_seek_seconds">%1$dδ</string>
+
+    <string name="player_resolution">Ανάλυση</string>
+    <string name="player_quality">Ποιότητα</string>
+    <string name="player_automatic">Αυτόματο</string>
+    <string name="player_aspect_ratio">Αναλογία εικόνας</string>
+    <string name="player_aspect_fit">Προσαρμογή</string>
+    <string name="player_aspect_fill">Γέμισμα</string>
+    <string name="player_speed">Ταχύτητα αναπαραγωγής</string>
+    <string name="player_speed_value">Ταχύτητα · %1$s</string>
+    <string name="player_image_value">Εικόνα · %1$s</string>
+    <string name="player_audio_language">Γλώσσα ήχου</string>
+    <string name="player_sleep_timer">Χρονοδιακόπτης ύπνου</string>
+    <string name="player_sleep">Ύπνος</string>
+    <string name="player_sleep_value">Ύπνος · %1$s</string>
+    <string name="player_none">Καμία</string>
+    <string name="player_minutes">%1$d λεπτά</string>
+    <string name="player_favorite_on">★ Αγαπημένο</string>
+    <string name="player_favorite_off">☆ Αγαπημένο</string>
+
+    <string name="player_aspect_fit_short">Προσαρμογή</string>
+    <string name="player_aspect_fill_short">Γέμισμα</string>
+    <string name="player_aspect_4_3">4:3</string>
+    <string name="player_aspect_16_9">16:9</string>
+    <string name="player_aspect_badge_fit">AUTO</string>
+    <string name="player_aspect_badge_fill">FILL</string>
+    <string name="player_subtitle_background_shadow">Σκιά</string>
+    <string name="player_subtitle_background_box">Πλαίσιο</string>
+    <string name="player_subtitle_background_none">Χωρίς</string>
+    <string name="player_track_fallback">Κομμάτι %1$d</string>
+
+    <string name="player_no_subtitles">Χωρίς υπότιτλους</string>
+    <string name="player_no_stream_options">Δεν υπάρχουν διαθέσιμες επιλογές για αυτή τη ροή.</string>
+    <string name="player_available_subtitles">Διαθέσιμοι υπότιτλοι</string>
+    <string name="player_disable">Απενεργοποίηση</string>
+    <string name="player_no_embedded_subtitles">Δεν βρέθηκαν ενσωματωμένοι υπότιτλοι στη ροή.</string>
+    <string name="player_embedded_in_stream">Ενσωματωμένος στη ροή</string>
+    <string name="player_opensubtitles_search">Αναζήτηση OpenSubtitles</string>
+    <string name="player_automatic_search">✦  Αυτόματη</string>
+    <string name="player_manual_search">⌕  Χειροκίνητη</string>
+    <string name="player_subtitle_appearance">Εμφάνιση υποτίτλων</string>
+    <string name="player_size">Μέγεθος</string>
+    <string name="player_bold">Έντονα γράμματα</string>
+    <string name="player_background">Φόντο</string>
+    <string name="player_yes">Ναι</string>
+    <string name="player_no">Όχι</string>
+    <string name="player_audio_tracks">Κομμάτια ήχου</string>
+    <string name="player_no_separate_audio_tracks">Η ροή δεν δημοσίευσε ξεχωριστά κομμάτια ήχου.</string>
+    <string name="player_stream_audio">Ήχος της ροής</string>
+
+    <string name="player_subtitle_search_title">Τίτλος</string>
+    <string name="player_search">Αναζήτηση</string>
+    <string name="player_searching">Αναζήτηση…</string>
+    <string name="player_no_subtitle_results">Δεν βρέθηκαν υπότιτλοι. Δοκίμασε να απλοποιήσεις τον τίτλο.</string>
+    <plurals name="player_subtitle_result_count">
+        <item quantity="one">%1$d αποτέλεσμα · με πλήρες όνομα</item>
+        <item quantity="other">%1$d αποτελέσματα · με πλήρες όνομα</item>
+    </plurals>
+    <string name="player_unknown_language">Άγνωστη γλώσσα</string>
+    <string name="player_subtitle_provider_label">%1$s · OpenSubtitles</string>
+    <string name="player_match_percent">%1$d%% αντιστοίχιση</string>
+    <string name="player_opensubtitles_key_required">Χρειάζεται κλειδί OpenSubtitles στις Ρυθμίσεις.</string>
+    <string name="player_subtitles_not_found">Δεν βρέθηκαν υπότιτλοι για αυτόν τον τίτλο.</string>
+    <string name="player_invalid_subtitle_file">Το αρχείο υποτίτλων δεν περιέχει έγκυρες γραμμές.</string>
+    <string name="player_greek_subtitles_found">Βρέθηκαν ελληνικοί υπότιτλοι.</string>
+    <string name="player_english_subtitles_found">Βρέθηκαν αγγλικοί υπότιτλοι.</string>
+    <string name="player_subtitle_download_failed">Η λήψη του υπότιτλου απέτυχε.</string>
+    <string name="player_subtitle_download_failed_general">Η λήψη υποτίτλων απέτυχε.</string>
+    <string name="player_subtitle_apply_unavailable">Η εφαρμογή υποτίτλου δεν είναι διαθέσιμη.</string>
+    <string name="player_subtitles_applied">Οι υπότιτλοι εφαρμόστηκαν.</string>
+
+    <string name="player_next_episode">Επόμενο επεισόδιο</string>
+    <string name="player_next_episode_countdown">ΕΠΟΜΕΝΟ ΕΠΕΙΣΟΔΙΟ · ΣΕ %1$s</string>
+    <string name="player_play_now">▶ Παίξε τώρα</string>
+    <string name="player_close_next_episode">Κλείσιμο επόμενου επεισοδίου</string>
+    <string name="player_autoplay_countdown">▶ Αναπαραγωγή σε %1$d″</string>
+    <string name="player_autoplay">▶ Αναπαραγωγή</string>
+
+    <string name="player_more_from_group">Περισσότερα από %1$s</string>
+    <string name="player_same_group">την ίδια ομάδα</string>
+    <plurals name="player_channel_count">
+        <item quantity="one">%1$d κανάλι</item>
+        <item quantity="other">%1$d κανάλια</item>
+    </plurals>
+    <string name="player_suggested_series">Προτεινόμενες σειρές</string>
+    <string name="player_suggested_movies">Προτεινόμενες ταινίες</string>
+    <string name="player_more">Περισσότερα</string>
+    <string name="player_less">Λιγότερα</string>
+    <string name="player_starring">Πρωταγωνιστούν</string>
+    <string name="player_genres">Είδη</string>
+    <string name="player_playing_now">Παίζει τώρα</string>
+    <string name="player_no_suggestions">Δεν υπάρχουν ακόμη προτάσεις.</string>
+    <string name="player_episode_swipe_hint">Σύρε μέσα στα επεισόδια · εμφανίζονται 3</string>
+
+    <string name="player_loading_schedule">Φόρτωση προγράμματος…</string>
+    <string name="player_programme">Πρόγραμμα</string>
+    <string name="player_no_schedule">Δεν υπάρχει διαθέσιμο πρόγραμμα για αυτό το κανάλι.</string>
+    <string name="player_hint_timeline">▲ Μπάρα χρόνου · ◄► Αναζήτηση μόνο στη μπάρα   ·   </string>
+    <string name="player_hint_channel">CH+/CH− Κανάλι   ·   </string>
+    <string name="player_hint_select">OK Επιλογή   ·   BACK Απόκρυψη</string>
+    <string name="player_searching_subtitles_suffix">   ·   Αναζήτηση υποτίτλων…</string>
+</resources>

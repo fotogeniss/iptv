@@ -52,16 +52,20 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.PlaylistStore
+import com.prelude.iptv.R
 import com.prelude.iptv.player.NextEpisodePolicy
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.player.PlaybackQualityPolicy
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.requestFocusWithRetry
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedPlaybackSpeed
 import kotlin.math.roundToInt
 
 /**
@@ -279,6 +283,7 @@ fun PlayerHost(
     // αλλάζει ΜΕΣΑ στην αναπαραγωγή και πρέπει να βλέπει το αποτέλεσμα αμέσως.
     // Γράφονται πίσω στον δίσκο ώστε να ισχύουν και στην επόμενη ταινία.
     val appContext = LocalContext.current.applicationContext
+    val subtitleDownloadFailed = stringResource(R.string.player_subtitle_download_failed_general)
     val subtitleStore = remember(appContext) { PlaylistStore(appContext) }
     var subtitleSize by remember { mutableIntStateOf(subtitleStore.subtitleSizePercent) }
     var subtitleBackground by remember { mutableStateOf(subtitleStore.subtitleBackground) }
@@ -738,7 +743,7 @@ fun PlayerHost(
             )
         } else if (state.buffering) {
             Text(
-                "Φόρτωση…",
+                stringResource(R.string.player_loading),
                 color = IptvColors.TextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -761,7 +766,10 @@ fun PlayerHost(
                     )
                     .padding(start = 32.dp, top = 22.dp, bottom = 34.dp, end = 32.dp)
             ) {
-                PlayerActionButton(label = "← Έξοδος", onClick = onExitFullscreen)
+                PlayerActionButton(
+                    label = "← ${stringResource(R.string.player_exit)}",
+                    onClick = onExitFullscreen,
+                )
             }
         }
 
@@ -776,8 +784,8 @@ fun PlayerHost(
                 seekable = seekable,
                 positionMs = state.positionMs,
                 durationMs = state.durationMs,
-                aspectLabel = aspectMode.label,
-                speedLabel = formatSpeed(speed),
+                aspectLabel = stringResource(aspectMode.labelRes()),
+                speedLabel = localizedPlaybackSpeed(speed),
                 sleepRemainingMs = if (sleepMinutes > 0) sleepRemainingMs else 0L,
                 hasMultipleQualities = hasMultipleQualities,
                 channelStepAvailable = onChannelStep != null,
@@ -851,7 +859,7 @@ fun PlayerHost(
                             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                                 throw cancelled
                             } catch (_: Exception) {
-                                "Η λήψη υποτίτλων απέτυχε."
+                                subtitleDownloadFailed
                             }
                             fetchingSubtitles = false
                         }
@@ -888,7 +896,7 @@ fun PlayerHost(
                     } catch (cancelled: kotlinx.coroutines.CancellationException) {
                         throw cancelled
                     } catch (_: Exception) {
-                        "Η λήψη υποτίτλων απέτυχε."
+                        subtitleDownloadFailed
                     }
                 }
             },

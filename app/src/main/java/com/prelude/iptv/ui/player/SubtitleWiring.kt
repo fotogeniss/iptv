@@ -1,6 +1,7 @@
 package com.prelude.iptv.ui.player
 
 import android.content.Context
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.SubtitleClient
 import com.prelude.iptv.data.SubtitleSearchPolicy
@@ -49,7 +50,7 @@ object SubtitleWiring {
         // βρέθηκαν»: το πρόβλημα είναι ρύθμιση, όχι έλλειψη υποτίτλων, και η
         // λύση βρίσκεται αλλού.
         if (!SubtitleClient.hasKey()) {
-            return@withContext "Χρειάζεται κλειδί OpenSubtitles στις Ρυθμίσεις."
+            return@withContext context.getString(R.string.player_opensubtitles_key_required)
         }
         val year = TmdbClient.extractYear(channel.name, channel.year)
         val preferredLanguage = PlaylistStore(context).preferredSubtitleLanguage
@@ -58,14 +59,17 @@ object SubtitleWiring {
             SubtitleSearchPolicy.fromChannel(channel, year),
             preferredLanguage
         )
-            ?: return@withContext "Δεν βρέθηκαν υπότιτλοι για αυτόν τον τίτλο."
+            ?: return@withContext context.getString(R.string.player_subtitles_not_found)
         val (uri, language) = result
         val cues = readDownloadedCues(context, uri)
-        if (cues.isEmpty()) return@withContext "Το αρχείο υποτίτλων δεν περιέχει έγκυρες γραμμές."
+        if (cues.isEmpty()) return@withContext context.getString(R.string.player_invalid_subtitle_file)
         withContext(Dispatchers.Main) {
             engine.setExternalSubtitle(cues, "${language.uppercase()} · OpenSubtitles")
         }
-        if (language == "el") "Βρέθηκαν ελληνικοί υπότιτλοι." else "Βρέθηκαν αγγλικοί υπότιτλοι."
+        context.getString(
+            if (language == "el") R.string.player_greek_subtitles_found
+            else R.string.player_english_subtitles_found
+        )
     }
 
     /**
@@ -128,10 +132,10 @@ object SubtitleWiring {
         choice: ExternalSubtitle,
     ): String = withContext(Dispatchers.IO) {
         val uri = SubtitleClient.download(context, choice.id)
-            ?: return@withContext "Η λήψη του υπότιτλου απέτυχε."
+            ?: return@withContext context.getString(R.string.player_subtitle_download_failed)
         val cues = readDownloadedCues(context, uri)
-        if (cues.isEmpty()) return@withContext "Το αρχείο υποτίτλων δεν περιέχει έγκυρες γραμμές."
+        if (cues.isEmpty()) return@withContext context.getString(R.string.player_invalid_subtitle_file)
         withContext(Dispatchers.Main) { engine.setExternalSubtitle(cues, choice.label) }
-        "Οι υπότιτλοι εφαρμόστηκαν."
+        context.getString(R.string.player_subtitles_applied)
     }
 }

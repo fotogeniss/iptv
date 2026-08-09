@@ -16,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.player.PlaybackEngine
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.mobile.navigation.PremiumMobileMiniPlayerHeight
 
@@ -111,9 +113,9 @@ internal fun MobileMiniPlayer(
         }
         MiniAction(
             if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-            if (playing) "Παύση" else "Αναπαραγωγή"
+            stringResource(if (playing) R.string.player_pause else R.string.player_play)
         ) { engine.togglePlay() }
-        MiniAction(Icons.Default.Close, "Κλείσιμο", onClick = onClose)
+        MiniAction(Icons.Default.Close, stringResource(R.string.player_close), onClick = onClose)
         Spacer(Modifier.width(4.dp))
     }
 }

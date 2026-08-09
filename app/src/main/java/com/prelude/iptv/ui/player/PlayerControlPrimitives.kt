@@ -34,14 +34,11 @@ internal fun formatDuration(ms: Long): String {
     else String.format("%d:%02d", minutes, seconds)
 }
 
-internal fun formatSpeed(speed: Float): String =
-    if (speed == speed.toInt().toFloat()) "${speed.toInt()}x" else "${speed}x"
-
-enum class AspectMode(val label: String) {
-    FIT("Προσαρμογή"),
-    FILL("Γέμισμα"),
-    FORCE_4_3("4:3"),
-    FORCE_16_9("16:9");
+enum class AspectMode {
+    FIT,
+    FILL,
+    FORCE_4_3,
+    FORCE_16_9;
 
     fun next(): AspectMode = entries[(ordinal + 1) % entries.size]
 }
@@ -50,11 +47,7 @@ enum class PlayerMenu { AUDIO, SUBTITLES, ASPECT, QUALITY, SPEED, SLEEP }
 
 internal val SUBTITLE_SIZES = listOf(70, 85, 100, 115, 130, 150, 180)
 
-internal val SUBTITLE_BACKGROUNDS = listOf(
-    "shadow" to "Σκιά",
-    "box" to "Πλαίσιο",
-    "none" to "Χωρίς",
-)
+internal val SUBTITLE_BACKGROUNDS = listOf("shadow", "box", "none")
 
 internal val SPEED_OPTIONS = listOf(1f, 0.75f, 1.25f, 1.5f, 2f)
 

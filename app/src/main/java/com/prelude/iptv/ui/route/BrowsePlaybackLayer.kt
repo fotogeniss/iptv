@@ -8,8 +8,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaylistStore
 import com.prelude.iptv.data.SubtitleSearchPolicy
 import com.prelude.iptv.data.TmdbClient
@@ -193,7 +195,7 @@ internal fun BrowsePlaybackLayer(
             searchSubtitles = { query -> SubtitleWiring.search(ctx, target, query) },
             applySubtitle = { engine, choice -> SubtitleWiring.apply(ctx, engine, choice) },
             extraActions = if (target.kind == "live") {
-                { PlayerExtraAction("Πρόγραμμα") { epgOpen = true } }
+                { PlayerExtraAction(stringResource(R.string.player_programme)) { epgOpen = true } }
             } else null,
             overlayOpen = epgOpen,
             modifier = playerModifier

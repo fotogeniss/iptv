@@ -292,6 +292,58 @@ for legacy_copy in (
     if legacy_copy in detail_route:
         failures.append("Detail route bypasses typed/resource-owned app copy")
 
+player_mapping = read(
+    "app/src/main/java/com/prelude/iptv/ui/localization/PlayerLocalizationResources.kt"
+)
+track_policy = read("app/src/main/java/com/prelude/iptv/player/TrackLabelPolicy.kt")
+subtitle_wiring = read(
+    "app/src/main/java/com/prelude/iptv/ui/player/SubtitleWiring.kt"
+)
+for mode in ("FIT", "FILL", "FORCE_4_3", "FORCE_16_9"):
+    if f"AspectMode.{mode} -> R.string.player_aspect_" not in player_mapping:
+        failures.append(f"Player aspect resource mapping missing: {mode}")
+if "displayLocale: Locale" not in track_policy or greek_string_literals(track_policy):
+    failures.append("playback track policy still owns Greek display copy")
+if "fallbackLabel: String" not in track_policy:
+    failures.append("playback track fallback bypasses the Android resource boundary")
+if greek_string_literals(subtitle_wiring):
+    failures.append("subtitle network wiring still returns Greek display messages")
+
+migrated_player_ui = [
+    "app/src/main/java/com/prelude/iptv/PlayerActivity.kt",
+    "app/src/main/java/com/prelude/iptv/ui/route/BrowsePlaybackLayer.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/MobileMiniPlayer.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/MobileNextEpisodeOffer.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/MobilePlayerContextContent.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/MobilePlayerControls.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerControlMenus.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerControlPrimitives.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerControls.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerEpgDialog.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerHost.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerMenuHost.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerNextEpisodeCard.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerSubtitleSearchContent.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/PlayerTracksPanel.kt",
+]
+for ui_path in migrated_player_ui:
+    literals = greek_string_literals(read(ui_path))
+    if literals:
+        failures.append(f"hardcoded Greek display copy in migrated Player UI: {ui_path}")
+
+for overlay_path in (
+    "app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt",
+    "app/src/main/java/com/prelude/iptv/ui/player/TvPlaybackOverlay.kt",
+):
+    literals = greek_string_literals(read(overlay_path))
+    unexpected = [
+        literal for literal in literals
+        if not literal.startswith('"Η επίλυση διεύθυνσης απέτυχε')
+        and not literal.startswith('"Κενή διεύθυνση για')
+    ]
+    if unexpected:
+        failures.append(f"hardcoded Greek display copy in migrated Player overlay: {overlay_path}")
+
 if failures:
     for failure in failures:
         print(f"FAIL: {failure}")

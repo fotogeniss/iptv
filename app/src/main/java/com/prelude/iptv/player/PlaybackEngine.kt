@@ -810,9 +810,9 @@ class PlaybackEngine(private val appContext: Context) {
                     // παρόχου — που είναι συνήθως κενό — και το μενού έδειχνε
                     // «Κομμάτι 1, Κομμάτι 2»: έπρεπε να τα δοκιμάσεις ένα-ένα για
                     // να βρεις ποιο είναι στα ελληνικά.
-                    label = TrackLabelPolicy.trackLabel(
+                    label = appContext.playerTrackLabel(
                         language = format.language,
-                        label = format.label,
+                        providerLabel = format.label,
                         fallbackIndex = fallbackIndex++,
                     ),
                     selected = (type != C.TRACK_TYPE_TEXT || externalSubtitleCues == null) &&

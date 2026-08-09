@@ -348,10 +348,32 @@ has now been implemented for Android TV.
   text, provider season labels remain state identities and are parsed only for
   localized display, and `WatchProgressPolicy` exposes typed `WatchRemaining`
   data instead of Greek formatting.
-- The next cohesive localization slice is Player, including audio/subtitle
-  panels, next-episode surfaces and playback errors. The full EPG UI remains
-  with the later EPG/settings slice; only programme labels shown directly inside
-  Live were included there.
+- Player localization is implemented across the shared mobile and Android TV
+  chrome, audio/subtitle panels, automatic and editable manual OpenSubtitles
+  flows, subtitle appearance controls, next-episode surfaces, player-context
+  recommendations, inline programme states and playback/subtitle failures.
+  `TrackLabelPolicy` no longer owns Greek language/fallback copy: both playback
+  backends resolve language display names with the active app locale and obtain
+  the numbered track fallback through Android resources. `SubtitleWiring`
+  remains the single network/file boundary but resolves every user result via
+  the caller's locale-aware `Context`. Provider titles/groups, track labels,
+  subtitle filenames, OpenSubtitles result names and URL diagnostics remain
+  untranslated data.
+- The next cohesive localization slice is source onboarding and source
+  management on mobile and TV, followed by the full EPG and remaining Settings
+  surfaces. Reuse the existing shared `PlaylistSourceDraftPolicy` and
+  `submitPlaylistSource` validation boundary; do not translate provider/source
+  names, URLs, credentials, portal responses or stable method IDs. Keep secret
+  drafts transient and preserve TV focus/Back behavior. This is a copy/resource
+  migration, so it does not require a new HTML preview unless the visual layout
+  itself changes.
+- Player-slice verification completed with localization/resource parity passing,
+  compatibility contracts 58/58, architecture audit 60 passes plus the known
+  `MainViewModel` size warning, deep validation 67 passes plus the documented
+  cleartext compatibility warning, zero critical production-risk findings,
+  documentation parity and a clean diff check. Codex did not run Gradle, compile
+  or package; the next owner must treat Android Studio compilation and phone/TV
+  device behavior as still unverified until the owner supplies that evidence.
 - Partial English resources live in the shared `app/src/localizationQa` source
   set used only by debug/QA. Production keeps the Greek unqualified baseline so
   English-system devices cannot receive a mixed-language public UI mid-migration.
@@ -466,6 +488,9 @@ The owner can paste the following after attaching or referencing this file:
 > HTML preview and my approval before Android implementation. Do not run Gradle or
 > build unless I explicitly ask. Record changes in CHANGELOG/docs and commit each
 > cohesive completed change. The immediate implementation task is the movies
-> and series browse localization slice across phone and TV, keeping provider
-> titles, categories and metadata untouched while moving app-owned copy to the
-> Android resource boundary.
+> source onboarding and management localization slice across phone and TV.
+> Preserve the shared draft/validation/submission architecture, Keystore-backed
+> persistence and TV focus/Back behavior. Keep provider/source names, URLs,
+> credentials, portal responses and stable method IDs untouched while moving
+> only app-owned copy, errors and accessibility text to paired Greek/QA-English
+> resources.

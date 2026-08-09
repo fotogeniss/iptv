@@ -29,18 +29,22 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.player.NextEpisodePolicy
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaylistStore
 import com.prelude.iptv.data.SubtitleSearchPolicy
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedPlaybackSpeed
 import com.prelude.iptv.ui.mobile.navigation.MobilePlayerDockState
 import com.prelude.iptv.ui.mobile.navigation.PremiumMobileBottomDockFallback
 import kotlinx.coroutines.delay
@@ -91,6 +95,8 @@ fun MobilePlaybackOverlay(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val subtitleDownloadFailed = stringResource(R.string.player_subtitle_download_failed_general)
+    val subtitleApplyUnavailable = stringResource(R.string.player_subtitle_apply_unavailable)
     val engine = remember { PlaybackEngine(context.applicationContext) }
     val videoFrameCapture = remember { PlayerVideoFrameCapture() }
     val liveTransitionCoordinator = remember(engine, videoFrameCapture) {
@@ -627,7 +633,10 @@ fun MobilePlaybackOverlay(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        (if (seekFeedbackForward) "+" else "−") + "${seekFeedbackMs / 1000}s",
+                        (if (seekFeedbackForward) "+" else "−") + stringResource(
+                            R.string.player_seek_seconds,
+                            seekFeedbackMs / 1_000L,
+                        ),
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Black
@@ -645,7 +654,13 @@ fun MobilePlaybackOverlay(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        if (control == VerticalPlayerControl.BRIGHTNESS) "Φωτεινότητα" else "Ένταση",
+                        stringResource(
+                            if (control == VerticalPlayerControl.BRIGHTNESS) {
+                                R.string.player_brightness
+                            } else {
+                                R.string.player_volume
+                            }
+                        ),
                         color = Color.White,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -681,8 +696,10 @@ fun MobilePlaybackOverlay(
 
             if (failed || state.error != null) {
                 Text(
-                    if (failed) "Η πηγή δεν έδωσε διεύθυνση για αυτό το περιεχόμενο"
-                    else "Δεν ήταν δυνατή η αναπαραγωγή",
+                    stringResource(
+                        if (failed) R.string.player_source_unavailable
+                        else R.string.player_playback_failed
+                    ),
                     color = IptvColors.TextSecondary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -802,11 +819,11 @@ fun MobilePlaybackOverlay(
     // ήταν στριμωγμένος σε 16:9.
     if (settingsOpen) {
         PlayerChoiceMenu(
-            title = "Ρυθμίσεις",
+            title = stringResource(R.string.player_settings),
             options = listOf(
-                "Ανάλυση" to false,
-                "Ταχύτητα · ${formatSpeed(speed)}" to false,
-                "Γλώσσα ήχου" to false,
+                stringResource(R.string.player_resolution) to false,
+                stringResource(R.string.player_speed_value, localizedPlaybackSpeed(speed)) to false,
+                stringResource(R.string.player_audio_language) to false,
             ),
             onSelect = { index ->
                 settingsOpen = false
@@ -823,8 +840,8 @@ fun MobilePlaybackOverlay(
     if (aspectMenuOpen) {
         val aspectModes = AspectMode.entries
         PlayerChoiceMenu(
-            title = "Αναλογία εικόνας",
-            options = aspectModes.map { mobileAspectLabel(it) to (it == aspectMode) },
+            title = stringResource(R.string.player_aspect_ratio),
+            options = aspectModes.map { stringResource(it.labelRes()) to (it == aspectMode) },
             onSelect = { index ->
                 aspectMode = aspectModes[index]
                 aspectMenuOpen = false
@@ -858,7 +875,7 @@ fun MobilePlaybackOverlay(
                     openMenu = null
                     scope.launch {
                         subtitleMessage = runCatching { fetch(engine) }
-                            .getOrElse { "Η λήψη υποτίτλων απέτυχε." }
+                            .getOrElse { subtitleDownloadFailed }
                         fetchingSubtitles = false
                     }
                 }
@@ -878,17 +895,10 @@ fun MobilePlaybackOverlay(
             scope.launch {
                 subtitleMessage = runCatching {
                     applySubtitle?.invoke(engine, choice)
-                        ?: "Η εφαρμογή υποτίτλου δεν είναι διαθέσιμη."
-                }.getOrElse { "Η λήψη υποτίτλων απέτυχε." }
+                        ?: subtitleApplyUnavailable
+                }.getOrElse { subtitleDownloadFailed }
             }
         },
         onDismiss = { openMenu = null; interact() },
     )
-}
-
-private fun mobileAspectLabel(mode: AspectMode): String = when (mode) {
-    AspectMode.FIT -> "Αυτόματο"
-    AspectMode.FILL -> "Γέμισμα"
-    AspectMode.FORCE_4_3 -> "4:3"
-    AspectMode.FORCE_16_9 -> "16:9"
 }

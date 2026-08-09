@@ -20,39 +20,30 @@ object TrackLabelPolicy {
      * και «gre» (639-2/B). Οι πάροχοι χρησιμοποιούν και τους τρεις, συχνά στην
      * ίδια λίστα. Το ίδιο ισχύει για γερμανικά, γαλλικά και ολλανδικά.
      */
-    private val names = mapOf(
-        "el" to "Ελληνικά", "ell" to "Ελληνικά", "gre" to "Ελληνικά",
-        "en" to "Αγγλικά", "eng" to "Αγγλικά",
-        "de" to "Γερμανικά", "deu" to "Γερμανικά", "ger" to "Γερμανικά",
-        "fr" to "Γαλλικά", "fra" to "Γαλλικά", "fre" to "Γαλλικά",
-        "it" to "Ιταλικά", "ita" to "Ιταλικά",
-        "es" to "Ισπανικά", "spa" to "Ισπανικά",
-        "pt" to "Πορτογαλικά", "por" to "Πορτογαλικά",
-        "ru" to "Ρωσικά", "rus" to "Ρωσικά",
-        "tr" to "Τουρκικά", "tur" to "Τουρκικά",
-        "bg" to "Βουλγαρικά", "bul" to "Βουλγαρικά",
-        "ro" to "Ρουμανικά", "ron" to "Ρουμανικά", "rum" to "Ρουμανικά",
-        "sr" to "Σερβικά", "srp" to "Σερβικά",
-        "ar" to "Αραβικά", "ara" to "Αραβικά",
-        "nl" to "Ολλανδικά", "nld" to "Ολλανδικά", "dut" to "Ολλανδικά",
-        "pl" to "Πολωνικά", "pol" to "Πολωνικά",
-        "hi" to "Χίντι", "hin" to "Χίντι",
-        "ja" to "Ιαπωνικά", "jpn" to "Ιαπωνικά",
-        "zh" to "Κινέζικα", "zho" to "Κινέζικα", "chi" to "Κινέζικα",
+    private val iso639Aliases = mapOf(
+        "ell" to "el", "gre" to "el", "eng" to "en",
+        "deu" to "de", "ger" to "de", "fra" to "fr", "fre" to "fr",
+        "ita" to "it", "spa" to "es", "por" to "pt", "rus" to "ru",
+        "tur" to "tr", "bul" to "bg", "ron" to "ro", "rum" to "ro",
+        "srp" to "sr", "ara" to "ar", "nld" to "nl", "dut" to "nl",
+        "pol" to "pl", "hin" to "hi", "jpn" to "ja", "zho" to "zh",
+        "chi" to "zh",
     )
 
     /**
-     * Όνομα γλώσσας στα ελληνικά, ή κενό αν δεν αναγνωρίζεται.
+     * Όνομα γλώσσας στο ενεργό locale, ή κενό αν δεν αναγνωρίζεται.
      *
      * Το «und» (undetermined) δεν είναι γλώσσα — είναι δήλωση άγνοιας, και δεν
      * πρέπει να εμφανίζεται ως επιλογή με όνομα.
      */
-    fun languageName(code: String?): String {
+    fun languageName(code: String?, displayLocale: Locale): String {
         val normalized = code?.trim()?.lowercase(Locale.ROOT).orEmpty()
         if (normalized.isBlank() || normalized == "und") return ""
-        // Κωδικοί τύπου «el-GR» ή «pt_BR»: κρατάμε το πρώτο σκέλος.
         val base = normalized.substringBefore('-').substringBefore('_')
-        return names[base] ?: base.uppercase(Locale.ROOT)
+        val language = iso639Aliases[base] ?: base
+        if (language.length != 2) return base.uppercase(Locale.ROOT)
+        return Locale.forLanguageTag(language).getDisplayLanguage(displayLocale)
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(displayLocale) else it.toString() }
     }
 
     /**
@@ -62,10 +53,15 @@ object TrackLabelPolicy {
      * παρόχου έρχεται δεύτερο και μόνο αν προσθέτει κάτι — συχνά επαναλαμβάνει τη
      * γλώσσα («Greek»), και δύο φορές το ίδιο δεν βοηθά κανέναν.
      *
-     * @param fallbackIndex 1-based, για κομμάτια χωρίς καμία πληροφορία.
+     * @param fallbackLabel resource-owned label for tracks without metadata.
      */
-    fun trackLabel(language: String?, label: String?, fallbackIndex: Int): String {
-        val name = languageName(language)
+    fun trackLabel(
+        language: String?,
+        label: String?,
+        fallbackLabel: String,
+        displayLocale: Locale,
+    ): String {
+        val name = languageName(language, displayLocale)
         val extra = label?.trim().orEmpty().takeIf { candidate ->
             candidate.isNotBlank() && !candidate.equals(name, ignoreCase = true) &&
                 !candidate.equals(language?.trim(), ignoreCase = true)
@@ -74,7 +70,7 @@ object TrackLabelPolicy {
             name.isNotBlank() && extra != null -> "$name · $extra"
             name.isNotBlank() -> name
             extra != null -> extra
-            else -> "Κομμάτι $fallbackIndex"
+            else -> fallbackLabel
         }
     }
 }

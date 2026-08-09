@@ -35,10 +35,12 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 
 /**
@@ -239,7 +241,7 @@ internal fun PlayerControlsBar(
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
             ) {
                 PlayerActionButton(
-                    label = if (playing) "Παύση" else "Αναπαραγωγή",
+                    label = stringResource(if (playing) R.string.player_pause else R.string.player_play),
                     leading = if (playing) "Ⅱ" else "▶",
                     primary = true,
                     focusRequester = playFocus,
@@ -250,7 +252,7 @@ internal fun PlayerControlsBar(
                     onClick = onTogglePlay,
                 )
                 PlayerActionButton(
-                    label = "Υπότιτλοι & ήχος",
+                    label = stringResource(R.string.player_subtitles_audio),
                     leading = "CC",
                     focusRequester = tracksFocus,
                     modifier = Modifier.focusProperties {
@@ -261,7 +263,7 @@ internal fun PlayerControlsBar(
                     onClick = { onOpenMenu(PlayerMenu.SUBTITLES) },
                 )
                 PlayerActionButton(
-                    label = "Εικόνα · $aspectLabel",
+                    label = stringResource(R.string.player_image_value, aspectLabel),
                     leading = "▭",
                     focusRequester = aspectFocus,
                     modifier = Modifier.focusProperties {
@@ -273,7 +275,7 @@ internal fun PlayerControlsBar(
                 )
                 if (hasMultipleQualities) {
                     PlayerActionButton(
-                        label = "Ποιότητα",
+                        label = stringResource(R.string.player_quality),
                         leading = "HD",
                         focusRequester = qualityFocus,
                         modifier = Modifier.focusProperties {
@@ -286,7 +288,7 @@ internal fun PlayerControlsBar(
                 }
                 if (seekable) {
                     PlayerActionButton(
-                        label = "Ταχύτητα · $speedLabel",
+                        label = stringResource(R.string.player_speed_value, speedLabel),
                         leading = "1×",
                         focusRequester = speedFocus,
                         modifier = Modifier.focusProperties {
@@ -299,9 +301,12 @@ internal fun PlayerControlsBar(
                 }
                 PlayerActionButton(
                     label = if (sleepRemainingMs > 0) {
-                        "Ύπνος · ${formatDuration(sleepRemainingMs)}"
+                        stringResource(
+                            R.string.player_sleep_value,
+                            formatDuration(sleepRemainingMs),
+                        )
                     } else {
-                        "Ύπνος"
+                        stringResource(R.string.player_sleep)
                     },
                     leading = "◔",
                     focusRequester = sleepFocus,
@@ -313,7 +318,9 @@ internal fun PlayerControlsBar(
                 )
                 if (isFavorite != null && onToggleFavorite != null) {
                     PlayerActionButton(
-                        label = if (isFavorite) "★ Αγαπημένο" else "☆ Αγαπημένο",
+                        label = stringResource(
+                            if (isFavorite) R.string.player_favorite_on else R.string.player_favorite_off
+                        ),
                         onClick = onToggleFavorite,
                     )
                 }
@@ -321,12 +328,16 @@ internal fun PlayerControlsBar(
             }
 
             Spacer(Modifier.height(8.dp))
+            val timelineHint = stringResource(R.string.player_hint_timeline)
+            val channelHint = stringResource(R.string.player_hint_channel)
+            val selectHint = stringResource(R.string.player_hint_select)
+            val subtitleHint = stringResource(R.string.player_searching_subtitles_suffix)
             Text(
                 text = buildString {
-                    if (seekable) append("▲ Μπάρα χρόνου · ◄► Αναζήτηση μόνο στη μπάρα   ·   ")
-                    if (channelStepAvailable) append("CH+/CH− Κανάλι   ·   ")
-                    append("OK Επιλογή   ·   BACK Απόκρυψη")
-                    if (fetchingSubtitles) append("   ·   Αναζήτηση υποτίτλων…")
+                    if (seekable) append(timelineHint)
+                    if (channelStepAvailable) append(channelHint)
+                    append(selectHint)
+                    if (fetchingSubtitles) append(subtitleHint)
                 },
                 color = IptvColors.TextTertiary,
                 fontSize = 11.sp,

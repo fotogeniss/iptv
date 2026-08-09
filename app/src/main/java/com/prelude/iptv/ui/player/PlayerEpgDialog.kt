@@ -23,11 +23,13 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.TvDialogTextButton
 import kotlinx.coroutines.CancellationException
 
@@ -102,12 +104,12 @@ fun PlayerEpgDialog(
             val loadedProgrammes = programmes
             when {
                 loadedProgrammes == null -> Text(
-                    "Φόρτωση προγράμματος…",
+                    stringResource(R.string.player_loading_schedule),
                     color = IptvColors.TextSecondary,
                     fontSize = 13.sp
                 )
                 loadedProgrammes.isEmpty() -> Text(
-                    "Δεν υπάρχει διαθέσιμο πρόγραμμα για αυτό το κανάλι.",
+                    stringResource(R.string.player_no_schedule),
                     color = IptvColors.TextSecondary,
                     fontSize = 13.sp
                 )
@@ -166,7 +168,7 @@ fun PlayerEpgDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TvDialogTextButton(label = "Κλείσιμο", color = Color.White, onClick = onDismiss)
+            TvDialogTextButton(label = stringResource(R.string.player_close), color = Color.White, onClick = onDismiss)
         }
     )
 }

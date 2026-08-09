@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 
 @Composable
@@ -57,7 +59,7 @@ internal fun PlayerNextEpisodeCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Επόμενο επεισόδιο",
+                stringResource(R.string.player_next_episode),
                 color = IptvColors.TextSecondary,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
@@ -85,8 +87,11 @@ internal fun PlayerNextEpisodeCard(
         )
         Spacer(Modifier.height(10.dp))
         PlayerActionButton(
-            label = if (autoPlayInSeconds > 0) "▶ Αναπαραγωγή σε $autoPlayInSeconds″"
-            else "▶ Αναπαραγωγή",
+            label = if (autoPlayInSeconds > 0) {
+                stringResource(R.string.player_autoplay_countdown, autoPlayInSeconds)
+            } else {
+                stringResource(R.string.player_autoplay)
+            },
             onClick = onPlay
         )
     }

@@ -21,11 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.ContentQualityPolicy
 import com.prelude.iptv.data.SubtitleSearchPolicy
@@ -52,9 +55,18 @@ internal fun MobilePlayerContextContent(
             .padding(bottom = 34.dp)
     ) {
         if (playing.kind == "live") {
+            val groupName = if (playing.group.isBlank()) {
+                stringResource(R.string.player_same_group)
+            } else {
+                playing.group
+            }
             PlayerSectionTitle(
-                title = "Περισσότερα από ${playing.group.ifBlank { "την ίδια ομάδα" }}",
-                trailing = "${related.size} κανάλια",
+                title = stringResource(R.string.player_more_from_group, groupName),
+                trailing = pluralStringResource(
+                    R.plurals.player_channel_count,
+                    related.size,
+                    related.size,
+                ),
             )
             PlayerChannelRail(playing, related, onPlay)
             return@Column
@@ -73,9 +85,9 @@ internal fun MobilePlayerContextContent(
                 playingQuality = playingQuality,
                 onPlay = onPlay,
             )
-            PlayerSectionTitle("Προτεινόμενες σειρές")
+            PlayerSectionTitle(stringResource(R.string.player_suggested_series))
         } else {
-            PlayerSectionTitle("Προτεινόμενες ταινίες")
+            PlayerSectionTitle(stringResource(R.string.player_suggested_movies))
         }
         PlayerPosterRail(related, onPlay)
     }
@@ -131,7 +143,9 @@ private fun PlayerInfo(channel: Channel, metadata: TmdbClient.Meta?) {
             )
             if (descriptionCanExpand) {
                 Text(
-                    text = if (descriptionExpanded) "Λιγότερα" else "Περισσότερα",
+                    text = stringResource(
+                        if (descriptionExpanded) R.string.player_less else R.string.player_more
+                    ),
                     color = IptvColors.TextPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black,
@@ -145,8 +159,8 @@ private fun PlayerInfo(channel: Channel, metadata: TmdbClient.Meta?) {
             ?.takeIf(String::isNotBlank) ?: channel.cast.takeIf(String::isNotBlank)
         if (cast != null || genres != null) {
             Spacer(Modifier.height(11.dp))
-            cast?.let { PlayerCredit("Πρωταγωνιστούν", it) }
-            genres?.let { PlayerCredit("Είδη", it) }
+            cast?.let { PlayerCredit(stringResource(R.string.player_starring), it) }
+            genres?.let { PlayerCredit(stringResource(R.string.player_genres), it) }
         }
     }
 }
@@ -199,7 +213,13 @@ private fun PlayerChannelRail(playing: Channel, channels: List<Channel>, onPlay:
                     }
                 }
                 Text(channel.name, color = IptvColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 7.dp))
-                Text(if (channel == playing) "Παίζει τώρα" else channel.group, color = IptvColors.TextTertiary, fontSize = 9.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    if (channel == playing) stringResource(R.string.player_playing_now) else channel.group,
+                    color = IptvColors.TextTertiary,
+                    fontSize = 9.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
@@ -208,7 +228,12 @@ private fun PlayerChannelRail(playing: Channel, channels: List<Channel>, onPlay:
 @Composable
 private fun PlayerPosterRail(channels: List<Channel>, onPlay: (Channel) -> Unit) {
     if (channels.isEmpty()) {
-        Text("Δεν υπάρχουν ακόμη προτάσεις.", color = IptvColors.TextTertiary, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
+        Text(
+            stringResource(R.string.player_no_suggestions),
+            color = IptvColors.TextTertiary,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
         return
     }
     LazyRow(
@@ -349,7 +374,7 @@ private fun PlayerEpisodes(
                         Icon(Icons.Default.PlayArrow, null, tint = IptvColors.TextSecondary)
                     }
                     Text(
-                        "EP $episodeNumber",
+                        stringResource(R.string.details_episode_badge, episodeNumber),
                         color = Color.White,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Black,
@@ -375,7 +400,15 @@ private fun PlayerEpisodes(
                     }
                 }
                 Column(Modifier.weight(1f).padding(start = 10.dp)) {
-                    Text("$episodeNumber. $title", color = IptvColors.TextPrimary, fontSize = 11.5.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        stringResource(R.string.details_numbered_title, episodeNumber, title),
+                        color = IptvColors.TextPrimary,
+                        fontSize = 11.5.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                     if (quality.isNotBlank()) {
                         Text(
                             quality,
@@ -396,7 +429,7 @@ private fun PlayerEpisodes(
         }
     }
     Text(
-        "Σύρε μέσα στα επεισόδια · εμφανίζονται 3",
+        stringResource(R.string.player_episode_swipe_hint),
         color = IptvColors.TextTertiary,
         fontSize = 8.5.sp,
         modifier = Modifier.fillMaxWidth().padding(top = 7.dp),

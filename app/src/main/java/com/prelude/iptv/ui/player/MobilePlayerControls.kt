@@ -23,10 +23,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.player.PlaybackEngine
+import com.prelude.iptv.R
+import com.prelude.iptv.ui.localization.badgeLabelRes
 
 /** Το κόκκινο της μπάρας. Ίδιο με το λογότυπο — δεν είναι δεύτερο κόκκινο. */
 private val SCRUB_RED = Color(0xFFE50914)
@@ -106,14 +109,14 @@ internal fun MobilePlayerControls(
             ) {
                 // Βελάκι ΚΑΤΩ και όχι «πίσω»: η κίνηση είναι «μάζεψε τον player»,
                 // και το βέλος δείχνει προς τα πού φεύγει.
-                ChromeIcon(Icons.Default.KeyboardArrowDown, "Κλείσιμο", size = 24.dp) {
+                ChromeIcon(Icons.Default.KeyboardArrowDown, stringResource(R.string.player_close), size = 24.dp) {
                     onClose()
                 }
                 Spacer(Modifier.weight(1f))
-                ChromeIcon(Icons.Default.ClosedCaption, "Υπότιτλοι") {
+                ChromeIcon(Icons.Default.ClosedCaption, stringResource(R.string.player_subtitles)) {
                     onInteract(); onOpenSubtitles()
                 }
-                ChromeIcon(Icons.Default.Settings, "Ρυθμίσεις") {
+                ChromeIcon(Icons.Default.Settings, stringResource(R.string.player_settings)) {
                     onInteract(); onOpenSettings()
                 }
             }
@@ -124,7 +127,9 @@ internal fun MobilePlayerControls(
             // καναλιού στα ζωντανά γίνεται πλέον με σύρσιμο αριστερά/δεξιά.
             Icon(
                 if (state.playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (state.playing) "Παύση" else "Αναπαραγωγή",
+                contentDescription = stringResource(
+                    if (state.playing) R.string.player_pause else R.string.player_play
+                ),
                 tint = Color.White,
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -158,7 +163,7 @@ internal fun MobilePlayerControls(
                         )
                         Spacer(Modifier.width(7.dp))
                         Text(
-                            "ΖΩΝΤΑΝΑ",
+                            stringResource(R.string.player_live),
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
@@ -185,12 +190,14 @@ internal fun MobilePlayerControls(
                     // Στη θέση του «watch later» του YouTube: χρονοδιακόπτης ύπνου.
                     // Ένα κουμπί που μοιάζει με του YouTube αλλά δεν κάνει τίποτα
                     // θα ήταν χειρότερο από κανένα κουμπί.
-                    ChromeIcon(Icons.Default.Bedtime, "Χρονοδιακόπτης ύπνου", size = 18.dp) {
+                    ChromeIcon(Icons.Default.Bedtime, stringResource(R.string.player_sleep_timer), size = 18.dp) {
                         onInteract(); onOpenSleep()
                     }
                     ChromeIcon(
                         if (expanded) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
-                        if (expanded) "Έξοδος από πλήρη οθόνη" else "Πλήρης οθόνη",
+                        stringResource(
+                            if (expanded) R.string.player_exit_fullscreen else R.string.player_fullscreen
+                        ),
                         size = 22.dp
                     ) { onToggleExpanded() }
                 }
@@ -233,19 +240,12 @@ private fun AspectRatioBadge(mode: AspectMode, onClick: () -> Unit) {
                 .border(1.dp, Color.White, RoundedCornerShape(2.dp))
         )
         Text(
-            text = mobileAspectBadgeLabel(mode),
+            text = stringResource(mode.badgeLabelRes()),
             color = Color.White,
             fontSize = 9.sp,
             fontWeight = FontWeight.Black,
         )
     }
-}
-
-internal fun mobileAspectBadgeLabel(mode: AspectMode): String = when (mode) {
-    AspectMode.FIT -> "AUTO"
-    AspectMode.FILL -> "FILL"
-    AspectMode.FORCE_4_3 -> "4:3"
-    AspectMode.FORCE_16_9 -> "16:9"
 }
 
 /**

@@ -9,10 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.player.PlaybackEngine
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.requestFocusWithRetry
@@ -24,7 +26,7 @@ internal fun PlayerTrackMenu(
     allowDisable: Boolean,
     onSelect: (String?) -> Unit,
     onDismiss: () -> Unit,
-    disableLabel: String = "Χωρίς υπότιτλους",
+    disableLabel: String? = null,
 ) {
     val firstFocus = remember { FocusRequester() }
     LaunchedEffect(title) { firstFocus.requestFocusWithRetry() }
@@ -36,7 +38,7 @@ internal fun PlayerTrackMenu(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (options.isEmpty()) {
                     Text(
-                        "Δεν υπάρχουν διαθέσιμες επιλογές για αυτή τη ροή.",
+                        stringResource(R.string.player_no_stream_options),
                         color = IptvColors.TextSecondary,
                         fontSize = 13.sp
                     )
@@ -50,7 +52,7 @@ internal fun PlayerTrackMenu(
                 }
                 if (allowDisable) {
                     PlayerActionButton(
-                        label = disableLabel,
+                        label = disableLabel ?: stringResource(R.string.player_no_subtitles),
                         focusRequester = if (options.isEmpty()) firstFocus else null,
                         onClick = { onSelect(null) }
                     )
@@ -59,7 +61,7 @@ internal fun PlayerTrackMenu(
         },
         confirmButton = {},
         dismissButton = {
-            TvDialogTextButton(label = "Κλείσιμο", color = Color.White, onClick = onDismiss)
+            TvDialogTextButton(label = stringResource(R.string.player_close), color = Color.White, onClick = onDismiss)
         }
     )
 }
@@ -90,7 +92,7 @@ internal fun PlayerChoiceMenu(
         },
         confirmButton = {},
         dismissButton = {
-            TvDialogTextButton(label = "Κλείσιμο", color = Color.White, onClick = onDismiss)
+            TvDialogTextButton(label = stringResource(R.string.player_close), color = Color.White, onClick = onDismiss)
         }
     )
 }

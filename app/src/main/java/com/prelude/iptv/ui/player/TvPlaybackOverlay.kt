@@ -20,6 +20,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.player.PlaybackEngine
 import kotlinx.coroutines.delay
@@ -268,7 +270,7 @@ fun TvPlaybackOverlay(
                 // Δύο ΔΙΑΦΟΡΕΤΙΚΑ προβλήματα, δύο διαφορετικά μηνύματα. Το ίδιο
                 // κείμενο και για τα δύο μας έστειλε να ψάχνουμε τη λάθος μεριά.
                 errorText = if (failed) {
-                    "Η πηγή δεν έδωσε διεύθυνση για αυτό το περιεχόμενο"
+                    stringResource(R.string.player_source_unavailable)
                 } else state.error
             )
         }

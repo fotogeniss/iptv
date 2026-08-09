@@ -128,8 +128,11 @@ cohesive vertical slices:
    categories and locale-aware TV keyboard selection.**
 7. Movie/series details, seasons and episodes. **Implemented for mobile and TV;
    provider/TMDB metadata and season state identities remain data.**
-8. Player, audio/subtitle panels and playback errors.
-9. Source onboarding/management, EPG and all settings flows.
+8. Player, audio/subtitle panels and playback errors. **Implemented across the
+   shared mobile/TV chrome, track menus, OpenSubtitles results, next-episode
+   prompts and inline player EPG states. Provider track metadata, subtitle
+   filenames and playback diagnostics remain data.**
+9. Source onboarding/management, full EPG and all settings flows.
 10. Profiles, billing, legal, diagnostics, backup/export and system notifications.
 11. Final hardcoded-string audit, translation parity gate and public picker
    activation.
@@ -145,7 +148,7 @@ still bypass resources.
   brand and protocol constants are marked `translatable="false"`.
 - `python scripts/localization_contracts.py` enforces current resource parity,
   the release-safe Greek baseline, host coverage, Android-free display-copy
-  boundaries, migrated Home/Live/catalog/Search/Details mappings and
+  boundaries, migrated Home/Live/catalog/Search/Details/Player mappings and
   hardcoded-copy audits, and the closed public rollout gate.
 - Static audit rejects new user-facing string literals in migrated Compose files.
 - Unit tests protect language-tag mapping, system fallback and resource-key

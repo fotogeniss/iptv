@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.PlaylistStore
@@ -150,7 +151,7 @@ private fun ExternalPlayer(request: PlayerLaunchRequest, onClose: () -> Unit) {
             searchSubtitles = { query -> SubtitleWiring.search(context, channel, query) },
             applySubtitle = { engine, choice -> SubtitleWiring.apply(context, engine, choice) },
             extraActions = if (isLive) {
-                { PlayerExtraAction("Πρόγραμμα") { epgOpen = true } }
+                { PlayerExtraAction(stringResource(R.string.player_programme)) { epgOpen = true } }
             } else null,
             overlayOpen = epgOpen,
         )

@@ -188,9 +188,9 @@ class VlcBackend(
             .map { description ->
                 PlaybackEngine.TrackOption(
                     id = description.id.toString(),
-                    label = TrackLabelPolicy.trackLabel(
+                    label = appContext.playerTrackLabel(
                         language = description.name,
-                        label = description.name,
+                        providerLabel = description.name,
                         fallbackIndex = fallbackIndex++,
                     ),
                     selected = description.id == selectedId,

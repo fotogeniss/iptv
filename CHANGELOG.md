@@ -5,6 +5,11 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the shared mobile/Android TV player chrome, audio/subtitle panels,
+  editable OpenSubtitles search, next-episode prompts, inline programme states
+  and playback/subtitle failures. Playback track labels now use the active app
+  locale while provider titles, filenames, track metadata and diagnostic URL
+  details remain untranslated data.
 - Localized movie/series details, seasons and episode browsing across mobile
   and Android TV, including hero actions, tabs, metadata labels, descriptions,
   season selectors, episode counts/cards, progress and accessibility copy.

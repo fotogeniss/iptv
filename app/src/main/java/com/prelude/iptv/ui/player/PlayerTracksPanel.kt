@@ -22,15 +22,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.prelude.iptv.R
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.requestFocusWithRetry
+import com.prelude.iptv.ui.localization.localizedSubtitleBackground
 
 internal enum class PlayerTracksTab { SUBTITLES, AUDIO }
 
@@ -137,13 +140,13 @@ internal fun PlayerTracksPanel(
                             .padding(4.dp),
                     ) {
                         TracksTabButton(
-                            title = "Υπότιτλοι",
+                            title = stringResource(R.string.player_subtitles),
                             selected = selectedTab == PlayerTracksTab.SUBTITLES,
                             modifier = Modifier.weight(1f).focusRequester(subtitleTabFocus),
                             onClick = { selectedTab = PlayerTracksTab.SUBTITLES },
                         )
                         TracksTabButton(
-                            title = "Ήχος",
+                            title = stringResource(R.string.player_audio),
                             selected = selectedTab == PlayerTracksTab.AUDIO,
                             modifier = Modifier.weight(1f).focusRequester(audioTabFocus),
                             onClick = { selectedTab = PlayerTracksTab.AUDIO },
@@ -159,7 +162,12 @@ internal fun PlayerTracksPanel(
                             .clickable(onClick = onDismiss),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Default.Close, "Κλείσιμο", tint = Color.White, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.Close,
+                            stringResource(R.string.player_close),
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
                 }
 
@@ -243,16 +251,16 @@ private fun SubtitleTracksContent(
     onBold: (Boolean) -> Unit,
     onSubtitleChosen: (ExternalSubtitle) -> Unit,
 ) {
-    PanelSectionLabel("Διαθέσιμοι υπότιτλοι")
+    PanelSectionLabel(stringResource(R.string.player_available_subtitles))
     TrackPanelRow(
-        "Απενεργοποίηση",
-        "Χωρίς υπότιτλους",
+        stringResource(R.string.player_disable),
+        stringResource(R.string.player_no_subtitles),
         "×",
         selected = tracks.none { it.selected },
     ) { onSelect(null) }
     if (tracks.isEmpty()) {
         Text(
-            "Δεν βρέθηκαν ενσωματωμένοι υπότιτλοι στη ροή.",
+            stringResource(R.string.player_no_embedded_subtitles),
             color = IptvColors.TextSecondary,
             fontSize = 12.sp,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
@@ -261,7 +269,7 @@ private fun SubtitleTracksContent(
         tracks.forEach { track ->
             TrackPanelRow(
                 title = track.label,
-                subtitle = "Ενσωματωμένος στη ροή",
+                subtitle = stringResource(R.string.player_embedded_in_stream),
                 badge = languageBadge(track.label),
                 selected = track.selected,
                 onClick = { onSelect(track.id) },
@@ -271,18 +279,18 @@ private fun SubtitleTracksContent(
 
     if (onAutoFetch != null || searchSubtitles != null) {
         Spacer(Modifier.height(6.dp))
-        PanelSectionLabel("Αναζήτηση OpenSubtitles")
+        PanelSectionLabel(stringResource(R.string.player_opensubtitles_search))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             onAutoFetch?.let { action ->
                 PanelActionButton(
-                    text = "✦  Αυτόματη",
+                    text = stringResource(R.string.player_automatic_search),
                     modifier = Modifier.weight(1f),
                     onClick = action,
                 )
             }
             searchSubtitles?.let {
                 PanelActionButton(
-                    text = "⌕  Χειροκίνητη",
+                    text = stringResource(R.string.player_manual_search),
                     modifier = Modifier.weight(1f),
                     selected = manualSearchOpen,
                     onClick = onToggleManualSearch,
@@ -299,10 +307,13 @@ private fun SubtitleTracksContent(
     }
 
     Spacer(Modifier.height(6.dp))
-    PanelSectionLabel("Εμφάνιση υποτίτλων")
-    SubtitleSettingRow("Μέγεθος", "$size%") { onSize(nextSubtitleSize(size)) }
-    SubtitleSettingRow("Έντονα γράμματα", if (bold) "Ναι" else "Όχι") { onBold(!bold) }
-    SubtitleSettingRow("Φόντο", subtitleBackgroundLabel(background)) {
+    PanelSectionLabel(stringResource(R.string.player_subtitle_appearance))
+    SubtitleSettingRow(stringResource(R.string.player_size), "$size%") { onSize(nextSubtitleSize(size)) }
+    SubtitleSettingRow(
+        stringResource(R.string.player_bold),
+        stringResource(if (bold) R.string.player_yes else R.string.player_no),
+    ) { onBold(!bold) }
+    SubtitleSettingRow(stringResource(R.string.player_background), localizedSubtitleBackground(background)) {
         onBackground(nextSubtitleBackground(background))
     }
 }
@@ -312,10 +323,10 @@ private fun AudioTracksContent(
     tracks: List<PlaybackEngine.TrackOption>,
     onSelect: (String) -> Unit,
 ) {
-    PanelSectionLabel("Κομμάτια ήχου")
+    PanelSectionLabel(stringResource(R.string.player_audio_tracks))
     if (tracks.isEmpty()) {
         Text(
-            "Η ροή δεν δημοσίευσε ξεχωριστά κομμάτια ήχου.",
+            stringResource(R.string.player_no_separate_audio_tracks),
             color = IptvColors.TextSecondary,
             fontSize = 12.sp,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
@@ -324,7 +335,7 @@ private fun AudioTracksContent(
         tracks.forEach { track ->
             TrackPanelRow(
                 title = track.label,
-                subtitle = "Ήχος της ροής",
+                subtitle = stringResource(R.string.player_stream_audio),
                 badge = languageBadge(track.label),
                 selected = track.selected,
                 onClick = { onSelect(track.id) },
@@ -445,9 +456,6 @@ private fun nextSubtitleSize(current: Int): Int {
 }
 
 private fun nextSubtitleBackground(current: String): String {
-    val index = SUBTITLE_BACKGROUNDS.indexOfFirst { it.first == current }
-    return SUBTITLE_BACKGROUNDS[(index + 1).mod(SUBTITLE_BACKGROUNDS.size)].first
+    val index = SUBTITLE_BACKGROUNDS.indexOf(current)
+    return SUBTITLE_BACKGROUNDS[(index + 1).mod(SUBTITLE_BACKGROUNDS.size)]
 }
-
-private fun subtitleBackgroundLabel(value: String): String =
-    SUBTITLE_BACKGROUNDS.firstOrNull { it.first == value }?.second ?: value

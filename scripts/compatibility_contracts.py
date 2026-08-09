@@ -174,8 +174,8 @@ source_contracts = {
         and "onSeekBy(SCRUB_STEP_MS)" in player_controls
     ),
     "TV player exposes one combined subtitles and audio entry": (
-        'label = "Υπότιτλοι & ήχος"' in player_controls
-        and 'label = "Ήχος"' not in player_controls
+        "label = stringResource(R.string.player_subtitles_audio)" in player_controls
+        and "label = stringResource(R.string.player_audio)" not in player_controls
     ),
     "Downloaded subtitles switch without restarting playback": (
         "fun setExternalSubtitle(cues: List<Cue>, label: String)" in playback_engine

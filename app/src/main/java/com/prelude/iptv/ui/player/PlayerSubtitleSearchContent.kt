@@ -35,11 +35,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.R
+import com.prelude.iptv.player.TrackLabelPolicy
 import com.prelude.iptv.ui.requestFocusWithRetry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -90,7 +95,7 @@ internal fun PlayerSubtitleSearchContent(
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("Τίτλος", color = IptvColors.TextSecondary) },
+            label = { Text(stringResource(R.string.player_subtitle_search_title), color = IptvColors.TextSecondary) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,21 +112,29 @@ internal fun PlayerSubtitleSearchContent(
                 .clickable { searchTick++ },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Default.Search, "Αναζήτηση", tint = Color.Black)
+            Icon(Icons.Default.Search, stringResource(R.string.player_search), tint = Color.Black)
         }
     }
 
     val currentResults = results
     when {
-        currentResults == null -> Text("Αναζήτηση…", color = IptvColors.TextSecondary, fontSize = 12.sp)
+        currentResults == null -> Text(
+            stringResource(R.string.player_searching),
+            color = IptvColors.TextSecondary,
+            fontSize = 12.sp,
+        )
         currentResults.isEmpty() -> Text(
-            "Δεν βρέθηκαν υπότιτλοι. Δοκίμασε να απλοποιήσεις τον τίτλο.",
+            stringResource(R.string.player_no_subtitle_results),
             color = IptvColors.TextSecondary,
             fontSize = 12.sp,
         )
         else -> {
             Text(
-                "${currentResults.size} αποτελέσματα · με πλήρες όνομα",
+                pluralStringResource(
+                    R.plurals.player_subtitle_result_count,
+                    currentResults.size,
+                    currentResults.size,
+                ),
                 color = IptvColors.TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -155,6 +168,9 @@ private fun SubtitleSearchResultRow(
     focusRequester: FocusRequester?,
     onClick: () -> Unit,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
+    val languageName = TrackLabelPolicy.languageName(item.language, locale)
+        .ifBlank { stringResource(R.string.player_unknown_language) }
     var focused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(14.dp)
     Box(
@@ -196,30 +212,20 @@ private fun SubtitleSearchResultRow(
             )
             Spacer(Modifier.size(3.dp))
             Text(
-                "${subtitleLanguageName(item.language)} · OpenSubtitles",
+                stringResource(R.string.player_subtitle_provider_label, languageName),
                 color = IptvColors.TextSecondary,
                 fontSize = 10.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "${item.matchPercent}% match",
+                stringResource(R.string.player_match_percent, item.matchPercent),
                 color = Color(0xFF4BD486),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
         }
     }
-}
-
-private fun subtitleLanguageName(code: String): String = when (code.lowercase()) {
-    "el", "ell", "gre" -> "Ελληνικά"
-    "en", "eng" -> "English"
-    "es", "spa" -> "Español"
-    "de", "deu", "ger" -> "Deutsch"
-    "fr", "fra", "fre" -> "Français"
-    "it", "ita" -> "Italiano"
-    else -> code.uppercase().ifBlank { "Άγνωστη γλώσσα" }
 }
 
 private const val MAX_VISIBLE_RESULTS = 20

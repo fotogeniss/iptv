@@ -16,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 
 /** Self-contained countdown card shown shortly before a series episode ends. */
@@ -62,10 +64,11 @@ internal fun MobileNextEpisodeOffer(
             }
         }
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
-            val minutes = autoPlayInSeconds / 60
-            val seconds = autoPlayInSeconds % 60
             Text(
-                "ΕΠΟΜΕΝΟ ΕΠΕΙΣΟΔΙΟ · ΣΕ $minutes:${seconds.toString().padStart(2, '0')}",
+                stringResource(
+                    R.string.player_next_episode_countdown,
+                    formatDuration(autoPlayInSeconds * 1_000L),
+                ),
                 color = Color(0xFFFF777D),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Black,
@@ -82,7 +85,7 @@ internal fun MobileNextEpisodeOffer(
                 modifier = Modifier.padding(top = 3.dp, bottom = 6.dp),
             )
             Text(
-                "▶ Παίξε τώρα",
+                stringResource(R.string.player_play_now),
                 color = Color.Black,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
@@ -99,7 +102,7 @@ internal fun MobileNextEpisodeOffer(
         ) {
             Icon(
                 Icons.Default.Close,
-                contentDescription = "Κλείσιμο επόμενου επεισοδίου",
+                contentDescription = stringResource(R.string.player_close_next_episode),
                 tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )

@@ -1,7 +1,11 @@
 package com.prelude.iptv.ui.player
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.prelude.iptv.R
 import com.prelude.iptv.player.PlaybackEngine
+import com.prelude.iptv.ui.localization.labelRes
+import com.prelude.iptv.ui.localization.localizedPlaybackSpeed
 
 /**
  * Όλοι οι διάλογοι του player, σε ένα σημείο.
@@ -72,31 +76,35 @@ internal fun PlayerMenuHost(
             onDismiss = onDismiss,
         )
         PlayerMenu.QUALITY -> PlayerTrackMenu(
-            title = "Ανάλυση",
+            title = stringResource(R.string.player_resolution),
             options = videoTracks(),
             // «Χωρίς» εδώ σημαίνει αυτόματη επιλογή, όχι απενεργοποίηση —
             // απενεργοποιημένο βίντεο θα ήταν μαύρη οθόνη.
             allowDisable = true,
-            disableLabel = "Αυτόματη",
+            disableLabel = stringResource(R.string.player_automatic),
             onSelect = onSelectVideo,
             onDismiss = onDismiss
         )
         PlayerMenu.ASPECT -> PlayerChoiceMenu(
-            title = "Αναλογία εικόνας",
-            options = AspectMode.entries.map { mode -> mode.label to (mode == aspectMode) },
+            title = stringResource(R.string.player_aspect_ratio),
+            options = AspectMode.entries.map { mode -> stringResource(mode.labelRes()) to (mode == aspectMode) },
             onSelect = { index -> onSelectAspect(AspectMode.entries[index]) },
             onDismiss = onDismiss,
         )
         PlayerMenu.SPEED -> PlayerChoiceMenu(
-            title = "Ταχύτητα αναπαραγωγής",
-            options = SPEED_OPTIONS.map { formatSpeed(it) to (it == speed) },
+            title = stringResource(R.string.player_speed),
+            options = SPEED_OPTIONS.map { localizedPlaybackSpeed(it) to (it == speed) },
             onSelect = { index -> onSelectSpeed(SPEED_OPTIONS[index]) },
             onDismiss = onDismiss
         )
         PlayerMenu.SLEEP -> PlayerChoiceMenu(
-            title = "Χρονοδιακόπτης ύπνου",
+            title = stringResource(R.string.player_sleep_timer),
             options = SLEEP_OPTIONS.map { minutes ->
-                val label = if (minutes == 0) "Καμία" else "$minutes λεπτά"
+                val label = if (minutes == 0) {
+                    stringResource(R.string.player_none)
+                } else {
+                    stringResource(R.string.player_minutes, minutes)
+                }
                 label to (minutes == sleepMinutes)
             },
             onSelect = { index -> onSelectSleep(SLEEP_OPTIONS[index]) },
