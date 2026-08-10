@@ -18,6 +18,7 @@ class SubtitleResultPolicyTest {
             request = request,
             language = "el",
             ordinal = 0,
+            noTitleFallback = "Subtitle",
         )
 
         assertEquals("Diablero S01E01 · EL 1", label)
@@ -32,9 +33,27 @@ class SubtitleResultPolicyTest {
             request = SubtitleSearchPolicy.episode("Diablero", "2018", 1, 1),
             language = "el",
             ordinal = 0,
+            noTitleFallback = "Subtitle",
         )
 
         assertEquals("Diablero.S01E01.1080p.NF.WEB-DL.srt", label)
+    }
+
+    @Test
+    fun blankMediaQueryUsesCallerSuppliedFallbackTitle() {
+        val request = SubtitleSearchPolicy.generic("")
+
+        val label = SubtitleResultNamePolicy.displayName(
+            fileName = "",
+            release = "",
+            featureTitle = "",
+            request = request,
+            language = "en",
+            ordinal = 0,
+            noTitleFallback = "Subtitle",
+        )
+
+        assertEquals("Subtitle · EN 1", label)
     }
 
     @Test

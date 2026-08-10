@@ -62,6 +62,7 @@
     <string name="player_no_separate_audio_tracks">The stream did not publish separate audio tracks.</string>
     <string name="player_stream_audio">Stream audio</string>
     <string name="player_subtitle_search_title">Title</string>
+    <string name="player_subtitle_result_fallback_title">Subtitle</string>
     <string name="player_search">Search</string>
     <string name="player_searching">Searching…</string>
     <string name="player_no_subtitle_results">No subtitles found. Try simplifying the title.</string>

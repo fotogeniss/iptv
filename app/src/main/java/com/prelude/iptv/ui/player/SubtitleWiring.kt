@@ -91,6 +91,7 @@ object SubtitleWiring {
         val fallback = SubtitleSearchPolicy.fromChannel(channel, year)
         val request = if (query.isNotBlank()) SubtitleSearchPolicy.manual(query, fallback) else fallback
         val preferredLanguage = PlaylistStore(context).preferredSubtitleLanguage
+        val noTitleFallback = context.getString(R.string.player_subtitle_result_fallback_title)
         val results = ArrayList<ExternalSubtitle>()
         for (language in PlaybackPreferencePolicy.subtitleSearchLanguages(preferredLanguage)) {
             // The editable query can change while the first language is in
@@ -116,6 +117,7 @@ object SubtitleWiring {
                         request = request,
                         language = sub.lang.ifBlank { language },
                         ordinal = index,
+                        noTitleFallback = noTitleFallback,
                     ),
                     language = sub.lang.ifBlank { language },
                     matchPercent = sub.matchPercent,

@@ -5,6 +5,12 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Localized the OpenSubtitles result fallback title (shown when a result has
+  no usable filename/release/title and the search query itself is blank).
+  `SubtitleResultNamePolicy.displayName` now takes a caller-supplied
+  `noTitleFallback` instead of owning a hardcoded Greek string; the mobile/TV
+  shared `SubtitleWiring.search` call site resolves it from the new
+  `player_subtitle_result_fallback_title` Greek/QA-English resource.
 - Fixed Stalker/Ministra (MAC portal) series always showing "0 seasons" with
   no error, and then showing only one episode once episodes started loading.
   Diagnosed against a live portal end-to-end via raw-JSON logging (tag

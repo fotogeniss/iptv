@@ -13,13 +13,14 @@ object SubtitleResultNamePolicy {
         request: SubtitleSearchRequest,
         language: String,
         ordinal: Int,
+        noTitleFallback: String,
     ): String {
         listOf(fileName, release, featureTitle)
             .map(::cleanCandidate)
             .firstOrNull(::isMeaningful)
             ?.let { return it }
 
-        val mediaName = request.displayQuery().trim().ifBlank { "Υπότιτλος" }
+        val mediaName = request.displayQuery().trim().ifBlank { noTitleFallback }
         return "$mediaName · ${language.uppercase().ifBlank { "SUB" }} ${ordinal + 1}"
     }
 
