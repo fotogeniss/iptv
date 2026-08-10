@@ -1,6 +1,7 @@
 package com.prelude.iptv.data
 
 import android.content.Context
+import android.util.Log
 import com.prelude.iptv.net.Http
 import com.prelude.iptv.net.ProviderCancellation
 import org.json.JSONArray
@@ -21,6 +22,18 @@ import java.util.concurrent.Semaphore
 object TmdbClient {
 
     private const val BASE = "https://api.themoviedb.org/3"
+
+    /**
+     * Ετικέτα διάγνωσης για την αναζήτηση τίτλου.
+     *
+     * Δεν είναι προσωρινός κώδικας. Το ίδιο μοτίβο (`SeriesLoad`) είναι ό,τι
+     * τελικά έλυσε το πρόβλημα των επεισοδίων Stalker μετά από τρεις γύρους
+     * λανθασμένων υποθέσεων· η αναζήτηση στο TMDB αποτυγχάνει με τον ίδιο
+     * σιωπηλό τρόπο —κενό αποτέλεσμα, χωρίς σφάλμα— και είναι αδύνατο να
+     * διαγνωστεί από την οθόνη. ΠΟΤΕ δεν καταγράφεται διεύθυνση: περιέχει το
+     * κλειδί API.
+     */
+    private const val LOOKUP_TAG = "TmdbLookup"
     const val IMG_POSTER = "https://image.tmdb.org/t/p/w500"
     // w1280 αντί για w780: το backdrop γεμίζει οθόνη 1920px — με w780 γινόταν
     // 2.5x μεγέθυνση και «πιξέλιαζε» αισθητά στην τηλεόραση.
@@ -229,6 +242,11 @@ object TmdbClient {
             val result = try {
                 throttled {
                     val id = searchId("tv", title, year, isSeries = true)
+                    Log.d(
+                        LOOKUP_TAG,
+                        "episodeMeta raw=«$rawTitle» clean=«$title» year=«$year» " +
+                            "season=$season -> tmdbId=$id",
+                    )
                     if (id == 0) return@throttled emptyMap()
 
                     // Βάση στα αγγλικά: εκεί υπάρχουν σχεδόν πάντα still_path και σύνοψη.
@@ -248,10 +266,16 @@ object TmdbClient {
                             overview = el?.overview?.ifBlank { null } ?: en?.overview.orEmpty()
                         )
                     }
+                    Log.d(
+                        LOOKUP_TAG,
+                        "episodeMeta season $season of tmdbId=$id -> ${merged.size} επεισόδια, " +
+                            "με περιγραφή: ${merged.count { it.value.overview.isNotBlank() }}",
+                    )
                     merged
                 }
             } catch (error: Exception) {
                 ProviderCancellation.rethrow(error, "TMDB episode metadata cancelled")
+                Log.w(LOOKUP_TAG, "episodeMeta απέτυχε για «$title» σεζόν $season", error)
                 emptyMap()
             }
             // ΚΕΝΟ ΑΠΟΤΕΛΕΣΜΑ ΔΕΝ ΑΠΟΘΗΚΕΥΕΤΑΙ ΠΟΥΘΕΝΑ — ΟΥΤΕ ΣΤΗ ΜΝΗΜΗ.
@@ -361,11 +385,15 @@ object TmdbClient {
      * κλήσεις χρεώνονται σε αναζητήσεις που ήδη δεν έφερναν τίποτα.
      */
     private fun greeklishId(type: String, title: String, yearParam: String): Int {
-        if (!GreeklishTitlePolicy.looksGreeklish(title)) return 0
+        if (!GreeklishTitlePolicy.looksGreeklish(title)) {
+            Log.d(LOOKUP_TAG, "greeklish: «$title» δεν θεωρήθηκε greeklish, τέλος")
+            return 0
+        }
         val expected = GreeklishTitlePolicy.latinSkeleton(title)
         if (expected.isBlank()) return 0
         val greek = GreeklishTitlePolicy.toGreek(title)
         if (greek.isBlank()) return 0
+        Log.d(LOOKUP_TAG, "greeklish: «$title» -> ερώτημα «$greek», σκελετός «$expected»")
         val q = URLEncoder.encode(greek, "UTF-8")
         if (yearParam.isNotEmpty()) {
             val withYear = verifiedId(
@@ -392,15 +420,19 @@ object TmdbClient {
         val results = JSONObject(json).optJSONArray("results")
         var found = 0
         var i = 0
+        val seen = StringBuilder()
         while (results != null && i < results.length() && found == 0) {
             val row = results.optJSONObject(i)
             if (row != null) {
                 val names = listOf(
                     row.optString("name"), row.optString("original_name"),
                     row.optString("title"), row.optString("original_title"),
-                )
+                ).filter { it.isNotBlank() }.distinct()
+                names.forEach { name ->
+                    seen.append("\n  «$name» -> ${GreeklishTitlePolicy.latinSkeleton(name)}")
+                }
                 val hit = names.any { name ->
-                    name.isNotBlank() && GreeklishTitlePolicy.isSameTitle(
+                    GreeklishTitlePolicy.isSameTitle(
                         GreeklishTitlePolicy.latinSkeleton(name),
                         expectedSkeleton,
                     )
@@ -409,8 +441,19 @@ object TmdbClient {
             }
             i++
         }
+        // Το ΠΟΙΟΣ τίτλος γύρισε και με τι σκελετό είναι ακριβώς η πληροφορία
+        // που χρειάζεται για να κριθεί αν φταίει το ερώτημα ή η σύγκριση.
+        // Ποτέ δεν καταγράφεται διεύθυνση: περιέχει το κλειδί API.
+        Log.d(
+            LOOKUP_TAG,
+            "greeklish: αναμενόμενο «$expectedSkeleton», " +
+                "${results?.length() ?: 0} αποτελέσματα, ταίριασμα=$found$seen",
+        )
         found
-    } catch (e: Exception) { 0 }
+    } catch (e: Exception) {
+        Log.w(LOOKUP_TAG, "greeklish: αδύνατη ανάγνωση αποτελεσμάτων", e)
+        0
+    }
 
     private fun doFetch(title: String, isSeries: Boolean, year: String): Meta? {
         val type = if (isSeries) "tv" else "movie"
