@@ -1,6 +1,7 @@
 package com.prelude.iptv.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.prelude.iptv.data.Channel
@@ -1714,7 +1715,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     rememberedCategoryIds = rememberedIds,
                     progress = progressCallback(pl, gen, "series"),
                 )
+                Log.d(
+                    "SeriesLoad",
+                    "loaded name=${ch.name} type=${pl.type} seriesId=${ch.seriesId} " +
+                        "cachedBefore=${cached?.size ?: -1} requiresFresh=$requiresFresh " +
+                        "seasons=${outcome.seasons.size} episodes=${outcome.seasons.sumOf { it.second.size }} " +
+                        "synthetic=${outcome.synthetic} usedFreshCatalog=${outcome.freshCatalog != null}",
+                )
                 if (!sourceGeneration.isCurrent(request)) {
+                    Log.w("SeriesLoad", "discarded result for ${ch.name}: series generation changed while loading")
                     outcome.stalkerClient?.cancelPendingRequests()
                     return@launch
                 }
@@ -1769,6 +1778,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
+                Log.e(
+                    "SeriesLoad",
+                    "failed name=${ch.name} type=${pl.type} seriesId=${ch.seriesId}",
+                    error,
+                )
                 if (!sourceGeneration.isCurrent(request)) return@launch
                 if (requiresFresh) {
                     finishSourceProgress(

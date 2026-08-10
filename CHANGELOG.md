@@ -5,6 +5,60 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed Stalker/Ministra (MAC portal) series always showing "0 seasons" with
+  no error, and then showing only one episode once episodes started loading.
+  Diagnosed against a live portal end-to-end via raw-JSON logging (tag
+  `SeriesLoad` in `StalkerClient`/`MainViewModel.openSeries`):
+  - The series category listing (`get_ordered_list`) never carries episode
+    data in this API — every row comes back `"cmd":""`/`"series":[]` — and
+    separately left `"series_id"` blank while the real id was under `"id"`,
+    so the normalizer fell back to a `local:` hash that could never be
+    matched again when the details screen re-fetched. `seriesId` now prefers
+    `id` over `series_id`, matching the existing `stableKey`/`streamId`
+    priority.
+  - Episodes need one dedicated request:
+    `get_ordered_list?movie_id=<id>&category=*&season_id=0&episode_id=0`.
+    Its response rows are seasons, not episodes: each row's own `cmd` is a
+    base64 season descriptor (`"has_files":0`), not a playable stream, and
+    its `"series":[1,2,3,...]` array lists that season's episode numbers.
+    Every episode plays through the *same* season `cmd`, with the episode
+    number passed as create_link's `series=` parameter — added
+    `StalkerClient.seriesEpisodes(seriesId)` to build every season's full
+    episode list from that one response, and `SeriesLoadCoordinator` now
+    calls it directly for any Stalker series with a real provider id
+    (mirroring the existing Xtream direct path) instead of reloading the
+    whole category list, which never had episodes to find.
+  - Episode identity had to be split in two: `Channel.streamId` now carries
+    a value unique across the whole series (`"<season row id>:<episode
+    number>"`) because `PlaybackHistoryStore`/favorites key off it
+    permanently and the raw episode number alone repeats every season (would
+    have merged S01E01 and S02E01 history/favorites); the raw episode number
+    itself travels in `Channel.chId` (unused for `series_ep` elsewhere)
+    purely so `resolve()`/`Repository.playableUrl`/`RelayHub.resolve` can
+    still pass it as `series=`.
+  - The earlier, disproven single-level `"series"`-array read on the
+    category-listing row was removed from `StalkerClient.getVodLike`/`append`
+    (confirmed dead: that field is always empty at that level). The full
+    response is still logged (`SeriesLoad` tag) in case some other portal
+    shapes this differently.
+- Added per-episode descriptions for Stalker/Ministra series. The season-level
+  `get_ordered_list?...&season_id=0` response used above only has a
+  show/season-level description, not one per episode, so
+  `StalkerClient.seriesEpisodes` now issues one additional
+  `get_ordered_list?movie_id=<id>&category=*&season_id=<season row
+  id>&episode_id=<episode number>` request per episode (parallelized on the
+  existing `categoryPool` thread pool, same one used for category-page
+  fetches, so a season with many episodes doesn't serialize) and fills
+  `Channel.plot` from its `"description"` field. Owner-confirmed working on
+  2026-08-10 against their live portal on mobile and Android TV; the response
+  is still logged under the same `SeriesLoad` tag
+  (`"seriesEpisodes episode detail"`) so a portal that shapes this field
+  differently can be diagnosed without new instrumentation. On any failure or
+  unexpected shape it silently falls back to an empty description (episode
+  still loads/plays normally either way).
+  `XtreamClient.seriesEpisodes` has the same missing-description gap and was
+  intentionally left untouched — the reported bug was specific to the
+  Stalker portal; ask before extending this to Xtream.
 - Fixed series episodes silently failing to load and staying stuck on the
   loading spinner (across every source type) when the currently browsed
   section reloaded in the background (e.g. re-picking categories) while a

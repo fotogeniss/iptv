@@ -1,5 +1,6 @@
 package com.prelude.iptv.source
 
+import android.util.Log
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgEntry
 import com.prelude.iptv.data.SourceProgressCallback
@@ -354,6 +355,151 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
     ): List<Channel> = getVodLike("series", catIds, onProgress, onPartial)
 
     /**
+     * Πραγματικά επεισόδια μιας σειράς, ΟΛΩΝ των σεζόν.
+     *
+     * ΓΙΑΤΙ ΞΕΧΩΡΙΣΤΗ ΣΥΝΑΡΤΗΣΗ: το `get_ordered_list` της κατηγορίας (βλ.
+     * [getVodLike]) ΔΕΝ κουβαλάει ποτέ επεισόδια σε αυτό το API — επιβεβαιωμένο
+     * σε πραγματικό portal: κάθε γραμμή σειράς έχει `"series":[]` και `"cmd":""`.
+     * Το Ministra API θέλει ξεχωριστό αίτημα με `movie_id`.
+     *
+     * ΜΙΑ ΚΛΗΣΗ ΑΡΚΕΙ — επιβεβαιωμένο σε πραγματικό portal, `season_id=0`:
+     * κάθε γραμμή της απάντησης είναι μια ΣΕΖΟΝ, όχι επεισόδιο. Το δικό της
+     * `cmd` ΔΕΝ είναι έτοιμο stream (είναι base64 περιγραφέας της σεζόν,
+     * `"has_files":0`) — είναι το ΚΟΙΝΟ cmd που παίρνουν ΟΛΑ τα επεισόδια της
+     * σεζόν στο create_link, με τον αριθμό επεισοδίου στην παράμετρο `series=`
+     * (δες [resolve]). Ο πίνακας `"series":[1,2,3,...]` ΤΗΣ ΓΡΑΜΜΗΣ ΣΕΖΟΝ (όχι
+     * της αρχικής γραμμής σειράς, εκείνη είναι πάντα κενή) λέει ποιοι αριθμοί
+     * επεισοδίων υπάρχουν. Δεν χρειάζεται δεύτερο αίτημα ανά σεζόν.
+     */
+    fun seriesEpisodes(seriesId: String): List<Pair<String, List<Channel>>> {
+        if (base == null) connect()
+        return try {
+            val url = "$base?type=series&action=get_ordered_list&movie_id=" +
+                "${URLEncoder.encode(seriesId, "UTF-8")}&category=*&season_id=0&episode_id=0&JsHttpRequest=1-xml"
+            val raw = providerText(url, activeHeaders())
+            Log.d("SeriesLoad", "seriesEpisodes raw response (seriesId=$seriesId): $raw")
+            val response = JSONObject(raw)
+            val js = response.opt("js")
+            val data = when (js) {
+                is org.json.JSONArray -> js
+                is JSONObject -> js.optJSONArray("data")
+                else -> null
+            } ?: return emptyList()
+
+            val seasons = ArrayList<Pair<String, List<Channel>>>()
+            // (κανάλι, seasonRowId, episodeNum) ώστε να ζητηθεί η περιγραφή
+            // κάθε επεισοδίου παράλληλα, ΑΦΟΥ χτιστεί όλη η λίστα — το request
+            // δεν πρέπει να καθυστερήσει την εμφάνιση της λίστας επεισοδίων.
+            val pendingDescriptions = ArrayList<Triple<Channel, String, String>>()
+            for (i in 0 until data.length()) {
+                val row = data.getJSONObject(i)
+                val label = row.optString("name").takeIf { it.isNotBlank() } ?: "Season ${i + 1}"
+                val seasonCmd = row.optString("cmd")
+                if (seasonCmd.isBlank()) continue
+                val seasonRowId = row.optString("id").ifBlank { "0" }
+                val episodeNumbers = row.optJSONArray("series")
+                val episodes = if (episodeNumbers != null && episodeNumbers.length() > 0) {
+                    // Φάκελος σεζόν: ένα cmd, πολλά επεισόδια μέσω series=.
+                    (0 until episodeNumbers.length()).mapNotNull { epIndex ->
+                        val num = episodeNumbers.optString(epIndex).trim()
+                        if (num.isEmpty()) null
+                        else buildEpisodeChannel(seriesId, seasonCmd, num, label, row)
+                    }
+                } else {
+                    // Χωρίς πίνακα επεισοδίων: η ίδια η γραμμή είναι ήδη ένα
+                    // μεμονωμένο επεισόδιο (σειρά χωρίς φακέλους σεζόν).
+                    listOf(buildEpisodeChannel(seriesId, seasonCmd, (i + 1).toString(), label, row))
+                }
+                if (episodes.isNotEmpty()) {
+                    seasons += label to episodes
+                    episodes.forEach { pendingDescriptions += Triple(it, seasonRowId, it.chId) }
+                }
+            }
+
+            // Η ίδια η λίστα δεν κουβαλάει περιγραφή ανά επεισόδιο (μόνο τον
+            // αριθμό) — χρειάζεται ένα ακόμη αίτημα ΑΝΑ επεισόδιο. Παράλληλα
+            // στο ίδιο μικρό pool με τις σελίδες κατηγοριών, ώστε μια σειρά με
+            // πολλά επεισόδια να μη γίνεται πολλά δευτερόλεπτα αναμονής.
+            val descriptions = pendingDescriptions.map { (channel, seasonRowId, episodeNum) ->
+                channel to categoryPool.submit<String> {
+                    fetchEpisodeDescription(seriesId, seasonRowId, episodeNum)
+                }
+            }
+            val withPlot = descriptions.associate { (channel, future) ->
+                val plot = try {
+                    future.get()
+                } catch (e: Exception) {
+                    ""
+                }
+                channel to plot
+            }
+            seasons.map { (label, episodes) ->
+                label to episodes.map { ch -> ch.copy(plot = withPlot[ch] ?: ch.plot) }
+            }
+        } catch (e: Exception) {
+            rethrowIfCancelled(e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Περιγραφή ενός συγκεκριμένου επεισοδίου. ΔΕΝ έχει επιβεβαιωθεί σε
+     * πραγματικό portal το ακριβές σχήμα της απάντησης σε αυτό το βάθος
+     * (`episode_id=<αριθμός>`) — καταγράφεται ολόκληρη η ωμή απάντηση ώστε αν
+     * η υπόθεση για το πεδίο `"description"` είναι λάθος να φανεί αμέσως.
+     */
+    private fun fetchEpisodeDescription(seriesId: String, seasonRowId: String, episodeNum: String): String {
+        return try {
+            val url = "$base?type=series&action=get_ordered_list&movie_id=" +
+                "${URLEncoder.encode(seriesId, "UTF-8")}&category=*&season_id=" +
+                "${URLEncoder.encode(seasonRowId, "UTF-8")}&episode_id=" +
+                "${URLEncoder.encode(episodeNum, "UTF-8")}&JsHttpRequest=1-xml"
+            val raw = providerText(url, activeHeaders())
+            Log.d(
+                "SeriesLoad",
+                "seriesEpisodes episode detail (seriesId=$seriesId, season=$seasonRowId, episode=$episodeNum): $raw",
+            )
+            val response = JSONObject(raw)
+            val js = response.opt("js")
+            val row = when (js) {
+                is JSONObject -> js.optJSONArray("data")?.optJSONObject(0) ?: js
+                is org.json.JSONArray -> js.optJSONObject(0)
+                else -> null
+            }
+            row?.optString("description").orEmpty()
+        } catch (e: Exception) {
+            rethrowIfCancelled(e)
+            ""
+        }
+    }
+
+    private fun buildEpisodeChannel(
+        seriesId: String,
+        cmd: String,
+        episodeNum: String,
+        seasonLabel: String,
+        row: JSONObject,
+    ): Channel = Channel(
+        name = "Επεισόδιο $episodeNum",
+        group = seasonLabel,
+        logo = row.optString("screenshot_uri").ifEmpty { row.optString("logo") },
+        cmd = cmd,
+        // ΠΡΟΣΟΧΗ, δύο διαφορετικά πράγματα: το streamId ταυτοποιεί το
+        // επεισόδιο μόνιμα (ιστορικό/αγαπημένα το χρησιμοποιούν ως κλειδί —
+        // δες PlaybackHistoryStore.historyMatchKey) και ΠΡΕΠΕΙ να είναι
+        // μοναδικό σε ΟΛΗ τη σειρά, όχι μόνο μέσα σε μία σεζόν — ο αριθμός
+        // επεισοδίου επαναλαμβάνεται σε κάθε σεζόν. Ο αριθμός επεισοδίου
+        // μένει στο chId (αχρησιμοποίητο για series_ep παντού αλλού) — αυτόν
+        // χρειάζεται το create_link ως series= στο
+        // resolve()/Repository.playableUrl/RelayHub.
+        streamId = "${row.optString("id")}:$episodeNum",
+        chId = episodeNum,
+        kind = "series_ep",
+        seriesId = seriesId,
+        year = row.optString("year"),
+    )
+
+    /**
      * Κατεβάζει ΟΛΕΣ τις σελίδες μιας λίστας του portal.
      *
      * ΓΙΑΤΙ: το Stalker σερβίρει ~14 items/σελίδα. Μια κατηγορία 3.000 ταινιών
@@ -489,14 +635,28 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                 }
                 if (!seen.add(stableKey)) return@forEach
                 val categoryId = ch.optString("category_id").ifBlank { fallbackCategoryId }
+                val rawCmd = ch.optString("cmd")
+                // Ίδια σειρά προτεραιότητας με το stableKey/streamId παραπάνω: σε
+                // αυτό το portal το "series_id" είναι κενό στη γραμμή της σειράς —
+                // το πραγματικό αναγνωριστικό είναι το "id". Όταν διαβάζαμε μόνο
+                // "series_id", ο normalizer έπεφτε πάντα σε τοπικό (local:) hash
+                // αντί για το πραγματικό id, οπότε το επόμενο fetch (λεπτομέρειες
+                // σειράς) δεν έβρισκε ποτέ τα επεισόδια που μόλις χτίσαμε παρακάτω.
+                val seriesId = if (type == "series") {
+                    ch.optString("id").ifBlank { ch.optString("series_id") }
+                } else ""
                 result.add(Channel(
                     name = ch.optString("name", "Άγνωστο"),
                     group = cats[categoryId] ?: fallbackGroup,
                     logo = ch.optString("screenshot_uri").ifEmpty { ch.optString("logo") },
-                    cmd = ch.optString("cmd"),
+                    // Μια σειρά ΔΕΝ παίζεται η ίδια — μόνο τα επεισόδιά της. Το cmd
+                    // μένει εδώ κενό ώστε ο normalizer να την αναγνωρίζει ως
+                    // container (ίδια σύμβαση με Xtream/M3U), το πραγματικό cmd
+                    // πάει στα επεισόδια παρακάτω.
+                    cmd = if (type == "series") "" else rawCmd,
                     streamId = ch.optString("id").ifEmpty { ch.optString("movie_id") },
                     kind = if (type == "series") "series" else "vod",
-                    seriesId = if (type == "series") ch.optString("series_id") else "",
+                    seriesId = seriesId,
                     plot = ch.optString("description"),
                     cast = ch.optString("actors"),
                     director = ch.optString("director"),
@@ -504,6 +664,10 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                     year = ch.optString("year"),
                     duration = ch.optString("time").ifEmpty { ch.optString("duration") }
                 ))
+                // Επεισόδια: ΟΧΙ εδώ. Το get_ordered_list της κατηγορίας δεν
+                // κουβαλάει ποτέ επεισόδια σε αυτό το API (επιβεβαιωμένο σε
+                // πραγματικό portal: πάντα "cmd":"" και "series":[] σε αυτή τη
+                // γραμμή) — χρειάζεται το ξεχωριστό αίτημα σε [seriesEpisodes].
                 if (result.size % 100 == 0) onPartial?.invoke(result)
             }
         }
@@ -550,7 +714,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
      * Η συντόμευση μένει για τα ζωντανά: εκεί γλιτώνει ένα round-trip σε κάθε
      * αλλαγή καναλιού, που είναι η πιο συχνή ενέργεια σε IPTV.
      */
-    fun resolve(cmd: String, vod: Boolean = false): String {
+    fun resolve(cmd: String, vod: Boolean = false, episodeNum: String = ""): String {
         // Το URL μέσα στο cmd. Χρήσιμο και ως έσχατη λύση παρακάτω.
         val direct = Regex("https?://\\S+").find(cmd)?.value ?: ""
         val usableDirect = direct.isNotEmpty() &&
@@ -570,7 +734,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
 
         val attempts = LinkedHashMap<String, String>()
         for (type in order) {
-            val raw = createLinkRaw(type, cmd)
+            val raw = createLinkRaw(type, cmd, episodeNum)
             attempts[type] = raw
             val http = extractHttp(raw)
             if (http.isNotEmpty()) return http
@@ -586,11 +750,15 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         )
     }
 
-    private fun createLinkRaw(type: String, cmd: String): String {
+    private fun createLinkRaw(type: String, cmd: String, episodeNum: String = ""): String {
         return try {
             // encodeURIComponent-style (space → %20, όχι +)
             val enc = URLEncoder.encode(cmd, "UTF-8").replace("+", "%20")
-            val extra = "&series=&forced_storage=undefined&disable_ad=0&download=0&force_ch_link_check=0"
+            // Ένα σειραϊκό cmd είναι κοινό για όλα τα επεισόδια· το portal ξέρει
+            // ΠΟΙΟ επεισόδιο θέλουμε από αυτή την παράμετρο (κενή = ταινία/live,
+            // όπως πριν).
+            val seriesParam = if (episodeNum.isNotBlank()) URLEncoder.encode(episodeNum, "UTF-8") else ""
+            val extra = "&series=$seriesParam&forced_storage=undefined&disable_ad=0&download=0&force_ch_link_check=0"
             val url = "$base?type=$type&action=create_link&cmd=$enc$extra&JsHttpRequest=1-xml"
             providerText(url, activeHeaders())
         } catch (e: Exception) {

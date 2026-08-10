@@ -18,13 +18,17 @@ object RelayHub {
         // συνάρτηση — αν έμενε πίσω, το relay θα σέρβιρε τους ίδιους νεκρούς
         // συνδέσμους που μόλις διορθώσαμε στον player.
         val vod = ch.kind != "live"
+        // chId κρατά τον πραγματικό αριθμό επεισοδίου· το streamId ταυτοποιεί
+        // το επεισόδιο μόνιμα (ιστορικό/αγαπημένα) και επαναλαμβάνεται ανά
+        // σεζόν, άρα δεν είναι ασφαλές εδώ — δες Repository.playableUrl.
+        val episodeNum = if (ch.kind == "series_ep") ch.chId else ""
         return if (ch.cmd.isNotEmpty() && st != null) {
             try {
-                st.resolve(ch.cmd, vod = vod)
+                st.resolve(ch.cmd, vod = vod, episodeNum = episodeNum)
             } catch (e: Exception) {
                 // token μπορεί να έληξε — ξανασυνδέσου και δοκίμασε ξανά
                 st.connect()
-                st.resolve(ch.cmd, vod = vod)
+                st.resolve(ch.cmd, vod = vod, episodeNum = episodeNum)
             }
         } else ch.url
     }

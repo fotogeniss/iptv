@@ -157,7 +157,14 @@ object Repository {
      */
     fun playableUrl(ch: Channel, stalker: StalkerClient?): String {
         return if (ch.cmd.isNotEmpty() && stalker != null) {
-            stalker.resolve(ch.cmd, vod = ch.kind != "live")
+            stalker.resolve(
+                ch.cmd,
+                vod = ch.kind != "live",
+                // chId κρατά τον πραγματικό αριθμό επεισοδίου· το streamId
+                // ταυτοποιεί το επεισόδιο μόνιμα (ιστορικό/αγαπημένα) και
+                // επαναλαμβάνεται ανά σεζόν, άρα δεν είναι ασφαλές εδώ.
+                episodeNum = if (ch.kind == "series_ep") ch.chId else "",
+            )
         } else ch.url
     }
 

@@ -37,7 +37,9 @@ internal class SeriesLoadCoordinator(
         playlist: Playlist,
         series: Channel,
         cached: List<Pair<String, List<Channel>>>?,
-    ): Boolean = cached.isNullOrEmpty() && !hasDirectXtreamEndpoint(playlist, series)
+    ): Boolean = cached.isNullOrEmpty() &&
+        !hasDirectXtreamEndpoint(playlist, series) &&
+        !hasDirectStalkerEndpoint(playlist, series)
 
     suspend fun load(
         playlist: Playlist,
@@ -62,12 +64,46 @@ internal class SeriesLoadCoordinator(
             return Outcome(seasons = seasons)
         }
 
+        if (hasDirectStalkerEndpoint(playlist, series)) {
+            return loadStalkerDirect(playlist, series)
+        }
+
         return loadFreshCatalog(playlist, series, rememberedCategoryIds, progress)
     }
 
     fun cancel() {
         pendingStalker?.cancelPendingRequests()
         pendingStalker = null
+    }
+
+    /**
+     * The category listing never carries episodes for Stalker/Ministra portals
+     * (confirmed against a live portal: every series row reports `cmd=""` and
+     * `series=[]`). A series with a real provider id can skip straight to the
+     * dedicated per-series fetch instead of reloading the whole category list
+     * only to resolve to a `local:` id it will never match against.
+     */
+    private suspend fun loadStalkerDirect(playlist: Playlist, series: Channel): Outcome {
+        var connectedStalker: StalkerClient? = null
+        return try {
+            val seasons = catalogLoader.withProviderLock {
+                withContext(Dispatchers.IO) {
+                    Repository.stalkerConnect(playlist).also { client ->
+                        connectedStalker = client
+                        pendingStalker = client
+                    }.seriesEpisodes(series.seriesId)
+                }
+            }
+            Outcome(seasons = seasons, stalkerClient = connectedStalker)
+        } catch (cancelled: CancellationException) {
+            connectedStalker?.cancelPendingRequests()
+            throw cancelled
+        } catch (error: Exception) {
+            connectedStalker?.cancelPendingRequests()
+            throw error
+        } finally {
+            if (pendingStalker === connectedStalker) pendingStalker = null
+        }
     }
 
     private suspend fun loadFreshCatalog(
@@ -128,6 +164,11 @@ internal class SeriesLoadCoordinator(
 
     private fun hasDirectXtreamEndpoint(playlist: Playlist, series: Channel): Boolean =
         playlist.type == PlaylistType.XTREAM &&
+            series.seriesId.isNotBlank() &&
+            !series.seriesId.startsWith("local:")
+
+    private fun hasDirectStalkerEndpoint(playlist: Playlist, series: Channel): Boolean =
+        playlist.type == PlaylistType.STALKER &&
             series.seriesId.isNotBlank() &&
             !series.seriesId.startsWith("local:")
 }

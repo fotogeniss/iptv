@@ -30,6 +30,31 @@ class CatalogNormalizerTest {
         assertTrue(normalized.seriesEpisodes.isEmpty())
     }
 
+    /**
+     * Regression for the Stalker/Ministra "0 seasons" bug: a series container
+     * carries no url/cmd of its own (see previous test), but StalkerClient now
+     * expands the portal's per-row episode-number array into explicit
+     * `series_ep` rows sharing the container's real provider seriesId, in the
+     * same raw list. The normalizer must group them under that same id instead
+     * of leaving seriesEpisodes empty for it.
+     */
+    @Test
+    fun `explicit series_ep rows sharing a container's seriesId populate its episodes`() {
+        val raw = listOf(
+            Channel("Dark", kind = "series", seriesId = "42", logo = "cover"),
+            Channel("Επεισόδιο 1", kind = "series_ep", seriesId = "42", cmd = "cmd1", streamId = "1"),
+            Channel("Επεισόδιο 2", kind = "series_ep", seriesId = "42", cmd = "cmd1", streamId = "2"),
+        )
+
+        val normalized = CatalogNormalizer.normalize("series", raw)
+
+        assertEquals(1, normalized.items.size)
+        assertEquals("42", normalized.items.single().seriesId)
+        val seasons = normalized.seriesEpisodes.getValue("42")
+        assertEquals(listOf("Season 1"), seasons.map { it.first })
+        assertEquals(listOf("1", "2"), seasons.single().second.map { it.streamId })
+    }
+
     @Test
     fun `search hides episode rows when parent exists`() {
         val items = listOf(
