@@ -44,6 +44,8 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `e26a5aa` | `fix: give each Stalker episode its own identity key` |
 | `2aa060c` | `feat: add a greeklish title matching policy` |
 | `8ec4658` | `fix: find greeklish-titled Greek series on TMDB` |
+| `147433a` | `fix: stop caching failed TMDB episode lookups in memory` |
+| `3ab8810` | `feat: log TMDB title lookup under a TmdbLookup tag` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
@@ -100,11 +102,31 @@ to the display path — all four episode renderers were already correct.
   titles first** — that request was made and the owner chose to proceed without
   them, which is why the design avoids depending on any one convention.
 
-**How to check on device:** open a Greek series whose list title is in Latin
-characters, and compare two episodes' descriptions. Different text per episode
-means the lookup now resolves. If they are still identical, the query is not
-matching and the next step is to log the generated query and the TMDB response
-rather than to adjust the transliteration blindly.
+**The owner reported it still failing after `8ec4658`.** Two things followed,
+and neither is a guess at the transliteration:
+
+- `147433a` fixed a real, provable bug found while investigating: `episodeMeta`
+  cached an **empty** result in memory, so one throttled or dropped call marked
+  a series unknown for the whole life of the process. Opening a season fires
+  many card lookups at once against a semaphore, so this was easy to trigger and
+  would mask any lookup fix. It is the same shape of mistake as the favKey one —
+  a guard applied to `fetch()` and the disk cache but never to the neighbouring
+  in-memory write, with the file's own comment explaining why it was wrong.
+- `3ab8810` added the `TmdbLookup` tag, because TMDB search fails silently and
+  the screen cannot tell the three failure modes apart.
+
+**Do not touch the transliteration until a `TmdbLookup` capture exists.** The
+log distinguishes exactly the cases that need opposite fixes:
+
+| Log line shows | Meaning | Fix direction |
+| --- | --- | --- |
+| `δεν θεωρήθηκε greeklish` | `looksGreeklish` rejected the title | widen detection, or the title has an English marker word |
+| `ερώτημα «…»` then `0 αποτελέσματα` | TMDB found nothing for the Greek query | improve `toGreek`, needs real titles |
+| results listed, `ταίριασμα=0` | TMDB found the show but the skeleton comparison rejected it | loosen `isSameTitle` / fix skeleton |
+| `tmdbId=` non-zero, `0 επεισόδια` | series resolved but the season number is wrong | the season index passed by the caller, not this policy |
+
+The fourth row is worth stressing: nothing in the greeklish work touches the
+season number, and a Stalker season label is free-form provider text.
 
 **Verification method used instead of Gradle:** the policy was prototyped and
 run outside the build against 24 Greek/greeklish title pairs spanning four
