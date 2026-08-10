@@ -131,6 +131,17 @@ fun TvPlaybackOverlay(
             transitionDirection = transitionDirection,
             resolveUrl = resolveUrl,
             loadResumeMs = loadResumeMs,
+            onOutgoingFrameCaptured = { frame ->
+                // Ίδια λογική με το MobilePlaybackOverlay: καλύπτει αμέσως την
+                // πραγματική επιφάνεια με το παγωμένο τελευταίο καρέ πριν καν
+                // ξεκινήσει η επίλυση/άνοιγμα, ώστε η πραγματική εναλλαγή ροής
+                // να μη φαίνεται σαν ξένο "φλας" πριν το εφέ.
+                channelTransition = LiveChannelTransitionRequest(
+                    sequence = ++channelTransitionSequence,
+                    direction = transitionDirection ?: 1,
+                    outgoingFrame = frame,
+                )
+            },
         )) {
             is LiveChannelOpenResult.Failed -> {
                 result.cause?.let { error ->
@@ -145,15 +156,14 @@ fun TvPlaybackOverlay(
                     "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
                         "url='${channel.url}' cmd='${channel.cmd}'",
                 )
+                channelTransition = null
                 failed = true
             }
             is LiveChannelOpenResult.Opened -> {
-                result.transition?.let { prepared ->
-                    channelTransition = LiveChannelTransitionRequest(
-                        sequence = ++channelTransitionSequence,
-                        direction = prepared.direction,
-                        outgoingFrame = prepared.outgoingFrame,
-                    )
+                channelTransition = if (result.transitionCommitted) {
+                    channelTransition?.copy(startReveal = true)
+                } else {
+                    null
                 }
             }
         }

@@ -7,6 +7,11 @@ internal data class LiveChannelTransitionRequest(
     val sequence: Int,
     val direction: Int,
     val outgoingFrame: CapturedVideoFrame?,
+    // false = «κράτημα»: το παγωμένο outgoingFrame καλύπτει ήδη ολόκληρη την
+    // οθόνη (βλ. edgeFraction στο phase 0) αλλά δεν κινείται ακόμα — έτσι
+    // καλύπτεται η πραγματική εναλλαγή ροής χωρίς να φανεί σαν ξένο "φλας".
+    // true = ξεκινά το κανονικό reveal animation προς το νέο κανάλι.
+    val startReveal: Boolean = false,
 )
 
 /** Android-free transition policy shared by the mobile and TV renderers. */

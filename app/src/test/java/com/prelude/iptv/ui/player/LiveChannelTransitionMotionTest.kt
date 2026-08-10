@@ -79,4 +79,23 @@ class LiveChannelTransitionMotionTest {
         assertEquals(.08f, TvLiveChannelTransitionMotion.MAX_DIM_ALPHA, 0.0001f)
         assertEquals(1f, TvLiveChannelTransitionMotion.intensity(.5f), 0.0001f)
     }
+
+    // Regression for the reported pre-effect "flash": a held (not-yet-revealed)
+    // request must default to startReveal=false, and at phase 0 (the held
+    // state) the outgoing frame's clip already spans the full width in both
+    // directions — i.e. the frozen frame fully covers the real surface before
+    // any reveal animation starts, instead of leaving it briefly uncovered.
+    @Test fun `a held transition request defaults to not revealing yet`() {
+        val held = LiveChannelTransitionRequest(
+            sequence = 1,
+            direction = 1,
+            outgoingFrame = null,
+        )
+        assertEquals(false, held.startReveal)
+    }
+
+    @Test fun `outgoing frame fully covers the screen at the held phase`() {
+        assertEquals(1f, LiveChannelTransitionMotion.edgeFraction(0f, direction = 1), 0.0001f)
+        assertEquals(0f, LiveChannelTransitionMotion.edgeFraction(0f, direction = -1), 0.0001f)
+    }
 }

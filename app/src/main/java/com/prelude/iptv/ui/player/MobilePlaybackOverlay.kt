@@ -245,6 +245,18 @@ fun MobilePlaybackOverlay(
             transitionDirection = transitionDirection,
             resolveUrl = resolveUrl,
             loadResumeMs = loadResumeMs,
+            onOutgoingFrameCaptured = { frame ->
+                // Καλύπτει αμέσως την πραγματική επιφάνεια με το παγωμένο
+                // τελευταίο καρέ, ΠΡΙΝ καν ξεκινήσει η επίλυση/άνοιγμα του
+                // νέου καναλιού. Διαφορετικά η πραγματική εναλλαγή ροής
+                // (μαύρο/artifact) φαινόταν σαν ένα ξένο "φλας" πριν προλάβει
+                // να ξεκινήσει το εφέ — startReveal=false το κρατά ακίνητο.
+                channelTransition = LiveChannelTransitionRequest(
+                    sequence = ++channelTransitionSequence,
+                    direction = transitionDirection ?: 1,
+                    outgoingFrame = frame,
+                )
+            },
         )) {
             is LiveChannelOpenResult.Failed -> {
                 result.cause?.let { error ->
@@ -261,18 +273,21 @@ fun MobilePlaybackOverlay(
                     "Κενή διεύθυνση για «${channel.name}» · kind=${channel.kind} · " +
                         "url='${channel.url}' cmd='${channel.cmd}'"
                 )
+                // Αν είχε προλάβει να παγώσει καρέ πριν αποτύχει η επίλυση,
+                // δεν έχει νόημα να μείνει κολλημένο πάνω από την οθόνη λάθους.
+                channelTransition = null
                 failed = true
             }
             is LiveChannelOpenResult.Opened -> {
-                result.transition?.let { prepared ->
-                    channelTransition = LiveChannelTransitionRequest(
-                        sequence = ++channelTransitionSequence,
-                        direction = prepared.direction,
-                        outgoingFrame = prepared.outgoingFrame,
-                    )
+                if (result.transitionCommitted) {
+                    channelTransition = channelTransition?.copy(startReveal = true)
                     channelToast = title
                     delay(900)
                     channelToast = null
+                } else {
+                    // Ποτέ δεν ήρθε καρέ (timeout) — δεν έχει νόημα να μείνει
+                    // παγωμένο το παλιό κανάλι πάνω από ό,τι δείχνει τώρα η μηχανή.
+                    channelTransition = null
                 }
             }
         }

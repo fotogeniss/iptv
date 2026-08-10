@@ -5,6 +5,33 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed a brief unwanted "flash" right before the live-channel directional
+  transition effect on mobile and TV. Root cause: the transition overlay
+  (`MobileLiveChannelTransition`/`TvLiveChannelTransition`) previously only
+  came into existence *after* the new channel's first frame was confirmed
+  rendered — `LiveChannelTransitionCoordinator.open()` captured the outgoing
+  frame internally but only handed it to the caller inside the final
+  `Opened(transition = ...)` result. That left the real video surface fully
+  uncovered for the entire resolve-URL + `engine.open()` + first-frame-wait
+  window, during which the surface itself briefly shows a black/decoder
+  artifact frame as it switches sources — visible as a stray flash before the
+  deliberate wavy effect began. Fix: `open()` now takes an
+  `onOutgoingFrameCaptured` callback invoked immediately once the frame is
+  captured, before URL resolution even starts; both overlays use it to cover
+  the surface right away with a static, non-animating "held" request
+  (`LiveChannelTransitionRequest.startReveal = false` — at that phase the
+  frozen frame already spans the full width per `edgeFraction`, so coverage
+  is complete with no seam) and only flip `startReveal = true` to start the
+  reveal animation once the coordinator confirms the new frame committed. If
+  resolution/opening fails or times out, the held frame is dropped instead of
+  animating. Added regression tests
+  (`a held transition request defaults to not revealing yet`,
+  `outgoing frame fully covers the screen at the held phase`) in
+  `LiveChannelTransitionMotionTest.kt`. No visual design changed (same wave/
+  colors/timing as the already-approved prototype) — only when the existing
+  effect starts covering the surface — so no new HTML preview was made; this
+  restores the previously approved effect's intended seamless behavior.
+  Owner-confirmed on 2026-08-10 on both mobile and Android TV.
 - Localized the OpenSubtitles result fallback title (shown when a result has
   no usable filename/release/title and the search query itself is blank).
   `SubtitleResultNamePolicy.displayName` now takes a caller-supplied

@@ -41,7 +41,12 @@ internal fun MobileLiveChannelTransition(
         onDispose { request.outgoingFrame?.recycle() }
     }
 
-    LaunchedEffect(request.sequence) {
+    // Πριν το startReveal γίνει true, ΔΕΝ τρέχει animation — το progress
+    // μένει στο 0, όπου το outgoingFrame ήδη καλύπτει ολόκληρη την οθόνη
+    // (βλ. edgeFraction), κρατώντας παγωμένο το τελευταίο καρέ πάνω από την
+    // πραγματική επιφάνεια όσο διαρκεί η επίλυση/άνοιγμα του νέου καναλιού.
+    LaunchedEffect(request.sequence, request.startReveal) {
+        if (!request.startReveal) return@LaunchedEffect
         progress.animateTo(
             targetValue = 1f,
             animationSpec = tween(
