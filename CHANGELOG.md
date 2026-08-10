@@ -5,6 +5,17 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed episode descriptions and stills staying empty for the rest of the app's
+  life after a single failed TMDB lookup. `TmdbClient.episodeMeta` wrote its
+  result into `episodeMemCache` even when that result was empty. The disk cache
+  was already guarded (`if (result.isNotEmpty())`) and `fetch()` already returns
+  early without caching a miss — the file's own comment describes removing this
+  exact negative cache and why — but the in-memory write in `episodeMeta` was
+  never brought in line. An empty map cannot distinguish "TMDB has no such
+  season" from "the call was rate-limited or the network dropped", and opening a
+  season fires many card lookups at once against a semaphore-limited pool, so a
+  single throttled miss marked the series unknown until the process was killed.
+  Empty results are now returned without being cached at any level.
 - Fixed Greek series whose titles are written in Latin characters ("greeklish")
   showing the show's general synopsis on every episode instead of that
   episode's own. The per-episode display path was already correct everywhere
