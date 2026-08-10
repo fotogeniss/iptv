@@ -21,7 +21,11 @@ that sat uncommitted because the sandboxed agent shell was unavailable for
 its entire duration. This session ran the static gates, split that work into
 six cohesive commits and committed all of them. The owner confirmed on
 2026-08-10 that the app builds and behaves correctly on **both mobile and
-Android TV**, which covers every fix below.
+Android TV**, which covers the first six fixes below.
+
+`e26a5aa` came afterwards, from a bug the owner reported once episodes were
+finally playable, and is **not yet device-confirmed** — ask them to change
+episodes from the next-episode card and from the list under the video.
 
 Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 
@@ -33,11 +37,41 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `7118354` | `feat: localize the subtitle result fallback title` |
 | `718965f` | `fix: cover the video surface before the live channel transition starts` |
 | `3fa2cd2` | `perf: restore gzip and raise provider concurrency for Stalker catalogs` |
+| `e26a5aa` | `fix: give each Stalker episode its own identity key` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
 repeated here. What follows is only what a future session still needs to
 know that the changelog does not say.
+
+### The identity-key lesson — read before touching episodes again
+
+`e26a5aa` existed only because `81dcbb1` fixed **one** of the two identity keys
+in this codebase and nobody checked for a second one. That is the mistake worth
+not repeating.
+
+There are two independent identity functions for a `Channel`, they disagree
+about which fields matter, and both are persisted:
+
+| Function | Basis | Used by |
+| --- | --- | --- |
+| `PlaybackHistoryStore.historyMatchKey` | `streamId`, then `seriesId`, then `chId`, then metadata | history reconciliation and migration |
+| `PlaybackQueue.favKey` | `url`, then `cmd`, then `seriesId` — **never `streamId`** | favorites, recents, resume position, subtitle requests, `LibraryPolicy.unique`, `CatalogPolicy.key`, `libraryKey` |
+
+`81dcbb1` made `streamId` unique per episode precisely because
+`historyMatchKey` keys off it, and its own changelog entry says so. But
+`favKey` — which the entire UI layer actually calls, and which the player uses
+for resume position — does not look at `streamId` at all, so it kept falling
+through to `cmd`, which Stalker deliberately shares across a whole season.
+
+The general shape of the trap: **a Stalker episode is not identified by its
+`cmd` or its `url`.** It is identified by the `series=` number that
+`create_link` receives. Any new code that keys, de-duplicates, groups or
+persists episodes must go through `PlaybackQueue.favKey` rather than inventing
+its own key from `url`/`cmd`, and any change to `favKey` is a stored-data
+contract change that needs the reasoning written down. `PlaybackQueueIdentityTest`
+now pins both the new episode behavior and the unchanged live/VOD/series/Xtream
+keys; if a future change makes it fail, that is the contract talking.
 
 ### Still-open follow-ups
 
@@ -84,14 +118,18 @@ know that the changelog does not say.
   every git write command. There is no longer any need to ask the owner to
   delete lock files from Windows, and no need to avoid chaining git commands.
 
-### Static gate results at `3fa2cd2`
+### Static gate results at `e26a5aa`
 
 All six gates in section 9 pass. `git diff --check` is clean. Two standing,
 pre-existing warnings: the `MainViewModel` size warning above, and the
 documented global-cleartext compatibility exception in
 `deep_validation_audit`. Gradle was **not** run — the owner builds in
-Android Studio, and their 2026-08-10 report is the build evidence for this
-batch.
+Android Studio, and their 2026-08-10 report is the build evidence for the
+first six commits. `e26a5aa` has no device evidence yet; its logic was
+verified by reproducing `favKey` and `NextEpisodePolicy.nextAfter` outside the
+build, which shows the season's four episodes collapsing to one key before the
+change and to four after it, with the live/VOD/series/Xtream keys byte-identical
+either way. That is static reasoning, not a runtime result.
 
 ## 1. Non-negotiable working agreement
 
@@ -937,12 +975,17 @@ The owner can paste the following after attaching or referencing this file:
 > `git status --short` and `git log --oneline -10` first; do not trust an old
 > completion claim without tracing the active code path.
 >
-> The live bug-fix batch is **done, owner-confirmed on mobile and Android TV,
-> and committed** — nothing there is pending. Do not re-verify or re-commit it.
-> Section 0 lists the four follow-ups it left open (Xtream's matching
-> missing-description gap, the intentionally retained `SeriesLoad` logging, the
-> per-episode description field name, and `MainViewModel`'s size warning);
-> raise any of them only if the owner asks or the work naturally touches them.
+> The live bug-fix batch is **committed and owner-confirmed on mobile and
+> Android TV** — do not re-verify or re-commit it. The one exception is
+> `e26a5aa` (per-episode identity key), which is committed and gate-clean but
+> **not device-confirmed**: ask the owner to change episodes both from the
+> next-episode card and from the list under the video. Section 0 also lists the
+> follow-ups the batch left open (Xtream's matching missing-description gap,
+> the intentionally retained `SeriesLoad` logging, the per-episode description
+> field name, and `MainViewModel`'s size warning); raise those only if the
+> owner asks or the work naturally touches them. Read section 0's
+> identity-key lesson before writing any code that keys, groups or persists
+> episodes.
 >
 > **Resume the localization audit as the primary task.** Profiles, parental PIN
 > and encrypted backup/restore, billing and Premium, legal and privacy,
