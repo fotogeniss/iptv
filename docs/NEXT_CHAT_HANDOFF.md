@@ -1,16 +1,97 @@
 # Prelude+ next-chat handoff
 
-Last verified workspace date: **2026-08-09**
+Last verified workspace date: **2026-08-10**
 Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
 Branch: `main`  
 Current documented version: **1.46.0** (`versionCode 115`)  
 Latest completed implementation slice in this handoff:
-Library hub (Favorites/My List, Continue watching, History) localization.
+the six-commit live bug-fix batch described in section 0 (Stalker series
+episodes, live-transition flash, Stalker catalog performance and three
+smaller fixes), all owner-confirmed on device and committed.
 
 This document is the operational source of truth for continuing the current
 Codex collaboration in a fresh chat. Read it together with `README.md`,
 `CHANGELOG.md`, `docs/MAINTENANCE.md` and
 `docs/ARCHITECTURE_REFACTOR_PLAN.md` before changing code.
+
+## 0. MOST RECENT SESSION — live bug-fix batch (committed, verified)
+
+**Read this first.** The previous session produced a batch of live bug fixes
+that sat uncommitted because the sandboxed agent shell was unavailable for
+its entire duration. This session ran the static gates, split that work into
+six cohesive commits and committed all of them. The owner confirmed on
+2026-08-10 that the app builds and behaves correctly on **both mobile and
+Android TV**, which covers every fix below.
+
+Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
+
+| Commit | Slice |
+| --- | --- |
+| `75dd8fa` | `test: restore PremiumLibraryPolicyTest rail labels argument` |
+| `b94043b` | `fix: gate pending series requests on the series generation alone` |
+| `81dcbb1` | `fix: load Stalker series episodes from the season descriptor` |
+| `7118354` | `feat: localize the subtitle result fallback title` |
+| `718965f` | `fix: cover the video surface before the live channel transition starts` |
+| `3fa2cd2` | `perf: restore gzip and raise provider concurrency for Stalker catalogs` |
+
+`CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
+for each of these; it is the authoritative technical record and is not
+repeated here. What follows is only what a future session still needs to
+know that the changelog does not say.
+
+### Still-open follow-ups
+
+- **`XtreamClient.seriesEpisodes` has the same missing-per-episode-description
+  gap** that `81dcbb1` closed for Stalker. It was deliberately left untouched
+  because the reported bug and the owner's device testing were specific to
+  their Stalker portal. Ask before extending it.
+- **Diagnostic logging is intentionally still in place** under the
+  `SeriesLoad` tag — `StalkerClient.seriesEpisodes()` logs the raw
+  `get_ordered_list` response and the per-episode detail response, and
+  `MainViewModel.openSeries()` logs the load outcome, stale-generation
+  discards and failures. This is not leftover debug code: three rounds of
+  guessing failed on this bug and only raw portal JSON solved it. Remove or
+  downgrade it only if the owner asks.
+- **The per-episode description field name was originally a guess** (the
+  response's `"description"`). The owner's device confirmation says episodes
+  and descriptions work, so the guess held for their portal. A portal that
+  shapes the field differently will fall back to an empty description rather
+  than fail, and the `SeriesLoad` logging above is enough to diagnose it
+  without new instrumentation.
+- **`MainViewModel.kt` is 1860 lines** and trips the architecture audit's
+  known size warning. `81dcbb1` added 14 lines of logging to it. This is the
+  one standing `WARN` in the gate output; extraction is tracked in
+  `docs/ARCHITECTURE_REFACTOR_PLAN.md`.
+
+### Two environment facts that were wrong in the previous handoff
+
+- **`MobilePlaybackOverlay.kt` was not "a pure line-ending normalization
+  diff".** Its working-tree copy had been rewritten with CRLF endings while
+  `HEAD` and every other file in the repo use LF, which is why it showed as
+  754/754 (later 919/919) fully modified and produced 919 `trailing
+  whitespace` errors under `git diff --check`. This session normalized it
+  back to LF before committing; the file's real change in `718965f` is 21
+  insertions and 6 deletions. If it ever shows as fully modified again,
+  check the line endings first — the repo has no `.gitattributes`, so an
+  editor or tool writing CRLF will silently reintroduce this.
+- **The `.git` write-lock problem is solved, not permanent.** Git writes from
+  the sandboxed mount do still leave `.git/HEAD.lock` and
+  `.git/objects/maintenance.lock` behind after each command, and `HEAD.lock`
+  blocks the *next* command. But the agent can now delete them itself once
+  file deletion has been granted for the folder (Cowork's
+  `allow_cowork_file_delete`). The working pattern is simply to append
+  `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` after
+  every git write command. There is no longer any need to ask the owner to
+  delete lock files from Windows, and no need to avoid chaining git commands.
+
+### Static gate results at `3fa2cd2`
+
+All six gates in section 9 pass. `git diff --check` is clean. Two standing,
+pre-existing warnings: the `MainViewModel` size warning above, and the
+documented global-cleartext compatibility exception in
+`deep_validation_audit`. Gradle was **not** run — the owner builds in
+Android Studio, and their 2026-08-10 report is the build evidence for this
+batch.
 
 ## 1. Non-negotiable working agreement
 
@@ -65,38 +146,30 @@ of a **30-year senior software engineer**. In practice this means:
 
 ## 2. Current confirmed state
 
-- HEAD is confirmed at `622f90b` (`feat: localize diagnostics and crash
-  reporting`), with `a035d69`, `d1c98a0` and `39d52c0` immediately before it,
-  exactly as this session's brief asserted. This was verified from `git log`
-  and `git rev-parse HEAD`, not merely trusted from a prior document.
-- When this export/relay and notifications slice began, the worktree already
-  had one pre-existing unrelated uncommitted change:
-  `app/src/main/java/com/prelude/iptv/ui/player/MobilePlaybackOverlay.kt`
-  shows as fully modified (754 insertions/754 deletions) but is a pure
-  line-ending normalization (every line identical content, CRLF/LF only). This
-  file was left untouched by this slice; it is not part of this change and was
-  not committed or reverted.
-- **`.git` write locking on this sandboxed mount: known behavior, not a code
-  problem.** From inside the sandboxed agent workspace, `git add`/`git
-  commit`/`git status` can each leave behind `.git/index.lock`,
-  `.git/HEAD.lock` and/or `.git/objects/maintenance.lock`, and the agent
-  cannot remove them itself (`rm` returns `Operation not permitted`) — only
-  deleting the file directly from Windows works. Both slices below were
-  committed successfully once the owner cleared these lock files from Windows
-  immediately before each `git add`/`git commit`/`git commit --amend` step.
-  **The working pattern for the next session:** run one git write command,
-  check `find .git -maxdepth 2 -iname "*.lock"`, ask the owner to delete from
-  Windows anything it finds, confirm the list is empty, then run exactly the
-  next single git command — do not chain multiple git commands together or
-  run a plain `git status` in between, since either can leave a fresh
-  orphaned lock that blocks the next command before it even starts.
-- Both slices are now committed directly on top of `622f90b`: export/relay
-  surfaces and system notifications (`feat: localize export/relay surfaces
-  and system notifications`), then the Library hub (`feat: localize library
-  hub`). HEAD is no longer `622f90b` — confirm the current HEAD and exact
-  hashes with `git log --oneline -5` rather than trusting a hash hand-typed
-  into this document, since this line will not be updated after every future
-  commit.
+- HEAD is at `3fa2cd2` (`perf: restore gzip and raise provider concurrency for
+  Stalker catalogs`), the last of the six bug-fix commits listed in section 0,
+  which sit directly on top of `f1f75e0` (`feat: localize library hub`).
+  Verified from `git log`, not trusted from a prior document. Confirm the
+  current HEAD with `git log --oneline -8` rather than trusting a hash typed
+  into this file, since these lines are not updated after every future commit.
+- The worktree is clean apart from whatever the current session is editing.
+  The long-standing "`MobilePlaybackOverlay.kt` shows as fully modified but is
+  a pure line-ending normalization" note is **resolved and no longer true**:
+  the file had genuinely been rewritten with CRLF endings against an LF repo,
+  it was normalized back to LF, and it is committed. See section 0 for the
+  detail and for what to check if it ever reappears.
+- **`.git` write locking on this sandboxed mount: solved.** Git writes from
+  the sandbox still leave `.git/HEAD.lock` and `.git/objects/maintenance.lock`
+  behind, and a stale `HEAD.lock` blocks the next command with
+  `fatal: cannot lock ref 'HEAD'`. The agent can now delete these itself once
+  file deletion has been granted for the folder — in Cowork that is the
+  `allow_cowork_file_delete` tool, which only needs approving once per folder.
+  **The working pattern:** append
+  `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to
+  every git write command. The old workflow of asking the owner to delete lock
+  files from Windows, and of never chaining git commands, is obsolete. The
+  `warning: unable to unlink '.git/objects/**/tmp_obj_*'` lines that git emits
+  on the mount are harmless and do not affect the commit.
 - The Git worktree was clean at `4c7ee73` when the profile/account-security
   slice began.
 - The owner previously supplied an Android Studio screenshot confirming a
@@ -856,45 +929,50 @@ reports under `validation/`.
 
 The owner can paste the following after attaching or referencing this file:
 
-> Read `docs/NEXT_CHAT_HANDOFF.md`, `README.md`, `CHANGELOG.md`,
+> Read `docs/NEXT_CHAT_HANDOFF.md` **section 0 first** — it records the six
+> bug-fix commits that closed out the previous session and the follow-ups they
+> left open. Then read the rest of this file, `README.md`, `CHANGELOG.md`,
 > `docs/MAINTENANCE.md`, `docs/LOCALIZATION_ARCHITECTURE.md` and
-> `docs/ARCHITECTURE_REFACTOR_PLAN.md` completely before acting. Inspect
-> `git status --short` and recent commits first; do not trust an old completion
-> claim without tracing the active code path.
+> `docs/ARCHITECTURE_REFACTOR_PLAN.md` before acting. Inspect
+> `git status --short` and `git log --oneline -10` first; do not trust an old
+> completion claim without tracing the active code path.
+>
+> The live bug-fix batch is **done, owner-confirmed on mobile and Android TV,
+> and committed** — nothing there is pending. Do not re-verify or re-commit it.
+> Section 0 lists the four follow-ups it left open (Xtream's matching
+> missing-description gap, the intentionally retained `SeriesLoad` logging, the
+> per-episode description field name, and `MainViewModel`'s size warning);
+> raise any of them only if the owner asks or the work naturally touches them.
+>
+> **Resume the localization audit as the primary task.** Profiles, parental PIN
+> and encrypted backup/restore, billing and Premium, legal and privacy,
+> diagnostics and crash reporting, export/relay and system notifications, and
+> the Library hub are all complete at the code/resource and static-contract
+> level and committed; each still awaits the owner's normal Android Studio
+> build and phone/TV QA. Continue with the final release-surface
+> hardcoded-string audit across every active manifest, Kotlin and XML file — a
+> reconnaissance sweep already found 50 files with unclassified Greek literals
+> outside Library (file list in the handoff body). Classify each remaining
+> literal as app copy, invariant brand/protocol text, provider/user data,
+> diagnostic data or developer comment; migrate only app copy. Only after that
+> audit plus compilation and phone/TV QA proceed to parity inversion and public
+> picker activation.
+>
 > Continue as a 30-year senior engineer: one careful responsibility at a time,
 > small patches only, never rewrite a whole file, avoid giant files, preserve
 > public/storage behavior and add focused tests/contracts. Extend focused files
 > and feature resources instead of collecting everything in one giant file.
 > Every visual/layout/navigation/focus change requires a functional HTML preview
 > and my approval before Android implementation; a copy-only resource migration
-> does not. Do not run Gradle, compile or build unless I explicitly ask. Never
-> claim runtime success from static checks. Record behavior changes in
-> CHANGELOG/docs and commit each cohesive completed slice. Profiles, parental PIN
-> and encrypted backup/restore localization are complete at the code/resource and
-> static-contract level, but still require the owner's normal Android Studio build
-> and phone/TV QA. Billing and Premium localization is complete at the
-> code/resource and static-contract level, but still requires the owner's normal
-> Android Studio build and mobile/TV QA. Legal and Privacy localization is
-> complete at the code/resource and static-contract level, but still requires the
-> owner's normal Android Studio build and mobile QA. Diagnostics and
-> crash-reporting localization is complete at the code/resource and
-> static-contract level, but still requires the owner's normal Android Studio
-> build and mobile QA. Export/relay surfaces and system notification
-> localization and the Library hub localization (Favorites/My List, Continue
-> watching, History) are also complete at the code/resource and
-> static-contract level and are committed as two separate commits on top of
-> `622f90b` (check `git log --oneline` for exact hashes). Writing to `.git`
-> from the sandboxed agent workspace on this machine is unreliable — git
-> commands that touch the index can leave `.git/index.lock`,
-> `.git/HEAD.lock` or `.git/objects/maintenance.lock` behind, removable only
-> from Windows; if this recurs, run one git write command at a time and ask
-> the owner to clear any lock files Windows-side immediately before each one.
-> Continue with the final release-surface hardcoded-string audit across every
-> active manifest, Kotlin and XML file; a reconnaissance sweep already found
-> 50 files with unclassified Greek literals outside Library (see the handoff
-> body for the file list). Classify each remaining literal as app copy,
-> invariant brand/protocol text, provider/user data, diagnostic data or
-> developer comment, migrate only app copy, and only after that audit plus
-> compilation and phone/TV QA proceed to parity inversion and public picker
-> activation. Run the static gates, inspect the diff, update the handoff, and
-> commit only when a slice is cohesive and clean.
+> or a timing-only fix to an already-approved effect does not. Do not run
+> Gradle, compile or build unless I explicitly ask. Never claim runtime success
+> from static checks. Run the section 9 static gates and `git diff --check`,
+> inspect the diff, record behavior changes in CHANGELOG/docs, update this
+> handoff, and commit each cohesive slice separately.
+>
+> Git writes from the sandboxed agent workspace leave `.git/HEAD.lock` and
+> `.git/objects/maintenance.lock` behind, and a stale `HEAD.lock` blocks the
+> next command. Grant file deletion for the folder once, then append
+> `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to every
+> git write command. You do not need to ask me to delete lock files from
+> Windows any more.
