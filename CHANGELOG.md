@@ -5,6 +5,35 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed Greek series whose titles are written in Latin characters ("greeklish")
+  showing the show's general synopsis on every episode instead of that
+  episode's own. The per-episode display path was already correct everywhere
+  (`MobileEpisodeCard`, `MobilePlayerContextContent`, `TvEpisodeInfoPanel` and
+  the TV episode rail all read `tmdbEpisode.overview` and fall back to
+  `Channel.plot`), and Greek-titled series already worked. The failure was
+  purely in lookup: TMDB knows only the Greek title, the list supplies
+  `To Kafe tis Xaras`, nothing matched, `episodeMeta` came back empty, and the
+  fallback correctly showed the provider's series-level plot on every episode.
+  `TmdbClient.searchId` now makes one final attempt for such titles using the
+  new `GreeklishTitlePolicy`: it sends a transliterated Greek query and accepts
+  a result only when the result's title reduces to the same convention-neutral
+  skeleton as the list's title.
+  - The attempt runs **last**, after every existing candidate form has failed,
+    so the two extra requests are charged only to lookups that already returned
+    nothing. English and already-Greek titles are excluded outright.
+  - Existing candidates keep taking the first search result exactly as before —
+    they are the provider's real title. Only the transliterated query, which is
+    a guess, must prove itself, because an unverified match would attach a
+    completely unrelated show's episode synopses to the series. Verification
+    checks `name`, `original_name`, `title` and `original_title`, since a Greek
+    query can still come back with an English `name`.
+  - Matching tolerates a dropped leading article (lists write `Kafe tis Xaras`
+    for `Το Καφέ της Χαράς`) but requires the shorter skeleton to be at least
+    six characters and 60% of the longer, so a one-word title cannot match
+    everything containing it.
+  - Nothing here is ever displayed or persisted: the transliteration is used
+    only as a search query and a comparison key, and the title shown to the
+    user remains exactly what the provider supplied.
 - Fixed Stalker/Ministra series episodes being impossible to change: pressing
   the "next episode" card did nothing, and picking any episode from the list
   under the video jumped to a seemingly random position in what looked like

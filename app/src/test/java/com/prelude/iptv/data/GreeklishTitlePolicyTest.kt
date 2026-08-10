@@ -157,4 +157,39 @@ class GreeklishTitlePolicyTest {
         assertFalse(GreeklishTitlePolicy.looksGreeklish("   "))
         assertFalse(GreeklishTitlePolicy.looksGreeklish("2024"))
     }
+
+    /* ---------------- επαλήθευση αποτελέσματος ---------------- */
+
+    private fun sameTitle(a: String, b: String) = GreeklishTitlePolicy.isSameTitle(
+        GreeklishTitlePolicy.latinSkeleton(a),
+        GreeklishTitlePolicy.latinSkeleton(b),
+    )
+
+    @Test
+    fun aMissingArticleStillCountsAsTheSameTitle() {
+        // Οι λίστες παραλείπουν συχνά το άρθρο.
+        assertTrue(sameTitle("Το Καφέ της Χαράς", "Kafe tis Xaras"))
+        assertTrue(sameTitle("Οι Άγριες Μέλισσες", "Agries Melisses"))
+    }
+
+    @Test
+    fun anUnrelatedShowIsRejected() {
+        // Αυτό είναι το σημείο που προστατεύει από λάθος περιλήψεις επεισοδίων.
+        assertFalse(sameTitle("Το Καφέ της Χαράς", "Agries Melisses"))
+        assertFalse(sameTitle("Sto Para Pente", "Breaking Bad"))
+    }
+
+    @Test
+    fun aShortFragmentDoesNotMatchALongTitle() {
+        // Χωρίς τα όρια μήκους/αναλογίας, μια σειρά με τίτλο μιας λέξης θα
+        // ταίριαζε με κάθε τίτλο που την περιέχει.
+        assertFalse(sameTitle("Οι Μάγισσες της Σμύρνης", "Μάγισσες"))
+        assertFalse(sameTitle("Το Καφέ της Χαράς", "Χαρά"))
+    }
+
+    @Test
+    fun blankSkeletonsNeverMatch() {
+        assertFalse(GreeklishTitlePolicy.isSameTitle("", ""))
+        assertFalse(GreeklishTitlePolicy.isSameTitle("tokafe", ""))
+    }
 }

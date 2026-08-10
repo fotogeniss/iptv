@@ -315,6 +315,16 @@ object TmdbClient {
      * Αναζήτηση με διαδοχικές προσπάθειες: κάθε υποψήφιος τίτλος πρώτα ΜΕ έτος
      * (ακριβέστερο) και μετά ΧΩΡΙΣ (οι πάροχοι βάζουν συχνά λάθος χρονιά).
      * Σταματά στο πρώτο αποτέλεσμα, οπότε στη συνήθη περίπτωση κάνει μία κλήση.
+     *
+     * ΤΟ ΕΛΛΗΝΙΚΟ ΕΡΩΤΗΜΑ ΜΠΑΙΝΕΙ ΤΕΛΕΥΤΑΙΟ ΚΑΙ ΜΕ ΑΥΣΤΗΡΟΤΕΡΟ ΚΡΙΤΗΡΙΟ.
+     *
+     * Οι υποψήφιοι του [titleCandidates] είναι ο ΠΡΑΓΜΑΤΙΚΟΣ τίτλος του
+     * παρόχου σε παραλλαγές, οπότε κρατούν τη μέχρι τώρα συμπεριφορά: δέχονται
+     * το πρώτο αποτέλεσμα. Ο τίτλος που παράγει το [GreeklishTitlePolicy.toGreek]
+     * είναι ΥΠΟΘΕΣΗ — μια μεταγραφή που μπορεί να πέσει έξω — και δεν
+     * επιτρέπεται να επιστρέψει άσχετη σειρά με λάθος περιλήψεις επεισοδίων.
+     * Γι' αυτό απαιτεί επαλήθευση: το αποτέλεσμα γίνεται δεκτό μόνο αν ο
+     * σκελετός του ταιριάζει με τον σκελετό του τίτλου της λίστας.
      */
     private fun searchId(type: String, title: String, year: String, isSeries: Boolean): Int {
         val yearParam = when {
@@ -331,8 +341,66 @@ object TmdbClient {
             val withoutYear = firstId(Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q"))
             if (withoutYear != 0) return withoutYear
         }
-        return 0
+        return greeklishId(type, title, yearParam)
     }
+
+    /**
+     * Τελευταία προσπάθεια για τίτλο γραμμένο σε greeklish.
+     *
+     * Φτάνει εδώ μόνο ό,τι απέτυχε με κάθε άλλη μορφή, οπότε οι δύο επιπλέον
+     * κλήσεις χρεώνονται σε αναζητήσεις που ήδη δεν έφερναν τίποτα.
+     */
+    private fun greeklishId(type: String, title: String, yearParam: String): Int {
+        if (!GreeklishTitlePolicy.looksGreeklish(title)) return 0
+        val expected = GreeklishTitlePolicy.latinSkeleton(title)
+        if (expected.isBlank()) return 0
+        val greek = GreeklishTitlePolicy.toGreek(title)
+        if (greek.isBlank()) return 0
+        val q = URLEncoder.encode(greek, "UTF-8")
+        if (yearParam.isNotEmpty()) {
+            val withYear = verifiedId(
+                Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q$yearParam"),
+                expected,
+            )
+            if (withYear != 0) return withYear
+        }
+        return verifiedId(
+            Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q"),
+            expected,
+        )
+    }
+
+    /**
+     * Το πρώτο αποτέλεσμα του οποίου ΚΑΠΟΙΟΣ τίτλος ταυτίζεται με τον
+     * αναμενόμενο σκελετό — όχι απλώς το πρώτο αποτέλεσμα.
+     *
+     * Ελέγχονται και ο τοπικός και ο πρωτότυπος τίτλος: το ερώτημα φεύγει στα
+     * ελληνικά, αλλά το TMDB μπορεί να απαντήσει με αγγλικό `name` και τον
+     * ελληνικό μόνο στο `original_name`.
+     */
+    private fun verifiedId(json: String, expectedSkeleton: String): Int = try {
+        val results = JSONObject(json).optJSONArray("results")
+        var found = 0
+        var i = 0
+        while (results != null && i < results.length() && found == 0) {
+            val row = results.optJSONObject(i)
+            if (row != null) {
+                val names = listOf(
+                    row.optString("name"), row.optString("original_name"),
+                    row.optString("title"), row.optString("original_title"),
+                )
+                val hit = names.any { name ->
+                    name.isNotBlank() && GreeklishTitlePolicy.isSameTitle(
+                        GreeklishTitlePolicy.latinSkeleton(name),
+                        expectedSkeleton,
+                    )
+                }
+                if (hit) found = row.optInt("id", 0)
+            }
+            i++
+        }
+        found
+    } catch (e: Exception) { 0 }
 
     private fun doFetch(title: String, isSeries: Boolean, year: String): Meta? {
         val type = if (isSeries) "tv" else "movie"

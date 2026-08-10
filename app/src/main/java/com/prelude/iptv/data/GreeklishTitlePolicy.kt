@@ -264,6 +264,28 @@ object GreeklishTitlePolicy {
         return words.any { word -> word.length >= 2 && word.any(Char::isLetter) }
     }
 
+    // -------------------------------------------------------------- σύγκριση
+
+    /**
+     * Δείχνουν οι δύο σκελετοί το ίδιο έργο;
+     *
+     * Δεν αρκεί ισότητα: οι λίστες παραλείπουν συχνά το άρθρο («Kafe tis
+     * Xaras» έναντι «Το Καφέ της Χαράς») ή κολλούν έναν υπότιτλο. Δεχόμαστε
+     * λοιπόν και τον έναν σκελετό μέσα στον άλλο, αλλά μόνο όταν ο μικρότερος
+     * είναι ουσιαστικός: τουλάχιστον έξι χαρακτήρες ΚΑΙ τουλάχιστον το 60% του
+     * μεγαλύτερου. Χωρίς αυτά τα δύο όρια, μια σειρά με τίτλο μιας λέξης θα
+     * ταίριαζε με οτιδήποτε την περιέχει.
+     */
+    fun isSameTitle(skeletonA: String, skeletonB: String): Boolean {
+        if (skeletonA.isBlank() || skeletonB.isBlank()) return false
+        if (skeletonA == skeletonB) return true
+        val shorter = if (skeletonA.length <= skeletonB.length) skeletonA else skeletonB
+        val longer = if (shorter === skeletonA) skeletonB else skeletonA
+        if (shorter.length < 6) return false
+        if (shorter.length * 10 < longer.length * 6) return false
+        return longer.contains(shorter)
+    }
+
     private fun stripAccents(value: String): String =
         Normalizer.normalize(value, Normalizer.Form.NFD)
             .replace(Regex("""\p{Mn}+"""), "")
