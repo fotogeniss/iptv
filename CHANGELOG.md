@@ -5,6 +5,16 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed series episodes silently failing to load and staying stuck on the
+  loading spinner (across every source type) when the currently browsed
+  section reloaded in the background (e.g. re-picking categories) while a
+  series-details flow was still open. `SourceGenerationGate.isCurrent` was
+  gating the pending series request on the general catalog load generation as
+  well as its own series generation, so an unrelated list reload silently
+  discarded the just-fetched episodes with no error shown. Completion is now
+  gated on the series generation alone; switching or removing the source still
+  cancels an in-flight series request via `invalidateAll`. Added a regression
+  test (`catalogReloadAloneDoesNotRejectAnOpenSeriesRequest`).
 - Localized the Library hub (Favorites/My List, Continue watching and History)
   across mobile and Android TV with paired Greek and QA-English resources:
   headers, tabs, sort/manage actions, rail titles/subtitles with locale-aware

@@ -9,8 +9,14 @@ import com.prelude.iptv.ui.epg.EpgStatus
  * Monotonic generation boundary for source-scoped asynchronous work.
  *
  * Catalog callbacks are accepted only while their load generation is current.
- * Series callbacks additionally carry a series generation, so opening or
- * closing one details flow cannot publish into a newer one.
+ * Series callbacks carry their own series generation, so opening or closing
+ * one details flow cannot publish into a newer one. Completion is gated on
+ * the series generation alone: a background reload of the browsing list
+ * (e.g. re-picking categories for the active section) bumps only the load
+ * generation and must not silently discard episodes for a details flow the
+ * user still has open. Switching or removing the source itself invalidates
+ * both generations together via [invalidateAll], which still cancels any
+ * pending series request.
  */
 internal class SourceGenerationGate {
     data class SeriesRequest(
@@ -46,8 +52,7 @@ internal class SourceGenerationGate {
     fun isCurrentLoad(generation: Int): Boolean = generation == loadGeneration
 
     fun isCurrent(request: SeriesRequest): Boolean =
-        request.loadGeneration == loadGeneration &&
-            request.seriesGeneration == seriesGeneration
+        request.seriesGeneration == seriesGeneration
 }
 
 

@@ -232,6 +232,24 @@ class SourceSwitchCoordinatorTest {
         assertFalse(gate.isCurrent(series))
     }
 
+    /**
+     * Regression guard: re-picking categories for the currently browsed
+     * section (e.g. a background list refresh) calls [SourceGenerationGate.invalidateLoad]
+     * without touching the series generation. An open series-details flow must
+     * still be allowed to publish its episodes; otherwise the details screen
+     * is left stuck on its loading state forever with no error shown, even
+     * though the provider request succeeded.
+     */
+    @Test
+    fun catalogReloadAloneDoesNotRejectAnOpenSeriesRequest() {
+        val gate = SourceGenerationGate()
+        val series = gate.beginSeriesRequest()
+
+        gate.invalidateLoad()
+
+        assertTrue(gate.isCurrent(series))
+    }
+
     private fun coordinator(
         gate: SourceGenerationGate,
         events: MutableList<String>,
