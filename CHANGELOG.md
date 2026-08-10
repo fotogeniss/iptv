@@ -5,6 +5,46 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed Stalker/Ministra series episodes being impossible to change: pressing
+  the "next episode" card did nothing, and picking any episode from the list
+  under the video jumped to a seemingly random position in what looked like
+  the same episode. One root cause behind both symptoms.
+  `PlaybackQueue.favKey` — documented in place as *the* single identity key for
+  favorites, recents and resume position — falls back to `Channel.cmd` when
+  `url` is empty. On this portal every episode of a season deliberately shares
+  one `cmd` (the season descriptor); episodes are distinguished only by the
+  `series=` value that `create_link` receives, which
+  `StalkerClient.buildEpisodeChannel` stores in `chId`/`streamId`. So every
+  episode of a season collapsed onto one key:
+  - `NextEpisodePolicy.nextAfter` locates the current episode with
+    `indexOfFirst { keyOf(it) == currentKey }`, which always matched position
+    0, so "next" was always the season's *second* episode. While that second
+    episode was playing, "next" resolved to the episode already on screen, the
+    route state was reassigned an equal `Channel`, Compose saw no change, and
+    the button appeared dead.
+  - Resume position is stored under the same key, so every episode reopened at
+    the timestamp left behind by whichever episode was watched last — the
+    "random point" symptom. Picking an episode did switch the stream (the URL
+    is built from `chId`, which was always correct), but it resumed mid-way
+    into the previous episode's position, which reads as "nothing happened".
+  - Favorites, recents, `LibraryPolicy.unique` de-duplication and
+    `PlaybackQueue.subtitleRequest` lookups collapsed a whole season into one
+    entry for the same reason.
+  `favKey` now returns `"<cmd>|ep|<streamId>"` for `series_ep` items that have
+  no `url`, and is byte-for-byte unchanged for everything else. Xtream episodes
+  carry their own per-episode `url` and are unaffected; live, VOD and series
+  keys are untouched, which the new contract test pins down.
+  **Stored-key note:** Stalker episode favorites and resume positions saved
+  between the episode-loading fix and this one land under the old shared key
+  and are not migrated. No migration is possible or meaningful — the old key
+  mapped many episodes onto one entry, so there is no correct target to move it
+  to, and the merged value was wrong by construction. Stalker episodes could
+  not load at all before that fix, so at most a few days of episode-level
+  entries are affected; movie, live and series entries are untouched.
+  Added `PlaybackQueueIdentityTest` covering per-episode key uniqueness across
+  seasons, key stability across rebuilt catalog instances, the unchanged
+  live/VOD/series/Xtream keys, and next-episode advancement including the
+  season boundary.
 - Investigated reported slow Stalker/Ministra list loading compared to other
   IPTV apps on the same portal. Code reading found two concrete asymmetries
   specific to Stalker traffic, both in `StalkerClient`/`Http.kt`:
