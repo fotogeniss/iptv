@@ -24,8 +24,12 @@ six cohesive commits and committed all of them. The owner confirmed on
 Android TV**, which covers the first six fixes below.
 
 `e26a5aa` came afterwards, from a bug the owner reported once episodes were
-finally playable, and is **not yet device-confirmed** — ask them to change
-episodes from the next-episode card and from the list under the video.
+finally playable, and the owner **confirmed it working** on 2026-08-10.
+
+`2aa060c` and `8ec4658` are the newest pair, from the follow-up report that
+greeklish-titled Greek series showed the general synopsis on every episode.
+They are gate-clean but **not yet device-confirmed** — see the greeklish
+section below for exactly what to ask.
 
 Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 
@@ -38,6 +42,8 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `718965f` | `fix: cover the video surface before the live channel transition starts` |
 | `3fa2cd2` | `perf: restore gzip and raise provider concurrency for Stalker catalogs` |
 | `e26a5aa` | `fix: give each Stalker episode its own identity key` |
+| `2aa060c` | `feat: add a greeklish title matching policy` |
+| `8ec4658` | `fix: find greeklish-titled Greek series on TMDB` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
@@ -72,6 +78,71 @@ its own key from `url`/`cmd`, and any change to `favKey` is a stored-data
 contract change that needs the reasoning written down. `PlaybackQueueIdentityTest`
 now pins both the new episode behavior and the unchanged live/VOD/series/Xtream
 keys; if a future change makes it fail, that is the contract talking.
+
+### Greeklish title matching — what to verify and what is still unknown
+
+`8ec4658` is the only uncertain thing in this batch. The diagnosis itself is
+solid and came from the owner, not from guessing: Greek series with a **Greek**
+title already show correct per-episode synopses, and only **greeklish** titles
+fall back to the show-level plot. That isolates the failure to TMDB lookup, not
+to the display path — all four episode renderers were already correct.
+
+**What could not be verified without a device or an API key:**
+
+- Whether `GreeklishTitlePolicy.toGreek()` produces a query TMDB actually
+  resolves. The transliteration is deliberately approximate (no accents, some
+  endings wrong) and relies on TMDB's fuzzy search. The skeleton comparison
+  guarantees a *wrong* show is rejected, but not that the *right* one is found.
+- Which greeklish convention the owner's provider actually uses. The policy was
+  built to be convention-neutral and its tests cover `x`/`h`/`ch` for chi,
+  `i`/`h` for eta and `th`/`8` for theta simultaneously, but no real title from
+  the owner's list was ever seen. **If this is revisited, ask for ten real
+  titles first** — that request was made and the owner chose to proceed without
+  them, which is why the design avoids depending on any one convention.
+
+**How to check on device:** open a Greek series whose list title is in Latin
+characters, and compare two episodes' descriptions. Different text per episode
+means the lookup now resolves. If they are still identical, the query is not
+matching and the next step is to log the generated query and the TMDB response
+rather than to adjust the transliteration blindly.
+
+**Verification method used instead of Gradle:** the policy was prototyped and
+run outside the build against 24 Greek/greeklish title pairs spanning four
+conventions, then every assertion in `GreeklishTitlePolicyTest` was executed by
+reproducing the Kotlin faithfully. All pass. That is static evidence about the
+policy's internal consistency and says nothing about TMDB's behavior.
+
+### The `fetchEpisodeDescription` question — probably dead weight
+
+The owner's report implies something the changelog for `81dcbb1` does not yet
+admit: if greeklish-titled series show **the same** general synopsis on every
+episode, then `Channel.plot` — which `StalkerClient.fetchEpisodeDescription`
+fills with one extra HTTP request **per episode** — is carrying the series-level
+description, not a per-episode one. If so, that request costs a round trip per
+episode and buys nothing.
+
+This was not removed because it is not proven. Confirm it with a Logcat capture
+of the `SeriesLoad` tag, line `seriesEpisodes episode detail`, for **two
+different episodes of the same season**: identical `description` values settle
+it. If confirmed, deleting the per-episode fetch is a clean, self-contained
+performance win for every Stalker series load.
+
+### retrodb.gr — investigated, deliberately not used
+
+The owner raised `https://retrodb.gr` as a possible source for Greek series
+metadata. It was not adopted, for three recorded reasons:
+
+1. Its content is client-rendered and it exposes no reachable JSON endpoint that
+   could be confirmed (`/wp-json/` returns nothing); whether it has any public
+   API at all is still unknown.
+2. A second database does not solve the actual problem. The failure was title
+   *matching*, not missing data — TMDB already has these series with Greek
+   per-episode synopses, which is exactly why Greek-titled series work.
+3. Adding an external service triggers the privacy and Play Data Safety review
+   rules in `docs/MAINTENANCE.md`, which is real cost for no proven benefit.
+
+Revisit only if `8ec4658` is confirmed on device and a genuine gap remains for
+Greek series that TMDB does not carry at all.
 
 ### Still-open follow-ups
 
@@ -118,18 +189,28 @@ keys; if a future change makes it fail, that is the contract talking.
   every git write command. There is no longer any need to ask the owner to
   delete lock files from Windows, and no need to avoid chaining git commands.
 
-### Static gate results at `e26a5aa`
+### Static gate results at `8ec4658`
 
 All six gates in section 9 pass. `git diff --check` is clean. Two standing,
 pre-existing warnings: the `MainViewModel` size warning above, and the
-documented global-cleartext compatibility exception in
-`deep_validation_audit`. Gradle was **not** run — the owner builds in
-Android Studio, and their 2026-08-10 report is the build evidence for the
-first six commits. `e26a5aa` has no device evidence yet; its logic was
-verified by reproducing `favKey` and `NextEpisodePolicy.nextAfter` outside the
-build, which shows the season's four episodes collapsing to one key before the
-change and to four after it, with the live/VOD/series/Xtream keys byte-identical
-either way. That is static reasoning, not a runtime result.
+documented global-cleartext compatibility exception in `deep_validation_audit`.
+
+Gradle was **not** run at any point — the owner builds in Android Studio. Their
+2026-08-10 reports are the build and device evidence for everything up to and
+including `e26a5aa`. `2aa060c` and `8ec4658` have no device evidence yet.
+
+Where Gradle was unavailable, logic was verified by reproducing the Kotlin
+outside the build and executing the same assertions:
+
+- `e26a5aa`: a season's four episodes collapse to one key before the change and
+  to four after it, with live/VOD/series/Xtream keys byte-identical either way.
+- `2aa060c`/`8ec4658`: 24 Greek/greeklish title pairs across four conventions
+  all produce matching skeletons, unrelated titles do not collide, and every
+  assertion in `GreeklishTitlePolicyTest` passes.
+
+This is static reasoning about internal consistency, not a runtime result, and
+in the greeklish case it says nothing about how TMDB responds to the generated
+query.
 
 ## 1. Non-negotiable working agreement
 
@@ -976,13 +1057,16 @@ The owner can paste the following after attaching or referencing this file:
 > completion claim without tracing the active code path.
 >
 > The live bug-fix batch is **committed and owner-confirmed on mobile and
-> Android TV** — do not re-verify or re-commit it. The one exception is
-> `e26a5aa` (per-episode identity key), which is committed and gate-clean but
-> **not device-confirmed**: ask the owner to change episodes both from the
-> next-episode card and from the list under the video. Section 0 also lists the
-> follow-ups the batch left open (Xtream's matching missing-description gap,
-> the intentionally retained `SeriesLoad` logging, the per-episode description
-> field name, and `MainViewModel`'s size warning); raise those only if the
+> Android TV**, through `e26a5aa` — do not re-verify or re-commit any of it.
+> The exception is the greeklish pair `2aa060c`/`8ec4658`, which is committed
+> and gate-clean but **not device-confirmed**: ask the owner to open a Greek
+> series whose list title is in Latin characters and compare two episodes'
+> descriptions. If they are still identical, log the generated query and the
+> TMDB response — do not adjust the transliteration blindly. Section 0 also
+> lists the open follow-ups (whether `fetchEpisodeDescription` is dead weight,
+> Xtream's matching missing-description gap, the intentionally retained
+> `SeriesLoad` logging, why retrodb.gr was rejected, and `MainViewModel`'s size
+> warning); raise those only if the
 > owner asks or the work naturally touches them. Read section 0's
 > identity-key lesson before writing any code that keys, groups or persists
 > episodes.
