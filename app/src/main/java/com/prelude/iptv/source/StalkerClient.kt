@@ -123,7 +123,18 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         val h = linkedMapOf(
             "User-Agent" to ua,
             "Accept" to "*/*",
-            "Accept-Encoding" to "identity",
+            // ΧΩΡΙΣ ρητό Accept-Encoding εδώ, ΕΠΙΤΗΔΕΣ: πριν όριζε "identity",
+            // που απενεργοποιεί εντελώς τη διαφανή gzip αποσυμπίεση του OkHttp
+            // (OkHttp προσθέτει μόνο του "Accept-Encoding: gzip" και αποσυμπιέζει
+            // αθόρυβα ΟΤΑΝ η εφαρμογή δεν ορίζει η ίδια την κεφαλίδα — αλλιώς
+            // σβήνει αυτή τη συμπεριφορά εντελώς). Οι κλήσεις Xtream/M3U/TMDB
+            // ποτέ δεν όριζαν Accept-Encoding, άρα ήδη έπαιρναν gzip· μόνο το
+            // Stalker κατέβαζε ασυμπίεστο JSON σε κάθε σελίδα κάθε κατηγορίας.
+            // Καμία τεκμηρίωση/CHANGELOG δεν εξηγούσε γιατί μπήκε το "identity" —
+            // αφαιρέθηκε ως πιθανή αιτία του «οι λίστες αργούν συγκριτικά με
+            // άλλα players», και επιβεβαιώθηκε σε πραγματικό portal (κινητό +
+            // τηλεόραση). Αν κάποιο άλλο portal στείλει σπασμένο gzip, θα φανεί
+            // ως σφάλμα ανάλυσης JSON (όχι σιωπηλά λάθος δεδομένα).
             "Referer" to "$hostRoot/",
             "X-User-Agent" to "Model: MAG250; Link: WiFi",
             "Cookie" to "mac=${URLEncoder.encode(mac, "UTF-8")}; stb_lang=en; timezone=Europe%2FAthens"

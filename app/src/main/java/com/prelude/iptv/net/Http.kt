@@ -33,8 +33,22 @@ object Http {
      * Catalog/provider traffic only. Keeping a dedicated client lets the
      * ViewModel cancel an obsolete Live/VOD/Series request without interrupting
      * subtitle downloads, TMDB metadata or unrelated app traffic.
+     *
+     * ΞΕΧΩΡΙΣΤΟ Dispatcher με πιο ανοιχτό όριο ΑΝΑ HOST: το OkHttp από προεπιλογή
+     * επιτρέπει μόνο 5 ταυτόχρονα αιτήματα στον ΙΔΙΟ host, ανεξάρτητα από πόσα
+     * threads έχει ο δικός μας executor. Το StalkerClient έχει ήδη σχεδιαστεί
+     * για έως 3 κατηγορίες × 6 σελίδες = ως 9 ταυτόχρονα αιτήματα σε ένα portal
+     * (δες categoryPool/pagePool) — με το προεπιλεγμένο όριο του OkHttp, τα
+     * επιπλέον αιτήματα απλώς περίμεναν σιωπηλά στην ουρά του OkHttp, χωρίς
+     * κανένα σφάλμα, μειώνοντας αθόρυβα τον πραγματικό παραλληλισμό στο δίκτυο.
+     * 16 δίνει περιθώριο πάνω από το 9 χωρίς να βομβαρδίζει μικρά portals.
      */
-    private val providerClient = newClient()
+    private val providerClient = newClient().newBuilder()
+        .dispatcher(okhttp3.Dispatcher().apply {
+            maxRequestsPerHost = 16
+            maxRequests = 32
+        })
+        .build()
 
     fun cancelProviderRequests() {
         providerClient.dispatcher.cancelAll()

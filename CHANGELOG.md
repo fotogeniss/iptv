@@ -5,6 +5,37 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Investigated reported slow Stalker/Ministra list loading compared to other
+  IPTV apps on the same portal. Code reading found two concrete asymmetries
+  specific to Stalker traffic, both in `StalkerClient`/`Http.kt`:
+  - `StalkerClient.headers()` explicitly sent `Accept-Encoding: identity` on
+    every request, which disables OkHttp's transparent gzip entirely (OkHttp
+    only auto-negotiates and auto-decompresses gzip when the caller does
+    *not* set that header itself). No other client in the app (Xtream, M3U,
+    TMDB, subtitles) sets this header, so those already received gzip while
+    every Stalker category/page response — the bulk of catalog traffic —
+    downloaded fully uncompressed. No changelog/doc history explained why
+    `identity` was originally forced, so this is a considered removal based
+    on the asymmetry, not a documented prior fix being reverted; flagged for
+    on-device confirmation in case some portal turns out to send broken
+    gzip (would surface as a JSON parse error, not silent bad data).
+  - `Http`'s shared `providerClient` used OkHttp's default `Dispatcher`,
+    which caps concurrent requests to the same host at 5 regardless of
+    application-level thread pool size. `StalkerClient` already parallelizes
+    up to 3 categories × 6 pages (~9 concurrent requests, see
+    `categoryPool`/`pagePool`), so the extra requests were silently queuing
+    inside OkHttp with no error — quietly capping real network concurrency
+    below what the existing pool design intended. `providerClient` now uses
+    its own `Dispatcher` with `maxRequestsPerHost = 16` / `maxRequests = 32`.
+  - Both changes are scoped to `providerClient` only (catalog/provider
+    traffic); the general-purpose `client` used for subtitles/TMDB/EPG is
+    unchanged.
+  - Owner-confirmed on 2026-08-10: the app builds and the Stalker catalog
+    loads correctly on both mobile and Android TV with gzip restored. No
+    regression tests were added since this changes wire-level HTTP behavior
+    rather than parseable logic; if some other portal ever misbehaves under
+    gzip it would surface as a JSON parse error (not silent bad data), and
+    reverting just the `Accept-Encoding` line is enough.
 - Fixed a brief unwanted "flash" right before the live-channel directional
   transition effect on mobile and TV. Root cause: the transition overlay
   (`MobileLiveChannelTransition`/`TvLiveChannelTransition`) previously only
