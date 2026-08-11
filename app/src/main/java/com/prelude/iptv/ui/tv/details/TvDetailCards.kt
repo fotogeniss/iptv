@@ -72,7 +72,10 @@ internal fun TvEpisodeCard(
         seriesTitle = seriesTitle,
         seriesYear = seriesYear,
         season = season,
-        episodeNumber = number
+        episodeNumber = number,
+        // Το tmdb_id του παρόχου, όταν υπάρχει, κάνει περιττή την αναζήτηση
+        // με τίτλο — και μαζί όλη την αβεβαιότητα των greeklish τίτλων.
+        seriesTmdbId = episode.tmdbId,
     )
     val artwork = tmdbEpisode?.still?.takeIf { it.isNotBlank() } ?: episode.logo
     val displayTitle = if (episode.name.isBlank()) {
@@ -163,7 +166,8 @@ internal fun TvEpisodeInfoPanel(
         seriesTitle = seriesTitle,
         seriesYear = seriesYear,
         season = season,
-        episodeNumber = number
+        episodeNumber = number,
+        seriesTmdbId = episode.tmdbId,
     )
     val episodeTitle = tmdbEpisode?.title?.takeIf { it.isNotBlank() } ?: episode?.name.orEmpty()
     val episodeOverview = tmdbEpisode?.overview?.takeIf { it.isNotBlank() } ?: episode?.plot.orEmpty()

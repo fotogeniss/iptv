@@ -53,12 +53,18 @@ internal fun MobileEpisodeCard(
     seriesTitle: String,
     seriesYear: String,
     season: Int,
+    /** TMDB id του παρόχου· όταν υπάρχει, δεν γίνεται αναζήτηση με τίτλο. */
+    seriesTmdbId: String = "",
 ) {
     val tmdbEpisode = rememberEpisodeMeta(
         seriesTitle = seriesTitle,
         seriesYear = seriesYear,
         season = season,
         episodeNumber = number,
+        // Το ίδιο το επεισόδιο πρώτο: για Stalker το κουβαλάει από τη γραμμή
+        // σεζόν. Η τιμή της σειράς είναι εφεδρεία για πηγές όπου τα επεισόδια
+        // ξαναχτίζονται από τον normalizer και δεν το έχουν.
+        seriesTmdbId = episode.tmdbId.ifBlank { seriesTmdbId },
     )
     val artwork = tmdbEpisode?.still?.takeIf(String::isNotBlank) ?: episode.logo
     val title = tmdbEpisode?.title?.takeIf(String::isNotBlank) ?: episode.name

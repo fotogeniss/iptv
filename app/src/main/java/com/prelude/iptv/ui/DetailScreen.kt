@@ -28,6 +28,8 @@ data class CastMember(
 @Composable
 fun DetailScreen(
     title: String,
+    /** TMDB id από τον πάροχο· παρακάμπτει την αναζήτηση τίτλου στα επεισόδια. */
+    tmdbId: String = "",
     year: String = "",
     rating: String = "",
     ageRating: String = "",
@@ -73,6 +75,7 @@ fun DetailScreen(
     // μεταδεδομένων ως «1993-08-28 · N/a».
     val presentation = DetailPresentation(
         title = title,
+        tmdbId = tmdbId,
         year = ProviderMetadataPolicy.displayYear(year),
         rating = rating,
         ageRating = ProviderMetadataPolicy.text(ageRating),

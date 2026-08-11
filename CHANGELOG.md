@@ -5,6 +5,71 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.51.0 - versionCode 121
+
+- Made the home rails mean what their titles say. Both were reported as
+  "random", and both were.
+  - **"Top" was not sorted at all.** It was the provider's own order with rank
+    numbers 1-20 printed over it. The rail promised a ranking that did not
+    exist. It now orders by the provider's rating, and items with **no** rating
+    are left out rather than sunk to the bottom: a position in a ranked list is
+    a claim, and for those there is nothing to claim.
+  - **"New" filtered on `year.length == 4` and then sorted by year.** The
+    provider in use sends a full first-air date (`1993-08-28`, eleven
+    characters), so the filter discarded nearly everything and the rail was all
+    but empty. Worse, the year is the wrong question: a 2024 film added last
+    year is not newer than a 2023 one added yesterday. It now orders by
+    `added`, the date the item entered the provider's catalog, and falls back to
+    the year when a provider does not send one.
+  - Adds `Channel.addedAt` and `Channel.rating`, populated by `StalkerClient`,
+    plus `CatalogRankingPolicy` — pure, stable-sorted and unit tested. Neither
+    field participates in any identity key, for the same reason as `tmdbId`.
+  - For a **series**, `addedAt` merges as the **maximum** across its rows, not
+    the first one seen. A show that gains an episode every week is new, however
+    old its premiere.
+  - `0`, `""` and `N/A` are all read as "no rating"; portals use them
+    interchangeably. Both `7.4` and `7,4` parse.
+  - **The Top rail keeps a fallback.** It is the main rail of the home screen
+    and predates this change. If a source supplies no ratings at all — M3U, and
+    plenty of portals — it keeps every item as before, but **loses the rank
+    numbers**, which were the reason it looked arbitrary in the first place.
+
+## 1.50.0 - versionCode 120
+
+- Episode metadata now uses the TMDB id the **provider already sends**, instead
+  of searching TMDB by title. Real Stalker rows carry `"tmdb_id":"2328"` and a
+  duplicate `"tmdb"` field, and the app was ignoring both.
+  The provider's title is the least reliable field there is: it arrives with
+  markers (`#`), prefixes (`LINGO| `), quality tags, and for Greek series it is
+  often written in Latin characters, which forced transliteration and then a
+  skeleton comparison to avoid accepting the wrong show. Every one of those
+  steps is a place a wrong series has actually been matched. When the provider
+  states the id, all of them are skipped, along with one search round trip per
+  season.
+  - Adds `Channel.tmdbId`, populated in `StalkerClient` on both the catalog row
+    and the season row, so an episode carries it even when its parent is not on
+    screen — the player's info panel needs that.
+  - `CatalogNormalizer.mergeParent` merges it like the other display fields:
+    first non-empty wins, so a series does not lose the id because the row that
+    happened to build the bucket lacked it.
+  - **It is not an identity field and must never become one.** It stays out of
+    `PlaybackQueue.favKey`, `movieIdentity`/`seriesIdentity` and
+    `historyMatchKey`. A provider can add, change or drop it between two catalog
+    refreshes; if it keyed anything, favourites, history and resume positions
+    would move on their own. Two tests pin this: episodes differing only by
+    `tmdbId` keep one key, and a series does not split into two catalog entries
+    because one row carried the id.
+  - The episode cache key becomes `ep:id<n>:<season>` when the id is known.
+    Different shows can clean to the same title, and a stored wrong match would
+    otherwise survive the fix.
+  - Only a positive integer is accepted; real responses put `0`, `""` and
+    `null` in the same field.
+  - `TmdbLookup` now states which route was taken — "από τον πάροχο, χωρίς
+    αναζήτηση" or "από αναζήτηση τίτλου" — so a capture answers immediately
+    whether the id was used.
+  - Series-level artwork and synopsis still resolve by title; that path already
+    works and was left untouched.
+
 ## 1.49.1 - versionCode 119
 
 - Gave the bottom navigation bar a visible focus indicator on Android TV. All

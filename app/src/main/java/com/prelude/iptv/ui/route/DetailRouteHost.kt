@@ -134,6 +134,7 @@ internal fun DetailHost(
 
     DetailScreen(
         title = com.prelude.iptv.data.TmdbClient.cleanTitle(ch.name).ifBlank { ch.name },
+        tmdbId = ch.tmdbId,
         year = resolvedYear,
         rating = tmdb?.rating ?: "",
         duration = (i["duration"]?.ifBlank { ch.duration } ?: ch.duration),

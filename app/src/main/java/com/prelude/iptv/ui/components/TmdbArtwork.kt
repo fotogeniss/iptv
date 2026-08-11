@@ -43,11 +43,15 @@ fun rememberEpisodeMeta(
     seriesYear: String,
     season: Int,
     episodeNumber: Int,
+    /** Το TMDB id του παρόχου, αν υπάρχει. Παρακάμπτει την αναζήτηση τίτλου. */
+    seriesTmdbId: String = "",
 ): TmdbClient.EpisodeMeta? {
-    val meta by produceState<TmdbClient.EpisodeMeta?>(null, seriesTitle, seriesYear, season, episodeNumber) {
+    val meta by produceState<TmdbClient.EpisodeMeta?>(
+        null, seriesTitle, seriesYear, season, episodeNumber, seriesTmdbId,
+    ) {
         value = withContext(Dispatchers.IO) {
             try {
-                TmdbClient.episodeMeta(seriesTitle, seriesYear, season)[episodeNumber]
+                TmdbClient.episodeMeta(seriesTitle, seriesYear, season, seriesTmdbId)[episodeNumber]
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {

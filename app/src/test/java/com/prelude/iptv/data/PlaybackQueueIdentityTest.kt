@@ -88,6 +88,35 @@ class PlaybackQueueIdentityTest {
     }
 
     @Test
+    fun theProviderTmdbIdIsAnExternalReferenceAndNeverAnIdentity() {
+        // Το `tmdbId` προστέθηκε ως εξωτερική αναφορά, όχι ως ταυτότητα. Ο
+        // πάροχος μπορεί να το προσθέσει, να το αλλάξει ή να το αφήσει κενό
+        // μεταξύ δύο ανανεώσεων καταλόγου· αν συμμετείχε σε κλειδί, αγαπημένα,
+        // ιστορικό και θέσεις συνέχισης θα μετακινούνταν από μόνα τους. Αυτό
+        // έχει ήδη συμβεί δύο φορές σε αυτό το repo με άλλα πεδία.
+        val withoutId = stalkerEpisode("88", "5")
+        val withId = withoutId.copy(tmdbId = "2328")
+        val withAnotherId = withoutId.copy(tmdbId = "999999")
+
+        assertEquals(PlaybackQueue.favKey(withoutId), PlaybackQueue.favKey(withId))
+        assertEquals(PlaybackQueue.favKey(withId), PlaybackQueue.favKey(withAnotherId))
+    }
+
+    @Test
+    fun aSeriesKeepsOneCatalogEntryWhicheverRowCarriedTheTmdbId() {
+        // Ο normalizer δεν επιτρέπεται να δει δύο ΔΙΑΦΟΡΕΤΙΚΕΣ σειρές επειδή
+        // μία γραμμή είχε tmdb_id και η άλλη όχι — θα εμφανίζονταν διπλές.
+        val plain = Channel(name = "Power Rangers", seriesId = "42504", kind = "series")
+        val enriched = plain.copy(tmdbId = "2328")
+
+        val normalized = CatalogNormalizer.normalize("series", listOf(plain, enriched))
+
+        assertEquals(1, normalized.items.size)
+        // Και η μη κενή τιμή επιβιώνει της συγχώνευσης.
+        assertEquals("2328", normalized.items.first().tmdbId)
+    }
+
+    @Test
     fun nextEpisodeAdvancesInsteadOfRepeatingTheSecondOfTheSeason() {
         // Η ορατή συνέπεια του παλιού κοινού κλειδιού: το nextAfter έβρισκε
         // πάντα τη θέση 0, οπότε το «επόμενο» ήταν πάντα το δεύτερο επεισόδιο

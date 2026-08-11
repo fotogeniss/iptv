@@ -80,17 +80,28 @@ fun buildCatalogRailSections(
         out += section("my-list", labels.myList, favorites)
     }
 
-    val trending = unique(channels)
+    // ΚΟΡΥΦΑΙΑ: με βαθμολογία, όχι με τη σειρά που τα έστειλε ο πάροχος.
+    //
+    // Η ράγα τυπώνει θέσεις 1, 2, 3 — άρα οφείλει να είναι όντως κατάταξη.
+    // Στοιχεία χωρίς βαθμολογία μένουν έξω, δεν πέφτουν στο τέλος: μια θέση σε
+    // πίνακα κατάταξης είναι ισχυρισμός, και για αυτά δεν έχουμε κανέναν.
+    // ΠΡΟΣΟΧΗ ΣΤΗΝ ΕΦΕΔΡΕΙΑ: αυτή είναι η ΚΥΡΙΑ ράγα της αρχικής και υπήρχε
+    // πάντα. Αν μια πηγή δεν στέλνει καθόλου βαθμολογίες — M3U, και αρκετά
+    // portals — μια σκέτη «ταξινόμηση με βαθμολογία» θα την εξαφάνιζε και η
+    // αρχική θα άδειαζε. Οπότε: με βαθμολογίες γίνεται πραγματική κατάταξη·
+    // χωρίς αυτές μένει ό,τι ήταν, μόνο που ΧΑΝΕΙ τα νούμερα θέσης, τα οποία
+    // ήταν και η αιτία που έμοιαζε τυχαία.
+    val rated = unique(CatalogRankingPolicy.topRatedFirst(channels))
+    val hasRealRanking = rated.size >= 4
     out += section(
         id = "trending",
         title = labels.trending,
-        all = trending,
-        ranked = true
+        all = if (hasRealRanking) rated else unique(channels),
+        ranked = hasRealRanking
     )
 
-    val newest = unique(
-        channels.filter { it.year.length == 4 }.sortedByDescending { it.year }
-    )
+    // ΝΕΑ: με το πότε μπήκαν στον κατάλογο, με εφεδρεία το έτος.
+    val newest = unique(CatalogRankingPolicy.newestFirst(channels))
     if (newest.size >= 4) out += section("new", labels.newReleases, newest)
 
     // ΟΛΑ τα groups που κατέβασε ο χρήστης γίνονται sections, ώστε να φαίνονται

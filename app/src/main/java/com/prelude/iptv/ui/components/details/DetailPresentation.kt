@@ -8,6 +8,13 @@ import com.prelude.iptv.ui.WatchProgress
 @Immutable
 data class DetailPresentation(
     val title: String,
+    /**
+     * Το TMDB id του παρόχου για ΑΥΤΟ το περιεχόμενο, αν το έδωσε.
+     *
+     * Ταξιδεύει ως τις κάρτες επεισοδίων ώστε να μη χρειάζεται αναζήτηση με
+     * τίτλο. Δες [com.prelude.iptv.data.Channel.tmdbId].
+     */
+    val tmdbId: String = "",
     val year: String,
     val rating: String,
     val ageRating: String,

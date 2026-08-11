@@ -53,10 +53,13 @@ screen against it before believing any device report.**
    removed. It is deliberately left in the tree, unreferenced, with a comment
    saying so. Either delete it or give it a door (Settings row, or a fifth tab in
    add-source). Do not leave it drifting a third session.
-2. **Use the provider's `tmdb_id`.** Real Stalker rows carry
-   `"tmdb_id":"2328"`. Using it removes title search entirely for those series
-   and is very likely the actual end of the greeklish problem, rather than
-   another attempt to improve matching. See the follow-ups below.
+2. **Confirm the `tmdb_id` route on device (1.50.0).** Code-complete, not yet
+   device-verified. Open a Greek series whose list title is greeklish and check
+   whether episodes now carry their own synopses and stills. One Logcat line on
+   `TmdbLookup` settles it: `episodeMeta ... -> tmdbId=N (από τον πάροχο, χωρίς
+   αναζήτηση)` means the id was used. If it says "από αναζήτηση τίτλου", the
+   provider did not send one for that series and the old path applies — that is
+   not a defect, but it means greeklish still matters for those rows.
 3. **Then `SectionPublicationCoordinator`** — the owner approved this scope at
    the start of the session and urgent work displaced it. See "MainViewModel" in
    the follow-ups.
@@ -201,11 +204,16 @@ more than a day of inference. Ask for a real sample first.
   anything, then look at keeping the portal session warm. Note that removing
   `fetchEpisodeDescription` freed up to 81 concurrent requests that were
   competing with `create_link` on the same portal, so re-measure first.
-- **The provider sends `tmdb_id` and the app ignores it.** Real rows carry
-  `"tmdb_id":"2328"` and `"tmdb":"2328"`. Using it removes title search entirely
-  for those series — no `cleanTitle`, no greeklish transliteration, no skeleton
-  comparison, no wrong-series match. This is the next slice and it is likely the
-  real end of the greeklish problem rather than another attempt to fix matching.
+- **`tmdb_id` is now used for EPISODE metadata, but not for the series itself.**
+  `TmdbClient.fetch` — the call behind the hero poster, backdrop, rating and
+  show-level synopsis — still resolves by title. It works today, which is why it
+  was left alone, but it is the last place a greeklish title can still pick the
+  wrong show. Threading the id into `fetch` is a small, obvious follow-up; do it
+  once the episode route is device-confirmed, so the two are not diagnosed
+  together.
+- **Xtream and M3U do not populate `tmdbId`.** Only `StalkerClient` reads it.
+  Xtream's series info payload may well carry one; nobody has looked. Check a
+  real response before adding a parser.
 - **`seriesId` reaches the portal doubled: `movie_id=42504:42504`.** Visible in
   every logged URL. The portal expects `42504`. This may well be why the
   season/episode filters were ignored. Confirm against a capture before changing

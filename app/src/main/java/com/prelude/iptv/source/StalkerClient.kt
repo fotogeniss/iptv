@@ -467,6 +467,11 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         kind = "series_ep",
         seriesId = seriesId,
         year = row.optString("year"),
+        // Η γραμμή ΣΕΖΟΝ κουβαλάει το tmdb_id της σειράς. Μπαίνει και στο
+        // επεισόδιο ώστε οι οθόνες που δείχνουν επεισόδιο ΧΩΡΙΣ τον γονέα
+        // δίπλα — το πάνελ πληροφοριών του player — να μπορούν κι αυτές να
+        // ζητήσουν μεταδεδομένα χωρίς αναζήτηση με τίτλο.
+        tmdbId = row.optString("tmdb_id").ifEmpty { row.optString("tmdb") },
     )
 
     /**
@@ -632,7 +637,17 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                     director = ch.optString("director"),
                     genre = ch.optString("genres_str").ifEmpty { ch.optString("genre") },
                     year = ch.optString("year"),
-                    duration = ch.optString("time").ifEmpty { ch.optString("duration") }
+                    duration = ch.optString("time").ifEmpty { ch.optString("duration") },
+                    // Ο πάροχος ΞΕΡΕΙ το TMDB id και το στέλνει σε δύο πεδία με
+                    // την ίδια τιμή («tmdb_id» και «tmdb»). Επιβεβαιωμένο σε
+                    // πραγματική απάντηση. Το κρατάμε ώστε η αναζήτηση με
+                    // τίτλο να γίνει εφεδρεία και όχι ο κανόνας.
+                    tmdbId = ch.optString("tmdb_id").ifEmpty { ch.optString("tmdb") },
+                    // Τα δύο πεδία που κάνουν τις ράγες «Νέα» και «Κορυφαία» να
+                    // σημαίνουν κάτι. Χωρίς αυτά, η πρώτη ταξινομούσε με το έτος
+                    // παραγωγής και η δεύτερη με τίποτα απολύτως.
+                    addedAt = ch.optString("added"),
+                    rating = ch.optString("rating_imdb").ifEmpty { ch.optString("rating_kinopoisk") }
                 ))
                 // Επεισόδια: ΟΧΙ εδώ. Το get_ordered_list της κατηγορίας δεν
                 // κουβαλάει ποτέ επεισόδια σε αυτό το API (επιβεβαιωμένο σε

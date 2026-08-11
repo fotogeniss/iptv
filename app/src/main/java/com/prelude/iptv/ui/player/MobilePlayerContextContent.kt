@@ -345,7 +345,11 @@ private fun PlayerEpisodes(
             val (sourceIndex, episode) = item
             val episodeNumber = SubtitleSearchPolicy.episodeNumber(episode.name, sourceIndex + 1)
                 ?: sourceIndex + 1
+            // Το επεισόδιο κουβαλάει μόνο του το tmdb_id της σειράς (μπαίνει στο
+            // StalkerClient.buildEpisodeChannel), οπότε αυτό το πάνελ δεν
+            // χρειάζεται τον γονέα για να ζητήσει σωστά μεταδεδομένα.
             val tmdbEpisode = rememberEpisodeMeta(
+                seriesTmdbId = episode.tmdbId,
                 seriesTitle = seriesTitle,
                 seriesYear = seriesYear,
                 season = seasonNumber,

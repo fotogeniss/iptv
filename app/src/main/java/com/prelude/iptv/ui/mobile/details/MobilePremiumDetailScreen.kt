@@ -154,6 +154,7 @@ fun MobilePremiumDetailScreen(
                             seriesTitle = presentation.title,
                             seriesYear = presentation.year,
                             season = seasonNumber,
+                            seriesTmdbId = presentation.tmdbId,
                         )
                     }
                 }

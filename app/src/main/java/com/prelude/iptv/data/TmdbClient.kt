@@ -252,7 +252,18 @@ object TmdbClient {
      *
      * Επιστρέφει κενό map χωρίς κλειδί ή όταν το TMDB δεν έχει τη σεζόν.
      */
-    fun episodeMeta(rawTitle: String, yearHint: String, season: Int): Map<Int, EpisodeMeta> {
+    /**
+     * @param providerTmdbId Το TMDB id όπως το έδωσε ο πάροχος, αν το έδωσε.
+     *   Όταν υπάρχει, η αναζήτηση με τίτλο ΔΕΝ εκτελείται καθόλου — δες
+     *   [Channel.tmdbId] για το γιατί αυτό είναι σημαντικό. Κενό ή μη αριθμητικό
+     *   σημαίνει «δεν ξέρω», και ισχύει η παλιά διαδρομή.
+     */
+    fun episodeMeta(
+        rawTitle: String,
+        yearHint: String,
+        season: Int,
+        providerTmdbId: String = "",
+    ): Map<Int, EpisodeMeta> {
         // ΤΟ ΠΡΩΤΟ ΠΡΑΓΜΑ ΠΟΥ ΠΡΕΠΕΙ ΝΑ ΦΑΙΝΕΤΑΙ ΣΤΗ ΔΙΑΓΝΩΣΗ.
         //
         // Το κλειδί TMDB είναι προαιρετικό και το βάζει ο χρήστης από τις
@@ -270,10 +281,18 @@ object TmdbClient {
             return emptyMap()
         }
         if (season <= 0) return emptyMap()
+        // Το id του παρόχου γίνεται δεκτό μόνο ως θετικός ακέραιος: πραγματικές
+        // απαντήσεις περιέχουν "0", "" και "null" στο ίδιο πεδίο.
+        val knownId = providerTmdbId.trim().toIntOrNull()?.takeIf { it > 0 } ?: 0
         val title = cleanTitle(rawTitle)
-        if (title.isBlank()) return emptyMap()
+        // Χωρίς id ΚΑΙ χωρίς τίτλο δεν υπάρχει τίποτα να ρωτήσουμε. Με id, ο
+        // τίτλος είναι αδιάφορος — γι' αυτό ο έλεγχος δεν είναι πλέον καθολικός.
+        if (knownId == 0 && title.isBlank()) return emptyMap()
         val year = extractYear(rawTitle, yearHint)
-        val cacheKey = "ep:$title:$year:$season"
+        // Το κλειδί κρατά το id όταν υπάρχει: δύο σειρές μπορεί να καθαρίζουν
+        // στον ίδιο τίτλο, και το id είναι το ακριβές αναγνωριστικό. Χωρίς αυτό,
+        // μια αποθηκευμένη λάθος αντιστοίχιση θα επιβίωνε της διόρθωσης.
+        val cacheKey = if (knownId > 0) "ep:id$knownId:$season" else "ep:$title:$year:$season"
         episodeMemCache[cacheKey]?.let { return it }
         loadEpisodesDisk(cacheKey)?.let { episodeMemCache[cacheKey] = it; return it }
 
@@ -284,11 +303,19 @@ object TmdbClient {
 
             val result = try {
                 throttled {
-                    val id = searchId("tv", title, year, isSeries = true)
+                    // Ο ΠΑΡΟΧΟΣ ΞΕΡΕΙ ΚΑΛΥΤΕΡΑ ΑΠΟ ΕΜΑΣ.
+                    //
+                    // Όταν στέλνει tmdb_id, δεν υπάρχει λόγος να μαντέψουμε από
+                    // τον τίτλο. Η αναζήτηση παραλείπεται ολόκληρη — μαζί με τον
+                    // καθαρισμό σημάνσεων, τη μεταγραφή greeklish και τη σύγκριση
+                    // σκελετού, δηλαδή τα τρία σημεία όπου έχει βρεθεί λάθος
+                    // σειρά. Γλιτώνει και ένα round-trip ανά σεζόν.
+                    val id = if (knownId > 0) knownId else searchId("tv", title, year, isSeries = true)
                     Log.d(
                         LOOKUP_TAG,
                         "episodeMeta raw=«$rawTitle» clean=«$title» year=«$year» " +
-                            "season=$season -> tmdbId=$id",
+                            "season=$season -> tmdbId=$id " +
+                            if (knownId > 0) "(από τον πάροχο, χωρίς αναζήτηση)" else "(από αναζήτηση τίτλου)",
                     )
                     if (id == 0) return@throttled emptyMap()
 

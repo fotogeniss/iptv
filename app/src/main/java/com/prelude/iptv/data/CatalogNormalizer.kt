@@ -197,6 +197,17 @@ object CatalogNormalizer {
         genre = current.genre.ifBlank { candidate.genre },
         year = current.year.ifBlank { candidate.year },
         duration = current.duration.ifBlank { candidate.duration },
+        // Ίδιος κανόνας με τα υπόλοιπα πεδία προβολής: η πρώτη μη κενή τιμή
+        // κερδίζει. Χωρίς αυτή τη γραμμή, μια σειρά που χτίζεται πρώτα από
+        // γραμμή χωρίς `tmdb_id` θα κρατούσε το κενό για πάντα, ακόμη κι αν το
+        // επόμενο επεισόδιο το κουβαλούσε. ΔΕΝ αγγίζει ταυτότητα — δες
+        // [Channel.tmdbId].
+        tmdbId = current.tmdbId.ifBlank { candidate.tmdbId },
+        // Για μια σειρά, «πότε μπήκε» είναι το ΠΙΟ ΠΡΟΣΦΑΤΟ επεισόδιο, όχι το
+        // πρώτο που έτυχε να χτίσει τον κάδο: μια σειρά που παίρνει καινούριο
+        // επεισόδιο κάθε βδομάδα είναι νέα, όσο παλιά κι αν είναι η πρεμιέρα της.
+        addedAt = maxOf(current.addedAt, candidate.addedAt),
+        rating = current.rating.ifBlank { candidate.rating },
         url = "",
         cmd = "",
         streamId = "",
