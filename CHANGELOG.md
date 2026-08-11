@@ -5,6 +5,20 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.47.0 - versionCode 116
+
+- Released the twenty-four changes below, which had all accumulated under
+  `Unreleased` while `versionName`/`versionCode` stayed at 1.46.0/115 from the
+  project baseline onward. That is the reason for this release and it is worth
+  recording, because the drift itself caused a defect report: a device
+  screenshot showed a title still carrying its provider marker ("#"), a genre
+  row still rendering "N · A" and a synopsis still reading "N/A" — all three
+  already fixed in the working tree. Nothing on screen and nothing in Settings
+  could distinguish an installed build from the current source, so the report
+  read as three unfixed bugs rather than as one stale APK, and a diagnosis round
+  was spent before the title marker gave it away. From this release on, the
+  version shown in Settings identifies the build, and a screenshot is
+  self-dating. No behaviour changes with this entry.
 - Fixed a greeklish title's Greek query never running because a Latin search had
   already returned something irrelevant. `searchId` accepted the first result of
   every `titleCandidates` attempt blindly, and TMDB's search is tolerant enough
