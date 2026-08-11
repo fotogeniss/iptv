@@ -393,15 +393,19 @@ object TmdbClient {
      * (ακριβέστερο) και μετά ΧΩΡΙΣ (οι πάροχοι βάζουν συχνά λάθος χρονιά).
      * Σταματά στο πρώτο αποτέλεσμα, οπότε στη συνήθη περίπτωση κάνει μία κλήση.
      *
-     * ΤΟ ΕΛΛΗΝΙΚΟ ΕΡΩΤΗΜΑ ΜΠΑΙΝΕΙ ΤΕΛΕΥΤΑΙΟ ΚΑΙ ΜΕ ΑΥΣΤΗΡΟΤΕΡΟ ΚΡΙΤΗΡΙΟ.
+     * ΓΙΑ GREEKLISH ΤΙΤΛΟ, ΚΑΘΕ ΑΠΟΤΕΛΕΣΜΑ ΕΠΑΛΗΘΕΥΕΤΑΙ — ΑΚΟΜΗ ΚΑΙ ΤΩΝ
+     * ΛΑΤΙΝΙΚΩΝ ΥΠΟΨΗΦΙΩΝ.
      *
-     * Οι υποψήφιοι του [titleCandidates] είναι ο ΠΡΑΓΜΑΤΙΚΟΣ τίτλος του
-     * παρόχου σε παραλλαγές, οπότε κρατούν τη μέχρι τώρα συμπεριφορά: δέχονται
-     * το πρώτο αποτέλεσμα. Ο τίτλος που παράγει το [GreeklishTitlePolicy.toGreek]
-     * είναι ΥΠΟΘΕΣΗ — μια μεταγραφή που μπορεί να πέσει έξω — και δεν
-     * επιτρέπεται να επιστρέψει άσχετη σειρά με λάθος περιλήψεις επεισοδίων.
-     * Γι' αυτό απαιτεί επαλήθευση: το αποτέλεσμα γίνεται δεκτό μόνο αν ο
-     * σκελετός του ταιριάζει με τον σκελετό του τίτλου της λίστας.
+     * Η αναζήτηση του TMDB είναι ανεκτική: για «To Spiti Dipla Sto Potami»
+     * μπορεί κάλλιστα να επιστρέψει κάποιο άσχετο έργο. Με τυφλή αποδοχή του
+     * πρώτου αποτελέσματος αυτό είχε ΔΥΟ συνέπειες, όχι μία: κολλούσαμε σε λάθος
+     * σειρά, ΚΑΙ το ελληνικό ερώτημα παρακάτω δεν εκτελούνταν ποτέ επειδή η
+     * συνάρτηση είχε ήδη επιστρέψει. Ένας τίτλος σε greeklish δεν ταιριάζει
+     * σωστά με λατινική αναζήτηση παρά μόνο αν το TMDB κρατά romanized
+     * εναλλακτικό τίτλο — και αυτός περνά ούτως ή άλλως την επαλήθευση.
+     *
+     * Για κάθε άλλο τίτλο η συμπεριφορά μένει ΑΚΡΙΒΩΣ όπως ήταν (πρώτο
+     * αποτέλεσμα), ώστε να μην αλλάξει τίποτα σε ό,τι ήδη λύνεται σωστά.
      */
     private fun searchId(type: String, title: String, year: String, isSeries: Boolean): Int {
         val yearParam = when {
@@ -409,13 +413,20 @@ object TmdbClient {
             isSeries -> "&first_air_date_year=$year"
             else -> "&year=$year"
         }
+        val expected = if (GreeklishTitlePolicy.looksGreeklish(title)) {
+            GreeklishTitlePolicy.latinSkeleton(title)
+        } else ""
+
+        fun pick(json: String): Int =
+            if (expected.isBlank()) firstId(json) else verifiedId(json, expected)
+
         for (candidate in titleCandidates(title)) {
             val q = URLEncoder.encode(candidate, "UTF-8")
             if (yearParam.isNotEmpty()) {
-                val withYear = firstId(Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q$yearParam"))
+                val withYear = pick(Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q$yearParam"))
                 if (withYear != 0) return withYear
             }
-            val withoutYear = firstId(Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q"))
+            val withoutYear = pick(Http.get("$BASE/search/$type?api_key=$apiKey&language=$lang&query=$q"))
             if (withoutYear != 0) return withoutYear
         }
         return greeklishId(type, title, yearParam)

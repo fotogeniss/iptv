@@ -5,6 +5,17 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed a greeklish title's Greek query never running because a Latin search had
+  already returned something irrelevant. `searchId` accepted the first result of
+  every `titleCandidates` attempt blindly, and TMDB's search is tolerant enough
+  to return an unrelated show for "To Spiti Dipla Sto Potami". That had two
+  consequences rather than one: the app locked onto the wrong series, and the
+  Greek query below was never reached because the function had already returned.
+  For titles detected as greeklish, every result is now verified against the
+  skeleton — including the Latin candidates. Such a title cannot match a Latin
+  search correctly unless TMDB holds a romanized alternative title, and that
+  passes verification anyway. Behaviour for every other title is unchanged, so
+  anything that already resolves keeps resolving by first result.
 - Fixed provider placeholder values being displayed as if they were content.
   Many providers write `N/A`, `null`, `-` or `unknown` into a field they do not
   know instead of leaving it empty, and the app treated those as real text. Two
