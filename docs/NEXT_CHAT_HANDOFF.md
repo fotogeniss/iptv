@@ -49,6 +49,9 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `a389a44` | `feat: add a section navigation history policy` |
 | `b76ee91` | `fix: make back return to the previous section everywhere` |
 | `486b2b5` | `fix: strip provider decoration from titles before searching TMDB` |
+| `b75eca8` | `fix: log a missing TMDB key instead of failing silently` |
+| `df4eb4f` | `fix: treat provider placeholder values as missing, not as content` |
+| `a7a634e` | `fix: verify Latin search results too when the title is greeklish` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
@@ -114,7 +117,31 @@ the list title's skeleton already equalled the real Greek title's, so
 verification would have accepted the match. One stray character was the whole
 failure. **This is what the ten sample titles would have revealed immediately.**
 
-**The two things that preceded it**, neither a guess at the transliteration:
+**Then it still failed, and a second screenshot pair settled what was left.**
+The Greek-titled hero showed genres, an 8,5 rating, a Greek synopsis and a
+backdrop; the greeklish one showed "N · A" and "N/A". That comparison proves
+three things at once: the API key works, TMDB genuinely returns nothing for the
+greeklish title, and the placeholder text is provider data reaching the screen.
+
+A wrong turn worth recording: the missing-API-key theory was raised on this
+evidence and was **wrong** — the owner had already confirmed the key from inside
+the app, and the Greek-titled hero proves it. `b75eca8` is still worth keeping
+(a missing key produced an identical symptom with an empty Logcat), but it was
+not the cause. The screenshot contained the answer and was read too quickly.
+
+Two real defects came out of reading it properly:
+
+- `df4eb4f` — providers write `N/A` into fields they do not know. The genre row
+  splits on `/`, so `N/A` became two tags and rendered as "N · A"; the synopsis
+  showed `N/A` instead of being treated as absent. Fixed centrally in
+  `CatalogNormalizer`, touching display fields only — `year` and `duration` feed
+  identity keys and were deliberately left alone.
+- `a7a634e` — `searchId` took the first result of each Latin candidate blindly,
+  so an unrelated fuzzy match both locked onto the wrong show **and** returned
+  before the Greek query could run, silently disabling `8ec4658`. Greeklish
+  titles now verify every result, Latin candidates included.
+
+**The earlier steps**, neither a guess at the transliteration:
 
 - `147433a` fixed a real, provable bug found while investigating: `episodeMeta`
   cached an **empty** result in memory, so one throttled or dropped call marked
