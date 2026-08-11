@@ -19,6 +19,8 @@ fun HomeSection.titleRes(): Int = when (id) {
     HomeLayoutPolicy.NEW_LIVE -> R.string.home_section_new_live
     HomeLayoutPolicy.NEW_MOVIES -> R.string.home_section_new_movies
     HomeLayoutPolicy.NEW_EPISODES -> R.string.home_section_new_episodes
+    HomeLayoutPolicy.TOP_MOVIES -> R.string.home_section_top_movies
+    HomeLayoutPolicy.TOP_SERIES -> R.string.home_section_top_series
     HomeLayoutPolicy.LIVE -> R.string.home_section_live
     HomeLayoutPolicy.MOVIES -> R.string.home_section_movies
     HomeLayoutPolicy.SERIES -> R.string.home_section_series

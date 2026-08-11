@@ -49,6 +49,16 @@ internal data class MobileHomeRailResolver(
             id, sectionTitle(id), HomeRailContentPolicy.newest(displayedSeries)
         )
 
+        // Χωρίς βαθμολογίες από τον πάροχο, το topRated γυρίζει κενό και το
+        // rail() γυρίζει null — η ενότητα δεν ζωγραφίζεται καθόλου.
+        HomeLayoutPolicy.TOP_MOVIES -> HomeRailContentPolicy.rail(
+            id, sectionTitle(id), HomeRailContentPolicy.topRated(displayedMovies)
+        )
+
+        HomeLayoutPolicy.TOP_SERIES -> HomeRailContentPolicy.rail(
+            id, sectionTitle(id), HomeRailContentPolicy.topRated(displayedSeries)
+        )
+
         HomeLayoutPolicy.LIVE -> categoryRail(id, sectionTitle(id), live, categoryOf(id), categoryTitle, live = true)
         HomeLayoutPolicy.MOVIES -> if (selectedDestination == "movies") {
             HomeRailContentPolicy.rail(id, selectedCatalogGroup ?: sectionTitle(id), displayedMovies)

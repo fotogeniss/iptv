@@ -7,6 +7,8 @@
     <string name="home_section_new_live">Νέα ζωντανά</string>
     <string name="home_section_new_movies">Νέες ταινίες</string>
     <string name="home_section_new_episodes">Νέα επεισόδια</string>
+    <string name="home_section_top_movies">Κορυφαίες ταινίες</string>
+    <string name="home_section_top_series">Κορυφαίες σειρές</string>
     <string name="home_section_live">Ζωντανά</string>
     <string name="home_section_movies">Ταινίες</string>
     <string name="home_section_series">Σειρές</string>

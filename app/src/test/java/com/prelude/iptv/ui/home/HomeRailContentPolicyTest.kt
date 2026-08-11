@@ -77,6 +77,48 @@ class HomeRailContentPolicyTest {
     }
 
     @Test
+    fun `με ημερομηνίες προσθήκης τα νέα παύουν να είναι εικασία`() {
+        // Η σειρά του παρόχου βάζει τελευταία τη «Χθεσινή», αλλά η ημερομηνία
+        // λέει άλλα. Με αρκετές ημερομηνίες κερδίζει η ημερομηνία.
+        val dated = (1..5).map {
+            Channel(name = "Ταινία $it", kind = "vod", addedAt = "2025-01-0$it 10:00:00")
+        }
+        val newest = HomeRailContentPolicy.newest(dated, limit = 3)
+        assertEquals(listOf("Ταινία 5", "Ταινία 4", "Ταινία 3"), newest.map { it.name })
+    }
+
+    @Test
+    fun `λίγες ημερομηνίες δεν αδειάζουν τη ράγα`() {
+        // Σε κατάλογο 30 ταινιών όπου μόνο δύο έχουν «added», μια ράγα με δύο
+        // κάρτες θα ήταν χειρότερη από την παλιά εικασία με είκοσι.
+        val all = (1..30).map { ch("Ταινία $it") } +
+            Channel(name = "Με ημερομηνία", kind = "vod", addedAt = "2025-06-01 00:00:00")
+        assertEquals(20, HomeRailContentPolicy.newest(all, limit = 20).size)
+    }
+
+    @Test
+    fun `τα κορυφαία μπαίνουν με βαθμολογία`() {
+        val all = listOf(
+            Channel(name = "Μέτρια", kind = "vod", rating = "5"),
+            Channel(name = "Άριστη", kind = "vod", rating = "9.2"),
+            Channel(name = "Καλή", kind = "vod", rating = "7"),
+        )
+        assertEquals(
+            listOf("Άριστη", "Καλή", "Μέτρια"),
+            HomeRailContentPolicy.topRated(all).map { it.name },
+        )
+    }
+
+    @Test
+    fun `χωρίς βαθμολογίες η ενότητα κορυφαίων δεν ζωγραφίζεται`() {
+        // Κενό είναι θεμιτό αποτέλεσμα: το rail() γυρίζει null και η ενότητα
+        // λείπει, αντί να γεμίσει με ό,τι να 'ναι κάτω από τίτλο «Κορυφαίες».
+        val all = (1..10).map { ch("Χωρίς βαθμό $it") }
+        assertTrue(HomeRailContentPolicy.topRated(all).isEmpty())
+        assertNull(HomeRailContentPolicy.rail("top", "Κορυφαίες", HomeRailContentPolicy.topRated(all)))
+    }
+
+    @Test
     fun `άδειο rail δεν φτιάχνεται καθόλου`() {
         assertNull(HomeRailContentPolicy.rail("x", "Τίτλος", emptyList()))
     }

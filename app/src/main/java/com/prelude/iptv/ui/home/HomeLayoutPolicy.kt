@@ -44,6 +44,8 @@ object HomeLayoutPolicy {
     const val NEW_LIVE = "new-live"
     const val NEW_MOVIES = "new-movies"
     const val NEW_EPISODES = "new-episodes"
+    const val TOP_MOVIES = "top-movies"
+    const val TOP_SERIES = "top-series"
     const val LIVE = "live"
     const val MOVIES = "movies"
     const val SERIES = "series"
@@ -70,6 +72,12 @@ object HomeLayoutPolicy {
         HomeSection(NEW_LIVE),
         HomeSection(NEW_MOVIES),
         HomeSection(NEW_EPISODES),
+        // Εμφανίζονται ΜΟΝΟ όταν ο πάροχος στέλνει βαθμολογίες. Χωρίς αυτές το
+        // rail επιστρέφει null και η ενότητα απλώς δεν ζωγραφίζεται — παραμένει
+        // όμως ορατή στον επεξεργαστή, ώστε να μη μοιάζει με σφάλμα η απουσία
+        // της σε μία πηγή όταν υπάρχει σε άλλη.
+        HomeSection(TOP_MOVIES),
+        HomeSection(TOP_SERIES),
         HomeSection(LIVE, categorised = true),
         HomeSection(MOVIES, categorised = true),
         HomeSection(SERIES, categorised = true),

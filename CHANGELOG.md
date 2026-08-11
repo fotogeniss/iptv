@@ -5,6 +5,32 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.52.0 - versionCode 122
+
+- Added **"Top rated movies"** and **"Top rated series"** to the home screen,
+  ordered by the provider's rating. Both appear in the home layout editor like
+  every other section, so they can be reordered or hidden.
+  - They render **only when the source supplies ratings**. With none, the rail
+    resolves to null and the section is simply absent — a rail titled "Top" owes
+    the viewer a criterion, and inventing one is worse than showing nothing.
+    They stay listed in the editor regardless, so their absence on one source
+    does not read as a bug when another source shows them.
+- Made **"New movies" and "New episodes"** use the provider's `added` date
+  rather than its file order. Until now `newest()` returned
+  `items.takeLast(20).asReversed()` — an honest guess, documented as one,
+  because M3U and Xtream carry no such date. Stalker portals do send it, and it
+  was being thrown away.
+  - The guess survives as a fallback, and the switch is **thresholded**: the
+    dated ordering is used only when it can fill the rail on its own. In a
+    catalog of 5,000 films where three carry `added`, a three-card "New" rail
+    would be worse than the old twenty-card guess.
+- This is the same defect the previous release fixed on the other home surface.
+  The app has **two** rail systems: `CatalogPolicy.buildCatalogRailSections`,
+  fixed in 1.51.0, and `HomeLayoutPolicy` + `MobileHomeRailResolver`, which is
+  what the mobile home actually draws and what the layout editor lists. The
+  first fix was real but invisible on the reported screen. Recorded here so the
+  next reader does not spend the round finding that out again.
+
 ## 1.51.0 - versionCode 121
 
 - Made the home rails mean what their titles say. Both were reported as
