@@ -2,8 +2,8 @@
 
 - **Date:** 2026-08-11
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** `b00a15e` · worktree clean · all six static gates pass
-- **Version:** 1.46.0 (`versionCode 115`)
+- **Branch:** `main` · **HEAD:** `5745b1a` · worktree clean · all six static gates pass
+- **Version:** 1.49.1 (`versionCode 119`)
 
 This document is the operational source of truth for continuing in a fresh
 chat. **Section 0 is written to be read first and on its own** — it says where
@@ -17,8 +17,10 @@ reasoning, the open questions and the traps that the changelog does not carry.
 
 ## 0. START HERE — state, what is open, what to do first
 
-Last session: **2026-08-11**. HEAD `b00a15e`, worktree clean, all six static
-gates pass. 24 commits sit on top of `f1f75e0` (`feat: localize library hub`).
+Last session: **2026-08-11**. HEAD `5745b1a`, worktree clean, all six static
+gates pass. Three commits landed this session: `c11678e` (release 1.47.0),
+`3de4925` (release 1.49.0) and `5745b1a` (TV bottom-bar focus, 1.49.1). All
+three are **owner-confirmed on device**.
 
 ### Status at a glance
 
@@ -28,24 +30,47 @@ gates pass. 24 commits sit on top of `f1f75e0` (`feat: localize library hub`).
 | Episode switching (next-episode card, episode list) | **Owner-confirmed** |
 | Live-transition "flash" | **Owner-confirmed** |
 | Stalker catalog load speed (gzip + concurrency) | **Owner-confirmed** |
-| Per-episode descriptions for **Greek-titled** series | **Working** (TMDB) |
-| Per-episode descriptions for **greeklish-titled** series | **STILL BROKEN — main open item** |
-| Provider `N/A` rendering as "N · A" | Fixed, **not device-confirmed** |
-| Back navigation returning to the previous section | Fixed, **not device-confirmed** |
+| Series open time (was 4.5 s, now one request) | **Owner-confirmed** |
+| Provider `N/A` / raw air date in the metadata row | **Owner-confirmed fixed** |
+| Back navigation returning to the previous section | **Owner-confirmed** |
+| One "＋" on Sources, straight to add-source | **Owner-confirmed** |
+| Bottom navigation bar focus on Android TV | **Owner-confirmed fixed** |
+| Per-episode descriptions | Absent by design — see below |
+
+### The version drift is fixed. Keep it that way.
+
+`versionName`/`versionCode` had been frozen at 1.46.0/115 while 24 commits
+accumulated, so an installed build could not be told apart from the source. That
+cost a full diagnosis round: a screenshot showed three "unfixed" defects that
+were all already fixed in the tree, and only a leftover "#" in a title revealed
+the APK was stale. **Bump the version on every change and check the Settings
+screen against it before believing any device report.**
 
 ### Do this first
 
-1. **Ask the owner to build and check two things**, since both are code-complete
-   but unverified: (a) that "N · A" and "N/A" are gone from series that lack
-   metadata, and (b) that back returns to the previous section — Series → Live →
-   back should give Series, and the on-screen arrow must behave identically to
-   the device button.
-2. **If greeklish series still show no per-episode synopsis**, get a Logcat
-   filtered on `TmdbLookup`. Do **not** adjust the transliteration before seeing
-   it. The table in "The greeklish problem" below maps each log line to the
-   defect it indicates; three of the causes need opposite fixes.
-3. Only after those, resume the localization audit (section 6): the final
+1. **Decide what happens to "play a single stream".** `SingleStreamDialog` in
+   `ProviderImportScreens.kt` lost its only entry point when `AddMenuSheet` was
+   removed. It is deliberately left in the tree, unreferenced, with a comment
+   saying so. Either delete it or give it a door (Settings row, or a fifth tab in
+   add-source). Do not leave it drifting a third session.
+2. **Use the provider's `tmdb_id`.** Real Stalker rows carry
+   `"tmdb_id":"2328"`. Using it removes title search entirely for those series
+   and is very likely the actual end of the greeklish problem, rather than
+   another attempt to improve matching. See the follow-ups below.
+3. **Then `SectionPublicationCoordinator`** — the owner approved this scope at
+   the start of the session and urgent work displaced it. See "MainViewModel" in
+   the follow-ups.
+4. The localization audit (section 6) comes after those: the final
    release-surface hardcoded-string sweep, 50 files still unclassified.
+
+### Per-episode descriptions: what is true now
+
+Not a bug and not pending. Stalker portals ignore `episode_id` and `season_id`
+on `get_ordered_list` — proven by a capture where episodes 25, 28, 33 and 39 all
+returned byte-identical responses carrying the **series** description. The extra
+request per episode was removed, so an episode with no synopsis of its own now
+shows nothing rather than repeating the show's. Real per-episode text can only
+come from TMDB, which is what item 2 above unlocks.
 
 ### What last session did, grouped
 
