@@ -57,10 +57,7 @@ internal fun PlaylistTab(
             // directly to AddPlaylistScreen before the shell is composed.
             LaunchedEffect(Unit) { onAdd(0) }
         } else {
-            SourceManagerHeader(
-                sourceCount = state.playlists.size,
-                onAdd = onAdd
-            )
+            SourceManagerHeader(sourceCount = state.playlists.size)
             val first = rememberInitialFocus(
                 enabled = isTvDevice() && state.playlists.isNotEmpty(),
                 key = state.playlists.size
@@ -87,29 +84,25 @@ internal fun PlaylistTab(
     )
 }
 
+/**
+ * Τίτλος και πλήθος πηγών. Τίποτα άλλο.
+ *
+ * ΕΔΩ ΗΤΑΝ ΤΟ ΚΟΥΜΠΙ «＋ Νέα πηγή». ΑΦΑΙΡΕΘΗΚΕ.
+ *
+ * Η οθόνη είχε ΔΥΟ «＋» που έκαναν διαφορετικά πράγματα: αυτό εδώ άνοιγε
+ * κατευθείαν την προσθήκη πηγής, ενώ το «＋» της κάτω μπάρας άνοιγε πρώτα ένα
+ * φύλλο επιλογών που κατέληγε στην ίδια οθόνη με προεπιλεγμένη καρτέλα. Δύο
+ * χειριστήρια, ίδιο εικονίδιο, ίδιος προορισμός, διαφορετικός αριθμός βημάτων.
+ * Έμεινε το ένα — αυτό της μπάρας, που είναι σταθερά στο ίδιο σημείο σε κάθε
+ * οθόνη — και πηγαίνει απευθείας εκεί που πήγαινε αυτό.
+ */
 @Composable
-private fun SourceManagerHeader(sourceCount: Int, onAdd: (Int) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        StreamingScreenHeader(
-            title = stringResource(R.string.sources_title),
-            subtitle = pluralStringResource(R.plurals.sources_active_count, sourceCount, sourceCount),
-            modifier = Modifier.weight(1f)
-        )
-        OutlinedButton(
-            onClick = { onAdd(1) },
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.24f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-            modifier = Modifier.then(if (isTvDevice()) Modifier.tvFocus(RoundedCornerShape(8.dp), tint = false) else Modifier)
-        ) {
-            Icon(Icons.Default.Add, null)
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.sources_new_source))
-        }
-    }
+private fun SourceManagerHeader(sourceCount: Int) {
+    StreamingScreenHeader(
+        title = stringResource(R.string.sources_title),
+        subtitle = pluralStringResource(R.plurals.sources_active_count, sourceCount, sourceCount),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp)
+    )
 }
 
 /* =============================== tab: Xtream =============================== */

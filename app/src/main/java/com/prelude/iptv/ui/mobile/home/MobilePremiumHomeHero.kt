@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.R
 import com.prelude.iptv.data.PlaybackQueue
+import com.prelude.iptv.data.ProviderMetadataPolicy
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.home.HomeCinematicBackdrop
@@ -149,7 +150,12 @@ private fun MobileHeroPage(
     onToggleFavorite: () -> Unit
 ) {
     val title = TmdbClient.cleanTitle(channel.name).ifBlank { channel.name }
-    val year = meta?.year?.takeIf(String::isNotBlank) ?: channel.year
+    // Το `channel.year` κρατάει ό,τι έστειλε ο πάροχος επειδή συμμετέχει σε
+    // κλειδιά ταυτότητας· εδώ, στην οθόνη, διαβάζεται ως έτος. Χωρίς αυτό ένα
+    // `1993-08-28` εμφανιζόταν αυτούσιο στη θέση του έτους.
+    val year = ProviderMetadataPolicy.displayYear(
+        meta?.year?.takeIf(String::isNotBlank) ?: channel.year
+    )
     val overview = meta?.overview?.takeIf(String::isNotBlank) ?: channel.plot
     val genre = meta?.genres?.takeIf(String::isNotBlank) ?: channel.genre
     Box(Modifier.fillMaxSize().clickable(onClick = onDetails)) {

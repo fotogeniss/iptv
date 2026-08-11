@@ -69,6 +69,56 @@ class ProviderMetadataPolicyTest {
         assertEquals("Drama/Nonе", ProviderMetadataPolicy.text("Drama/Nonе"))
     }
 
+    /* ---------------- έτος: καθαρίζεται ΜΟΝΟ στην προβολή ---------------- */
+
+    @Test
+    fun aFullAirDateBecomesJustTheYear() {
+        // Πραγματικές τιμές από portal: το πεδίο «year» κουβαλάει ημερομηνία
+        // πρώτης προβολής και εμφανιζόταν αυτούσιο δίπλα στη διάρκεια.
+        assertEquals("1993", ProviderMetadataPolicy.displayYear("1993-08-28"))
+        assertEquals("2025", ProviderMetadataPolicy.displayYear("2025-09-22"))
+    }
+
+    @Test
+    fun aPlainYearSurvivesUnchanged() {
+        assertEquals("1993", ProviderMetadataPolicy.displayYear("1993"))
+        assertEquals("2019", ProviderMetadataPolicy.displayYear(" 2019 "))
+    }
+
+    @Test
+    fun aRangeYieldsTheFirstYear() {
+        assertEquals("2018", ProviderMetadataPolicy.displayYear("2018-2022"))
+    }
+
+    @Test
+    fun aYearFieldWithoutAYearIsDropped() {
+        // Ένα πεδίο «έτος» που δεν περιέχει έτος δεν είναι πληροφορία.
+        assertEquals("", ProviderMetadataPolicy.displayYear("N/A"))
+        assertEquals("", ProviderMetadataPolicy.displayYear("Άγνωστο"))
+        assertEquals("", ProviderMetadataPolicy.displayYear(""))
+        assertEquals("", ProviderMetadataPolicy.displayYear("0000-00-00"))
+    }
+
+    @Test
+    fun aNumberThatIsNotAYearIsNotMistakenForOne() {
+        // Το 3153 είναι category_id σε πραγματική απάντηση παρόχου.
+        assertEquals("", ProviderMetadataPolicy.displayYear("3153"))
+        assertEquals("", ProviderMetadataPolicy.displayYear("12+"))
+    }
+
+    @Test
+    fun theDisplayHelperNeverWritesBackToTheModel() {
+        // Η ταυτότητα εξαρτάται από την ΑΡΧΙΚΗ τιμή. Το displayYear είναι
+        // συνάρτηση ανάγνωσης· το sanitize δεν αγγίζει το πεδίο.
+        val raw = Channel(name = "Σειρά", year = "1993-08-28", duration = "N/a")
+        val cleaned = ProviderMetadataPolicy.sanitize(raw)
+
+        assertEquals("1993-08-28", cleaned.year)
+        assertEquals("N/a", cleaned.duration)
+        assertEquals("1993", ProviderMetadataPolicy.displayYear(raw.year))
+        assertEquals("", ProviderMetadataPolicy.text(raw.duration))
+    }
+
     /* ---------------- πεδία ταυτότητας: ΔΕΝ αγγίζονται ---------------- */
 
     @Test

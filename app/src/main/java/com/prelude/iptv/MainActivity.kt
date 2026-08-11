@@ -78,8 +78,6 @@ import com.prelude.iptv.ui.LibraryPolicy
 import com.prelude.iptv.ui.components.library.PremiumLibraryContent
 import com.prelude.iptv.ui.PremiumContentRail
 import com.prelude.iptv.ui.buildCatalogRailSections
-import com.prelude.iptv.ui.AddAction
-import com.prelude.iptv.ui.AddMenuSheet
 import com.prelude.iptv.ui.NotchedBottomBar
 import com.prelude.iptv.ui.TvIconButton
 import com.prelude.iptv.ui.TvDialogTextButton
@@ -233,8 +231,6 @@ private fun Root(vm: MainViewModel = viewModel()) {
     var showAdd by remember { mutableStateOf(false) }
     var addTab by remember { mutableStateOf(0) }
     var showXmltv by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) }
-    var showSingle by remember { mutableStateOf(false) }
     var editIndex by remember { mutableStateOf(-1) }
     var autoOpened by rememberSaveable { mutableStateOf(false) }
     var returnToBrowseAfterSettings by rememberSaveable { mutableStateOf(false) }
@@ -317,7 +313,17 @@ private fun Root(vm: MainViewModel = viewModel()) {
                                     returnToBrowseAfterSettings = false
                                     tab = selected
                                 },
-                                onAdd = { showMenu = true }
+                                // ΕΝΑΣ ΠΡΟΟΡΙΣΜΟΣ, ΧΩΡΙΣ ΕΝΔΙΑΜΕΣΗ ΕΠΙΛΟΓΗ.
+                                //
+                                // Πριν άνοιγε το AddMenuSheet, που ρωτούσε «από
+                                // πού;» και μετά άνοιγε το AddPlaylistScreen με
+                                // προεπιλεγμένη καρτέλα. Οι τέσσερις πρώτες
+                                // επιλογές του ΕΙΝΑΙ ήδη καρτέλες εκείνης της
+                                // οθόνης, οπότε το φύλλο πρόσθετε ένα βήμα για
+                                // να διαλέξεις κάτι που μπορείς να διαλέξεις και
+                                // μέσα. Ίδιος προορισμός με το πρώην κουμπί
+                                // «＋ Νέα πηγή» της κεφαλίδας.
+                                onAdd = { addTab = 1; showAdd = true }
                             )
                         }
                     }
@@ -347,22 +353,6 @@ private fun Root(vm: MainViewModel = viewModel()) {
         }
     }
 
-    if (showMenu) {
-        AddMenuSheet(
-            onDismiss = { showMenu = false },
-            onPick = { action ->
-                showMenu = false
-                when (action) {
-                    AddAction.M3U_URL -> { addTab = 0; showAdd = true }
-                    AddAction.XTREAM -> { addTab = 1; showAdd = true }
-                    AddAction.MAC -> { addTab = 2; showAdd = true }
-                    AddAction.DEVICE -> { addTab = 3; showAdd = true }
-                    AddAction.SINGLE_STREAM -> showSingle = true
-                    AddAction.EPG -> showXmltv = true
-                }
-            }
-        )
-    }
     if (showAdd) {
         Box(Modifier.fillMaxSize()) {
             BackHandler(enabled = true) { showAdd = false }
@@ -418,8 +408,10 @@ private fun Root(vm: MainViewModel = viewModel()) {
         )
     }
 
+    // Η «Εισαγωγή EPG» ΔΕΝ έχασε πόρτα μαζί με το AddMenuSheet: υπάρχει και στην
+    // καρτέλα EPG. Η «Αναπαραγωγή μεμονωμένου stream» είχε ΜΟΝΟ εκείνη, και
+    // αφαιρέθηκε μαζί της — δες τη σημείωση πάνω από τον [SingleStreamDialog].
     if (showXmltv) XmltvDialog(vm, onDismiss = { showXmltv = false })
-    if (showSingle) SingleStreamDialog(onDismiss = { showSingle = false })
     // Η μετάβαση στην επιλογή πηγής προστατεύεται από confirm dialog.
 }
 

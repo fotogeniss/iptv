@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prelude.iptv.data.Channel
+import com.prelude.iptv.data.ProviderMetadataPolicy
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.mobile.details.MobilePremiumDetailScreen
 import com.prelude.iptv.ui.tv.details.TvPremiumDetailScreen
@@ -62,12 +63,20 @@ fun DetailScreen(
     /** Σβήνει την αποθηκευμένη πρόοδο χωρίς να ξεκινήσει αναπαραγωγή. */
     onClearProgress: () -> Unit = {}
 ) {
+    // ΤΟ ΜΟΝΑΔΙΚΟ ΣΗΜΕΙΟ ΠΟΥ ΧΤΙΖΕΤΑΙ Η ΠΑΡΟΥΣΙΑΣΗ, για κινητό ΚΑΙ τηλεόραση.
+    //
+    // Το `year` και το `duration` φτάνουν εδώ ακριβώς όπως τα έγραψε ο πάροχος,
+    // επειδή συμμετέχουν σε κλειδιά ταυτότητας και δεν επιτρέπεται να αλλάξουν
+    // στο μοντέλο (δες [ProviderMetadataPolicy]). Καθαρίζονται εδώ, στο πέρασμα
+    // προς την οθόνη: πραγματικό portal στέλνει `"time":"N/a"` και
+    // `"year":"1993-08-28"`, και τα δύο εμφανίζονταν αυτούσια στη γραμμή
+    // μεταδεδομένων ως «1993-08-28 · N/a».
     val presentation = DetailPresentation(
         title = title,
-        year = year,
+        year = ProviderMetadataPolicy.displayYear(year),
         rating = rating,
-        ageRating = ageRating,
-        duration = duration,
+        ageRating = ProviderMetadataPolicy.text(ageRating),
+        duration = ProviderMetadataPolicy.text(duration),
         quality = quality,
         genre = genre,
         director = director,

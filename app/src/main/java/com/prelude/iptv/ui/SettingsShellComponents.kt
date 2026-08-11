@@ -125,63 +125,22 @@ fun SettingRow(
 }
 
 /* ========================================================= μενού «＋» ===== */
-
-/** Μια επιλογή του μενού προσθήκης. */
-enum class AddAction { M3U_URL, XTREAM, MAC, DEVICE, SINGLE_STREAM, EPG }
-
-/**
- * Το φύλλο που ανοίγει με το ＋: από πού θέλει ο χρήστης να προσθέσει.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddMenuSheet(onPick: (AddAction) -> Unit, onDismiss: () -> Unit) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = ShBar,
-        dragHandle = null
-    ) {
-        val first = rememberInitialFocus()
-        Column(Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", tint = ShHi) }
-                Text(
-                    "Μενού", color = ShHi, fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center, modifier = Modifier.weight(1f)
-                )
-                Spacer(Modifier.width(48.dp))   // ισορροπία με το back
-            }
-            // Σε τηλεόραση (landscape) τα 6 στοιχεία δεν χωράνε: κάνε το φύλλο κυλιόμενο.
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                MenuItem("Εισαγωγή από URL playlist", Icons.Default.Link,
-                    Modifier.focusRequester(first)) { onPick(AddAction.M3U_URL) }
-                MenuItem("Εισαγωγή από Xtream Codes API", Icons.Default.Download) { onPick(AddAction.XTREAM) }
-                MenuItem("Εισαγωγή από MAC portal", Icons.Default.SettingsInputAntenna) { onPick(AddAction.MAC) }
-                MenuItem("Εισαγωγή από τη συσκευή", Icons.Default.PlayCircleOutline) { onPick(AddAction.DEVICE) }
-                MenuItem("Αναπαραγωγή μεμονωμένου stream", Icons.Default.OpenInNew) { onPick(AddAction.SINGLE_STREAM) }
-                MenuItem("Εισαγωγή EPG", Icons.Default.GridView) { onPick(AddAction.EPG) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MenuItem(
-    label: String, icon: ImageVector,
-    modifier: Modifier = Modifier, onClick: () -> Unit
-) {
-    Row(
-        modifier.fillMaxWidth().tvFocus(RoundedCornerShape(8.dp))
-            .clickable { onClick() }.padding(horizontal = 22.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = ShHi, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(20.dp))
-        Text(label, color = ShHi, fontSize = 16.sp)
-    }
-}
+//
+// ΕΔΩ ΗΤΑΝ ΤΟ AddMenuSheet ΚΑΙ ΤΟ AddAction. ΑΦΑΙΡΕΘΗΚΑΝ ΟΛΟΚΛΗΡΑ.
+//
+// Το φύλλο ρωτούσε «από πού θέλεις να προσθέσεις;» και έδινε έξι επιλογές. Οι
+// τέσσερις πρώτες (URL playlist, Xtream, MAC portal, συσκευή) απλώς άνοιγαν το
+// AddPlaylistScreen με προεπιλεγμένη καρτέλα — καρτέλα που ο χρήστης βλέπει και
+// αλλάζει μέσα στην ίδια οθόνη. Ήταν ένα βήμα για να διαλέξεις κάτι που
+// διαλέγεις ούτως ή άλλως στο επόμενο δευτερόλεπτο.
+//
+// Το «＋» της κάτω μπάρας πηγαίνει πλέον απευθείας στο AddPlaylistScreen, όπως
+// πήγαινε και το κουμπί «＋ Νέα πηγή» της κεφαλίδας, το οποίο επίσης αφαιρέθηκε:
+// η ίδια οθόνη είχε δύο «＋» με ίδιο εικονίδιο και διαφορετικό αριθμό βημάτων.
+//
+// Τι έγιναν οι άλλες δύο επιλογές: η «Εισαγωγή EPG» υπάρχει ήδη στην καρτέλα
+// EPG. Η «Αναπαραγωγή μεμονωμένου stream» είχε ΜΟΝΟ αυτή την πόρτα και έμεινε
+// προς το παρόν χωρίς — δες τη σημείωση πάνω από τον `SingleStreamDialog`.
 
 /* ==================================================== Android TV focus ==== */
 

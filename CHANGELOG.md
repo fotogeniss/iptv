@@ -5,6 +5,66 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.49.0 - versionCode 118
+
+- Reduced the Sources screen to a single way of adding a source. It had two "＋"
+  controls with the same icon and the same destination but a different number of
+  steps: the header button opened `AddPlaylistScreen` directly, while the bottom
+  bar's "＋" first opened `AddMenuSheet` to ask which kind of source, then opened
+  the same screen with that tab preselected. The sheet's first four entries — URL
+  playlist, Xtream, MAC portal, device — are already tabs of that screen, so the
+  question was asked twice.
+  The header button and the sheet are both removed. The bottom bar's "＋" now
+  goes straight to `AddPlaylistScreen`, which is where the header button went.
+  - Nothing is lost for those four: they remain selectable inside the screen.
+  - EPG import is unaffected — it has its own entry on the EPG tab.
+  - **"Play a single stream" lost its only entry point.** `SingleStreamDialog`
+    was reachable from that sheet and nowhere else. It is left in the tree,
+    unreferenced and documented as such, rather than deleted: whether the
+    capability disappears or gets a new door is the owner's call and is still
+    open. Recorded so it cannot be silently forgotten.
+  - The header row is now title and source count only, which fits roughly two
+    more source cards on the first screen.
+
+## 1.48.0 - versionCode 117
+
+- Stopped requesting a per-episode description from Stalker portals, because the
+  portal does not serve one. A Logcat capture of a real series settled a question
+  the previous session could only guess at: requests for `episode_id=25`, `28`,
+  `33`, `39` and every other episode returned **byte-identical** responses — the
+  season list, carrying the **series** description. The parameter is ignored at
+  that depth, and so is `season_id`.
+  That explains the reported defect exactly. Every episode card showed the same
+  synopsis not because the display path was wrong, but because the data was the
+  same string repeated. All four episode renderers already prefer
+  `tmdbEpisode.overview` and only fall back to `Channel.plot`; the fallback was
+  being filled with a value that described the show.
+  - **The cost was real.** The logged series has 81 episodes, so opening it fired
+    81 requests, each downloading the entire season list, through a three-thread
+    pool **shared with category paging**. The capture timestamps span
+    `18:15:25.962` to `18:15:30.380` — 4.5 seconds before the episode list could
+    appear, plus 81 requests taken away from catalog loading and from the
+    `create_link` call that starts playback.
+  - Episodes without their own synopsis now show **nothing** rather than
+    repeating the show's. Repetition is not a neutral fallback: it presents
+    series-level text as if it described the episode.
+  - `Channel.plot` still carries whatever the season list provided. Per-episode
+    text comes from TMDB, which is the only source that actually holds it.
+- Fixed provider `year` and `duration` rendering raw next to each other as
+  "1993-08-28 · N/a". Both fields **feed identity keys** — `movieIdentity`,
+  `seriesIdentity` and the persisted `localSeriesId` — so `ProviderMetadataPolicy`
+  deliberately leaves them untouched in the model, and rewriting them there would
+  move favourites, history and resume positions. They are now cleaned where they
+  are **read for display** instead, leaving stored data byte-identical.
+  - Adds `ProviderMetadataPolicy.displayYear`, which returns the four-digit year
+    found in the value and otherwise nothing: real portals put the full first-air
+    date in `year`, and a year field that contains no year is noise, not data.
+  - The year pattern is restricted to 1900-2099 so a neighbouring identifier such
+    as `3153` cannot be mistaken for one.
+  - Applied at `DetailScreen`, the single point where the presentation is built
+    for both mobile and TV, plus the mobile home hero and the player context
+    panel — the three surfaces that render these fields.
+
 ## 1.47.0 - versionCode 116
 
 - Released the twenty-four changes below, which had all accumulated under

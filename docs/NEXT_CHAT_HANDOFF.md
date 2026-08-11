@@ -156,12 +156,35 @@ more than a day of inference. Ask for a real sample first.
 
 ### Still-open follow-ups
 
-- **`fetchEpisodeDescription` is probably dead weight.** It issues one extra HTTP
-  request per episode to fill `Channel.plot`. If that field carries the
-  series-level description, the request buys nothing. Settle it with a
-  `SeriesLoad` capture of `seriesEpisodes episode detail` for **two different
-  episodes of the same season**: identical `description` values confirm it.
-  Removing it is then a clean performance win on every Stalker series load.
+- **`fetchEpisodeDescription` — SETTLED AND REMOVED.** The capture asked for
+  arrived: requests for episodes 25, 28, 33, 39 and the rest returned identical
+  responses carrying the series description, so the portal ignores `episode_id`
+  and `season_id` at that depth. 81 requests, 4.5 seconds, no information. Gone.
+  Per-episode text now comes only from TMDB.
+- **Player start latency — measured, buffering is NOT the cause. Parked.** The
+  owner switched the buffer profile from Normal (`forPlaybackMs = 2_500`) to Low
+  (`1_500`) and reported no noticeable difference, which rules out the initial
+  buffer as the dominant cost and means retuning `BufferPolicy` would buy little.
+  What remains on the path, in order: the `create_link` round trip (unavoidable
+  for VOD/episodes — the catalog `cmd` carries an expiring token and returns 404
+  without it); a full `connect()` handshake plus `get_profile` whenever the
+  portal session has lapsed, and a **second** full `connectFresh()` retry inside
+  `resolvePlayableUrl` when `create_link` comes back empty; and
+  `setAllowedVideoJoiningTimeMs(0)`, which is a deliberate lip-sync decision that
+  costs start time and must not be reverted without asking.
+  Next step when this is picked up: instrument tap -> first frame before changing
+  anything, then look at keeping the portal session warm. Note that removing
+  `fetchEpisodeDescription` freed up to 81 concurrent requests that were
+  competing with `create_link` on the same portal, so re-measure first.
+- **The provider sends `tmdb_id` and the app ignores it.** Real rows carry
+  `"tmdb_id":"2328"` and `"tmdb":"2328"`. Using it removes title search entirely
+  for those series — no `cleanTitle`, no greeklish transliteration, no skeleton
+  comparison, no wrong-series match. This is the next slice and it is likely the
+  real end of the greeklish problem rather than another attempt to fix matching.
+- **`seriesId` reaches the portal doubled: `movie_id=42504:42504`.** Visible in
+  every logged URL. The portal expects `42504`. This may well be why the
+  season/episode filters were ignored. Confirm against a capture before changing
+  it — `seriesId` participates in `PlaybackQueue.favKey`, so it is stored data.
 - **`XtreamClient.seriesEpisodes` has the same missing-description gap** and was
   left untouched, since the reported bug was Stalker-specific. Ask first.
 - **`MainViewModel.kt` is 1860 lines** and trips the architecture audit's known

@@ -398,16 +398,11 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             } ?: return emptyList()
 
             val seasons = ArrayList<Pair<String, List<Channel>>>()
-            // (κανάλι, seasonRowId, episodeNum) ώστε να ζητηθεί η περιγραφή
-            // κάθε επεισοδίου παράλληλα, ΑΦΟΥ χτιστεί όλη η λίστα — το request
-            // δεν πρέπει να καθυστερήσει την εμφάνιση της λίστας επεισοδίων.
-            val pendingDescriptions = ArrayList<Triple<Channel, String, String>>()
             for (i in 0 until data.length()) {
                 val row = data.getJSONObject(i)
                 val label = row.optString("name").takeIf { it.isNotBlank() } ?: "Season ${i + 1}"
                 val seasonCmd = row.optString("cmd")
                 if (seasonCmd.isBlank()) continue
-                val seasonRowId = row.optString("id").ifBlank { "0" }
                 val episodeNumbers = row.optJSONArray("series")
                 val episodes = if (episodeNumbers != null && episodeNumbers.length() > 0) {
                     // Φάκελος σεζόν: ένα cmd, πολλά επεισόδια μέσω series=.
@@ -421,66 +416,30 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                     // μεμονωμένο επεισόδιο (σειρά χωρίς φακέλους σεζόν).
                     listOf(buildEpisodeChannel(seriesId, seasonCmd, (i + 1).toString(), label, row))
                 }
-                if (episodes.isNotEmpty()) {
-                    seasons += label to episodes
-                    episodes.forEach { pendingDescriptions += Triple(it, seasonRowId, it.chId) }
-                }
+                if (episodes.isNotEmpty()) seasons += label to episodes
             }
 
-            // Η ίδια η λίστα δεν κουβαλάει περιγραφή ανά επεισόδιο (μόνο τον
-            // αριθμό) — χρειάζεται ένα ακόμη αίτημα ΑΝΑ επεισόδιο. Παράλληλα
-            // στο ίδιο μικρό pool με τις σελίδες κατηγοριών, ώστε μια σειρά με
-            // πολλά επεισόδια να μη γίνεται πολλά δευτερόλεπτα αναμονής.
-            val descriptions = pendingDescriptions.map { (channel, seasonRowId, episodeNum) ->
-                channel to categoryPool.submit<String> {
-                    fetchEpisodeDescription(seriesId, seasonRowId, episodeNum)
-                }
-            }
-            val withPlot = descriptions.associate { (channel, future) ->
-                val plot = try {
-                    future.get()
-                } catch (e: Exception) {
-                    ""
-                }
-                channel to plot
-            }
-            seasons.map { (label, episodes) ->
-                label to episodes.map { ch -> ch.copy(plot = withPlot[ch] ?: ch.plot) }
-            }
+            // ΕΔΩ ΖΗΤΟΥΝΤΑΝ ΠΕΡΙΓΡΑΦΗ ΑΝΑ ΕΠΕΙΣΟΔΙΟ. ΑΦΑΙΡΕΘΗΚΕ.
+            //
+            // Το portal ΑΓΝΟΕΙ τα `season_id` και `episode_id` σε αυτό το βάθος:
+            // επιβεβαιώθηκε με Logcat όπου αιτήματα για episode=25, 28, 33, 39…
+            // επέστρεψαν ΟΛΑ την ίδια απάντηση — τη λίστα σεζόν, με το
+            // `description` της ΣΕΙΡΑΣ. Γι' αυτό κάθε επεισόδιο εμφάνιζε την ίδια
+            // σύνοψη: δεν ήταν σφάλμα προβολής, ήταν ίδια δεδομένα.
+            //
+            // Το κόστος ήταν πραγματικό: μία σειρά 81 επεισοδίων έκανε 81
+            // αιτήματα, το καθένα κατέβαζε ολόκληρη τη λίστα σεζόν, σε pool 3
+            // νημάτων ΚΟΙΝΟ με τις σελίδες κατηγοριών — 4,5 δευτερόλεπτα
+            // αναμονής πριν φανεί η λίστα, και ισάριθμα αιτήματα κλεμμένα από
+            // τον κατάλογο και από το create_link της αναπαραγωγής.
+            //
+            // Το `plot` του επεισοδίου μένει ό,τι έδωσε η λίστα σεζόν. Οι
+            // περιγραφές ανά επεισόδιο έρχονται από το TMDB, που είναι και η
+            // μόνη πηγή που τις έχει πραγματικά.
+            seasons
         } catch (e: Exception) {
             rethrowIfCancelled(e)
             emptyList()
-        }
-    }
-
-    /**
-     * Περιγραφή ενός συγκεκριμένου επεισοδίου. ΔΕΝ έχει επιβεβαιωθεί σε
-     * πραγματικό portal το ακριβές σχήμα της απάντησης σε αυτό το βάθος
-     * (`episode_id=<αριθμός>`) — καταγράφεται ολόκληρη η ωμή απάντηση ώστε αν
-     * η υπόθεση για το πεδίο `"description"` είναι λάθος να φανεί αμέσως.
-     */
-    private fun fetchEpisodeDescription(seriesId: String, seasonRowId: String, episodeNum: String): String {
-        return try {
-            val url = "$base?type=series&action=get_ordered_list&movie_id=" +
-                "${URLEncoder.encode(seriesId, "UTF-8")}&category=*&season_id=" +
-                "${URLEncoder.encode(seasonRowId, "UTF-8")}&episode_id=" +
-                "${URLEncoder.encode(episodeNum, "UTF-8")}&JsHttpRequest=1-xml"
-            val raw = providerText(url, activeHeaders())
-            Log.d(
-                "SeriesLoad",
-                "seriesEpisodes episode detail (seriesId=$seriesId, season=$seasonRowId, episode=$episodeNum): $raw",
-            )
-            val response = JSONObject(raw)
-            val js = response.opt("js")
-            val row = when (js) {
-                is JSONObject -> js.optJSONArray("data")?.optJSONObject(0) ?: js
-                is org.json.JSONArray -> js.optJSONObject(0)
-                else -> null
-            }
-            row?.optString("description").orEmpty()
-        } catch (e: Exception) {
-            rethrowIfCancelled(e)
-            ""
         }
     }
 

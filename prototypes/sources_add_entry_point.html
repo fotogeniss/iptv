@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Πηγές — ένα σημείο προσθήκης</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0b0b0d; color: #e9eaec;
+         font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; padding: 28px; }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  .lead { color: #8b8f96; margin: 0 0 26px; max-width: 62ch; }
+  .pair { display: flex; gap: 30px; flex-wrap: wrap; }
+  .col { flex: 0 0 auto; }
+  .cap { font-size: 12px; letter-spacing: .09em; text-transform: uppercase;
+         color: #7d818a; margin: 0 0 9px; font-weight: 700; }
+  .cap.now { color: #b9553f; }
+  .cap.next { color: #4c9a6a; }
+  .phone { width: 288px; height: 560px; background: #000; border-radius: 26px;
+           border: 1px solid #232529; position: relative; overflow: hidden;
+           display: flex; flex-direction: column; }
+  .hdr { padding: 20px 17px 12px; display: flex; align-items: flex-start; gap: 10px; }
+  .hdr h2 { font-size: 21px; margin: 0; font-weight: 800; }
+  .hdr .sub { font-size: 11px; color: #7d818a; margin-top: 3px; }
+  .newbtn { margin-left: auto; border: 1px solid rgba(255,255,255,.24);
+            border-radius: 8px; padding: 7px 11px; font-size: 12px;
+            display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .card { margin: 0 15px 9px; background: #111216; border: 1px solid #1e2025;
+          border-radius: 12px; padding: 11px 12px; display: flex;
+          align-items: center; gap: 11px; }
+  .dot { width: 38px; height: 38px; border-radius: 9px; background: #2a1416;
+         display: grid; place-items: center; color: #d9534f; font-size: 16px; }
+  .card .nm { font-size: 13px; font-weight: 700; }
+  .card .tg { font-size: 9px; background: #3a1416; color: #e0736c;
+              padding: 2px 6px; border-radius: 4px; display: inline-block;
+              margin-top: 4px; letter-spacing: .06em; font-weight: 700; }
+  .card .ct { font-size: 10px; color: #6f737a; margin-top: 5px; }
+  .bar { margin-top: auto; height: 58px; border-top: 1px solid #1c1e22;
+         display: flex; align-items: center; justify-content: space-around;
+         font-size: 10px; color: #7d818a; background: #0e0f12; }
+  .plus { width: 40px; height: 40px; border-radius: 20px; background: #fff;
+          color: #000; display: grid; place-items: center; font-size: 22px;
+          font-weight: 300; margin-top: -18px; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #17181c;
+           border-radius: 16px 16px 0 0; padding: 10px 0 14px;
+           box-shadow: 0 -18px 40px rgba(0,0,0,.6); }
+  .sheet .t { text-align: center; font-weight: 800; font-size: 15px;
+              padding: 8px 0 12px; position: relative; }
+  .sheet .t span { position: absolute; left: 14px; top: 8px; color: #9aa0a8; font-weight: 400; }
+  .row { padding: 11px 20px; display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .row i { width: 20px; text-align: center; color: #cfd3d8; font-style: normal; }
+  .kill { position: relative; }
+  .kill::after { content: ""; position: absolute; inset: 0;
+                 background: repeating-linear-gradient(135deg,
+                   rgba(185,85,63,.16) 0 8px, transparent 8px 16px);
+                 border: 1px dashed rgba(185,85,63,.75); border-radius: 8px; }
+  .tag { position: absolute; z-index: 3; background: #b9553f; color: #fff;
+         font-size: 9.5px; font-weight: 800; letter-spacing: .07em;
+         padding: 3px 7px; border-radius: 4px; }
+  .arrow { position: absolute; z-index: 3; color: #4c9a6a; font-size: 11px;
+           font-weight: 700; }
+  .notes { margin-top: 28px; max-width: 66ch; }
+  .notes li { margin-bottom: 9px; color: #b6bac0; }
+  .warn { border-left: 3px solid #b9553f; padding: 10px 14px; background: #16100f;
+          border-radius: 0 8px 8px 0; margin-top: 18px; max-width: 66ch; }
+  code { background: #1b1d21; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+
+<h1>Πηγές — ένα σημείο προσθήκης αντί για τρία</h1>
+<p class="lead">Σήμερα υπάρχουν δύο κουμπιά «＋» στην ίδια οθόνη που κάνουν
+διαφορετικά πράγματα: το πάνω ανοίγει κατευθείαν την προσθήκη πηγής, το κάτω
+ανοίγει ένα φύλλο επιλογών που καταλήγει στην ίδια οθόνη με προεπιλεγμένη
+καρτέλα.</p>
+
+<div class="pair">
+  <div class="col">
+    <p class="cap now">Τωρα</p>
+    <div class="phone">
+      <div class="hdr">
+        <div><h2>Πηγές</h2><div class="sub">15 ενεργές πηγές στη συσκευή</div></div>
+        <div class="newbtn kill">＋ Νέα πηγή</div>
+      </div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">ΑΡΑΒΑΣ</div><div class="tg">MAC PORTAL</div><div class="ct">772 Ταινίες</div></div></div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">MAC 6D:0B:9D</div><div class="tg">MAC PORTAL</div><div class="ct">773 Ταινίες</div></div></div>
+      <div class="sheet kill">
+        <div class="t"><span>←</span>Μενού</div>
+        <div class="row"><i>🔗</i>Εισαγωγή από URL playlist</div>
+        <div class="row"><i>⬇</i>Εισαγωγή από Xtream Codes API</div>
+        <div class="row"><i>📡</i>Εισαγωγή από MAC portal</div>
+        <div class="row"><i>▶</i>Εισαγωγή από τη συσκευή</div>
+        <div class="row"><i>↗</i>Αναπαραγωγή μεμονωμένου stream</div>
+        <div class="row"><i>▦</i>Εισαγωγή EPG</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <p class="cap next">Προταση</p>
+    <div class="phone">
+      <div class="hdr">
+        <div><h2>Πηγές</h2><div class="sub">15 ενεργές πηγές στη συσκευή</div></div>
+      </div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">ΑΡΑΒΑΣ</div><div class="tg">MAC PORTAL</div><div class="ct">772 Ταινίες</div></div></div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">MAC 6D:0B:9D</div><div class="tg">MAC PORTAL</div><div class="ct">773 Ταινίες</div></div></div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">MAC 41:0B:7D</div><div class="tg">MAC PORTAL</div><div class="ct">690 Ταινίες</div></div></div>
+      <div class="card"><div class="dot">((•))</div><div><div class="nm">MAC 9C:2F:A1</div><div class="tg">MAC PORTAL</div><div class="ct">814 Ταινίες</div></div></div>
+      <div class="bar">
+        <div>Αρχική</div><div>Live</div>
+        <div class="plus">＋</div>
+        <div>Σειρές</div><div>Ρυθμ.</div>
+      </div>
+      <div class="arrow" style="left:96px;bottom:66px">↑ πάει κατευθείαν στην<br>προσθήκη πηγής</div>
+    </div>
+  </div>
+</div>
+
+<ul class="notes">
+  <li>Το πάνω κουμπί φεύγει. Ο τίτλος και το πλήθος πηγών μένουν όπως είναι.</li>
+  <li>Το κάτω ＋ πάει στον ίδιο προορισμό που πήγαινε το πάνω κουμπί —
+      <code>AddPlaylistScreen</code>. Καμία ενδιάμεση οθόνη.</li>
+  <li>Οι τέσσερις πρώτες επιλογές του φύλλου <strong>δεν χάνονται</strong>: URL,
+      Xtream, MAC και συσκευή είναι ήδη καρτέλες μέσα στην ίδια οθόνη. Το φύλλο
+      απλώς προεπέλεγε καρτέλα.</li>
+  <li>Η «Εισαγωγή EPG» <strong>δεν χάνεται</strong>: υπάρχει και στην καρτέλα EPG
+      (<code>EpgTabScreen</code>).</li>
+  <li>Κερδίζεται και ένα ολόκληρο κενό στη λίστα — τέσσερις κάρτες φαίνονται
+      αντί για δύο.</li>
+</ul>
+
+<div class="warn">
+  <strong>Ένα πράγμα μένει ορφανό.</strong> Η «Αναπαραγωγή μεμονωμένου stream»
+  έχει <em>μοναδικό</em> σημείο εισόδου αυτό το φύλλο. Το
+  <code>showSingle</code> δεν τίθεται πουθενά αλλού, οπότε αν φύγει το φύλλο ο
+  <code>SingleStreamDialog</code> γίνεται μη προσβάσιμος κώδικας και η
+  λειτουργία εξαφανίζεται από την εφαρμογή.
+</div>

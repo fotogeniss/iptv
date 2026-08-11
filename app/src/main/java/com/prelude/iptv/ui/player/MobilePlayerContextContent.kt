@@ -31,6 +31,7 @@ import coil.compose.AsyncImage
 import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.ContentQualityPolicy
+import com.prelude.iptv.data.ProviderMetadataPolicy
 import com.prelude.iptv.data.SubtitleSearchPolicy
 import com.prelude.iptv.data.TmdbClient
 import com.prelude.iptv.ui.IptvColors
@@ -113,7 +114,7 @@ private fun PlayerInfo(channel: Channel, metadata: TmdbClient.Meta?) {
                 Text("★ $it", color = IptvColors.Success, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
             year?.let { Text(it, color = IptvColors.TextSecondary, fontSize = 12.sp) }
-            channel.duration.takeIf(String::isNotBlank)?.let {
+            ProviderMetadataPolicy.text(channel.duration).takeIf(String::isNotBlank)?.let {
                 Text(it, color = IptvColors.TextSecondary, fontSize = 12.sp)
             }
             if (quality.isNotBlank()) {
@@ -421,7 +422,7 @@ private fun PlayerEpisodes(
                     overview.takeIf(String::isNotBlank)?.let {
                         Text(it, color = IptvColors.TextSecondary, fontSize = 9.5.sp, lineHeight = 13.sp, maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 5.dp))
                     }
-                    episode.duration.takeIf(String::isNotBlank)?.let {
+                    ProviderMetadataPolicy.text(episode.duration).takeIf(String::isNotBlank)?.let {
                         Text(it, color = IptvColors.TextTertiary, fontSize = 8.5.sp, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
