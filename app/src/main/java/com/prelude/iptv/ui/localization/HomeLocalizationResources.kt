@@ -39,4 +39,8 @@ fun catalogRailLabels(): CatalogRailLabels = CatalogRailLabels(
     myList = stringResource(R.string.home_section_my_list),
     trending = stringResource(R.string.home_section_trending),
     newReleases = stringResource(R.string.home_section_new_releases),
+    newMovies = stringResource(R.string.home_section_new_movies),
+    newEpisodes = stringResource(R.string.home_section_new_episodes),
+    topMovies = stringResource(R.string.home_section_top_movies),
+    topSeries = stringResource(R.string.home_section_top_series),
 )

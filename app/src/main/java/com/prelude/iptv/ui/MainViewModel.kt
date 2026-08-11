@@ -238,6 +238,90 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 epgUrl = if (pl.type == com.prelude.iptv.data.PlaylistType.M3U) m3uEpgUrl else ""
             )
         )
+        refreshHomeCatalog()
+    }
+
+    /* ============ Αρχική: η ένωση των ενοτήτων, όχι η ενεργή ============ */
+
+    /**
+     * ΤΟ ΠΡΟΒΛΗΜΑ ΠΟΥ ΛΥΝΕΙ: ο επεξεργαστής αρχικής απαριθμεί δέκα ενότητες —
+     * ζωντανά, ταινίες, σειρές, νέα, κορυφαία — αλλά η Αρχική ζωγραφιζόταν από
+     * το `state.channels`, δηλαδή **μόνο την ενότητα που είναι φορτωμένη**. Με
+     * φορτωμένες τις Ταινίες, οι ράγες σειρών και καναλιών δεν είχαν από πού να
+     * πάρουν δεδομένα και εξαφανίζονταν. Ο χρήστης έβλεπε δέκα διακόπτες και
+     * τρεις ράγες, χωρίς καμία ένδειξη γιατί.
+     *
+     * Δεν χρειάζεται νέα λήψη: το [CatalogSessionStore] κρατά ήδη LRU τριών
+     * στιγμιοτύπων, ένα ανά ενότητα. Αυτή η ροή είναι η ένωσή τους — αναφορές
+     * στις ίδιες λίστες, όχι αντίγραφα.
+     */
+    private val _homeCatalog = MutableStateFlow<List<Channel>>(emptyList())
+    val homeCatalogState: StateFlow<List<Channel>> = _homeCatalog.asStateFlow()
+
+    private val homeSectionTypes = listOf("live", "vod", "series")
+    private val homeBackfilledSources = HashSet<String>()
+    private var homeBackfillJob: Job? = null
+
+    private fun cachedSection(pl: Playlist, type: String): List<Channel>? {
+        val (known, remembered) = categoryChoice(pl, type)
+        val ids = if (known) remembered else null
+        return catalogSession.getCatalog(cacheKey(pl, type, ids))?.channels
+    }
+
+    private fun refreshHomeCatalog() {
+        val pl = currentPlaylist()
+        if (pl == null) {
+            _homeCatalog.value = emptyList()
+            return
+        }
+        _homeCatalog.value = homeSectionTypes.flatMap { cachedSection(pl, it).orEmpty() }
+    }
+
+    /**
+     * Κατεβάζει ΣΙΩΠΗΛΑ όσες ενότητες λείπουν, ώστε η Αρχική να δείξει αυτό που
+     * υπόσχεται ο επεξεργαστής της.
+     *
+     * ΤΡΕΙΣ ΟΡΟΙ, και κανένας δεν είναι λεπτομέρεια:
+     *
+     * 1. **Μία φορά ανά πηγή ανά συνεδρία.** Όχι σε κάθε επιστροφή στην Αρχική.
+     * 2. **ΔΕΝ δημοσιεύει στο `_state`.** Το [loadAllSections] αλλάζει το
+     *    `contentType` και την ορατή λίστα· αν το καλούσαμε εδώ, το άνοιγμα της
+     *    Αρχικής θα τραβούσε τον χρήστη σε άλλη ενότητα. Εδώ γράφουμε μόνο στο
+     *    cache, και η [refreshHomeCatalog] ειδοποιεί την οθόνη.
+     * 3. **Ο καλών αποφασίζει πότε.** Δεν ξεκινά ποτέ όσο ξεκινά ή παίζει βίντεο
+     *    — μόλις καθαρίσαμε 81 περιττά αιτήματα επειδή έκλεβαν το portal από το
+     *    `create_link`, και δεν βάζουμε καινούριο μαζικό κατέβασμα στη θέση τους.
+     */
+    fun backfillHomeSections() {
+        val pl = currentPlaylist() ?: return
+        val sourceId = PlaylistIdentity.stableId(pl)
+        if (sourceId in homeBackfilledSources) return
+        if (homeBackfillJob?.isActive == true) return
+        val missing = homeSectionTypes.filter { cachedSection(pl, it) == null }
+        homeBackfilledSources += sourceId
+        if (missing.isEmpty()) return
+
+        val gen = sourceGeneration.currentLoad()
+        homeBackfillJob = viewModelScope.launch {
+            for (type in missing) {
+                if (!sourceGeneration.isCurrentLoad(gen)) return@launch
+                try {
+                    val (known, remembered) = categoryChoice(pl, type)
+                    val ids = if (known) remembered else null
+                    val loaded = catalogLoader.section(pl, type, ids)
+                    if (!sourceGeneration.isCurrentLoad(gen)) return@launch
+                    val favoriteKeys = store.loadFavorites(sourceId)
+                    val groups = buildGroups(loaded.items, favoriteKeys.isNotEmpty())
+                    cacheCatalog(pl, type, ids, loaded.items, groups, loaded.seriesEpisodes)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    // Σιωπηλά: αυτή είναι συμπληρωματική δουλειά παρασκηνίου. Μια
+                    // ενότητα που δεν ήρθε απλώς λείπει από την Αρχική· δεν
+                    // επιτρέπεται να βγάλει σφάλμα πάνω από ό,τι ήδη δουλεύει.
+                }
+            }
+        }
     }
 
     private fun cacheSeriesEpisodes(
@@ -617,6 +701,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectPlaylist(i: Int) {
         sourceSwitchCoordinator.switchTo(i)
+        // Η ένωση της Αρχικής είναι δεμένη με την πηγή. Χωρίς αυτό, μετά την
+        // αλλαγή θα έδειχνε για λίγο τον κατάλογο της προηγούμενης.
+        homeBackfillJob?.cancel()
+        refreshHomeCatalog()
     }
 
     fun saveFontScale(f: Float) {
@@ -1600,6 +1688,36 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Τα κανάλια που φαίνονται με βάση ομάδα + αναζήτηση. */
+    /**
+     * Η Αρχική, περασμένη από ΤΟ ΙΔΙΟ φίλτρο με κάθε άλλη λίστα.
+     *
+     * ΓΙΑΤΙ ΔΕΝ ΑΡΚΕΙ ΤΟ [homeCatalogState] ΣΚΕΤΟ: εκείνο είναι ωμή ένωση των
+     * αποθηκευμένων ενοτήτων. Το [CatalogPresentationPolicy] είναι που αφαιρεί
+     * τις **κλειδωμένες ομάδες** όταν ο γονικός έλεγχος δεν έχει ξεκλειδωθεί.
+     * Αν η Αρχική διάβαζε την ένωση απευθείας, κλειδωμένο περιεχόμενο θα
+     * εμφανιζόταν στις ράγες της — παράκαμψη γονικού ελέγχου μέσω μιας οθόνης
+     * που απλώς ήθελε περισσότερα δεδομένα.
+     *
+     * Αναζήτηση και επιλεγμένη ομάδα ΔΕΝ εφαρμόζονται: η Αρχική εμφανίζεται μόνο
+     * όταν και τα δύο είναι ουδέτερα, και οι ράγες της κάνουν τη δική τους
+     * ομαδοποίηση.
+     */
+    fun visibleHomeChannels(): List<Channel> {
+        val s = _state.value
+        return CatalogPresentationPolicy.visibleChannels(
+            channels = _homeCatalog.value,
+            search = "",
+            selectedGroup = UiState.ALL_GROUP,
+            allGroupLabel = UiState.ALL_GROUP,
+            favoritesGroupLabel = UiState.FAV_GROUP,
+            favorites = s.favorites,
+            lockedGroups = s.lockedGroups,
+            parentalUnlocked = s.parentalUnlocked,
+            sortMode = s.sortMode,
+            favoriteKey = ::favKey,
+        )
+    }
+
     fun visibleChannels(): List<Channel> {
         val s = _state.value
         return CatalogPresentationPolicy.visibleChannels(

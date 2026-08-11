@@ -5,6 +5,64 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.54.0 - versionCode 124
+
+- The home screen now draws from **every loaded section**, not only the active
+  one. The reported symptom was that the home layout editor lists ten sections
+  while the home showed three, with no explanation for the gap.
+  The cause: the home was fed `state.channels`, which holds one content type at
+  a time. With movies loaded, the series and live rails had no data to draw
+  and vanished — so six of the ten switches in the editor could not take effect
+  no matter what the user did with them.
+  - No new download is required for what is already cached:
+    `CatalogSessionStore` keeps an LRU of three snapshots, one per section, and
+    `homeCatalogState` is their union — references to the same lists, not
+    copies.
+  - **Parental control is preserved.** The union goes through
+    `CatalogPresentationPolicy` exactly like every other list, via
+    `visibleHomeChannels()`. Reading the raw union would have let locked groups
+    appear on the home — a parental bypass introduced by a screen that merely
+    wanted more data.
+  - Missing sections are fetched in the background by `backfillHomeSections()`
+    under three conditions: **once per source per session**, **without
+    publishing to `_state`** (calling `loadAllSections` here would switch the
+    visible section out from under the user), and **never while playback is
+    starting or running** — a bulk fetch against the same portal as
+    `create_link` is what made playback start slow in the first place.
+  - Failures are silent by design: this is supplementary background work, and a
+    section that did not arrive is simply absent from the home rather than an
+    error over content that already works.
+  - The home falls back to the active section's channels while the union is
+    still empty, so the first frame after a cold start is unchanged.
+
+## 1.53.0 - versionCode 123
+
+- Brought the four ranked rails to **Android TV**: new movies, new episodes, top
+  rated movies and top rated series, using the same ranking policies and the
+  same resource strings as the handset, so a title never differs by device.
+- **The "unused" rail system turned out to be the television.** The previous
+  entry described two rail systems; it did not say that `CatalogPolicy` is the
+  *entire* TV home. `TvPremiumHomeScreen` has no layout editor and no resolver of
+  its own — it renders exactly the list `buildCatalogRailSections` returns, so
+  anything missing from there does not exist on a television. Deleting it, as
+  was briefly considered, would have deleted the TV home screen. It is also
+  still used on mobile, though only to source the "continue watching" section.
+  - Mobile draws every other rail from `HomeLayoutPolicy`, so the new sections
+    added here are ignored there and **no rail is duplicated**.
+  - Rail order is now explicit in `AdaptiveCatalogHome` instead of falling out
+    of the order `buildCatalogRailSections` happens to append in. That order is
+    the TV home's layout, and it should be readable in one place.
+  - Adds `CatalogRailSectionsTest`, which pins what the television gets: the
+    four rails exist, top rails are rating-ordered and marked `ranked`, new
+    rails are date-ordered and are **not** marked ranked, rails that cannot be
+    filled are omitted, live channels never enter any of them, and the main
+    trending rail still survives a source with no ratings at all.
+- The two rail systems remain, deliberately. They differ because the surfaces
+  differ: the handset offers a user-editable layout, the television needs a
+  fixed list with a D-pad focus policy. Merging them is a real refactor with
+  focus and navigation risk, not a cleanup, and it is not worth doing while the
+  ranking logic itself now lives in one place (`CatalogRankingPolicy`).
+
 ## 1.52.0 - versionCode 122
 
 - Added **"Top rated movies"** and **"Top rated series"** to the home screen,

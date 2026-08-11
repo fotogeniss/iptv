@@ -18,6 +18,14 @@ data class CatalogRailLabels(
     val myList: String,
     val trending: String,
     val newReleases: String,
+    /**
+     * Οι τέσσερις χωρισμένες ράγες. ΙΔΙΑ resource strings με το κινητό
+     * (`home_section_*`), ώστε ο ίδιος τίτλος να μη διαφέρει ανά συσκευή.
+     */
+    val newMovies: String,
+    val newEpisodes: String,
+    val topMovies: String,
+    val topSeries: String,
 )
 
 /**
@@ -103,6 +111,26 @@ fun buildCatalogRailSections(
     // ΝΕΑ: με το πότε μπήκαν στον κατάλογο, με εφεδρεία το έτος.
     val newest = unique(CatalogRankingPolicy.newestFirst(channels))
     if (newest.size >= 4) out += section("new", labels.newReleases, newest)
+
+    // ΟΙ ΤΕΣΣΕΡΙΣ ΧΩΡΙΣΤΕΣ ΡΑΓΕΣ — ΚΥΡΙΩΣ ΓΙΑ ΤΗΝ ΤΗΛΕΟΡΑΣΗ.
+    //
+    // Το κινητό τις χτίζει μόνο του, μέσω HomeLayoutPolicy: εκεί ο χρήστης
+    // επιλέγει σειρά και ορατότητα ενότητας. Η τηλεόραση ΔΕΝ έχει τέτοιον
+    // επεξεργαστή — η αρχική της είναι ακριβώς αυτή η λίστα, οπότε ό,τι δεν
+    // μπει εδώ δεν υπάρχει σε τηλεόραση. Οι ίδιες πολιτικές κατάταξης και οι
+    // ίδιοι τίτλοι, ώστε οι δύο συσκευές να μη λένε διαφορετικά πράγματα.
+    val movies = channels.filter { it.kind == "vod" }
+    val series = channels.filter { it.kind == "series" || it.kind == "series_ep" }
+
+    fun rankedSection(id: String, title: String, source: List<Channel>, ranked: Boolean) {
+        val items = unique(source)
+        if (items.size >= 4) out += section(id, title, items, ranked = ranked)
+    }
+
+    rankedSection("new-movies", labels.newMovies, CatalogRankingPolicy.newestFirst(movies), ranked = false)
+    rankedSection("new-episodes", labels.newEpisodes, CatalogRankingPolicy.newestFirst(series), ranked = false)
+    rankedSection("top-movies", labels.topMovies, CatalogRankingPolicy.topRatedFirst(movies), ranked = true)
+    rankedSection("top-series", labels.topSeries, CatalogRankingPolicy.topRatedFirst(series), ranked = true)
 
     // ΟΛΑ τα groups που κατέβασε ο χρήστης γίνονται sections, ώστε να φαίνονται
     // όλα στα (scrollable) chips και να επιλέγονται. Το πλήθος των rails που

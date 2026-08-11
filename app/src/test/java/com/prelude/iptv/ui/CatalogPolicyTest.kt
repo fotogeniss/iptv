@@ -3,11 +3,21 @@ package com.prelude.iptv.ui
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CatalogPolicyTest {
-    private val labels = CatalogRailLabels("Continue", "My list", "Trending", "New")
+    private val labels = CatalogRailLabels(
+        continueWatching = "Continue",
+        myList = "My list",
+        trending = "Trending",
+        newReleases = "New",
+        newMovies = "New movies",
+        newEpisodes = "New episodes",
+        topMovies = "Top movies",
+        topSeries = "Top series",
+    )
 
     private fun movie(id: Int, group: String, year: String = "2024") = Channel(
         name = "Movie $id",
@@ -45,7 +55,11 @@ class CatalogPolicyTest {
             .first { it.id == "trending" }
 
         assertEquals(3, trending.items.size)
-        assertTrue(trending.ranked)
+        // ΑΛΛΑΞΕ ΣΚΟΠΙΜΑ. Πριν, η ράγα ήταν ΠΑΝΤΑ `ranked = true` — τύπωνε θέσεις
+        // 1, 2, 3 πάνω σε αταξινόμητη λίστα, που ήταν και το παράπονο «βγάζει
+        // τυχαία». Τώρα η κατάταξη απαιτεί βαθμολογίες· αυτές οι ταινίες δεν
+        // έχουν, οπότε η ράγα κρατά όλα τα στοιχεία αλλά χωρίς νούμερα.
+        assertFalse("χωρίς βαθμολογίες δεν επιτρέπονται θέσεις", trending.ranked)
     }
     @Test
     fun liveChannelsNeverAppearOnTheHomeRails() {

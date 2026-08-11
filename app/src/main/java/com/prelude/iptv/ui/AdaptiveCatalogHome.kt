@@ -54,12 +54,20 @@ fun AdaptiveCatalogHome(
     val railLabels = catalogRailLabels()
     val sections = remember(channels, favoriteKeys, continueWatching, railLabels) {
         buildCatalogRailSections(channels, favoriteKeys, continueWatching, railLabels).sortedBy { section ->
+            // Ρητή σειρά, όχι «ό,τι μπήκε πρώτο». Η τηλεόραση δεν έχει
+            // επεξεργαστή αρχικής όπως το κινητό, οπότε αυτή ΕΙΝΑΙ η διάταξή της
+            // και πρέπει να διαβάζεται εδώ, όχι να συνάγεται από τη σειρά που
+            // τυχαίνει να τις χτίζει το buildCatalogRailSections.
             when (section.id) {
                 "continue" -> 0
                 "trending" -> 1
                 "new" -> 2
-                "my-list" -> 3
-                else -> 4
+                "new-movies" -> 3
+                "new-episodes" -> 4
+                "top-movies" -> 5
+                "top-series" -> 6
+                "my-list" -> 7
+                else -> 8
             }
         }
     }

@@ -420,6 +420,17 @@ internal fun BrowseScreen(
         state.channels, state.selectedGroup, state.search, state.favorites,
         state.lockedGroups, state.parentalUnlocked, state.sortMode
     ) { vm.visibleChannels() }
+    // Η ΑΡΧΙΚΗ ΤΡΩΕΙ ΑΠΟ ΟΛΕΣ ΤΙΣ ΕΝΟΤΗΤΕΣ, ΟΧΙ ΜΟΝΟ ΑΠΟ ΤΗΝ ΕΝΕΡΓΗ.
+    //
+    // Ο επεξεργαστής αρχικής απαριθμεί ζωντανά, ταινίες και σειρές, αλλά το
+    // `state.channels` κρατά μία ενότητα τη φορά — γι' αυτό, με φορτωμένες τις
+    // Ταινίες, οι ράγες σειρών και καναλιών εξαφανίζονταν χωρίς εξήγηση.
+    // Το `visibleHomeChannels()` περνά την ένωση από το ΙΔΙΟ φίλτρο γονικού
+    // ελέγχου με κάθε άλλη λίστα.
+    val homeCatalog by vm.homeCatalogState.collectAsStateWithLifecycle()
+    val homeChannels = remember(
+        homeCatalog, state.favorites, state.lockedGroups, state.parentalUnlocked, state.sortMode
+    ) { vm.visibleHomeChannels() }
     val categoryLayoutRevision by vm.categoryLayoutRevision.collectAsStateWithLifecycle()
     val categoryTitlesInOrder = remember(
         categoryLayoutRevision,
@@ -792,9 +803,16 @@ internal fun BrowseScreen(
                 translationY = (1f - contentFade.value) * 26f
             }
         ) {
-            if (isCatalogHome && channels.isNotEmpty()) {
+            // Φέρνει όσες ενότητες λείπουν από τη μνήμη, ΜΙΑ φορά ανά πηγή και
+            // ΠΟΤΕ όσο παίζει κάτι: ένα μαζικό κατέβασμα στο ίδιο portal με το
+            // `create_link` είναι ακριβώς αυτό που έκανε την έναρξη αργή.
+            LaunchedEffect(isCatalogHome, inlinePlayback == null) {
+                if (isCatalogHome && inlinePlayback == null) vm.backfillHomeSections()
+            }
+            val homeItems = homeChannels.ifEmpty { channels }
+            if (isCatalogHome && homeItems.isNotEmpty()) {
                 AdaptiveCatalogHome(
-                    channels = channels,
+                    channels = homeItems,
                     continueWatching = catalogContinue,
                     favoriteKeys = state.favorites,
                     profileName = activeProfileName,
@@ -823,7 +841,7 @@ internal fun BrowseScreen(
                     onOpenCategories = { vm.changeCategories() },
                     // ΟΛΟΚΛΗΡΟΣ ο κατάλογος: τα πλακίδια μετρούν και τα ζωντανά,
                     // που το `channels` έχει ήδη φιλτράρει για την ενότητα.
-                    allChannels = state.channels,
+                    allChannels = homeItems,
                     recentLive = remember(recentsTick, state.recentsVersion) { vm.recentLive() },
                     onClearHistory = { vm.clearHomeHistory(it) },
                     onUpdateContents = { vm.requestRefresh() },
