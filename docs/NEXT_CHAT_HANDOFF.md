@@ -46,6 +46,8 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `8ec4658` | `fix: find greeklish-titled Greek series on TMDB` |
 | `147433a` | `fix: stop caching failed TMDB episode lookups in memory` |
 | `3ab8810` | `feat: log TMDB title lookup under a TmdbLookup tag` |
+| `a389a44` | `feat: add a section navigation history policy` |
+| `b76ee91` | `fix: make back return to the previous section everywhere` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
@@ -165,6 +167,44 @@ metadata. It was not adopted, for three recorded reasons:
 
 Revisit only if `8ec4658` is confirmed on device and a genuine gap remains for
 Greek series that TMDB does not carry at all.
+
+### Back navigation — the audit and what it changed
+
+The owner asked for a serious flow audit: back must return exactly where they
+were, never further, never Home, and the on-screen arrows must agree with the
+device button. The audit found one cause behind everything.
+
+**The root cause:** the current catalog section was a single variable
+(`mobilePrimaryDestination` / `tvSection`), not a stack. Nothing recorded where
+the user came from, so "back" between sections did not exist — what existed
+were fixed destinations dressed as back. Everything that *did* work correctly
+(details, library, search, EPG, export, pickers) worked because it is a layer
+*on top*, not because there was history.
+
+Fixed in `a389a44` + `b76ee91`. Three concrete defects, listed in the changelog
+with their mechanisms.
+
+**Two structural facts worth keeping in mind before touching this again:**
+
+- **Declaration order of `BackHandler` is reverse priority.** Compose gives BACK
+  to the *last active* handler, so the section handler is declared *before* the
+  overlay handler on purpose. Its `enabled` condition is also mutually
+  exclusive with that handler, deliberately duplicating the guarantee — a
+  silent reordering of composition would otherwise change behaviour with no
+  test failing.
+- **`MainActivity:266` is `enabled = true` unconditionally** and acts as the
+  final catch-all: anything no one else claims becomes "change source?". That
+  is why a missing handler shows up as the wrong dialog rather than as a dead
+  button, and why adding a screen without a handler is a silent bug.
+
+**TV screens carry no `BackHandler` of their own** — details, library, search
+and EPG all rely on the `when` in `BrowseRoute`. That is fine, but it means the
+ordering in that `when` is the single source of truth for TV back behaviour.
+
+**Not device-confirmed.** Worth walking on device: Series → Live → back should
+give Series; Home → Movies → Series → Movies → back should give Home directly;
+the arrow and the device button should behave identically at every step; and at
+the root both should still ask to change source.
 
 ### Still-open follow-ups
 
