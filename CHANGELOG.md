@@ -5,6 +5,32 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed "back" not returning where the user actually was when moving between
+  catalog sections, on both mobile and Android TV. The current section was a
+  single variable (`mobilePrimaryDestination` / `tvSection`), not a stack, so
+  no history existed and the affordances that looked like "back" were fixed
+  destinations instead. Three concrete failures, one cause:
+  - The back arrow in Live called `openSection("home")`, so arriving from
+    Series and pressing back landed on Home.
+  - At the root of Live the screen's own `BackHandler` and the catalog overlay
+    handler were both disabled, so the device back button fell through to
+    `MainActivity` and opened the "change source?" confirmation — the same
+    gesture as the on-screen arrow, with a completely different outcome.
+  - The legacy mobile top bar's back arrow was wired straight to the route's
+    `onBack`, which is also the change-source confirmation, so in lists and
+    search the arrow labelled "back" never went back.
+  Adds `SectionNavigationPolicy`, a pure Android-free history stack in the
+  shape of `TvLiveBrowsePolicy`, and routes every back affordance through it.
+  Revisiting a section collapses to its existing entry rather than pushing a
+  duplicate, matching Android's own bottom navigation, so Home → Movies →
+  Series → Movies leaves two entries and one back reaches Home instead of
+  walking through Series again. Content-type changes that are not user
+  navigation (source load, state restore) replace the top entry instead of
+  writing history. At the root the policy returns "not my decision" and the
+  screen above still asks for source-change confirmation, unchanged.
+  The section handler is declared before the overlay handler and is
+  additionally gated to be mutually exclusive with it, so details, library,
+  search, pickers and the player always close first.
 - Fixed episode descriptions and stills staying empty for the rest of the app's
   life after a single failed TMDB lookup. `TmdbClient.episodeMeta` wrote its
   result into `episodeMemCache` even when that result was empty. The disk cache

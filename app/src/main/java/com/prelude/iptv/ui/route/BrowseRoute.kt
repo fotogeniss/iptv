@@ -299,7 +299,26 @@ internal fun BrowseScreen(
      * οποία ήδη βρίσκεσαι— και ακριβώς γι' αυτό δεν την είχε προσέξει κανείς.
      * Τώρα η συμπεριφορά είναι μία και ρητή.
      */
-    val openSection: (String) -> Unit = { section ->
+    /**
+     * Ιστορικό ενοτήτων.
+     *
+     * ΣΚΟΠΙΜΑ `remember` ΚΑΙ ΟΧΙ `rememberSaveable`: μετά από ανασύσταση της
+     * διεργασίας το `mobilePrimaryDestination`/`tvSection` επιβιώνουν και ο
+     * συγχρονισμός παρακάτω ξαναχτίζει μια στοίβα ενός επιπέδου. Χάνεται το
+     * βάθος του ιστορικού, όχι το πού βρίσκεται ο χρήστης — προτιμότερο από
+     * ένα ιστορικό που επιβιώνει μερικώς και στέλνει το «πίσω» σε ενότητα που
+     * δεν αντιστοιχεί πια σε τίποτα ορατό.
+     */
+    var sectionStack by remember { mutableStateOf(listOf("home")) }
+
+    /**
+     * Εφαρμόζει την ενότητα ΧΩΡΙΣ να γράψει ιστορικό.
+     *
+     * Ξεχωριστό από το [openSection] ώστε το «πίσω» να μπορεί να επαναφέρει μια
+     * ενότητα χωρίς να την ξαναπροσθέσει στη στοίβα — αλλιώς το πρώτο «πίσω» θα
+     * κλείδωνε τον χρήστη σε βρόχο δύο ενοτήτων.
+     */
+    val applySection: (String) -> Unit = { section ->
         libraryDestination = null
         libraryQuery = ""
         searchOpen = false
@@ -326,11 +345,32 @@ internal fun BrowseScreen(
         )
     }
 
+    /** Μετάβαση με καταγραφή ιστορικού: αυτό καλούν τα μενού και τα πλακίδια. */
+    val openSection: (String) -> Unit = { section ->
+        sectionStack = SectionNavigationPolicy.open(sectionStack, section)
+        applySection(section)
+    }
+
+    /**
+     * Ένα «πίσω» μέσα στις ενότητες. `false` σημαίνει «είμαστε στη ρίζα, δεν
+     * είναι δική μας απόφαση» — ο καλών παραδίδει προς τα πάνω.
+     */
+    val goBackSection: () -> Boolean = {
+        val previous = SectionNavigationPolicy.back(sectionStack)
+        if (previous == null) {
+            false
+        } else {
+            sectionStack = previous
+            applySection(SectionNavigationPolicy.current(previous))
+            true
+        }
+    }
+
     val fullScreenCatalogOverlay = state.chooseContent || state.pickCategories ||
         state.askLoadMode || state.askRefreshMode
     LaunchedEffect(state.contentType, isTv) {
         if (!isTv) {
-            mobilePrimaryDestination = when (state.contentType) {
+            val synced = when (state.contentType) {
                 "live" -> "live"
                 "series" -> "series"
                 "vod" -> if (mobilePrimaryDestination in setOf("home", "movies")) {
@@ -340,7 +380,24 @@ internal fun BrowseScreen(
                 }
                 else -> mobilePrimaryDestination
             }
+            mobilePrimaryDestination = synced
+            // ΑΝΤΙΚΑΤΑΣΤΑΣΗ ΚΟΡΥΦΗΣ, ΟΧΙ PUSH: ο τύπος περιεχομένου αλλάζει και
+            // χωρίς πλοήγηση του χρήστη (φόρτωση πηγής, επαναφορά κατάστασης).
+            // Αν αυτό έγραφε ιστορικό, το «πίσω» θα οδηγούσε σε ενότητα που
+            // κανείς δεν επισκέφθηκε.
+            sectionStack = SectionNavigationPolicy.replaceTop(sectionStack, synced)
         }
+    }
+    // Η τηλεόραση ευθυγραμμίζει το `tvSection` σε δικό της effect πιο πάνω, που
+    // δηλώνεται πριν καν υπάρξει η στοίβα. Η στοίβα είναι κοινή για τις δύο
+    // συσκευές, οπότε πρέπει να ακολουθήσει και εκεί — αλλιώς το «πίσω» στην
+    // τηλεόραση θα ξετύλιγε ιστορικό που δεν αντιστοιχεί στην ορατή ενότητα.
+    //
+    // ΞΕΧΩΡΙΣΤΟ EFFECT ΜΕ ΚΛΕΙΔΙ ΤΟ `tvSection`, ΟΧΙ ΚΛΑΔΟΣ ΤΟΥ ΠΑΡΑΠΑΝΩ: δύο
+    // effect με το ίδιο κλειδί δεν έχουν εγγυημένη σειρά εκτέλεσης, οπότε ένας
+    // κλάδος που διάβαζε το `tvSection` θα μπορούσε να δει την παλιά τιμή.
+    LaunchedEffect(tvSection, isTv) {
+        if (isTv) sectionStack = SectionNavigationPolicy.replaceTop(sectionStack, tvSection)
     }
     LaunchedEffect(initialMobileDestination, isTv) {
         val destination = initialMobileDestination ?: return@LaunchedEffect
@@ -514,6 +571,28 @@ internal fun BrowseScreen(
         return
     }
 
+    // ---- ΠΙΣΩ ΜΕΣΑ ΣΤΙΣ ΕΝΟΤΗΤΕΣ ----
+    //
+    // ΔΗΛΩΝΕΤΑΙ ΠΡΩΤΟ ΕΠΙΤΗΔΕΣ. Στο Compose το BACK το παίρνει ο ΤΕΛΕΥΤΑΙΟΣ
+    // ενεργός χειριστής, οπότε η σειρά δήλωσης είναι αντίστροφη προτεραιότητα:
+    // ό,τι είναι «από πάνω» (λεπτομέρειες, βιβλιοθήκη, αναζήτηση, επιλογείς)
+    // πρέπει να κλείσει πρώτο και μόνο μετά να ξετυλιχθεί το ιστορικό ενοτήτων.
+    // Η συνθήκη παρακάτω το κάνει έτσι κι αλλιώς αμοιβαία αποκλειστικό — δύο
+    // ανεξάρτητοι λόγοι για την ίδια εγγύηση, γιατί μια σιωπηλή αλλαγή σειράς
+    // σύνθεσης δεν θα φαινόταν σε καμία δοκιμή.
+    //
+    // Στη ΡΙΖΑ δεν είναι ενεργός: εκεί το BACK ανήκει στην από πάνω οθόνη, που
+    // ζητά επιβεβαίωση αλλαγής πηγής.
+    BackHandler(
+        enabled = SectionNavigationPolicy.canGoBack(sectionStack) &&
+            !showExport && detailChannel == null && !state.askRefreshMode &&
+            !state.pickCategories && !state.chooseContent && !searchOpen &&
+            libraryDestination == null && inlinePlayback == null && !showGrid &&
+            !liveFullscreen
+    ) {
+        goBackSection()
+    }
+
     BackHandler(enabled = showExport || detailChannel != null || state.askRefreshMode || state.pickCategories ||
         state.chooseContent || searchOpen || libraryDestination != null) {
         when {
@@ -629,7 +708,11 @@ internal fun BrowseScreen(
                 searchText = state.search,
                 showEpgGrid = state.contentType == "live" && state.epgLoaded,
                 startInset = legacyRailInset,
-                onBack = onBack,
+                // Ίδιος κανόνας με το βελάκι των Ζωντανών: πρώτα ξετυλίγεται το
+                // ιστορικό ενοτήτων και μόνο στη ρίζα παραδίδεται προς τα πάνω.
+                // Πριν καλούσε κατευθείαν το `onBack`, δηλαδή το βελάκι «πίσω»
+                // άνοιγε τον διάλογο εξόδου από την πηγή αντί να πάει πίσω.
+                onBack = { if (!goBackSection()) onBack() },
                 onSearchOpen = { searchOpen = true },
                 onSearchClose = { searchOpen = false; vm.setSearch("") },
                 onSearchChange = { vm.setSearch(it) },
@@ -756,7 +839,13 @@ internal fun BrowseScreen(
                     favoriteKeys = state.favorites,
                     keyOf = vm::favKey,
                     onPlay = { channel -> playChannel(channel) },
-                    onBack = { openSection("home") },
+                    // ΤΟ ΒΕΛΑΚΙ ΚΑΝΕΙ Ο,ΤΙ ΚΑΙ ΤΟ BACK ΤΗΣ ΣΥΣΚΕΥΗΣ.
+                    //
+                    // Πριν έγραφε `openSection("home")`: σταθερός προορισμός, όχι
+                    // πίσω. Ερχόμενος από τις Σειρές, ο χρήστης κατέληγε στην
+                    // Αρχική. Χειρότερα, το BACK της συσκευής στο ίδιο σημείο
+                    // ζητούσε αλλαγή πηγής — ίδια χειρονομία, δύο αποτελέσματα.
+                    onBack = { if (!goBackSection()) onBack() },
                     nowTextFor = { channel ->
                         if (!state.epgLoaded) {
                             null
