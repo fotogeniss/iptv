@@ -5,6 +5,26 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed provider decoration around a title reaching the TMDB search query and
+  breaking it. Reported with a real list entry, "To Spiti Dipla Sto Potami #":
+  the title itself is correct and the transliteration of it was already right,
+  but the trailing "#" is the provider's own marker and survived `cleanTitle`,
+  so the query went out as "το σπιτι διπλα στο ποταμι #" (encoded `%23`) and
+  matched nothing. Every episode then fell back to the show-level synopsis.
+  Verified end to end: with the marker removed the query becomes
+  "το σπιτι διπλα στο ποταμι" and reduces to the same skeleton as the real
+  title, so the existing verification accepts it.
+  `cleanTitle` now strips decorative symbols (`#`, `*`, `~`, bullets, arrows,
+  stars, pipes, dashes and similar) from **the edges only**, repeatedly, so
+  "*** Title ***" clears in one pass.
+  - Interior symbols are never touched, because removing them destroys real
+    titles: `M*A*S*H`, `9-1-1`, `S.W.A.T.`, `Sex/Life`, `Law & Order`, `Se7en`.
+  - Trailing `!` and `?` are not treated as noise; they are legitimate title
+    endings.
+  - Runs last, after the existing provider-prefix and quality-tag rules, so it
+    also catches decoration left exposed once those are removed.
+  Adds `TmdbTitleCleanupTest`, which pins both the cleanup and the survival of
+  every legitimate title above, and checks that no symbol reaches the query.
 - Fixed "back" not returning where the user actually was when moving between
   catalog sections, on both mobile and Android TV. The current section was a
   single variable (`mobilePrimaryDestination` / `tvSection`), not a stack, so
