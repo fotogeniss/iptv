@@ -1,314 +1,213 @@
 # Prelude+ next-chat handoff
 
-Last verified workspace date: **2026-08-10**
-Workspace: `C:\Users\konst\AndroidStudioProjects\chatgptiptv`  
-Branch: `main`  
-Current documented version: **1.46.0** (`versionCode 115`)  
-Latest completed implementation slice in this handoff:
-the six-commit live bug-fix batch described in section 0 (Stalker series
-episodes, live-transition flash, Stalker catalog performance and three
-smaller fixes), all owner-confirmed on device and committed.
+- **Date:** 2026-08-11
+- **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
+- **Branch:** `main` · **HEAD:** `b00a15e` · worktree clean · all six static gates pass
+- **Version:** 1.46.0 (`versionCode 115`)
 
-This document is the operational source of truth for continuing the current
-Codex collaboration in a fresh chat. Read it together with `README.md`,
-`CHANGELOG.md`, `docs/MAINTENANCE.md` and
+This document is the operational source of truth for continuing in a fresh
+chat. **Section 0 is written to be read first and on its own** — it says where
+things stand, what is still broken, and what to do first. Read the rest of this
+file together with `README.md`, `CHANGELOG.md`, `docs/MAINTENANCE.md` and
 `docs/ARCHITECTURE_REFACTOR_PLAN.md` before changing code.
 
-## 0. MOST RECENT SESSION — live bug-fix batch (committed, verified)
+`CHANGELOG.md` under `Unreleased` is the authoritative mechanism-level record
+for every change; this document does not repeat it. What lives here is the
+reasoning, the open questions and the traps that the changelog does not carry.
 
-**Read this first.** The previous session produced a batch of live bug fixes
-that sat uncommitted because the sandboxed agent shell was unavailable for
-its entire duration. This session ran the static gates, split that work into
-six cohesive commits and committed all of them. The owner confirmed on
-2026-08-10 that the app builds and behaves correctly on **both mobile and
-Android TV**, which covers the first six fixes below.
+## 0. START HERE — state, what is open, what to do first
 
-`e26a5aa` came afterwards, from a bug the owner reported once episodes were
-finally playable, and the owner **confirmed it working** on 2026-08-10.
+Last session: **2026-08-11**. HEAD `b00a15e`, worktree clean, all six static
+gates pass. 24 commits sit on top of `f1f75e0` (`feat: localize library hub`).
 
-`2aa060c` and `8ec4658` are the newest pair, from the follow-up report that
-greeklish-titled Greek series showed the general synopsis on every episode.
-They are gate-clean but **not yet device-confirmed** — see the greeklish
-section below for exactly what to ask.
+### Status at a glance
 
-Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
-
-| Commit | Slice |
+| Area | State |
 | --- | --- |
-| `75dd8fa` | `test: restore PremiumLibraryPolicyTest rail labels argument` |
-| `b94043b` | `fix: gate pending series requests on the series generation alone` |
-| `81dcbb1` | `fix: load Stalker series episodes from the season descriptor` |
-| `7118354` | `feat: localize the subtitle result fallback title` |
-| `718965f` | `fix: cover the video surface before the live channel transition starts` |
-| `3fa2cd2` | `perf: restore gzip and raise provider concurrency for Stalker catalogs` |
-| `e26a5aa` | `fix: give each Stalker episode its own identity key` |
-| `2aa060c` | `feat: add a greeklish title matching policy` |
-| `8ec4658` | `fix: find greeklish-titled Greek series on TMDB` |
-| `147433a` | `fix: stop caching failed TMDB episode lookups in memory` |
-| `3ab8810` | `feat: log TMDB title lookup under a TmdbLookup tag` |
-| `a389a44` | `feat: add a section navigation history policy` |
-| `b76ee91` | `fix: make back return to the previous section everywhere` |
-| `486b2b5` | `fix: strip provider decoration from titles before searching TMDB` |
-| `b75eca8` | `fix: log a missing TMDB key instead of failing silently` |
-| `df4eb4f` | `fix: treat provider placeholder values as missing, not as content` |
-| `a7a634e` | `fix: verify Latin search results too when the title is greeklish` |
+| Stalker series episodes load and play | **Owner-confirmed on mobile + TV** |
+| Episode switching (next-episode card, episode list) | **Owner-confirmed** |
+| Live-transition "flash" | **Owner-confirmed** |
+| Stalker catalog load speed (gzip + concurrency) | **Owner-confirmed** |
+| Per-episode descriptions for **Greek-titled** series | **Working** (TMDB) |
+| Per-episode descriptions for **greeklish-titled** series | **STILL BROKEN — main open item** |
+| Provider `N/A` rendering as "N · A" | Fixed, **not device-confirmed** |
+| Back navigation returning to the previous section | Fixed, **not device-confirmed** |
 
-`CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
-for each of these; it is the authoritative technical record and is not
-repeated here. What follows is only what a future session still needs to
-know that the changelog does not say.
+### Do this first
 
-### The identity-key lesson — read before touching episodes again
+1. **Ask the owner to build and check two things**, since both are code-complete
+   but unverified: (a) that "N · A" and "N/A" are gone from series that lack
+   metadata, and (b) that back returns to the previous section — Series → Live →
+   back should give Series, and the on-screen arrow must behave identically to
+   the device button.
+2. **If greeklish series still show no per-episode synopsis**, get a Logcat
+   filtered on `TmdbLookup`. Do **not** adjust the transliteration before seeing
+   it. The table in "The greeklish problem" below maps each log line to the
+   defect it indicates; three of the causes need opposite fixes.
+3. Only after those, resume the localization audit (section 6): the final
+   release-surface hardcoded-string sweep, 50 files still unclassified.
 
-`e26a5aa` existed only because `81dcbb1` fixed **one** of the two identity keys
-in this codebase and nobody checked for a second one. That is the mistake worth
-not repeating.
+### What last session did, grouped
 
-There are two independent identity functions for a `Channel`, they disagree
-about which fields matter, and both are persisted:
+**Stalker series episodes — the original bug, now working.**
+`81dcbb1` found that a Stalker season shares one `cmd` and episodes differ only
+by the `series=` number sent to `create_link`. `e26a5aa` then fixed episode
+switching: `PlaybackQueue.favKey` fell through to `cmd`, so every episode of a
+season collapsed onto one identity key — the next-episode card appeared dead and
+every episode resumed at the previous one's timestamp. `b94043b` fixed an
+unrelated race that discarded in-flight episode fetches.
+
+**Greeklish titles — three fixes, still not working.**
+`2aa060c`/`8ec4658` added `GreeklishTitlePolicy` and wired it into TMDB lookup.
+`486b2b5` stripped provider decoration (`To Spiti Dipla Sto Potami #`) that was
+riding into the search query. `a7a634e` stopped `searchId` accepting the first
+Latin result blindly, which had been silently preventing the Greek query from
+running at all. `147433a` stopped a failed lookup being cached in memory for the
+life of the process. `3ab8810`/`b75eca8` added the `TmdbLookup` diagnostics.
+
+**Back navigation — audited and rebuilt.**
+`a389a44`/`b76ee91`. See "Back navigation" below.
+
+**Provider placeholders.** `df4eb4f`. See below.
+
+**Smaller, all owner-confirmed.** `75dd8fa` (test compile fix), `7118354`
+(subtitle fallback string), `718965f` (transition flash), `3fa2cd2` (gzip and
+per-host concurrency).
+
+### The greeklish problem — the one thing still open
+
+Greek series whose list title is written in Latin characters show the show-level
+synopsis on every episode. Greek-titled series work correctly, which isolates
+the failure to **TMDB lookup**, not to the display path — all four episode
+renderers already read `tmdbEpisode.overview` and fall back to `Channel.plot`.
+
+Three fixes have landed and none has been confirmed to help. What is known:
+
+- The API key works. The owner confirmed it in-app, and a Greek-titled hero
+  shows genres, an 8,5 rating, a Greek synopsis and a backdrop.
+- The transliteration itself is right: `To Spiti Dipla Sto Potami` produces
+  `το σπιτι διπλα στο ποταμι`, whose skeleton equals the real Greek title's.
+- What is **not** known is whether TMDB actually resolves that query. The
+  skeleton comparison guarantees a wrong show is rejected; it guarantees nothing
+  about the right one being found. No real title from the owner's list was seen
+  until late, and the one that was (`... #`) exposed a defect immediately.
+
+**Read the `TmdbLookup` capture before changing anything:**
+
+| Log line | Meaning | Fix direction |
+| --- | --- | --- |
+| `ΔΕΝ ΥΠΑΡΧΕΙ TMDB API KEY` | no key configured | settings, not code |
+| `δεν θεωρήθηκε greeklish` | `looksGreeklish` rejected the title | widen detection |
+| `ερώτημα «…»` then `0 αποτελέσματα` | TMDB found nothing for the Greek query | improve `toGreek` — **ask for ten real titles first** |
+| results listed, `ταίριασμα=0` | TMDB found the show, comparison rejected it | loosen `isSameTitle` / fix the skeleton |
+| `tmdbId=` non-zero, `0 επεισόδια` | series resolved, season number wrong | the caller's season index — **not** this policy |
+
+The last row matters: nothing in the greeklish work touches the season number,
+which comes from a Stalker season label, free-form provider text.
+
+**retrodb.gr was investigated and deliberately not adopted.** Its content is
+client-rendered with no reachable JSON endpoint, a second database does not fix
+a *matching* problem, and a new external service triggers the privacy and Play
+Data Safety rules in `docs/MAINTENANCE.md`. Revisit only if a real gap remains
+for series TMDB does not carry at all.
+
+### Codebase traps — read before writing code
+
+**1. Two identity functions that disagree, both persisted.**
 
 | Function | Basis | Used by |
 | --- | --- | --- |
-| `PlaybackHistoryStore.historyMatchKey` | `streamId`, then `seriesId`, then `chId`, then metadata | history reconciliation and migration |
-| `PlaybackQueue.favKey` | `url`, then `cmd`, then `seriesId` — **never `streamId`** | favorites, recents, resume position, subtitle requests, `LibraryPolicy.unique`, `CatalogPolicy.key`, `libraryKey` |
+| `PlaybackQueue.favKey` | `url`, then `cmd`, then `seriesId` — **never `streamId`** | favorites, recents, **resume position**, subtitle requests, `LibraryPolicy.unique`, `CatalogPolicy.key`, `libraryKey` |
+| `PlaybackHistoryStore.historyMatchKey` | `streamId`, then `seriesId`, then `chId`, then metadata | history reconciliation only |
 
-`81dcbb1` made `streamId` unique per episode precisely because
-`historyMatchKey` keys off it, and its own changelog entry says so. But
-`favKey` — which the entire UI layer actually calls, and which the player uses
-for resume position — does not look at `streamId` at all, so it kept falling
-through to `cmd`, which Stalker deliberately shares across a whole season.
+`e26a5aa` existed only because an earlier fix corrected one and not the other.
+**A Stalker episode is identified by its `series=` number, not by `cmd` or
+`url`.** Anything that keys, groups, de-duplicates or persists episodes must go
+through `favKey`. Changing `favKey` is a stored-data contract change.
 
-The general shape of the trap: **a Stalker episode is not identified by its
-`cmd` or its `url`.** It is identified by the `series=` number that
-`create_link` receives. Any new code that keys, de-duplicates, groups or
-persists episodes must go through `PlaybackQueue.favKey` rather than inventing
-its own key from `url`/`cmd`, and any change to `favKey` is a stored-data
-contract change that needs the reasoning written down. `PlaybackQueueIdentityTest`
-now pins both the new episode behavior and the unchanged live/VOD/series/Xtream
-keys; if a future change makes it fail, that is the contract talking.
+The same trap recurred in `df4eb4f`: `year` and `duration` feed the fallback
+identity keys in `CatalogNormalizer` and the persisted `localSeriesId`, so the
+placeholder cleanup deliberately leaves them alone. Before normalising any
+field, check whether it appears in an identity function.
 
-### Greeklish title matching — what to verify and what is still unknown
+**2. `BackHandler` declaration order is reverse priority.** Compose gives BACK to
+the *last active* handler. The section handler in `BrowseRoute` is declared
+*before* the overlay handler on purpose, and its `enabled` condition is
+additionally mutually exclusive — the guarantee is duplicated because a silent
+reordering would change behaviour with no test failing.
 
-`8ec4658` is the only uncertain thing in this batch. The diagnosis itself is
-solid and came from the owner, not from guessing: Greek series with a **Greek**
-title already show correct per-episode synopses, and only **greeklish** titles
-fall back to the show-level plot. That isolates the failure to TMDB lookup, not
-to the display path — all four episode renderers were already correct.
+**3. `MainActivity:266` is `enabled = true` unconditionally** and acts as the
+final catch-all: anything no one claims becomes the "change source?" dialog.
+A screen that forgets a handler shows up as the wrong dialog, not a dead button.
 
-**What could not be verified without a device or an API key:**
+**4. TV screens carry no `BackHandler` of their own.** Details, library, search
+and EPG all rely on the `when` in `BrowseRoute`, making its ordering the single
+source of truth for TV back behaviour.
 
-- Whether `GreeklishTitlePolicy.toGreek()` produces a query TMDB actually
-  resolves. The transliteration is deliberately approximate (no accents, some
-  endings wrong) and relies on TMDB's fuzzy search. The skeleton comparison
-  guarantees a *wrong* show is rejected, but not that the *right* one is found.
-- Which greeklish convention the owner's provider actually uses. The policy was
-  built to be convention-neutral and its tests cover `x`/`h`/`ch` for chi,
-  `i`/`h` for eta and `th`/`8` for theta simultaneously, but no real title from
-  the owner's list was ever seen. **If this is revisited, ask for ten real
-  titles first** — that request was made and the owner chose to proceed without
-  them, which is why the design avoids depending on any one convention.
+**5. Diagnostic logging is intentional, not leftover.** `SeriesLoad` in
+`StalkerClient`/`MainViewModel` and `TmdbLookup` in `TmdbClient`. Raw provider
+JSON is what solved the Stalker bug after three rounds of wrong guesses. Never
+log a URL from `TmdbClient`: every TMDB URL carries the API key.
 
-**The owner then supplied a real list title, and it settled the question.**
-`486b2b5` is the actual fix. The screenshot showed `To Spiti Dipla Sto Potami #`
-— the trailing `#` is the provider's own marker, it survived `cleanTitle`, and
-it rode into the search query as `%23`. Everything else in the chain was
-already correct: the transliteration produced `το σπιτι διπλα στο ποταμι`, and
-the list title's skeleton already equalled the real Greek title's, so
-verification would have accepted the match. One stray character was the whole
-failure. **This is what the ten sample titles would have revealed immediately.**
-
-**Then it still failed, and a second screenshot pair settled what was left.**
-The Greek-titled hero showed genres, an 8,5 rating, a Greek synopsis and a
-backdrop; the greeklish one showed "N · A" and "N/A". That comparison proves
-three things at once: the API key works, TMDB genuinely returns nothing for the
-greeklish title, and the placeholder text is provider data reaching the screen.
-
-A wrong turn worth recording: the missing-API-key theory was raised on this
-evidence and was **wrong** — the owner had already confirmed the key from inside
-the app, and the Greek-titled hero proves it. `b75eca8` is still worth keeping
-(a missing key produced an identical symptom with an empty Logcat), but it was
-not the cause. The screenshot contained the answer and was read too quickly.
-
-Two real defects came out of reading it properly:
-
-- `df4eb4f` — providers write `N/A` into fields they do not know. The genre row
-  splits on `/`, so `N/A` became two tags and rendered as "N · A"; the synopsis
-  showed `N/A` instead of being treated as absent. Fixed centrally in
-  `CatalogNormalizer`, touching display fields only — `year` and `duration` feed
-  identity keys and were deliberately left alone.
-- `a7a634e` — `searchId` took the first result of each Latin candidate blindly,
-  so an unrelated fuzzy match both locked onto the wrong show **and** returned
-  before the Greek query could run, silently disabling `8ec4658`. Greeklish
-  titles now verify every result, Latin candidates included.
-
-**The earlier steps**, neither a guess at the transliteration:
-
-- `147433a` fixed a real, provable bug found while investigating: `episodeMeta`
-  cached an **empty** result in memory, so one throttled or dropped call marked
-  a series unknown for the whole life of the process. Opening a season fires
-  many card lookups at once against a semaphore, so this was easy to trigger and
-  would mask any lookup fix. It is the same shape of mistake as the favKey one —
-  a guard applied to `fetch()` and the disk cache but never to the neighbouring
-  in-memory write, with the file's own comment explaining why it was wrong.
-- `3ab8810` added the `TmdbLookup` tag, because TMDB search fails silently and
-  the screen cannot tell the three failure modes apart.
-
-**Do not touch the transliteration until a `TmdbLookup` capture exists.** The
-log distinguishes exactly the cases that need opposite fixes:
-
-| Log line shows | Meaning | Fix direction |
-| --- | --- | --- |
-| `δεν θεωρήθηκε greeklish` | `looksGreeklish` rejected the title | widen detection, or the title has an English marker word |
-| `ερώτημα «…»` then `0 αποτελέσματα` | TMDB found nothing for the Greek query | improve `toGreek`, needs real titles |
-| results listed, `ταίριασμα=0` | TMDB found the show but the skeleton comparison rejected it | loosen `isSameTitle` / fix skeleton |
-| `tmdbId=` non-zero, `0 επεισόδια` | series resolved but the season number is wrong | the season index passed by the caller, not this policy |
-
-The fourth row is worth stressing: nothing in the greeklish work touches the
-season number, and a Stalker season label is free-form provider text.
-
-**Verification method used instead of Gradle:** the policy was prototyped and
-run outside the build against 24 Greek/greeklish title pairs spanning four
-conventions, then every assertion in `GreeklishTitlePolicyTest` was executed by
-reproducing the Kotlin faithfully. All pass. That is static evidence about the
-policy's internal consistency and says nothing about TMDB's behavior.
-
-### The `fetchEpisodeDescription` question — probably dead weight
-
-The owner's report implies something the changelog for `81dcbb1` does not yet
-admit: if greeklish-titled series show **the same** general synopsis on every
-episode, then `Channel.plot` — which `StalkerClient.fetchEpisodeDescription`
-fills with one extra HTTP request **per episode** — is carrying the series-level
-description, not a per-episode one. If so, that request costs a round trip per
-episode and buys nothing.
-
-This was not removed because it is not proven. Confirm it with a Logcat capture
-of the `SeriesLoad` tag, line `seriesEpisodes episode detail`, for **two
-different episodes of the same season**: identical `description` values settle
-it. If confirmed, deleting the per-episode fetch is a clean, self-contained
-performance win for every Stalker series load.
-
-### retrodb.gr — investigated, deliberately not used
-
-The owner raised `https://retrodb.gr` as a possible source for Greek series
-metadata. It was not adopted, for three recorded reasons:
-
-1. Its content is client-rendered and it exposes no reachable JSON endpoint that
-   could be confirmed (`/wp-json/` returns nothing); whether it has any public
-   API at all is still unknown.
-2. A second database does not solve the actual problem. The failure was title
-   *matching*, not missing data — TMDB already has these series with Greek
-   per-episode synopses, which is exactly why Greek-titled series work.
-3. Adding an external service triggers the privacy and Play Data Safety review
-   rules in `docs/MAINTENANCE.md`, which is real cost for no proven benefit.
-
-Revisit only if `8ec4658` is confirmed on device and a genuine gap remains for
-Greek series that TMDB does not carry at all.
-
-### Back navigation — the audit and what it changed
-
-The owner asked for a serious flow audit: back must return exactly where they
-were, never further, never Home, and the on-screen arrows must agree with the
-device button. The audit found one cause behind everything.
-
-**The root cause:** the current catalog section was a single variable
-(`mobilePrimaryDestination` / `tvSection`), not a stack. Nothing recorded where
-the user came from, so "back" between sections did not exist — what existed
-were fixed destinations dressed as back. Everything that *did* work correctly
-(details, library, search, EPG, export, pickers) worked because it is a layer
-*on top*, not because there was history.
-
-Fixed in `a389a44` + `b76ee91`. Three concrete defects, listed in the changelog
-with their mechanisms.
-
-**Two structural facts worth keeping in mind before touching this again:**
-
-- **Declaration order of `BackHandler` is reverse priority.** Compose gives BACK
-  to the *last active* handler, so the section handler is declared *before* the
-  overlay handler on purpose. Its `enabled` condition is also mutually
-  exclusive with that handler, deliberately duplicating the guarantee — a
-  silent reordering of composition would otherwise change behaviour with no
-  test failing.
-- **`MainActivity:266` is `enabled = true` unconditionally** and acts as the
-  final catch-all: anything no one else claims becomes "change source?". That
-  is why a missing handler shows up as the wrong dialog rather than as a dead
-  button, and why adding a screen without a handler is a silent bug.
-
-**TV screens carry no `BackHandler` of their own** — details, library, search
-and EPG all rely on the `when` in `BrowseRoute`. That is fine, but it means the
-ordering in that `when` is the single source of truth for TV back behaviour.
-
-**Not device-confirmed.** Worth walking on device: Series → Live → back should
-give Series; Home → Movies → Series → Movies → back should give Home directly;
-the arrow and the device button should behave identically at every step; and at
-the root both should still ask to change source.
+**6. Evidence before theory.** This project has now cost several rounds to the
+same mistake — reasoning about a subsystem before confirming it was reachable,
+or before seeing one real input. Two screenshots and one real title resolved
+more than a day of inference. Ask for a real sample first.
 
 ### Still-open follow-ups
 
-- **`XtreamClient.seriesEpisodes` has the same missing-per-episode-description
-  gap** that `81dcbb1` closed for Stalker. It was deliberately left untouched
-  because the reported bug and the owner's device testing were specific to
-  their Stalker portal. Ask before extending it.
-- **Diagnostic logging is intentionally still in place** under the
-  `SeriesLoad` tag — `StalkerClient.seriesEpisodes()` logs the raw
-  `get_ordered_list` response and the per-episode detail response, and
-  `MainViewModel.openSeries()` logs the load outcome, stale-generation
-  discards and failures. This is not leftover debug code: three rounds of
-  guessing failed on this bug and only raw portal JSON solved it. Remove or
-  downgrade it only if the owner asks.
-- **The per-episode description field name was originally a guess** (the
-  response's `"description"`). The owner's device confirmation says episodes
-  and descriptions work, so the guess held for their portal. A portal that
-  shapes the field differently will fall back to an empty description rather
-  than fail, and the `SeriesLoad` logging above is enough to diagnose it
-  without new instrumentation.
-- **`MainViewModel.kt` is 1860 lines** and trips the architecture audit's
-  known size warning. `81dcbb1` added 14 lines of logging to it. This is the
-  one standing `WARN` in the gate output; extraction is tracked in
-  `docs/ARCHITECTURE_REFACTOR_PLAN.md`.
+- **`fetchEpisodeDescription` is probably dead weight.** It issues one extra HTTP
+  request per episode to fill `Channel.plot`. If that field carries the
+  series-level description, the request buys nothing. Settle it with a
+  `SeriesLoad` capture of `seriesEpisodes episode detail` for **two different
+  episodes of the same season**: identical `description` values confirm it.
+  Removing it is then a clean performance win on every Stalker series load.
+- **`XtreamClient.seriesEpisodes` has the same missing-description gap** and was
+  left untouched, since the reported bug was Stalker-specific. Ask first.
+- **`MainViewModel.kt` is 1860 lines** and trips the architecture audit's known
+  size warning. Extraction is tracked in `docs/ARCHITECTURE_REFACTOR_PLAN.md`.
 
-### Two environment facts that were wrong in the previous handoff
+### Back navigation
 
-- **`MobilePlaybackOverlay.kt` was not "a pure line-ending normalization
-  diff".** Its working-tree copy had been rewritten with CRLF endings while
-  `HEAD` and every other file in the repo use LF, which is why it showed as
-  754/754 (later 919/919) fully modified and produced 919 `trailing
-  whitespace` errors under `git diff --check`. This session normalized it
-  back to LF before committing; the file's real change in `718965f` is 21
-  insertions and 6 deletions. If it ever shows as fully modified again,
-  check the line endings first — the repo has no `.gitattributes`, so an
-  editor or tool writing CRLF will silently reintroduce this.
-- **The `.git` write-lock problem is solved, not permanent.** Git writes from
-  the sandboxed mount do still leave `.git/HEAD.lock` and
-  `.git/objects/maintenance.lock` behind after each command, and `HEAD.lock`
-  blocks the *next* command. But the agent can now delete them itself once
-  file deletion has been granted for the folder (Cowork's
-  `allow_cowork_file_delete`). The working pattern is simply to append
-  `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` after
-  every git write command. There is no longer any need to ask the owner to
-  delete lock files from Windows, and no need to avoid chaining git commands.
+The root cause was that the current section was a single variable, not a stack,
+so "back" between sections did not exist — the controls that looked like back
+were fixed destinations. Three defects: the Live arrow always went Home; at the
+root of Live the device button fell through to the change-source dialog while
+the arrow went Home (same gesture, two outcomes); and the legacy top bar's arrow
+was wired straight to the change-source dialog.
 
-### Static gate results at `8ec4658`
+`SectionNavigationPolicy` now owns the history. Revisiting a section collapses
+to its existing entry rather than pushing a duplicate, so Home → Movies →
+Series → Movies leaves two entries and one back reaches Home. Changes that are
+not user navigation (source load, state restore) replace the top entry instead
+of writing history. At the root the policy reports "not my decision" and the
+change-source confirmation is unchanged, as the owner asked.
 
-All six gates in section 9 pass. `git diff --check` is clean. Two standing,
-pre-existing warnings: the `MainViewModel` size warning above, and the
-documented global-cleartext compatibility exception in `deep_validation_audit`.
+### Verification method, and its limits
 
-Gradle was **not** run at any point — the owner builds in Android Studio. Their
-2026-08-10 reports are the build and device evidence for everything up to and
-including `e26a5aa`. `2aa060c` and `8ec4658` have no device evidence yet.
+Gradle was **not** run at any point — the owner builds in Android Studio. Where
+a change could not be built, its logic was verified by reproducing the Kotlin
+outside the build and executing the same assertions: 24 Greek/greeklish title
+pairs across four spelling conventions, the episode-identity collapse, the
+navigation stack, and the placeholder cleanup all pass.
 
-Where Gradle was unavailable, logic was verified by reproducing the Kotlin
-outside the build and executing the same assertions:
+That is static evidence about internal consistency. It says nothing about how
+TMDB responds, and it is exactly why the greeklish item is still open.
 
-- `e26a5aa`: a season's four episodes collapse to one key before the change and
-  to four after it, with live/VOD/series/Xtream keys byte-identical either way.
-- `2aa060c`/`8ec4658`: 24 Greek/greeklish title pairs across four conventions
-  all produce matching skeletons, unrelated titles do not collide, and every
-  assertion in `GreeklishTitlePolicyTest` passes.
+### Environment
 
-This is static reasoning about internal consistency, not a runtime result, and
-in the greeklish case it says nothing about how TMDB responds to the generated
-query.
+- **`.git` locks are solved.** Git writes from the sandbox leave `HEAD.lock` and
+  `objects/maintenance.lock` behind and a stale `HEAD.lock` blocks the next
+  command. Grant file deletion for the folder once, then append
+  `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to every
+  git write. The old "ask the owner to delete from Windows" workflow is obsolete,
+  as is avoiding chained git commands. The `tmp_obj_*` unlink warnings are
+  harmless.
+- **Line endings.** `MobilePlaybackOverlay.kt` was once rewritten as CRLF against
+  an LF repo, producing 919 phantom `trailing whitespace` errors. There is no
+  `.gitattributes`. If a file shows as fully modified, check line endings first.
+- **Gates** are listed in section 9. Two standing warnings are expected:
+  `MainViewModel` size, and the documented global-cleartext exception.
 
 ## 1. Non-negotiable working agreement
 
@@ -363,32 +262,11 @@ of a **30-year senior software engineer**. In practice this means:
 
 ## 2. Current confirmed state
 
-- HEAD is at `3fa2cd2` (`perf: restore gzip and raise provider concurrency for
-  Stalker catalogs`), the last of the six bug-fix commits listed in section 0,
-  which sit directly on top of `f1f75e0` (`feat: localize library hub`).
-  Verified from `git log`, not trusted from a prior document. Confirm the
-  current HEAD with `git log --oneline -8` rather than trusting a hash typed
-  into this file, since these lines are not updated after every future commit.
-- The worktree is clean apart from whatever the current session is editing.
-  The long-standing "`MobilePlaybackOverlay.kt` shows as fully modified but is
-  a pure line-ending normalization" note is **resolved and no longer true**:
-  the file had genuinely been rewritten with CRLF endings against an LF repo,
-  it was normalized back to LF, and it is committed. See section 0 for the
-  detail and for what to check if it ever reappears.
-- **`.git` write locking on this sandboxed mount: solved.** Git writes from
-  the sandbox still leave `.git/HEAD.lock` and `.git/objects/maintenance.lock`
-  behind, and a stale `HEAD.lock` blocks the next command with
-  `fatal: cannot lock ref 'HEAD'`. The agent can now delete these itself once
-  file deletion has been granted for the folder — in Cowork that is the
-  `allow_cowork_file_delete` tool, which only needs approving once per folder.
-  **The working pattern:** append
-  `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to
-  every git write command. The old workflow of asking the owner to delete lock
-  files from Windows, and of never chaining git commands, is obsolete. The
-  `warning: unable to unlink '.git/objects/**/tmp_obj_*'` lines that git emits
-  on the mount are harmless and do not affect the commit.
-- The Git worktree was clean at `4c7ee73` when the profile/account-security
-  slice began.
+> **Current state, environment facts and the `.git` lock workflow now live in
+> section 0 and are not repeated here.** Everything below this line is older
+> history kept for context. Where it disagrees with section 0, section 0 wins,
+> and `git log` wins over both.
+
 - The owner previously supplied an Android Studio screenshot confirming a
   **successful QA build in approximately 34 seconds** after commit `1a7b4f4`, and
   later reported another localization checkpoint built without errors. Those are
@@ -426,6 +304,9 @@ of a **30-year senior software engineer**. In practice this means:
   servers do not support HTTPS. This is documented, not an accidental warning.
 
 ## 3. Recent committed engineering work
+
+> The **most recent** 24 commits are summarised in section 0, grouped by theme.
+> The table below is the older history that precedes them.
 
 The current project-local history begins with the following controlled sequence:
 
@@ -1146,58 +1027,64 @@ reports under `validation/`.
 
 The owner can paste the following after attaching or referencing this file:
 
-> Read `docs/NEXT_CHAT_HANDOFF.md` **section 0 first** — it records the six
-> bug-fix commits that closed out the previous session and the follow-ups they
-> left open. Then read the rest of this file, `README.md`, `CHANGELOG.md`,
-> `docs/MAINTENANCE.md`, `docs/LOCALIZATION_ARCHITECTURE.md` and
-> `docs/ARCHITECTURE_REFACTOR_PLAN.md` before acting. Inspect
-> `git status --short` and `git log --oneline -10` first; do not trust an old
-> completion claim without tracing the active code path.
+> Read `docs/NEXT_CHAT_HANDOFF.md` **section 0 first and in full** — it states
+> the current state, what is still broken and what to do first. Then read the
+> rest of that file, `README.md`, `CHANGELOG.md`, `docs/MAINTENANCE.md`,
+> `docs/LOCALIZATION_ARCHITECTURE.md` and `docs/ARCHITECTURE_REFACTOR_PLAN.md`
+> before acting. Run `git status --short` and `git log --oneline -12` first and
+> trust those over anything written in a document.
 >
-> The live bug-fix batch is **committed and owner-confirmed on mobile and
-> Android TV**, through `e26a5aa` — do not re-verify or re-commit any of it.
-> The exception is the greeklish pair `2aa060c`/`8ec4658`, which is committed
-> and gate-clean but **not device-confirmed**: ask the owner to open a Greek
-> series whose list title is in Latin characters and compare two episodes'
-> descriptions. If they are still identical, log the generated query and the
-> TMDB response — do not adjust the transliteration blindly. Section 0 also
-> lists the open follow-ups (whether `fetchEpisodeDescription` is dead weight,
-> Xtream's matching missing-description gap, the intentionally retained
-> `SeriesLoad` logging, why retrodb.gr was rejected, and `MainViewModel`'s size
-> warning); raise those only if the
-> owner asks or the work naturally touches them. Read section 0's
-> identity-key lesson before writing any code that keys, groups or persists
-> episodes.
+> Everything through episode switching, the live-transition flash and the
+> Stalker catalog performance work is committed and owner-confirmed on mobile
+> and Android TV. Do not re-verify or re-commit any of it.
 >
-> **Resume the localization audit as the primary task.** Profiles, parental PIN
-> and encrypted backup/restore, billing and Premium, legal and privacy,
-> diagnostics and crash reporting, export/relay and system notifications, and
-> the Library hub are all complete at the code/resource and static-contract
-> level and committed; each still awaits the owner's normal Android Studio
-> build and phone/TV QA. Continue with the final release-surface
-> hardcoded-string audit across every active manifest, Kotlin and XML file — a
-> reconnaissance sweep already found 50 files with unclassified Greek literals
-> outside Library (file list in the handoff body). Classify each remaining
+> **Two things are code-complete but not device-confirmed** — ask me to build
+> and check them before anything else: that provider `N/A` values no longer
+> render as "N · A" or as a synopsis, and that back returns to the previous
+> section (Series → Live → back must give Series, and the on-screen arrow must
+> behave identically to the device button).
+>
+> **The one thing still broken** is per-episode synopses for Greek series whose
+> list title is written in Latin characters. Greek-titled series work. If it is
+> still failing, ask me for a Logcat filtered on `TmdbLookup` and use the table
+> in section 0 to tell the three possible causes apart — they need opposite
+> fixes. Do not adjust the transliteration before seeing that capture, and if
+> the query itself is the problem, ask me for ten real titles from my list
+> first. Section 0 also lists the open follow-ups (whether
+> `fetchEpisodeDescription` is dead weight, Xtream's matching gap,
+> `MainViewModel`'s size).
+>
+> **Before writing code, read section 0's "Codebase traps".** In particular:
+> this project has two persisted identity functions that disagree, and a fix
+> applied to one and not the other has already cost two separate bugs — check
+> whether a field appears in an identity function before normalising it.
+> `BackHandler` declaration order is reverse priority in Compose. And the
+> diagnostic logging under `SeriesLoad` and `TmdbLookup` is deliberate, not
+> leftover.
+>
+> **Only after the above is settled**, resume the localization audit: the final
+> release-surface hardcoded-string sweep across every active manifest, Kotlin
+> and XML file. A reconnaissance sweep already found 50 files with unclassified
+> Greek literals outside Library (list in the handoff body). Classify each
 > literal as app copy, invariant brand/protocol text, provider/user data,
-> diagnostic data or developer comment; migrate only app copy. Only after that
-> audit plus compilation and phone/TV QA proceed to parity inversion and public
-> picker activation.
+> diagnostic data or developer comment; migrate only app copy. Parity inversion
+> and public picker activation come after that plus my build and device QA.
 >
-> Continue as a 30-year senior engineer: one careful responsibility at a time,
-> small patches only, never rewrite a whole file, avoid giant files, preserve
-> public/storage behavior and add focused tests/contracts. Extend focused files
-> and feature resources instead of collecting everything in one giant file.
-> Every visual/layout/navigation/focus change requires a functional HTML preview
-> and my approval before Android implementation; a copy-only resource migration
-> or a timing-only fix to an already-approved effect does not. Do not run
-> Gradle, compile or build unless I explicitly ask. Never claim runtime success
-> from static checks. Run the section 9 static gates and `git diff --check`,
-> inspect the diff, record behavior changes in CHANGELOG/docs, update this
+> Work as a 30-year senior engineer: one responsibility at a time, small
+> patches, never rewrite a whole file, preserve public and storage behaviour,
+> add focused tests. Prefer real evidence over inference — ask me for a
+> screenshot, a log or a sample before reasoning about a subsystem you have not
+> confirmed is reachable; that mistake has cost this project several rounds.
+> Visual, layout, navigation or focus changes need an HTML preview under
+> `prototypes/` and my approval; copy-only resource migrations and timing-only
+> fixes to an approved effect do not. Do not run Gradle unless I ask. Never
+> claim runtime success from static checks. Run the section 9 gates and
+> `git diff --check`, record behaviour changes in `CHANGELOG.md`, update this
 > handoff, and commit each cohesive slice separately.
 >
-> Git writes from the sandboxed agent workspace leave `.git/HEAD.lock` and
-> `.git/objects/maintenance.lock` behind, and a stale `HEAD.lock` blocks the
-> next command. Grant file deletion for the folder once, then append
+> Git writes from the sandbox leave `.git/HEAD.lock` and
+> `.git/objects/maintenance.lock` behind and a stale `HEAD.lock` blocks the next
+> command. Grant file deletion for the folder once, then append
 > `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to every
 > git write command. You do not need to ask me to delete lock files from
-> Windows any more.
+> Windows.
