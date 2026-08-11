@@ -51,11 +51,21 @@ object CatalogNormalizer {
         val order: Int
     )
 
-    fun normalize(contentType: String, rawItems: List<Channel>): CatalogNormalization = when (contentType) {
-        "series" -> normalizeSeries(rawItems)
-        "vod" -> CatalogNormalization(deduplicate(rawItems.map { if (it.kind == "vod") it else it.copy(kind = "vod") }, ::movieIdentity))
-        "live" -> CatalogNormalization(deduplicate(rawItems.map { if (it.kind == "live") it else it.copy(kind = "live") }, ::liveIdentity))
-        else -> CatalogNormalization(deduplicate(rawItems, ::technicalIdentity))
+    fun normalize(contentType: String, rawItems: List<Channel>): CatalogNormalization {
+        // ΠΡΩΤΑ ΚΑΘΑΡΙΖΟΥΜΕ ΤΑ «ΑΔΕΙΑ» ΠΕΔΙΑ, ΠΡΙΝ ΑΠΟ ΚΑΘΕ ΑΛΛΗ ΕΠΕΞΕΡΓΑΣΙΑ.
+        //
+        // Εδώ περνούν όλες οι πηγές, οπότε είναι το μοναδικό σημείο που
+        // χρειάζεται. Ο [ProviderMetadataPolicy] αγγίζει μόνο πεδία προβολής —
+        // τα `year`/`duration` παραμένουν ανέπαφα επειδή συμμετέχουν στα
+        // εφεδρικά κλειδιά ταυτότητας παρακάτω και στο αποθηκευμένο
+        // `localSeriesId`.
+        val items = rawItems.map(ProviderMetadataPolicy::sanitize)
+        return when (contentType) {
+            "series" -> normalizeSeries(items)
+            "vod" -> CatalogNormalization(deduplicate(items.map { if (it.kind == "vod") it else it.copy(kind = "vod") }, ::movieIdentity))
+            "live" -> CatalogNormalization(deduplicate(items.map { if (it.kind == "live") it else it.copy(kind = "live") }, ::liveIdentity))
+            else -> CatalogNormalization(deduplicate(items, ::technicalIdentity))
+        }
     }
 
     /** Search must expose one result per title, never one result per episode. */

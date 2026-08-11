@@ -5,6 +5,28 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Fixed provider placeholder values being displayed as if they were content.
+  Many providers write `N/A`, `null`, `-` or `unknown` into a field they do not
+  know instead of leaving it empty, and the app treated those as real text. Two
+  visible results, both reported as "no information":
+  - The genre row splits `genre` on `,` `/` `·` `|` `&` to build tags. `N/A`
+    contains a slash, so it became **two** tags and rendered literally as
+    "N · A" on the hero.
+  - The synopsis showed `N/A` instead of being treated as absent, so the
+    "no description" fallback never appeared and nothing indicated the data was
+    simply missing.
+  Adds `ProviderMetadataPolicy` and applies it in `CatalogNormalizer.normalize`,
+  the single point every source passes through. Only display fields are
+  cleaned — `plot`, `genre`, `cast`, `director`.
+  - **`year` and `duration` are deliberately untouched.** They feed the fallback
+    identity keys in `movieIdentity`/`seriesIdentity` and the persisted
+    `localSeriesId`, so rewriting them would move favourites and history — the
+    same class of mistake already made once with `PlaybackQueue.favKey`.
+  - A value must be a placeholder in full, never merely contain one, so
+    "Nashville" and "Unknown Origins" survive.
+  - Real content is returned unmodified, without trimming or reformatting, and
+    an already-clean channel is returned as the same instance so a catalog of
+    tens of thousands of items does not pay a `copy()` each load.
 - Fixed provider decoration around a title reaching the TMDB search query and
   breaking it. Reported with a real list entry, "To Spiti Dipla Sto Potami #":
   the title itself is correct and the transliteration of it was already right,
