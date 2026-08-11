@@ -253,7 +253,23 @@ object TmdbClient {
      * Επιστρέφει κενό map χωρίς κλειδί ή όταν το TMDB δεν έχει τη σεζόν.
      */
     fun episodeMeta(rawTitle: String, yearHint: String, season: Int): Map<Int, EpisodeMeta> {
-        if (!hasKey() || season <= 0) return emptyMap()
+        // ΤΟ ΠΡΩΤΟ ΠΡΑΓΜΑ ΠΟΥ ΠΡΕΠΕΙ ΝΑ ΦΑΙΝΕΤΑΙ ΣΤΗ ΔΙΑΓΝΩΣΗ.
+        //
+        // Το κλειδί TMDB είναι προαιρετικό και το βάζει ο χρήστης από τις
+        // ρυθμίσεις — δεν υπάρχει προεπιλογή. Χωρίς αυτό η μέθοδος γύριζε
+        // σιωπηλά κενό πριν από κάθε άλλη καταγραφή, οπότε το σύμπτωμα («καμία
+        // πληροφορία επεισοδίου») ήταν πανομοιότυπο με αποτυχία αναζήτησης και
+        // το Logcat έμενε εντελώς άδειο. Δεν καταγράφεται ποτέ η τιμή του
+        // κλειδιού, μόνο αν υπάρχει.
+        if (!hasKey()) {
+            Log.w(
+                LOOKUP_TAG,
+                "ΔΕΝ ΥΠΑΡΧΕΙ TMDB API KEY — καμία πληροφορία επεισοδίου δεν μπορεί " +
+                    "να ζητηθεί. Ρυθμίσεις -> TMDB. Αίτημα για «$rawTitle» σεζόν $season.",
+            )
+            return emptyMap()
+        }
+        if (season <= 0) return emptyMap()
         val title = cleanTitle(rawTitle)
         if (title.isBlank()) return emptyMap()
         val year = extractYear(rawTitle, yearHint)
