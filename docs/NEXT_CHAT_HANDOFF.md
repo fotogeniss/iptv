@@ -48,6 +48,7 @@ Commits, oldest first, on top of `f1f75e0` (`feat: localize library hub`):
 | `3ab8810` | `feat: log TMDB title lookup under a TmdbLookup tag` |
 | `a389a44` | `feat: add a section navigation history policy` |
 | `b76ee91` | `fix: make back return to the previous section everywhere` |
+| `486b2b5` | `fix: strip provider decoration from titles before searching TMDB` |
 
 `CHANGELOG.md` under `Unreleased` carries the full mechanism-level writeup
 for each of these; it is the authoritative technical record and is not
@@ -104,8 +105,16 @@ to the display path — all four episode renderers were already correct.
   titles first** — that request was made and the owner chose to proceed without
   them, which is why the design avoids depending on any one convention.
 
-**The owner reported it still failing after `8ec4658`.** Two things followed,
-and neither is a guess at the transliteration:
+**The owner then supplied a real list title, and it settled the question.**
+`486b2b5` is the actual fix. The screenshot showed `To Spiti Dipla Sto Potami #`
+— the trailing `#` is the provider's own marker, it survived `cleanTitle`, and
+it rode into the search query as `%23`. Everything else in the chain was
+already correct: the transliteration produced `το σπιτι διπλα στο ποταμι`, and
+the list title's skeleton already equalled the real Greek title's, so
+verification would have accepted the match. One stray character was the whole
+failure. **This is what the ten sample titles would have revealed immediately.**
+
+**The two things that preceded it**, neither a guess at the transliteration:
 
 - `147433a` fixed a real, provable bug found while investigating: `episodeMeta`
   cached an **empty** result in memory, so one throttled or dropped call marked
