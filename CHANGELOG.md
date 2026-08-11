@@ -5,6 +5,27 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.49.1 - versionCode 119
+
+- Gave the bottom navigation bar a visible focus indicator on Android TV. All
+  five items — including the "＋" that is now the only way to add a source —
+  carried `clickable` but no `tvFocus`, so a D-pad could reach them while
+  nothing on screen changed. The remote was landing on a control the viewer had
+  no way to see.
+  - **This was not introduced by 1.49.0.** The gap existed in
+    `StreamingBottomNavigation` from the start; it was simply not load-bearing
+    while the Sources header still had its own `＋ Νέα πηγή` button, which did
+    carry `tvFocus`. Removing that button made the bar the only route and
+    exposed it. Owner-confirmed on a television before this fix.
+  - `tvFocus` is applied **before** `clickable`, matching every other focusable
+    surface in the app: it only draws, and must observe the focus event that
+    `clickable` produces. Reversing the order silently produces no ring.
+  - `tint` and `scale` are off so the bar keeps its fixed height and its
+    existing selected-item highlight stays readable against the focus ring;
+    the ring alone marks position.
+  - Mobile is unchanged: `tvFocus` renders nothing without focus, and touch
+    surfaces never take it.
+
 ## 1.49.0 - versionCode 118
 
 - Reduced the Sources screen to a single way of adding a source. It had two "＋"

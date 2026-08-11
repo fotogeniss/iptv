@@ -133,6 +133,21 @@ fun <T> StreamingBottomNavigation(
                             if (active) Color.White.copy(alpha = 0.08f) else Color.Transparent,
                             RoundedCornerShape(10.dp)
                         )
+                        // ΟΡΑΤΟ FOCUS ΓΙΑ ΤΗΛΕΧΕΙΡΙΣΤΗΡΙΟ.
+                        //
+                        // Το `clickable` κάνει το στοιχείο focusable, οπότε το
+                        // D-pad ΕΦΤΑΝΕ εδώ και πριν — αλλά τίποτα δεν άλλαζε
+                        // στην οθόνη, οπότε ο χρήστης δεν είχε τρόπο να ξέρει
+                        // πού βρίσκεται. Το πρόβλημα υπήρχε σε ΚΑΙ ΤΑ ΠΕΝΤΕ
+                        // στοιχεία της μπάρας από την αρχή· απλώς δεν φαινόταν
+                        // όσο υπήρχε το κουμπί «＋ Νέα πηγή» στην κεφαλίδα, που
+                        // είχε δικό του tvFocus. Μόλις εκείνο αφαιρέθηκε, η
+                        // μπάρα έγινε ο μόνος δρόμος και το κενό έγινε ορατό.
+                        //
+                        // ΠΡΙΝ το `clickable`, όπως παντού αλλού στο app: το
+                        // tvFocus δεν κάνει το στοιχείο focusable, μόνο ζωγραφίζει
+                        // — πρέπει να δει το focus event που παράγει το clickable.
+                        .tvFocus(RoundedCornerShape(10.dp), tint = false, scale = false)
                         .clickable {
                             item.action?.invoke() ?: item.value?.let(onSelect)
                         }
