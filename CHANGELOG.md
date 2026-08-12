@@ -5,6 +5,210 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.61.0 - versionCode 133
+
+- **Reverted the page pool from 12 to 6.** The speed gain was real — 27.1s to
+  14.3s — and it was not worth what it cost.
+  Under twelve workers the portal did not return errors. It returned **stubs**.
+  The same film, `id 1813440`, came back twice with the same request and
+  different content:
+  ```
+  6 workers : rating_imdb=6.7  tmdb_id=1284465  description="Na een leven…"  time=123
+  12 workers: rating_imdb=N/A  tmdb_id=""       description=N/A              time=1
+  ```
+  Alongside 30 silently failed pages on movies and 2-3 on live. The speed was
+  being bought with ratings, synopses, posters and TMDB ids — precisely the
+  fields the previous releases existed to get right. It is likely that some of
+  the original "N · A" report was this same degradation rather than app code.
+  - The failure counter added in 1.60.0 catches dropped pages but **cannot**
+    catch this: a stub row looks perfectly well-formed until it reaches the
+    screen. The comment now says so, so nobody raises the pool again by reading
+    only the timing.
+- Recorded that the owner wants a stated opinion and a proposed approach, not
+  only execution of the request.
+- **Fixed a stale architecture contract that failed on correct code.** The check
+  "MainViewModel delegates catalog group ordering and visibility" required
+  *exactly two* call sites of `CatalogPresentationPolicy`. A third one was added
+  in 1.54.0 — `visibleHomeChannels()`, which passes the home's union of sections
+  through the same locked-group filter so parental control cannot be bypassed by
+  a screen that merely wanted more data. Counting call sites punished the right
+  change. The rule the contract actually exists to protect — that the ViewModel
+  does not reimplement filtering itself — is carried by its other two markers,
+  and those still hold. Now `>= 2`, with the reason written next to it. No app
+  code changed, so the version is unchanged.
+
+## 1.60.0 - versionCode 132
+
+- **Counting silently dropped pages.** The concurrency increase in 1.59.0 halved
+  the time — 27.1s to 14.3s, exactly as predicted — but the same source returned
+  **1,981 items instead of 2,304** from the same 14 categories. Every page task
+  catches its own failure and returns an empty list so one hiccup cannot fail the
+  whole load; the cost is that the loss is invisible. The summary now reports
+  failed pages and warns with an estimate of the missing items.
+  Until that number is seen on a real load, treat 1.59.0's page pool of 12 as
+  **unproven**: if failures are non-zero and consistent, the portal is rejecting
+  the extra pressure and the pool goes back to 6. Speed is not worth a catalog
+  with holes in it.
+- Fixed the Movies and Series screens showing **live channels** while a catalog
+  was still loading. Inside its own destination the screen took the channel list
+  as-is, trusting that it contained only that kind. That is not true mid-load:
+  `state.channels` holds whichever section finished first, so if Live won the
+  race, Movies and Series filled with channels. Both now filter by kind always;
+  the assumption cost one pass over a list and was wrong.
+- Live rows no longer appear on the **home** screen by default. The home is a
+  library of films and series — a channel among posters is an empty tile with no
+  synopsis and no duration, and Live already has its own section with a list and
+  a schedule. They remain in the editor for anyone who wants them, and the
+  default applies **only** when no layout has been saved yet: once the user has
+  touched the eye, their decision wins permanently.
+
+## 1.59.0 - versionCode 131
+
+- Doubled Stalker page concurrency from 6 to 12 workers, on measurement rather
+  than instinct. A real load of the owner's slow source: **2,304 series, 174 page
+  requests, 27.1 seconds — 6 requests per second**, or about 940 ms each.
+  The rate matched the worker count exactly, which is the signature of a client
+  bottleneck: the app was waiting, not downloading. OkHttp already permitted 16
+  requests per host, so ten slots sat idle the whole time.
+  - Twelve, not sixteen: category workers each hold a connection for their own
+    first page, so 12 + 3 stays under OkHttp's 16. Above that the extra requests
+    would queue silently and the measured rate would start lying.
+  - `categoryPool` deliberately stays at 3. The measurement showed its threads
+    spend nearly all their time blocked in `future.get()` waiting for pages and
+    issue one request each; raising it would add connections without adding
+    throughput. The lever was the page pool.
+  - The previous value was conservative on purpose — portals are often small
+    machines that answer 429/500 under load — so the comment now records both
+    the measurement and how to revert. The `ΣΥΝΟΨΗ` log line says immediately
+    whether the change paid: if throughput does not rise, the portal is the
+    limit and pushing harder buys nothing.
+- **`category=*` was dropped from the plan.** It was meant to remove per-category
+  overhead, but the owner's sources have one and two selected categories, where
+  there is no such overhead to remove. Measuring first avoided building it.
+
+## 1.58.0 - versionCode 130
+
+- Added a one-line `CatalogLoad` summary at the end of every section load: items,
+  seconds, page requests, categories and the resulting throughput. Catalog
+  loading is reported as very slow, and the shape of the problem is arithmetic —
+  the portal serves **14 items per page**, so ten thousand films is roughly seven
+  hundred round trips. Nothing about that improves by guessing; the throughput
+  figure is what will say whether a concurrency change helped or simply started
+  drawing 429s.
+- **Found a silent content loss while measuring.** `fetchAllPages` caps at 500
+  pages as a safety valve, and when that cap is hit the remaining items are
+  dropped with no error at all — at 14 items per page, a catalog over ~7,000
+  items in a single paginated stream is quietly truncated. It now logs a warning
+  naming the pages requested and the pages fetched.
+  This matters for the next step: fetching Stalker with `category=*` instead of
+  per category would collapse everything into **one** stream and walk straight
+  into that cap. The idea is still right — it removes the per-category overhead
+  and lets all six page workers run on one queue — but it cannot ship until the
+  cap is handled, and that is why it is not in this release.
+
+## 1.57.0 - versionCode 129
+
+- Category sections now accept **many categories, each becoming its own rail**,
+  completing the approved editor design. Until now one section showed one
+  category, so the user was not composing a screen — they were choosing which of
+  seventy categories to see.
+  - The picker is multi-select, and the order in which categories are ticked is
+    the order of the rails, so the selection is stored as a list rather than a
+    set.
+  - The selection **applies on confirm, not per tick**. Applying immediately
+    would rebuild the home underneath the dialog on every tap, leaving it
+    flickering over a list that reorders itself.
+  - Selections are per destination: the same "Movies" section can show different
+    categories on Home and inside Movies.
+  - Empty selection keeps the previous single-category value, so nobody loses a
+    setting and the "largest category" default still applies.
+  - The stored separator is a newline, not `|`: provider category names contain
+    pipes (`GR | KIDS | ΠΑΙΔΙΚΑ`) and would have been cut in half.
+  - `MobileHomeRailResolver.railsFor` replaces `railFor`; a section may now
+    produce several rails, and each rail id carries its category because two
+    rails of one section must not share a Compose list key.
+
+## 1.56.0 - versionCode 128
+
+- The home layout editor is now **per destination**, and functional rather than
+  cosmetic: Home, Live, Movies and Series each keep their own order and their own
+  hidden rows, and each lists only the sections that can actually appear there.
+  This is the fix for the original report — the editor listed ten sections while
+  the screen showed three, because six of them were impossible on the screen the
+  owner was looking at and nothing said so.
+  - Four visible chips, not a dropdown. The problem to solve is **discovery**,
+    not selection: until now nothing revealed that per-screen layouts could
+    exist, and a dropdown would have kept that behind a tap. Four options fit as
+    chips and say it without explanation. At eight destinations the answer would
+    be different.
+  - `HomeLayoutPolicy.allowedIn(destination)` is the single place that decides
+    what belongs where, and it is decided by **data availability**, not taste: on
+    the Live screen there are no series in memory, so a "New episodes" row there
+    could never draw however the user set it.
+  - Storage is per destination, and **the "home" destination keeps the original
+    preference keys**, so a layout already arranged by the user becomes the Home
+    layout with no migration code and no loss. The other three start from their
+    defaults.
+  - A legacy layout file holds every id, since one setting used to govern all
+    four screens. Read as "Live", it cannot leak movie and series rows in — a
+    test pins that.
+  - The editor opens on the screen you were viewing and resets to it each time,
+    so it never silently continues configuring somewhere else. Opened from
+    Settings, where there is no such context, it starts on Home.
+  - Still open, and the larger half of the approved design: multi-category
+    selection, where each ticked provider category becomes its own rail instead
+    of one category per section.
+
+## 1.55.0 - versionCode 127
+
+- Fixed newly added home sections landing at the very bottom of the screen. A
+  `CatalogLoad` capture confirmed the provider does send `rating_imdb` (`6.7`),
+  `added` (`2026-07-26 13:26:00`) and `tmdb_id` on catalog rows, so the ranking
+  work was correct and the data was there — the rails were simply **out of
+  sight**.
+  `resolve()` appended anything absent from the saved layout after everything
+  saved. The old comment acknowledged the trade-off — "in the wrong place beats
+  never appearing" — but for anyone who has touched their layout, "the end"
+  means below dozens of category rails, where nobody scrolls. "Top rated movies"
+  was reported as missing when it existed and was unreachable.
+  - A missing section now lands immediately after its nearest preceding
+    neighbour from `DEFAULT` that is already present: where it would be if the
+    layout had never been edited.
+  - The user's own ordering is untouched. The test that pinned "goes to the end"
+    was asserting the defect and has been replaced; the partial-save test now
+    checks **relative** order, which is the real contract, instead of absolute
+    positions.
+- Note for the next reader: "Suggestions for you" is random **by design** — a
+  seeded, category-balanced shuffle. It is not a ranking rail and should not be
+  reported as unsorted.
+
+## 1.54.2 - versionCode 126
+
+- Added one `CatalogLoad` diagnostic line per section: the first raw catalog row,
+  with `rating_imdb`, `rating_kinopoisk`, `added`, `year` and `tmdb_id` called
+  out. One line per load, not per item.
+  The owner reports on 1.54.0 that nothing is ordered by rating or by date, and
+  the ranking code is demonstrably in that build. The field names were taken
+  from the only real response anyone has seen from this portal — the **season
+  list** — and were assumed to hold for **category pages**, which nobody has
+  captured. If they do not, `topRatedFirst` returns empty and `newestFirst`
+  falls back, and the visible result is exactly "everything is random" with no
+  error anywhere. This line is the difference between knowing and guessing, and
+  the previous rounds in this project were lost to precisely that difference.
+  No behaviour changes.
+
+## 1.54.1 - versionCode 125
+
+- Fixed 1.54.0 mixing movies, series and live channels into each other. The
+  cross-section union was applied to the Movies and Series screens as well as
+  the home, so the Movies screen filled with series and channels.
+  The mistake was reading `isCatalogHome` as "this is the home screen". It is
+  not: it means "a catalog view with no search and no selected group", which is
+  equally true on Movies and on Series. The destination is
+  `mobilePrimaryDestination`, and only `"home"` should see everything. The other
+  two now show what their name says, and the background backfill is likewise
+  restricted to the home.
+
 ## 1.54.0 - versionCode 124
 
 - The home screen now draws from **every loaded section**, not only the active

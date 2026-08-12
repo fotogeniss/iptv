@@ -9,6 +9,13 @@
     <string name="home_section_new_episodes">New episodes</string>
     <string name="home_section_top_movies">Top rated movies</string>
     <string name="home_section_top_series">Top rated series</string>
+    <string name="home_edit_destination_home">Home</string>
+    <string name="home_edit_destination_hint">Each screen keeps its own order and its own hidden rows.</string>
+    <string name="home_apply">Apply</string>
+    <plurals name="home_selected_categories">
+        <item quantity="one">%d category</item>
+        <item quantity="other">%d categories</item>
+    </plurals>
     <string name="home_section_live">Live</string>
     <string name="home_section_movies">Movies</string>
     <string name="home_section_series">Series</string>

@@ -80,6 +80,30 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
          * ΕΝΑΣ κοινός executor για το παράλληλο paging. Πριν φτιαχνόταν νέο
          * pool ΑΝΑ ΚΑΤΗΓΟΡΙΑ (50 κατηγορίες = 50 pools = άσκοπο thread churn).
          * Daemon threads: δεν κρατάνε τη διεργασία ζωντανή στο κλείσιμο.
+         *
+         * ΕΞΙ. ΔΟΚΙΜΑΣΤΗΚΑΝ ΔΩΔΕΚΑ ΚΑΙ ΕΠΕΣΤΡΕΨΑΝ ΧΑΛΑΣΜΕΝΑ ΔΕΔΟΜΕΝΑ.
+         *
+         * Η αύξηση σε 12 δούλεψε σε ταχύτητα ακριβώς όπως προβλέφθηκε — 27,1s σε
+         * 14,3s για τις ίδιες 14 κατηγορίες. Και ήταν λάθος.
+         *
+         * Με 12 νήματα, το portal δεν απαντούσε με σφάλμα· απαντούσε με
+         * **σκελετούς**. Η ίδια ταινία (`id 1813440`) γύρισε δύο φορές, με τα
+         * ίδια αιτήματα, εντελώς διαφορετικό περιεχόμενο:
+         *
+         * ```
+         * 6 νήματα : rating_imdb=6.7  tmdb_id=1284465  description=«Na een leven…»  time=123
+         * 12 νήματα: rating_imdb=N/A  tmdb_id=«»       description=N/A             time=1
+         * ```
+         *
+         * Μαζί με 30 σελίδες που απέτυχαν σιωπηλά στις ταινίες και 2-3 στα
+         * ζωντανά. Δηλαδή η «επιτάχυνση» αγόραζε χρόνο πληρώνοντας με βαθμολογίες,
+         * περιγραφές, αφίσες και TMDB id — ακριβώς τα πεδία που μόλις είχαμε
+         * δουλέψει για να εμφανίζονται σωστά.
+         *
+         * ΜΗΝ ΤΟ ΞΑΝΑΝΕΒΑΣΕΙΣ ΧΩΡΙΣ ΝΑ ΚΟΙΤΑΞΕΙΣ ΤΟ ΠΕΡΙΕΧΟΜΕΝΟ, όχι μόνο τον
+         * χρόνο. Ο μετρητής `ΑΠΟΤΥΧΙΕΣ` στη γραμμή `ΣΥΝΟΨΗ` πιάνει τις χαμένες
+         * σελίδες, αλλά ΔΕΝ πιάνει τις γραμμές που ήρθαν άδειες: αυτές μοιάζουν
+         * απόλυτα φυσιολογικές μέχρι να δεις «N/A» στην οθόνη.
          */
         private val pagePool: java.util.concurrent.ExecutorService =
             java.util.concurrent.Executors.newFixedThreadPool(6) { r ->
@@ -94,10 +118,13 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
          * μοιράζονταν pool, όλα τα νήματα θα κρατιόνταν από κατηγορίες που
          * περιμένουν σελίδες που δεν έχουν νήμα να τρέξουν: κλασικό deadlock.
          *
-         * Τρία και όχι περισσότερα: μαζί με τις 6 σελίδες δίνει έως 9 ταυτόχρονα
-         * αιτήματα. Τα portals είναι συχνά μικρά μηχανήματα και πάνω από αυτό
-         * αρχίζουν να απαντούν με 429/500 — που θα φαινόταν στον χρήστη ως
-         * «χάθηκαν κατηγορίες», όχι ως υπερφόρτωση.
+         * ΜΕΝΕΙ ΣΤΑ ΤΡΙΑ, ΣΚΟΠΙΜΑ. Η μέτρηση έδειξε ότι αυτά τα νήματα δεν είναι
+         * ο μοχλός: περνούν σχεδόν όλο τον χρόνο τους μπλοκαρισμένα στο
+         * `future.get()` περιμένοντας σελίδες, και στέλνουν ένα μόνο αίτημα το
+         * καθένα (την πρώτη σελίδα της κατηγορίας τους). Ανεβάζοντάς τα θα
+         * αύξανε τις ταυτόχρονες συνδέσεις χωρίς να αυξήσει τη ροή δεδομένων,
+         * και θα έσπρωχνε το άθροισμα πάνω από το όριο των 16 του OkHttp.
+         * Ο μοχλός είναι το [pagePool].
          */
         private val categoryPool: java.util.concurrent.ExecutorService =
             java.util.concurrent.Executors.newFixedThreadPool(3) { r ->
@@ -270,6 +297,9 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
 
         // Οι κατηγορίες κατεβαίνουν ΠΑΡΑΛΛΗΛΑ και παραδίδονται με τη σειρά. Μόλις
         // ολοκληρωθεί μία, δημοσιεύεται ενώ οι επόμενες συνεχίζουν να κατεβαίνουν.
+        val liveStartedAtMs = System.currentTimeMillis()
+        pageRequests.set(0)
+        pageFailures.set(0)
         forEachCategoryParallel(
             ids = ids.filter { it.isNotBlank() && it != "*" },
             urlFor = { gid, page ->
@@ -307,6 +337,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             }
         }
 
+        logLoadSummary("live", ids.size, result.size, liveStartedAtMs)
         onProgress?.invoke(100, "Τα κανάλια Live είναι έτοιμα")
         return result
     }
@@ -483,8 +514,61 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
      * υπόλοιπες ΠΑΡΑΛΛΗΛΑ σε 6 νήματα (≈6x πιο γρήγορα, χωρίς να «βομβαρδίζουμε»
      * τον server). Η σειρά των σελίδων διατηρείται (futures με τη σειρά τους).
      */
+    /**
+     * Πόσα αιτήματα σελίδας έγιναν από την τελευταία μηδένιση.
+     *
+     * ΓΙΑΤΙ ΜΕΤΡΑΜΕ: ο πάροχος σερβίρει 14 στοιχεία ανά σελίδα, οπότε κατάλογος
+     * δέκα χιλιάδων ταινιών σημαίνει εφτακόσια round trips. Το «αργεί» δεν
+     * βελτιώνεται, μετριέται — και χωρίς αυτόν τον αριθμό κάθε ρύθμιση
+     * παραλληλισμού θα ήταν εικασία, με ρίσκο να αρχίσει το portal να απαντά 429.
+     */
+    private val pageRequests = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /**
+     * Σελίδες που ΑΠΕΤΥΧΑΝ και καταπιώθηκαν.
+     *
+     * Το `catch` γύρω από κάθε σελίδα επιστρέφει κενή λίστα, ώστε μια στιγμιαία
+     * αποτυχία να μη ρίξει ολόκληρη τη φόρτωση. Το τίμημα είναι ότι η απώλεια
+     * είναι ΑΟΡΑΤΗ: ο χρήστης βλέπει λιγότερες ταινίες και κανένα σφάλμα. Μετά
+     * την αύξηση του παραλληλισμού μια πραγματική φόρτωση έδωσε 1.981 σειρές
+     * εκεί που πριν έδινε 2.304 — χωρίς αυτόν τον μετρητή δεν υπάρχει τρόπος να
+     * ξεχωρίσεις «το portal μας κόβει» από «άλλαξε ο κατάλογος».
+     */
+    private val pageFailures = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /**
+     * Μία γραμμή στο τέλος κάθε ενότητας: πόσα αιτήματα, πόσος χρόνος, τι ρυθμός.
+     *
+     * Ο ρυθμός («στοιχεία/δευτ.») είναι το νούμερο που κρίνει κάθε επόμενη
+     * βελτίωση: αν ανεβάσουμε τον παραλληλισμό και δεν ανέβει αυτός, το φράγμα
+     * είναι το portal και όχι εμείς — και τότε σταματάμε αντί να το πιέζουμε
+     * μέχρι να αρχίσει να απαντά 429.
+     */
+    private fun logLoadSummary(type: String, categories: Int, items: Int, startedAtMs: Long) {
+        val elapsedMs = (System.currentTimeMillis() - startedAtMs).coerceAtLeast(1)
+        val requests = pageRequests.get()
+        val failures = pageFailures.get()
+        Log.d(
+            "CatalogLoad",
+            "ΣΥΝΟΨΗ $type — $items στοιχεία σε ${elapsedMs / 1000.0}s · " +
+                "$requests αιτήματα σελίδας · $failures ΑΠΟΤΥΧΙΕΣ · $categories κατηγορίες · " +
+                "${"%.0f".format(items * 1000.0 / elapsedMs)} στοιχεία/δευτ. · " +
+                "${"%.0f".format(requests * 1000.0 / elapsedMs)} αιτήματα/δευτ.",
+        )
+        if (failures > 0) {
+            Log.w(
+                "CatalogLoad",
+                "ΧΑΘΗΚΑΝ ΔΕΔΟΜΕΝΑ: $failures σελίδες του «$type» απέτυχαν και " +
+                    "αγνοήθηκαν σιωπηλά — έως ${failures * 14} στοιχεία λείπουν. " +
+                    "Αν συμβαίνει σταθερά, ο παραλληλισμός (pagePool) είναι πολύ ψηλά " +
+                    "για αυτό το portal.",
+            )
+        }
+    }
+
     private fun fetchAllPages(urlFor: (Int) -> String): List<JSONObject> {
         val out = ArrayList<JSONObject>()
+        pageRequests.incrementAndGet()
         val first = try {
             JSONObject(providerText(urlFor(1), activeHeaders()))
         } catch (e: Exception) {
@@ -504,6 +588,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             var p = 2
             while (p <= 500) {
                 ensureRequestActive()
+                pageRequests.incrementAndGet()
                 val arr = try {
                     JSONObject(providerText(urlFor(p), activeHeaders()))
                         .optJSONObject("js")?.optJSONArray("data")
@@ -518,20 +603,36 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             return out
         }
 
-        val pages = ((total + per - 1) / per).coerceAtMost(500)
+        val wanted = (total + per - 1) / per
+        val pages = wanted.coerceAtMost(500)
+        if (wanted > pages) {
+            // ΣΙΩΠΗΛΗ ΑΠΩΛΕΙΑ ΠΕΡΙΕΧΟΜΕΝΟΥ. Το όριο των 500 σελίδων υπάρχει ως
+            // δικλείδα, αλλά όταν χτυπηθεί ο χρήστης χάνει στοιχεία χωρίς κανένα
+            // σφάλμα. Με 14 στοιχεία/σελίδα, 500 σελίδες είναι 7.000 στοιχεία —
+            // ένας μεγάλος κατάλογος το περνάει άνετα.
+            Log.w(
+                "CatalogLoad",
+                "ΟΡΙΟ ΣΕΛΙΔΩΝ: ζητήθηκαν $wanted σελίδες ($total στοιχεία, $per ανά σελίδα) " +
+                    "αλλά κατεβαίνουν μόνο $pages. Χάνονται στοιχεία.",
+            )
+        }
         if (pages <= 1) return out
         val futures = (2..pages).map { p ->
             pagePool.submit<List<JSONObject>> {
                 try {
                     ensureRequestActive()
+                    pageRequests.incrementAndGet()
                     val arr = JSONObject(providerText(urlFor(p), activeHeaders()))
                         .optJSONObject("js")?.optJSONArray("data")
-                    if (arr == null) emptyList()
-                    else (0 until arr.length()).map { arr.getJSONObject(it) }
+                    if (arr == null) {
+                        pageFailures.incrementAndGet()
+                        emptyList()
+                    } else (0 until arr.length()).map { arr.getJSONObject(it) }
                 } catch (e: Exception) {
-            rethrowIfCancelled(e)
-            emptyList()
-        }
+                    rethrowIfCancelled(e)
+                    pageFailures.incrementAndGet()
+                    emptyList()
+                }
             }
         }
         futures.forEach { future ->
@@ -602,6 +703,16 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         val fallbackGroup = if (type == "vod") "Ταινίες" else "Σειρές"
         val result = ArrayList<Channel>()
         val seen = HashSet<String>()
+        // ΜΙΑ γραμμή δείγματος ανά ενότητα, όχι ανά στοιχείο.
+        //
+        // Η μόνη πραγματική απάντηση αυτού του portal που έχει δει κανείς είναι
+        // η λίστα ΣΕΖΟΝ, και από εκεί διαβάστηκαν τα ονόματα πεδίων `rating_imdb`
+        // και `added`. Αν οι σελίδες ΚΑΤΑΛΟΓΟΥ δεν τα στέλνουν — ή τα στέλνουν με
+        // άλλο όνομα — οι ράγες «Κορυφαίες» και «Νέα» γυρνούν σιωπηλά στην παλιά
+        // συμπεριφορά και το σύμπτωμα είναι ακριβώς «όλα τυχαία», χωρίς κανένα
+        // σφάλμα πουθενά. Αυτή η γραμμή είναι η διαφορά ανάμεσα στο να το ξέρουμε
+        // και στο να το μαντεύουμε.
+        var loggedSample = false
 
         fun append(rows: List<JSONObject>, fallbackCategoryId: String) {
             rows.forEach { ch ->
@@ -609,6 +720,16 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                     ch.optString("movie_id").ifBlank { ch.optString("series_id").ifBlank { ch.optString("name") } }
                 }
                 if (!seen.add(stableKey)) return@forEach
+                if (!loggedSample) {
+                    loggedSample = true
+                    Log.d(
+                        "CatalogLoad",
+                        "δείγμα γραμμής καταλόγου ($type) — rating_imdb=«${ch.optString("rating_imdb")}» " +
+                            "rating_kinopoisk=«${ch.optString("rating_kinopoisk")}» " +
+                            "added=«${ch.optString("added")}» year=«${ch.optString("year")}» " +
+                            "tmdb_id=«${ch.optString("tmdb_id")}»\nΩΜΗ ΓΡΑΜΜΗ: $ch",
+                    )
+                }
                 val categoryId = ch.optString("category_id").ifBlank { fallbackCategoryId }
                 val rawCmd = ch.optString("cmd")
                 // Ίδια σειρά προτεραιότητας με το stableKey/streamId παραπάνω: σε
@@ -658,6 +779,9 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         }
 
         val label = if (type == "vod") "ταινιών" else "σειρών"
+        val startedAtMs = System.currentTimeMillis()
+        pageRequests.set(0)
+        pageFailures.set(0)
         forEachCategoryParallel(
             ids = ids.filter { it.isNotBlank() },
             urlFor = { cid, page ->
@@ -669,6 +793,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             onProgress?.invoke(overall.coerceIn(12, 99), "Λήψη $label · κατηγορία $done/$total")
             if (result.isNotEmpty()) onPartial?.invoke(result)
         }
+        logLoadSummary(type, ids.size, result.size, startedAtMs)
         onProgress?.invoke(100, if (type == "vod") "Οι ταινίες είναι έτοιμες" else "Οι σειρές είναι έτοιμες")
         return result
     }

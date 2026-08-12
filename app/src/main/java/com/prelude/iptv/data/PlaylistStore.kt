@@ -482,17 +482,37 @@ class PlaylistStore(context: Context) {
     // Αποθηκεύεται ως κείμενο χωρισμένο με «|», όχι JSON: είναι μια λίστα από
     // σταθερά αναγνωριστικά χωρίς κενά, και το JSON εδώ θα ήταν τελετουργικό.
 
-    /** Σειρά των ενοτήτων. Κενή = ο χρήστης δεν έχει πειράξει τίποτα. */
-    var homeSectionOrder: List<String>
-        get() = prefs.getString(pk("home_order"), "").orEmpty()
-            .split('|').filter { it.isNotBlank() }
-        set(v) = prefs.edit().putString(pk("home_order"), v.joinToString("|")).apply()
+    /**
+     * ΞΕΧΩΡΙΣΤΗ ΔΙΑΤΑΞΗ ΑΝΑ ΠΡΟΟΡΙΣΜΟ.
+     *
+     * Ένας επεξεργαστής κυβερνούσε τέσσερις οθόνες — Αρχική, Ζωντανά, Ταινίες,
+     * Σειρές — και γι' αυτό η λίστα του δεν συμφωνούσε ποτέ με αυτό που έβλεπε ο
+     * χρήστης: «Νέα επεισόδια» δεν μπορεί να υπάρξει στα Ζωντανά, «Νέα ζωντανά»
+     * δεν μπορεί να υπάρξει στις Ταινίες.
+     *
+     * ΜΕΤΑΒΑΣΗ ΧΩΡΙΣ ΑΠΩΛΕΙΑ: ο προορισμός «home» κρατά τα ΑΡΧΙΚΑ κλειδιά
+     * (`home_order`, `home_hidden`), οπότε η διάταξη που έχει ήδη φτιάξει ο
+     * χρήστης γίνεται η διάταξη της Αρχικής χωρίς κώδικα μετανάστευσης. Οι άλλοι
+     * τρεις ξεκινούν από τις προεπιλογές τους.
+     */
+    private fun sectionKey(base: String, destination: String): String =
+        if (destination == "home") pk(base) else pk("${base}_$destination")
 
-    /** Ενότητες που ο χρήστης έσβησε με το μάτι. */
-    var homeHiddenSections: Set<String>
-        get() = prefs.getString(pk("home_hidden"), "").orEmpty()
+    fun homeSectionOrder(destination: String): List<String> =
+        prefs.getString(sectionKey("home_order", destination), "").orEmpty()
+            .split('|').filter { it.isNotBlank() }
+
+    fun setHomeSectionOrder(destination: String, value: List<String>) {
+        prefs.edit().putString(sectionKey("home_order", destination), value.joinToString("|")).apply()
+    }
+
+    fun homeHiddenSections(destination: String): Set<String> =
+        prefs.getString(sectionKey("home_hidden", destination), "").orEmpty()
             .split('|').filter { it.isNotBlank() }.toSet()
-        set(v) = prefs.edit().putString(pk("home_hidden"), v.joinToString("|")).apply()
+
+    fun setHomeHiddenSections(destination: String, value: Set<String>) {
+        prefs.edit().putString(sectionKey("home_hidden", destination), value.joinToString("|")).apply()
+    }
 
     /**
      * Η κατηγορία που δείχνει ένα rail (π.χ. Ζωντανά → «DIGEA»).
@@ -506,6 +526,33 @@ class PlaylistStore(context: Context) {
 
     fun setHomeRailCategory(sectionId: String, group: String) {
         prefs.edit().putString(pk("home_cat_$sectionId"), group).apply()
+    }
+
+    /**
+     * ΠΟΛΛΕΣ κατηγορίες ανά ενότητα: κάθε μία γίνεται δική της ράγα.
+     *
+     * Πριν, μια ενότητα έδειχνε ΜΙΑ κατηγορία, οπότε ο χρήστης δεν έφτιαχνε την
+     * οθόνη του — διάλεγε ποια από τις εβδομήντα θα δει. Η σειρά της λίστας είναι
+     * η σειρά των ραγών, γι' αυτό είναι `List` και όχι `Set`.
+     *
+     * ΣΥΜΒΑΤΟΤΗΤΑ: κενή λίστα σημαίνει «δεν έχει επιλέξει πολλαπλά», και τότε
+     * ισχύει η παλιά μονή τιμή. Έτσι κανείς δεν χάνει τη ρύθμισή του και η
+     * προεπιλογή «η μεγαλύτερη κατηγορία» εξακολουθεί να δουλεύει.
+     *
+     * Ο διαχωριστής είναι `\n`: τα ονόματα κατηγοριών του παρόχου περιέχουν
+     * κάθετες («GR | KIDS | ΠΑΙΔΙΚΑ»), οπότε το `|` που χρησιμοποιείται αλλού θα
+     * τα έκοβε στη μέση.
+     */
+    fun homeRailCategories(destination: String, sectionId: String): List<String> {
+        val raw = prefs.getString(pk("home_cats_${destination}_$sectionId"), null)
+        if (raw == null) return listOfNotNull(homeRailCategory(sectionId).takeIf { it.isNotBlank() })
+        return raw.split('\n').filter { it.isNotBlank() }
+    }
+
+    fun setHomeRailCategories(destination: String, sectionId: String, groups: List<String>) {
+        prefs.edit()
+            .putString(pk("home_cats_${destination}_$sectionId"), groups.joinToString("\n"))
+            .apply()
     }
 
     // ---- ρυθμίσεις υποτίτλων (OpenSubtitles) ----

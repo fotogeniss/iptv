@@ -129,8 +129,24 @@ fun MobilePremiumSettingsScreen(
     var subtitleSize by remember { mutableStateOf(store.subtitleSizePercent) }
     var subtitleLanguage by remember { mutableStateOf(store.preferredSubtitleLanguage) }
     var audioLanguage by remember { mutableStateOf(store.preferredAudioLanguage) }
+    // Από τις Ρυθμίσεις ο επεξεργαστής ανοίγει στην Αρχική και αλλάζει προορισμό
+    // με τα chips — εδώ δεν υπάρχει «οθόνη που κοιτάς» για να τον προεπιλέξει.
+    var homeDestination by remember { mutableStateOf(HomeLayoutPolicy.DEST_HOME) }
     var homeEntries by remember {
-        mutableStateOf(HomeLayoutPolicy.resolve(store.homeSectionOrder, store.homeHiddenSections))
+        mutableStateOf(
+            HomeLayoutPolicy.resolve(
+                savedOrder = store.homeSectionOrder(HomeLayoutPolicy.DEST_HOME),
+                hidden = store.homeHiddenSections(HomeLayoutPolicy.DEST_HOME),
+                destination = HomeLayoutPolicy.DEST_HOME,
+            )
+        )
+    }
+    fun reloadHomeEntries() {
+        homeEntries = HomeLayoutPolicy.resolve(
+            savedOrder = store.homeSectionOrder(homeDestination),
+            hidden = store.homeHiddenSections(homeDestination),
+            destination = homeDestination,
+        )
     }
     val languagePickerVisible = LocalizationRolloutPolicy.pickerVisible(
         ownerQaBuild = BuildConfig.PREMIUM_QA_OVERRIDE,
@@ -159,16 +175,27 @@ fun MobilePremiumSettingsScreen(
                 }
                 categoryEditorState.section(type).entries.filter { it.visible }.map { it.option.title }
             },
+            destination = homeDestination,
+            onDestinationChange = { homeDestination = it; reloadHomeEntries() },
             onToggleVisible = { id ->
-                store.homeHiddenSections = HomeLayoutPolicy.toggle(store.homeHiddenSections, id)
-                homeEntries = HomeLayoutPolicy.resolve(store.homeSectionOrder, store.homeHiddenSections)
+                store.setHomeHiddenSections(
+                    homeDestination,
+                    HomeLayoutPolicy.toggle(store.homeHiddenSections(homeDestination), id),
+                )
+                reloadHomeEntries()
             },
             onMove = { from, to ->
-                val moved = HomeLayoutPolicy.move(HomeLayoutPolicy.idsOf(homeEntries), from, to)
-                store.homeSectionOrder = moved
-                homeEntries = HomeLayoutPolicy.resolve(moved, store.homeHiddenSections)
+                store.setHomeSectionOrder(
+                    homeDestination,
+                    HomeLayoutPolicy.move(HomeLayoutPolicy.idsOf(homeEntries), from, to),
+                )
+                reloadHomeEntries()
             },
-            onPickCategory = store::setHomeRailCategory,
+            selectedCategoriesOf = { id -> store.homeRailCategories(homeDestination, id) },
+            onPickCategories = { id, groups ->
+                store.setHomeRailCategories(homeDestination, id, groups)
+                reloadHomeEntries()
+            },
             onClear = onClearHomeHistory,
             onBack = { editingHome = false },
             modifier = modifier

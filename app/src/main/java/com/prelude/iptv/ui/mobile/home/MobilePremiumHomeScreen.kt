@@ -85,8 +85,15 @@ fun MobilePremiumHomeScreen(
     // ΤΩΡΑ: το SharedPreferences δεν ειδοποιεί το Compose. Ο μετρητής είναι το
     // σήμα «ξαναδιάβασε».
     var layoutVersion by remember { mutableIntStateOf(0) }
+    // Κάθε προορισμός έχει τη ΔΙΚΗ ΤΟΥ διάταξη. Πριν, μία ρύθμιση κυβερνούσε και
+    // τις τέσσερις οθόνες, γι' αυτό ο επεξεργαστής απαριθμούσε ενότητες που δεν
+    // μπορούσαν να εμφανιστούν εκεί που κοιτούσε ο χρήστης.
     val entries = remember(layoutVersion, selectedDestination) {
-        HomeLayoutPolicy.resolve(store.homeSectionOrder, store.homeHiddenSections)
+        HomeLayoutPolicy.resolve(
+            savedOrder = store.homeSectionOrder(selectedDestination),
+            hidden = store.homeHiddenSections(selectedDestination),
+            destination = selectedDestination,
+        )
     }
 
     DisposableEffect(store) {
@@ -176,10 +183,23 @@ fun MobilePremiumHomeScreen(
             }
         } ?: sections
     }
-    val displayedMovies =
-        if (selectedDestination == "movies") displayedChannels else movies
-    val displayedSeries =
-        if (selectedDestination == "series") displayedChannels else series
+    // ΠΑΝΤΑ ΦΙΛΤΡΟ ΕΙΔΟΥΣ, ΑΚΟΜΗ ΚΑΙ ΜΕΣΑ ΣΤΗΝ ΙΔΙΑ ΤΗΝ ΕΝΟΤΗΤΑ.
+    //
+    // Πριν, στον προορισμό «Ταινίες» έπαιρνε το `displayedChannels` αυτούσιο,
+    // εμπιστευόμενο ότι εκεί υπάρχουν μόνο ταινίες. Δεν ισχύει ΟΣΟ ΦΟΡΤΩΝΕΙ: το
+    // `state.channels` κρατά την ενότητα που κατέβηκε πρώτη, οπότε αν προλάβαινε
+    // η Live, οι Ταινίες και οι Σειρές γέμιζαν κανάλια. Το φίλτρο κοστίζει ένα
+    // πέρασμα και κάνει την υπόθεση περιττή.
+    val displayedMovies = remember(displayedChannels, selectedDestination, movies) {
+        if (selectedDestination == "movies") {
+            HomeRailContentPolicy.moviesOf(displayedChannels)
+        } else movies
+    }
+    val displayedSeries = remember(displayedChannels, selectedDestination, series) {
+        if (selectedDestination == "series") {
+            HomeRailContentPolicy.seriesOf(displayedChannels)
+        } else series
+    }
     // Οι προτάσεις δεν περνούν από το selectedCatalogGroup. Είναι ανεξάρτητο,
     // τυχαίο μείγμα του συνολικού catalog του τρέχοντος προορισμού.
     val suggestionItems = remember(channels, allChannels, selectedDestination) {
@@ -220,22 +240,42 @@ fun MobilePremiumHomeScreen(
         PremiumRequiredDialog(feature = feature, onDismiss = { lockedFeature = null })
     }
 
+    // Ο επεξεργαστής ανοίγει στην οθόνη που κοιτάς, αλλά μπορείς να αλλάξεις
+    // προορισμό μέσα από αυτόν. Ξαναρχίζει από τον τρέχοντα κάθε φορά που
+    // ανοίγει, ώστε να μη «θυμάται» ότι την προηγούμενη φορά ρύθμιζες αλλού.
+    var editingDestination by remember(editing) { mutableStateOf(selectedDestination) }
+    val editorEntries = remember(layoutVersion, editingDestination) {
+        HomeLayoutPolicy.resolve(
+            savedOrder = store.homeSectionOrder(editingDestination),
+            hidden = store.homeHiddenSections(editingDestination),
+            destination = editingDestination,
+        )
+    }
+
     if (editing) {
         MobileEditHomeScreen(
-            entries = entries,
+            entries = editorEntries,
+            destination = editingDestination,
+            onDestinationChange = { editingDestination = it },
             categoryOf = categoryOf,
             categoriesFor = categoriesFor,
             onToggleVisible = { id ->
-                store.homeHiddenSections = HomeLayoutPolicy.toggle(store.homeHiddenSections, id)
+                store.setHomeHiddenSections(
+                    editingDestination,
+                    HomeLayoutPolicy.toggle(store.homeHiddenSections(editingDestination), id),
+                )
                 layoutVersion++
             },
             onMove = { from, to ->
-                store.homeSectionOrder =
-                    HomeLayoutPolicy.move(HomeLayoutPolicy.idsOf(entries), from, to)
+                store.setHomeSectionOrder(
+                    editingDestination,
+                    HomeLayoutPolicy.move(HomeLayoutPolicy.idsOf(editorEntries), from, to),
+                )
                 layoutVersion++
             },
-            onPickCategory = { id, group ->
-                store.setHomeRailCategory(id, group)
+            selectedCategoriesOf = { id -> store.homeRailCategories(editingDestination, id) },
+            onPickCategories = { id, groups ->
+                store.setHomeRailCategories(editingDestination, id, groups)
                 layoutVersion++
             },
             onClear = { id -> onClearHistory(id); layoutVersion++ },
@@ -278,6 +318,13 @@ fun MobilePremiumHomeScreen(
         selectedDestination = selectedDestination,
         selectedCatalogGroup = selectedCatalogGroup,
         categoryOf = categoryOf,
+        // Οι επιλεγμένες κατηγορίες είναι ανά προορισμό: η ίδια ενότητα
+        // «Ταινίες» μπορεί να δείχνει άλλες κατηγορίες στην Αρχική και άλλες
+        // μέσα στις Ταινίες. Το `layoutVersion` είναι μέσα στο key ώστε μια
+        // αλλαγή στον επεξεργαστή να φαίνεται αμέσως.
+        selectedCategoriesOf = remember(layoutVersion, selectedDestination) {
+            { sectionId -> store.homeRailCategories(selectedDestination, sectionId) }
+        },
         sectionTitle = { id ->
             val section = HomeLayoutPolicy.DEFAULT.first { it.id == id }
             context.getString(section.titleRes())
@@ -364,15 +411,19 @@ fun MobilePremiumHomeScreen(
                     }
 
                     else -> {
-                        val rail = railResolver.railFor(entry.section.id)
-                        if (rail != null) {
-                            item(key = "home-rail:${rail.id}") {
-                                MobileHomeRail(
-                                    rail = rail,
-                                    favoriteKeys = favoriteKeys,
-                                    onOpen = onDetails,
-                                    onViewAll = { expanded = it.toCatalogSection() }
-                                )
+                        // Μία ενότητα μπορεί να δώσει ΠΟΛΛΕΣ ράγες: οι ενότητες
+                        // κατηγοριών παράγουν μία ανά επιλεγμένη κατηγορία.
+                        val rails = railResolver.railsFor(entry.section.id)
+                        if (rails.isNotEmpty()) {
+                            rails.forEach { rail ->
+                                item(key = "home-rail:${rail.id}") {
+                                    MobileHomeRail(
+                                        rail = rail,
+                                        favoriteKeys = favoriteKeys,
+                                        onOpen = onDetails,
+                                        onViewAll = { expanded = it.toCatalogSection() }
+                                    )
+                                }
                             }
                         } else if (entry.section.id == HomeLayoutPolicy.SUGGESTIONS) {
                             // ΜΟΝΟ οι προτάσεις κρατούν θέση όταν είναι άδειες: το

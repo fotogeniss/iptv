@@ -204,7 +204,14 @@ require(all(marker not in main_vm for marker in [
         "CategoryEditorCoordinator owns loading, draft state and persistence normalization")
 
 catalog_presentation = text("app/src/main/java/com/prelude/iptv/ui/policy/CatalogPresentationPolicy.kt")
-require(main_vm.count("CatalogPresentationPolicy.") == 2 and
+# >= 2, ΟΧΙ == 2, ΣΚΟΠΙΜΑ.
+# Ο έλεγχος μετρούσε ΣΗΜΕΙΑ ΚΛΗΣΗΣ και έσπασε όταν προστέθηκε ένα τρίτο —
+# το visibleHomeChannels(), που περνάει την ένωση της Αρχικής από το ίδιο
+# φίλτρο κλειδωμένων ομάδων. Δηλαδή τιμωρούσε τη ΣΩΣΤΗ delegation.
+# Αυτό που πραγματικά προστατεύεται εδώ είναι ότι το MainViewModel δεν
+# ξαναγράφει το φιλτράρισμα/ομαδοποίηση μόνο του· αυτό το φυλάνε οι δύο
+# δείκτες παρακάτω, όχι ο αριθμός των κλήσεων.
+require(main_vm.count("CatalogPresentationPolicy.") >= 2 and
         "s.channels.filter" not in main_vm and "LinkedHashSet<String>()" not in main_vm,
         "MainViewModel delegates catalog group ordering and visibility")
 require(all(marker in catalog_presentation for marker in [

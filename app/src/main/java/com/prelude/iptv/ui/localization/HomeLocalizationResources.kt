@@ -27,6 +27,21 @@ fun HomeSection.titleRes(): Int = when (id) {
     else -> error("Unknown Home section id: $id")
 }
 
+/**
+ * Η ετικέτα ενός προορισμού στα chips του επεξεργαστή.
+ *
+ * Οι τρεις ενότητες μοιράζονται σκόπιμα τα strings των ομώνυμων ραγών: το chip
+ * «Ταινίες» και η ράγα «Ταινίες» είναι το ίδιο πράγμα για τον χρήστη, και δύο
+ * ξεχωριστά resources θα μπορούσαν να αποκλίνουν σε μια μετάφραση.
+ */
+@StringRes
+fun homeDestinationLabelRes(destination: String): Int = when (destination) {
+    HomeLayoutPolicy.DEST_LIVE -> R.string.home_section_live
+    HomeLayoutPolicy.DEST_MOVIES -> R.string.home_section_movies
+    HomeLayoutPolicy.DEST_SERIES -> R.string.home_section_series
+    else -> R.string.home_edit_destination_home
+}
+
 @StringRes
 fun PremiumTier.labelRes(): Int = when (this) {
     PremiumTier.FREE -> R.string.home_tier_free

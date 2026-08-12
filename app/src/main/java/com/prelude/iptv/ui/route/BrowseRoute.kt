@@ -806,10 +806,24 @@ internal fun BrowseScreen(
             // Φέρνει όσες ενότητες λείπουν από τη μνήμη, ΜΙΑ φορά ανά πηγή και
             // ΠΟΤΕ όσο παίζει κάτι: ένα μαζικό κατέβασμα στο ίδιο portal με το
             // `create_link` είναι ακριβώς αυτό που έκανε την έναρξη αργή.
-            LaunchedEffect(isCatalogHome, inlinePlayback == null) {
-                if (isCatalogHome && inlinePlayback == null) vm.backfillHomeSections()
+            LaunchedEffect(isCatalogHome, inlinePlayback == null, mobilePrimaryDestination) {
+                if (isCatalogHome && inlinePlayback == null && mobilePrimaryDestination == "home") {
+                    vm.backfillHomeSections()
+                }
             }
-            val homeItems = homeChannels.ifEmpty { channels }
+            // ΜΟΝΟ Η ΑΡΧΙΚΗ ΠΑΙΡΝΕΙ ΤΗΝ ΕΝΩΣΗ.
+            //
+            // Το `isCatalogHome` δεν σημαίνει «Αρχική»: είναι αληθές και στις
+            // Ταινίες και στις Σειρές, γιατί περιγράφει «κατάλογος χωρίς
+            // αναζήτηση και χωρίς επιλεγμένη ομάδα». Δίνοντας την ένωση σε όλες,
+            // οι Ταινίες γέμισαν σειρές και κανάλια. Ο προορισμός είναι το
+            // `mobilePrimaryDestination`, και μόνο το "home" θέλει τα πάντα —
+            // οι άλλες δύο οθόνες οφείλουν να δείχνουν ό,τι λέει το όνομά τους.
+            val homeItems = if (mobilePrimaryDestination == "home") {
+                homeChannels.ifEmpty { channels }
+            } else {
+                channels
+            }
             if (isCatalogHome && homeItems.isNotEmpty()) {
                 AdaptiveCatalogHome(
                     channels = homeItems,

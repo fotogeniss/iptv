@@ -15,8 +15,28 @@ class HomeLayoutPolicyTest {
     }
 
     @Test
-    fun `όλα ορατά όταν δεν έχει κρυφτεί τίποτα`() {
-        assertTrue(HomeLayoutPolicy.resolve().all { it.visible })
+    fun `τα ζωντανα ξεκινουν κρυφα στην Αρχικη`() {
+        // Η Αρχική είναι βιβλιοθήκη ταινιών και σειρών· ένα κανάλι ανάμεσα σε
+        // αφίσες είναι κενό πλακίδιο. Παραμένουν στη λίστα, απλώς σβηστά.
+        val out = HomeLayoutPolicy.resolve()
+        assertFalse(out.first { it.section.id == HomeLayoutPolicy.NEW_LIVE }.visible)
+        assertFalse(out.first { it.section.id == HomeLayoutPolicy.LIVE }.visible)
+        assertTrue(out.first { it.section.id == HomeLayoutPolicy.NEW_MOVIES }.visible)
+    }
+
+    @Test
+    fun `η επιλογη του χρηστη νικαει την προεπιλογη`() {
+        // Μόλις υπάρχει αποθηκευμένη διάταξη, η προεπιλεγμένη απόκρυψη παύει να
+        // ισχύει: μια προεπιλογή δεν ξαναγράφει απόφαση που έχει ήδη παρθεί.
+        val saved = HomeLayoutPolicy.DEFAULT.map { it.id }
+        val out = HomeLayoutPolicy.resolve(saved)
+        assertTrue(out.first { it.section.id == HomeLayoutPolicy.LIVE }.visible)
+    }
+
+    @Test
+    fun `στα Ζωντανα δεν κρυβονται τα ζωντανα`() {
+        val out = HomeLayoutPolicy.resolve(destination = HomeLayoutPolicy.DEST_LIVE)
+        assertTrue(out.first { it.section.id == HomeLayoutPolicy.LIVE }.visible)
     }
 
     @Test
@@ -53,18 +73,90 @@ class HomeLayoutPolicyTest {
         )
         val out = ids(HomeLayoutPolicy.resolve(saved))
         assertEquals(HomeLayoutPolicy.HEADER, out[0])
-        assertEquals(HomeLayoutPolicy.SERIES, out[1])
-        assertEquals(HomeLayoutPolicy.MOVIES, out[2])
         assertEquals(1, out.count { it == HomeLayoutPolicy.HEADER })
+        // Η ΣΧΕΤΙΚΗ σειρά του χρήστη τηρείται. Οι απόλυτες θέσεις όχι, και δεν
+        // πρέπει: οι ενότητες που λείπουν από μια μερική αποθήκευση μπαίνουν
+        // πλέον στη θέση τους αντί για το τέλος (δες το επόμενο τεστ).
+        assertTrue(out.indexOf(HomeLayoutPolicy.SERIES) < out.indexOf(HomeLayoutPolicy.MOVIES))
     }
 
     @Test
-    fun `ενότητα που λείπει από τα αποθηκευμένα μπαίνει στο τέλος`() {
+    fun `ενότητα που λείπει μπαίνει στη ΘΕΣΗ της, όχι στο τέλος`() {
         // Παλιά αποθήκευση, πριν προστεθεί η «Νέα επεισόδια».
         val saved = HomeLayoutPolicy.DEFAULT.map { it.id } - HomeLayoutPolicy.NEW_EPISODES
         val out = ids(HomeLayoutPolicy.resolve(saved))
+
         assertEquals(HomeLayoutPolicy.DEFAULT.size, out.size)
-        assertEquals(HomeLayoutPolicy.NEW_EPISODES, out.last())
+        // ΤΟ ΠΡΟΗΓΟΥΜΕΝΟ ΣΥΜΒΟΛΑΙΟ ΗΤΑΝ «στο τέλος» ΚΑΙ ΗΤΑΝ ΛΑΘΟΣ. Με πειραγμένη
+        // διάταξη, «το τέλος» είναι κάτω από δεκάδες ράγες κατηγοριών, όπου
+        // κανείς δεν σκρολάρει· ο κάτοχος ανέφερε τις νέες ράγες ως ανύπαρκτες
+        // ενώ απλώς ήταν αθέατες.
+        assertEquals(HomeLayoutPolicy.DEFAULT.map { it.id }, out)
+    }
+
+    @Test
+    fun `νέα ενότητα βρίσκει τη θέση της χωρίς να χαλάσει τη σειρά του χρήστη`() {
+        // Ο χρήστης έχει ανεβάσει τις Σειρές πάνω από τις Ταινίες και δεν έχει
+        // ποτέ αποθηκεύσει τις «Κορυφαίες».
+        val saved = (HomeLayoutPolicy.DEFAULT.map { it.id } -
+            setOf(HomeLayoutPolicy.TOP_MOVIES, HomeLayoutPolicy.TOP_SERIES))
+            .toMutableList()
+            .also {
+                it.remove(HomeLayoutPolicy.SERIES)
+                it.add(it.indexOf(HomeLayoutPolicy.MOVIES), HomeLayoutPolicy.SERIES)
+            }
+
+        val out = ids(HomeLayoutPolicy.resolve(saved))
+
+        // Οι νέες μπαίνουν αμέσως μετά τα «Νέα επεισόδια», όπως στην προεπιλογή.
+        assertEquals(
+            out.indexOf(HomeLayoutPolicy.NEW_EPISODES) + 1,
+            out.indexOf(HomeLayoutPolicy.TOP_MOVIES),
+        )
+        assertEquals(
+            out.indexOf(HomeLayoutPolicy.TOP_MOVIES) + 1,
+            out.indexOf(HomeLayoutPolicy.TOP_SERIES),
+        )
+        // Και η επιλογή του χρήστη μένει ανέπαφη.
+        assertTrue(out.indexOf(HomeLayoutPolicy.SERIES) < out.indexOf(HomeLayoutPolicy.MOVIES))
+    }
+
+    @Test
+    fun `καθε προορισμος δειχνει μονο οσα μπορουν να υπαρξουν εκει`() {
+        // Ήταν το αρχικό παράπονο: ο επεξεργαστής απαρίθμησε δέκα ενότητες και η
+        // οθόνη έδειξε τρεις. Έξι από αυτές ήταν αδύνατες εκεί που κοιτούσε ο
+        // χρήστης, γιατί το περιεχόμενό τους δεν υπάρχει σε εκείνη την οθόνη.
+        val live = ids(HomeLayoutPolicy.resolve(destination = HomeLayoutPolicy.DEST_LIVE))
+        assertFalse(live.contains(HomeLayoutPolicy.NEW_EPISODES))
+        assertFalse(live.contains(HomeLayoutPolicy.TOP_MOVIES))
+        assertTrue(live.contains(HomeLayoutPolicy.NEW_LIVE))
+        assertTrue(live.contains(HomeLayoutPolicy.LIVE))
+
+        val movies = ids(HomeLayoutPolicy.resolve(destination = HomeLayoutPolicy.DEST_MOVIES))
+        assertTrue(movies.contains(HomeLayoutPolicy.TOP_MOVIES))
+        assertFalse(movies.contains(HomeLayoutPolicy.TOP_SERIES))
+        assertFalse(movies.contains(HomeLayoutPolicy.NEW_LIVE))
+
+        val series = ids(HomeLayoutPolicy.resolve(destination = HomeLayoutPolicy.DEST_SERIES))
+        assertTrue(series.contains(HomeLayoutPolicy.TOP_SERIES))
+        assertFalse(series.contains(HomeLayoutPolicy.TOP_MOVIES))
+
+        // Η Αρχική τα έχει όλα: εκεί συνενώνονται και οι τρεις ενότητες.
+        assertEquals(
+            HomeLayoutPolicy.DEFAULT.size,
+            ids(HomeLayoutPolicy.resolve(destination = HomeLayoutPolicy.DEST_HOME)).size,
+        )
+    }
+
+    @Test
+    fun `αποθηκευμενη ενοτητα ξενη προς τον προορισμο δεν διαρρεει`() {
+        // Ένα παλιό αρχείο διάταξης περιέχει ΟΛΑ τα id, αφού μέχρι τώρα υπήρχε
+        // μία κοινή ρύθμιση. Διαβασμένο ως «Ζωντανά» δεν επιτρέπεται να φέρει
+        // μαζί του ενότητες ταινιών και σειρών.
+        val legacy = HomeLayoutPolicy.DEFAULT.map { it.id }
+        val live = ids(HomeLayoutPolicy.resolve(legacy, destination = HomeLayoutPolicy.DEST_LIVE))
+
+        assertEquals(HomeLayoutPolicy.allowedIn(HomeLayoutPolicy.DEST_LIVE).map { it.id }, live)
     }
 
     @Test

@@ -19,10 +19,12 @@ internal data class MobileHomeRailResolver(
     val selectedDestination: String,
     val selectedCatalogGroup: String?,
     val categoryOf: (String) -> String,
+    /** Οι ΕΠΙΛΕΓΜΕΝΕΣ κατηγορίες μιας ενότητας, με τη σειρά που τις θέλει ο χρήστης. */
+    val selectedCategoriesOf: (String) -> List<String> = { emptyList() },
     val sectionTitle: (String) -> String,
     val categoryTitle: (String, String) -> String,
 ) {
-    fun railFor(id: String): HomeRail? = when (id) {
+    private fun railFor(id: String): HomeRail? = when (id) {
         HomeLayoutPolicy.SUGGESTIONS -> suggestions.takeIf { canSuggest }
             ?.let { HomeRailContentPolicy.rail(id, sectionTitle(id), it) }
 
@@ -59,32 +61,63 @@ internal data class MobileHomeRailResolver(
             id, sectionTitle(id), HomeRailContentPolicy.topRated(displayedSeries)
         )
 
-        HomeLayoutPolicy.LIVE -> categoryRail(id, sectionTitle(id), live, categoryOf(id), categoryTitle, live = true)
-        HomeLayoutPolicy.MOVIES -> if (selectedDestination == "movies") {
-            HomeRailContentPolicy.rail(id, selectedCatalogGroup ?: sectionTitle(id), displayedMovies)
-        } else {
-            categoryRail(id, sectionTitle(id), movies, categoryOf(id), categoryTitle)
-        }
-        HomeLayoutPolicy.SERIES -> if (selectedDestination == "series") {
-            HomeRailContentPolicy.rail(id, selectedCatalogGroup ?: sectionTitle(id), displayedSeries)
-        } else {
-            categoryRail(id, sectionTitle(id), series, categoryOf(id), categoryTitle)
-        }
         else -> null
     }
-}
 
-private fun categoryRail(
-    id: String,
-    label: String,
-    pool: List<Channel>,
-    category: String,
-    categoryTitle: (String, String) -> String,
-    live: Boolean = false,
-): HomeRail? {
-    if (category.isBlank()) return null
-    val items = pool.filter { it.group.trim() == category }
-    return HomeRailContentPolicy.rail(id, categoryTitle(label, category), items, live = live)
+    /**
+     * ΜΙΑ ΕΝΟΤΗΤΑ ΜΠΟΡΕΙ ΝΑ ΔΩΣΕΙ ΠΟΛΛΕΣ ΡΑΓΕΣ.
+     *
+     * Οι ενότητες κατηγοριών (Ζωντανά, Ταινίες, Σειρές) παράγουν μία ράγα ανά
+     * ΕΠΙΛΕΓΜΕΝΗ κατηγορία, με τη σειρά που τις διάλεξε ο χρήστης. Όλες οι
+     * υπόλοιπες δίνουν το πολύ μία, όπως πάντα.
+     *
+     * Το id κάθε ράγας φέρει την κατηγορία (`movies:GR | KIDS`), γιατί είναι
+     * κλειδί λίστας στο Compose και δύο ράγες της ίδιας ενότητας δεν επιτρέπεται
+     * να μοιράζονται κλειδί.
+     */
+    fun railsFor(id: String): List<HomeRail> = when (id) {
+        HomeLayoutPolicy.LIVE -> categoryRails(id, sectionTitle(id), live, live = true)
+
+        // Μέσα στην ίδια την ενότητα (πάτησες «Ταινίες» κάτω), η επιλεγμένη ομάδα
+        // του καταλόγου κερδίζει: εκεί ο χρήστης φιλτράρει ρητά, δεν συνθέτει.
+        HomeLayoutPolicy.MOVIES -> if (selectedDestination == "movies") {
+            listOfNotNull(
+                HomeRailContentPolicy.rail(id, selectedCatalogGroup ?: sectionTitle(id), displayedMovies)
+            )
+        } else {
+            categoryRails(id, sectionTitle(id), movies)
+        }
+
+        HomeLayoutPolicy.SERIES -> if (selectedDestination == "series") {
+            listOfNotNull(
+                HomeRailContentPolicy.rail(id, selectedCatalogGroup ?: sectionTitle(id), displayedSeries)
+            )
+        } else {
+            categoryRails(id, sectionTitle(id), series)
+        }
+
+        else -> listOfNotNull(railFor(id))
+    }
+
+    private fun categoryRails(
+        id: String,
+        label: String,
+        pool: List<Channel>,
+        live: Boolean = false,
+    ): List<HomeRail> {
+        val selected = selectedCategoriesOf(id).ifEmpty {
+            listOfNotNull(categoryOf(id).takeIf { it.isNotBlank() })
+        }
+        return selected.mapNotNull { category ->
+            val items = pool.filter { it.group.trim() == category }
+            HomeRailContentPolicy.rail(
+                id = "$id:$category",
+                title = categoryTitle(label, category),
+                all = items,
+                live = live,
+            )
+        }
+    }
 }
 
 internal fun HomeRail.toCatalogSection() = CatalogRailSection(

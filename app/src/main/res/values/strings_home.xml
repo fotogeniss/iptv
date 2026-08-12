@@ -9,6 +9,13 @@
     <string name="home_section_new_episodes">Νέα επεισόδια</string>
     <string name="home_section_top_movies">Κορυφαίες ταινίες</string>
     <string name="home_section_top_series">Κορυφαίες σειρές</string>
+    <string name="home_edit_destination_home">Αρχική</string>
+    <string name="home_edit_destination_hint">Κάθε οθόνη έχει τη δική της σειρά και τα δικά της κρυμμένα.</string>
+    <string name="home_apply">Εφαρμογή</string>
+    <plurals name="home_selected_categories">
+        <item quantity="one">%d κατηγορία</item>
+        <item quantity="other">%d κατηγορίες</item>
+    </plurals>
     <string name="home_section_live">Ζωντανά</string>
     <string name="home_section_movies">Ταινίες</string>
     <string name="home_section_series">Σειρές</string>

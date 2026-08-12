@@ -69,6 +69,13 @@ object HomeLayoutPolicy {
         HomeSection(SUGGESTIONS),
         HomeSection(CONTINUE, clearable = true),
         HomeSection(RECENT_LIVE, clearable = true),
+        // ΚΡΥΜΜΕΝΕΣ ΑΠΟ ΠΡΟΕΠΙΛΟΓΗ ΣΤΗΝ ΑΡΧΙΚΗ.
+        //
+        // Η Αρχική είναι βιβλιοθήκη ταινιών και σειρών· τα ζωντανά έχουν δική
+        // τους ενότητα με λίστα και πρόγραμμα, που τους ταιριάζει. Ένα κανάλι
+        // ανάμεσα σε αφίσες εμφανίζεται ως κενό πλακίδιο, χωρίς περίληψη και
+        // χωρίς διάρκεια. Παραμένουν στη λίστα του επεξεργαστή ώστε να τα
+        // ανάψει όποιος τα θέλει — απλώς δεν είναι πια η προεπιλογή.
         HomeSection(NEW_LIVE),
         HomeSection(NEW_MOVIES),
         HomeSection(NEW_EPISODES),
@@ -82,6 +89,37 @@ object HomeLayoutPolicy {
         HomeSection(MOVIES, categorised = true),
         HomeSection(SERIES, categorised = true),
     )
+
+    /* ------------------------------------------------- προορισμοί -------- */
+
+    const val DEST_HOME = "home"
+    const val DEST_LIVE = "live"
+    const val DEST_MOVIES = "movies"
+    const val DEST_SERIES = "series"
+
+    /** Οι τέσσερις οθόνες που έχουν δική τους διάταξη, με σειρά εμφάνισης. */
+    val DESTINATIONS: List<String> = listOf(DEST_HOME, DEST_LIVE, DEST_MOVIES, DEST_SERIES)
+
+    /**
+     * Ποιες ενότητες ΜΠΟΡΟΥΝ να υπάρξουν σε κάθε οθόνη.
+     *
+     * Δεν είναι θέμα γούστου, είναι θέμα δεδομένων: στην οθόνη Ζωντανά δεν
+     * υπάρχουν σειρές στη μνήμη, οπότε μια ενότητα «Νέα επεισόδια» εκεί δεν θα
+     * ζωγραφιζόταν ποτέ όσο κι αν την ενεργοποιούσε ο χρήστης. Ο επεξεργαστής
+     * σταματά να υπόσχεται πράγματα που δεν μπορούν να συμβούν.
+     *
+     * Η Αρχική τα έχει όλα: εκεί συνενώνονται και οι τρεις ενότητες.
+     */
+    fun allowedIn(destination: String): List<HomeSection> = when (destination) {
+        DEST_LIVE -> DEFAULT.filter { it.id in setOf(HEADER, RECENT_LIVE, NEW_LIVE, LIVE) }
+        DEST_MOVIES -> DEFAULT.filter {
+            it.id in setOf(HEADER, HERO, SUGGESTIONS, CONTINUE, NEW_MOVIES, TOP_MOVIES, MOVIES)
+        }
+        DEST_SERIES -> DEFAULT.filter {
+            it.id in setOf(HEADER, HERO, SUGGESTIONS, CONTINUE, NEW_EPISODES, TOP_SERIES, SERIES)
+        }
+        else -> DEFAULT
+    }
 
     private val BY_ID = DEFAULT.associateBy { it.id }
 
@@ -103,15 +141,51 @@ object HomeLayoutPolicy {
      *
      * Κενή [savedOrder] σημαίνει «δεν έχει πειράξει τίποτα» και δίνει το [DEFAULT].
      */
+    /**
+     * Ενότητες που ξεκινούν ΚΡΥΦΕΣ στην Αρχική, μέχρι να τις ζητήσει ο χρήστης.
+     *
+     * Ισχύει μόνο όταν δεν υπάρχει αποθηκευμένη ρύθμιση για αυτές: μόλις ο
+     * χρήστης πατήσει το μάτι, η επιλογή του κερδίζει για πάντα. Μια προεπιλογή
+     * δεν επιτρέπεται να ξαναγράφει απόφαση που έχει ήδη παρθεί.
+     */
+    private val HIDDEN_BY_DEFAULT_ON_HOME = setOf(RECENT_LIVE, NEW_LIVE, LIVE)
+
     fun resolve(
         savedOrder: List<String> = emptyList(),
         hidden: Set<String> = emptySet(),
+        destination: String = DEST_HOME,
     ): List<HomeEntry> {
-        val known = savedOrder.mapNotNull { BY_ID[it] }.distinctBy { it.id }
-        val missing = DEFAULT.filter { section -> known.none { it.id == section.id } }
-        val all = known + missing
+        val allowed = allowedIn(destination)
+        val effectiveHidden = if (destination == DEST_HOME && savedOrder.isEmpty()) {
+            hidden + HIDDEN_BY_DEFAULT_ON_HOME
+        } else hidden
+        val allowedIds = allowed.mapTo(HashSet()) { it.id }
+        val all = ArrayList(
+            savedOrder.mapNotNull { BY_ID[it] }.filter { it.id in allowedIds }.distinctBy { it.id }
+        )
+        // ΜΙΑ ΝΕΑ ΕΝΟΤΗΤΑ ΜΠΑΙΝΕΙ ΣΤΗ ΘΕΣΗ ΤΗΣ, ΟΧΙ ΣΤΟ ΤΕΛΟΣ.
+        //
+        // Πριν ήταν `known + missing`, δηλαδή κάθε καινούργια ενότητα
+        // προσαρτιόταν μετά από ΟΛΕΣ τις αποθηκευμένες. Το σχόλιο παραδεχόταν τον
+        // συμβιβασμό — «σε λάθος θέση είναι καλύτερα από ποτέ» — αλλά στην πράξη
+        // «το τέλος» σημαίνει κάτω από δεκάδες ράγες κατηγοριών, όπου κανείς δεν
+        // σκρολάρει. Οι «Κορυφαίες ταινίες» προστέθηκαν έτσι και ο κάτοχος τις
+        // ανέφερε ως ανύπαρκτες· υπήρχαν, απλώς αθέατες.
+        //
+        // Τώρα κάθε ενότητα που λείπει μπαίνει αμέσως μετά τον πλησιέστερο
+        // προηγούμενό της στη [DEFAULT] που υπάρχει ήδη στη λίστα — δηλαδή εκεί
+        // που θα ήταν αν ο χρήστης δεν είχε πειράξει ποτέ τίποτα. Η σειρά που
+        // ΕΧΕΙ επιλέξει ο χρήστης δεν αλλάζει.
+        allowed.forEachIndexed { index, section ->
+            if (all.any { it.id == section.id }) return@forEachIndexed
+            val anchor = allowed.take(index).lastOrNull { candidate ->
+                all.any { it.id == candidate.id }
+            }
+            val insertAt = if (anchor == null) 0 else all.indexOfFirst { it.id == anchor.id } + 1
+            all.add(insertAt, section)
+        }
         val ordered = all.filter { it.fixed }.sortedBy { fixedRank(it.id) } + all.filter { !it.fixed }
-        return ordered.map { HomeEntry(it, visible = it.fixed || it.id !in hidden) }
+        return ordered.map { HomeEntry(it, visible = it.fixed || it.id !in effectiveHidden) }
     }
 
     private fun fixedRank(id: String): Int = DEFAULT.indexOfFirst { it.id == id }

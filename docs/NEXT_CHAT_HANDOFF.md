@@ -2,8 +2,9 @@
 
 - **Date:** 2026-08-11
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** `5745b1a` · worktree clean · all six static gates pass
-- **Version:** 1.49.1 (`versionCode 119`)
+- **Date:** 2026-08-12
+- **Branch:** `main` · **HEAD:** `bfbcc27` (1.54.0) · **worktree NOT clean — 1.54.1→1.61.0 uncommitted**
+- **Version on disk:** 1.61.0 (`versionCode 133`) · **last committed:** 1.49.1 (119)
 
 This document is the operational source of truth for continuing in a fresh
 chat. **Section 0 is written to be read first and on its own** — it says where
@@ -46,7 +47,95 @@ were all already fixed in the tree, and only a leftover "#" in a title revealed
 the APK was stale. **Bump the version on every change and check the Settings
 screen against it before believing any device report.**
 
+### 2026-08-12 — UNCOMMITTED PILE, READ THIS BEFORE ANYTHING
+
+**This paragraph was wrong when written and is corrected here — trust `git log`.**
+It claimed history ended at `5ecce5f` (1.49.1). It does not: `1805771`, `4910278`
+and `bfbcc27` had already landed, so **everything through 1.54.0 is committed**,
+including 1.50.0's `tmdb_id` route (it went in unnamed inside `1805771` — the
+proof is that `TmdbClient.kt` carries the `«από τον πάροχο, χωρίς αναζήτηση»`
+line and is not modified).
+
+The genuinely uncommitted pile is **1.54.1 → 1.61.0** — eight releases, sixteen
+modified files plus the untracked `prototypes/home_editor_per_destination.html`.
+
+**First action of the next session: build, run the six gates, commit.** Do not
+start new work on top of eight uncommitted releases.
+
+What is in that pile, in order:
+
+| Version | What |
+| --- | --- |
+| 1.50.0 | Episode metadata uses the provider's `tmdb_id`; no title search when present |
+| 1.51.0 | `CatalogRankingPolicy`; `Channel.addedAt` + `Channel.rating`; Top by rating, New by add-date |
+| 1.52.0 | "Top rated movies/series" rails; New rails use `added` |
+| 1.53.0 | Same four rails on Android TV via `buildCatalogRailSections` |
+| 1.54.0 | Home draws from every loaded section, not just the active one |
+| 1.54.1 | Fix: that union leaked into Movies and Series screens |
+| 1.54.2 | `CatalogLoad` sample line per section |
+| 1.55.0 | New sections land in their default position, not at the bottom |
+| 1.56.0 | Home layout editor is **per destination** (Home/Live/Movies/Series) |
+| 1.57.0 | Multi-category selection: each ticked category becomes its own rail |
+| 1.58.0 | Load summary log; page-cap warning for silent truncation |
+| 1.59.0 | Page pool 6 → 12 |
+| 1.60.0 | Failure counter; kind filtering on Movies/Series; live hidden on Home by default |
+| 1.61.0 | **Page pool reverted to 6** — see below |
+
+### The portal degrades under load. This is the most important finding.
+
+Raising the page pool to 12 halved load time (27.1s → 14.3s) and **corrupted the
+data**. The portal did not return errors; it returned stubs. Same film, same
+request, twice:
+
+```
+6 workers : rating_imdb=6.7  tmdb_id=1284465  description="Na een leven…"  time=123
+12 workers: rating_imdb=N/A  tmdb_id=""       description=N/A              time=1
+```
+
+Plus 30 silently failed pages on movies. The pool is back at 6. **Never raise it
+by reading the timing alone** — the failure counter catches dropped pages but
+cannot catch stub rows, which look well-formed until "N/A" reaches the screen.
+Some of the original "N · A" report was probably this, not app code.
+
+### The agreed change of approach — not started
+
+The owner proposed, and it was agreed, that the current progressive model is
+wrong. Empty rails, missing sections, the home union, the silent backfill and
+"live showing under Movies" were all **one** cause: the app renders before the
+data exists, and each mechanism added to guess what to show in the meantime
+created the next problem.
+
+**New model: download the whole list once, with honest progress, then let the
+user choose what to see.** Three conditions, none optional:
+
+1. **Real progress** — percentage, section, category. `onProgress` already
+   reports all of it and the UI throws it away.
+2. **Disk cache, or it is worse than today.** Movies and series only. **Never
+   live**: their `cmd` is often the final tokenised URL and a cached one is a
+   dead stream. VOD and series `cmd` are plain descriptors
+   (`{"type":"movie","stream_id":"1813440"}`) with no token — verified from a
+   real response. Owner's proposed TTL was left at one day, and "Update content"
+   must always bypass the cache.
+3. **Category selection moves to after the download**, where the user can see
+   names and counts instead of choosing blind. This is the real win, not speed.
+
 ### Do this first
+
+0. **Build, run the six gates, commit the 1.50→1.61 pile.** Then have the owner
+   confirm the pool revert restored full rows — the same film should come back
+   with `rating_imdb=6.7`, a real description and a poster. Nothing else starts
+   while the catalog is filling with N/A.
+0b. **Then the new model above:** real progress, then disk cache for
+   movies/series, then category selection after the download.
+0c. **Android TV** has no layout editor and ignores `HomeLayoutPolicy` entirely —
+   it renders every provider category as a rail. The policy, the per-destination
+   storage and multi-category selection are already shared and ready; only the
+   D-pad surface is missing. Owner has asked for it.
+0d. **`backfillHomeSections` reports no progress.** Deliberate when it was
+   supplementary work, wrong now that it is how the home fills. The new model
+   probably deletes it outright.
+0e. **`CatalogLoad` logging** was added for diagnosis and earned its place twice.
+   Decide whether it ships.
 
 1. **Decide what happens to "play a single stream".** `SingleStreamDialog` in
    `ProviderImportScreens.kt` lost its only entry point when `AddMenuSheet` was
@@ -214,10 +303,14 @@ more than a day of inference. Ask for a real sample first.
 - **Xtream and M3U do not populate `tmdbId`.** Only `StalkerClient` reads it.
   Xtream's series info payload may well carry one; nobody has looked. Check a
   real response before adding a parser.
-- **`seriesId` reaches the portal doubled: `movie_id=42504:42504`.** Visible in
-  every logged URL. The portal expects `42504`. This may well be why the
-  season/episode filters were ignored. Confirm against a capture before changing
-  it — `seriesId` participates in `PlaybackQueue.favKey`, so it is stored data.
+- **`seriesId` doubling — SETTLED, NOT A DEFECT. Do not "fix" it.** The suspicion
+  was that the app built `movie_id=42504:42504` itself. The 2026-08-12 capture
+  shows the portal's own catalog row arriving as `"id":"58875:58875"`, so the app
+  is passing through exactly what it was given. There is nothing to correct, and
+  `seriesId` participates in `PlaybackQueue.favKey` — changing it would be a
+  stored-data contract change for no gain. This also means it is **not** the
+  reason the season/episode filters were ignored; that was settled separately
+  (the portal ignores `episode_id`/`season_id` at that depth).
 - **`XtreamClient.seriesEpisodes` has the same missing-description gap** and was
   left untouched, since the reported bug was Stalker-specific. Ask first.
 - **`MainViewModel.kt` is 1860 lines** and trips the architecture audit's known

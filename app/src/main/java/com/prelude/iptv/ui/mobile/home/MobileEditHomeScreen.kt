@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -26,8 +28,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,7 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.home.HomeEntry
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
+import com.prelude.iptv.ui.localization.homeDestinationLabelRes
 import com.prelude.iptv.ui.localization.titleRes
 import kotlin.math.roundToInt
 
@@ -59,11 +64,16 @@ internal fun MobileEditHomeScreen(
     categoryOf: (String) -> String,
     /** Διαθέσιμες κατηγορίες ανά ενότητα — άδεια σημαίνει «δεν έχει τι να διαλέξει». */
     categoriesFor: (String) -> List<String>,
+    /** Οι ήδη επιλεγμένες, με τη σειρά τους. Κάθε μία θα γίνει δική της ράγα. */
+    selectedCategoriesOf: (String) -> List<String>,
     onToggleVisible: (String) -> Unit,
     onMove: (from: Int, to: Int) -> Unit,
-    onPickCategory: (sectionId: String, group: String) -> Unit,
+    onPickCategories: (sectionId: String, groups: List<String>) -> Unit,
     onClear: (String) -> Unit,
     onBack: () -> Unit,
+    /** Ποιον προορισμό επεξεργάζεσαι τώρα. Δες [HomeLayoutPolicy.DESTINATIONS]. */
+    destination: String = HomeLayoutPolicy.DEST_HOME,
+    onDestinationChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BackHandler(enabled = true, onBack = onBack)
@@ -97,6 +107,44 @@ internal fun MobileEditHomeScreen(
             )
         }
 
+        // ΟΡΑΤΑ CHIPS, ΟΧΙ DROPDOWN.
+        //
+        // Το ζητούμενο εδώ δεν είναι η επιλογή αλλά η ΑΝΑΚΑΛΥΨΗ: μέχρι τώρα
+        // κανείς δεν μπορούσε να ξέρει ότι υπάρχουν ξεχωριστές διατάξεις ανά
+        // οθόνη. Ένα dropdown θα το κρατούσε κρυφό πίσω από ένα πάτημα. Τέσσερις
+        // επιλογές χωράνε ως ορατά chips και το λένε χωρίς να το εξηγήσει κανείς.
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            HomeLayoutPolicy.DESTINATIONS.forEach { id ->
+                val selected = id == destination
+                Text(
+                    stringResource(homeDestinationLabelRes(id)),
+                    color = if (selected) IptvColors.Background else IptvColors.TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (selected) IptvColors.TextPrimary else IptvColors.Surface,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { onDestinationChange(id) }
+                        .padding(vertical = 7.dp)
+                )
+            }
+        }
+        Text(
+            stringResource(R.string.home_edit_destination_hint),
+            color = IptvColors.TextTertiary,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
+        )
+
         LazyColumn(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(14.dp)
@@ -119,7 +167,19 @@ internal fun MobileEditHomeScreen(
                             index = index,
                             dragging = dragIndex == index,
                             dragOffset = if (dragIndex == index) dragOffset else 0f,
-                            category = if (entry.section.categorised) categoryOf(entry.section.id) else "",
+                            // Η γραμμή δείχνει «3 κατηγορίες» όταν έχουν επιλεγεί
+                            // πολλές, και το όνομα όταν είναι μία — ένα σκέτο
+                            // όνομα δίπλα σε τέσσερις επιλεγμένες θα ήταν ψέμα.
+                            category = if (!entry.section.categorised) "" else {
+                                val chosen = selectedCategoriesOf(entry.section.id)
+                                when {
+                                    chosen.size > 1 -> pluralStringResource(
+                                        R.plurals.home_selected_categories, chosen.size, chosen.size
+                                    )
+                                    chosen.size == 1 -> chosen.first()
+                                    else -> categoryOf(entry.section.id)
+                                }
+                            },
                             hasCategories = categoriesFor(entry.section.id).isNotEmpty(),
                             onToggleVisible = { onToggleVisible(entry.section.id) },
                             onPickCategory = { categoryFor = entry.section.id },
@@ -158,8 +218,8 @@ internal fun MobileEditHomeScreen(
             title = entries.firstOrNull { it.section.id == sectionId }
                 ?.section?.let { stringResource(it.titleRes()) }.orEmpty(),
             options = categoriesFor(sectionId),
-            selected = categoryOf(sectionId),
-            onPick = { onPickCategory(sectionId, it); categoryFor = null },
+            selected = selectedCategoriesOf(sectionId),
+            onApply = { onPickCategories(sectionId, it); categoryFor = null },
             onDismiss = { categoryFor = null }
         )
     }
@@ -282,38 +342,67 @@ private fun EditRow(
     }
 }
 
+/**
+ * ΠΟΛΛΑΠΛΗ επιλογή: κάθε τσεκαρισμένη κατηγορία γίνεται δική της ράγα.
+ *
+ * Πριν ήταν ένα κλικ = μία κατηγορία, οπότε ο χρήστης δεν έφτιαχνε την οθόνη του
+ * — διάλεγε ποια από τις εβδομήντα θα δει. Η σειρά που τις τσεκάρει είναι και η
+ * σειρά των ραγών, γι' αυτό κρατιέται λίστα και όχι σύνολο.
+ *
+ * Η επιλογή εφαρμόζεται στο ΚΛΕΙΣΙΜΟ, όχι σε κάθε πάτημα: με άμεση εφαρμογή, η
+ * αρχική από κάτω θα ξαναχτιζόταν σε κάθε τικ και το διάλογο θα τον έβλεπες να
+ * τρεμοπαίζει πάνω σε λίστα που αναδιατάσσεται.
+ */
 @Composable
 private fun CategoryPicker(
     title: String,
     options: List<String>,
-    selected: String,
-    onPick: (String) -> Unit,
+    selected: List<String>,
+    onApply: (List<String>) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val picked = remember(selected) { mutableStateListOf<String>().apply { addAll(selected) } }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
             LazyColumn(Modifier.heightIn(max = 420.dp)) {
                 itemsIndexed(options, key = { _, group -> group }) { _, group ->
-                    val isSelected = group == selected
-                    Text(
-                        group,
-                        color = if (isSelected) IptvColors.Info else IptvColors.TextPrimary,
-                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
+                    val isSelected = group in picked
+                    Row(
+                        Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { onPick(group) }
-                            .padding(vertical = 12.dp, horizontal = 6.dp)
-                    )
+                            .clickable {
+                                if (isSelected) picked.remove(group) else picked.add(group)
+                            }
+                            .padding(vertical = 11.dp, horizontal = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            if (isSelected) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
+                            null,
+                            tint = if (isSelected) IptvColors.Info else IptvColors.TextTertiary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            group,
+                            color = IptvColors.TextPrimary,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.home_cancel)) } },
-        confirmButton = {}
+        confirmButton = {
+            TextButton(onClick = { onApply(picked.toList()) }) {
+                Text(stringResource(R.string.home_apply), color = IptvColors.Primary)
+            }
+        }
     )
 }
