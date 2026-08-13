@@ -151,6 +151,7 @@ internal fun BrowseScreen(
     // ΜΕΝΟΥ αντί να σε βγάζει από τη λίστα. Δεύτερο BACK (με το μενού ήδη
     // εστιασμένο) φεύγει κανονικά.
     val navRailFocus = remember { FocusRequester() }
+    val categoryNavFocus = remember { FocusRequester() }
     var navRailFocused by remember { mutableStateOf(false) }
 
     /**
@@ -206,6 +207,16 @@ internal fun BrowseScreen(
     var contentHasFocus by remember { mutableStateOf(false) }
     /** Ρητό αίτημα με BACK — δουλεύει ακόμη κι όταν τίποτα δεν είναι εστιασμένο. */
     var navRailArmed by remember { mutableStateOf(false) }
+    var categoryPickerWasOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(state.pickCategories, isTv) {
+        if (state.pickCategories) {
+            categoryPickerWasOpen = true
+        } else if (isTv && categoryPickerWasOpen) {
+            categoryPickerWasOpen = false
+            navRailArmed = true
+            categoryNavFocus.requestFocusWithRetry()
+        }
+    }
 
     /**
      * Το κλειδί του στοιχείου που άνοιξε τελευταίο από τις λίστες.
@@ -366,8 +377,7 @@ internal fun BrowseScreen(
         }
     }
 
-    val fullScreenCatalogOverlay = state.chooseContent || state.pickCategories ||
-        state.askLoadMode || state.askRefreshMode
+    val fullScreenCatalogOverlay = state.chooseContent || state.pickCategories
     LaunchedEffect(state.contentType, isTv) {
         if (!isTv) {
             val synced = when (state.contentType) {
@@ -596,23 +606,21 @@ internal fun BrowseScreen(
     // ζητά επιβεβαίωση αλλαγής πηγής.
     BackHandler(
         enabled = SectionNavigationPolicy.canGoBack(sectionStack) &&
-            !showExport && detailChannel == null && !state.askRefreshMode &&
-            !state.pickCategories && !state.chooseContent && !searchOpen &&
+            !showExport && detailChannel == null && !state.pickCategories &&
+            !state.chooseContent && !searchOpen &&
             libraryDestination == null && inlinePlayback == null && !showGrid &&
             !liveFullscreen
     ) {
         goBackSection()
     }
 
-    BackHandler(enabled = showExport || detailChannel != null || state.askRefreshMode || state.pickCategories ||
+    BackHandler(enabled = showExport || detailChannel != null || state.pickCategories ||
         state.chooseContent || searchOpen || libraryDestination != null) {
         when {
             showExport -> showExport = false
             detailChannel != null -> { detailChannel = null; vm.closeSeries() }
             libraryDestination != null -> { libraryDestination = null; libraryQuery = "" }
             searchOpen -> { searchOpen = false; vm.setSearch("") }
-            state.askRefreshMode -> vm.cancelRefreshChoice()
-            // refresh picker: ακύρωση στο catalog · initial-load picker: πίσω στην επιλογή τρόπου
             state.pickCategories -> vm.cancelCategoryPicker()
             // αν έχουμε ήδη περιεχόμενο, το πίσω απλά κλείνει την επιλογή ενότητας
             state.chooseContent -> if (state.channels.isNotEmpty()) vm.closeContentChooser() else onBack()
@@ -890,6 +898,7 @@ internal fun BrowseScreen(
                     categoryTitlesInOrder = categoryTitlesInOrder,
                     onOpenEpg = if (state.epgLoaded) ({ showGrid = true }) else null,
                     onOpenSettings = onOpenSettings,
+                    onOpenCategories = { vm.changeCategories() },
                     onNavigationCollapsedChange = { mobileNavCollapsed = it },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -1240,6 +1249,7 @@ internal fun BrowseScreen(
                 onLive = { openSection("live") },
                 onMovies = { openSection("movies") },
                 onSeries = { openSection("series") },
+                onCategories = { vm.changeCategories() },
                 onEpg = {
                     if (state.epgLoaded) showGrid = true
                     else toast(ctx, "Δεν έχει φορτωθεί EPG")
@@ -1250,6 +1260,7 @@ internal fun BrowseScreen(
                 // όταν το focus απλώς περνά από πάνω του.
                 expanded = navRailExpanded,
                 selectedFocus = navRailFocus,
+                categoriesFocus = categoryNavFocus,
                 // Εστιάσιμο όσο κάτι άλλο κρατά το focus (άρα ο χρήστης πλοηγείται
                 // και το αριστερό πρέπει να δουλέψει με το πρώτο πάτημα), όσο το
                 // ζήτησε ρητά με BACK, ή όσο το χρησιμοποιεί ήδη.
@@ -1368,19 +1379,6 @@ internal fun BrowseScreen(
             }
         }
     }
-    if (state.askRefreshMode) RefreshModeDialog(
-        contentType = state.contentType,
-        onExisting = { vm.refreshExistingSelection() },
-        onChooseGroups = { vm.refreshAndChooseGroups() },
-        onCancel = { vm.cancelRefreshChoice() }
-    )
-    // Το ενδιάμεσο «Φόρτωση Χ;» dialog αφαιρέθηκε — το pill tap είναι η πρόθεση.
-    if (state.askLoadMode) LoadModeDialog(
-        count = state.categories.size,
-        onAll = { vm.loadEverything() },
-        onChoose = { vm.chooseCategories() },
-        onCancel = { vm.cancelLoadMode() }
-    )
     if (state.chooseContent) ContentChooser(
         // Χωρίς φορτωμένο περιεχόμενο δεν υπάρχει «τρέχουσα» ενότητα:
         // το τικ στο Live μπέρδευε, έδειχνε σαν να είναι ήδη επιλεγμένο.
@@ -1391,6 +1389,8 @@ internal fun BrowseScreen(
         })
     if (state.pickCategories) CategoryPicker(
         categories = state.categories,
+        counts = state.categoryCounts,
+        contentType = state.contentType,
         initialSelectedIds = state.categorySelectionIds,
         onCancel = { vm.cancelCategoryPicker() },
         onLoad = { vm.loadSelectedCategories(it) })

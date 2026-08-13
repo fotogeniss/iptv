@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -40,6 +41,7 @@ internal fun LiveHeader(
     title: String,
     onBack: () -> Unit,
     onOpenEpg: (() -> Unit)?,
+    onOpenCategories: () -> Unit,
     onSettings: () -> Unit,
 ) {
     Row(
@@ -64,6 +66,18 @@ internal fun LiveHeader(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
         )
+        Icon(
+            Icons.Default.Category,
+            stringResource(R.string.catalog_categories_groups),
+            tint = IptvColors.TextPrimary,
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(IptvColors.Surface)
+                .clickable(onClick = onOpenCategories)
+                .padding(8.dp),
+        )
+        Spacer(Modifier.width(6.dp))
         if (onOpenEpg != null) {
             Row(
                 Modifier

@@ -160,7 +160,16 @@ source_contracts = {
     "MainViewModel has no legacy catalog fetch function": "private suspend fun fetchChannels" not in main_vm,
     "Catalog coordinator owns provider serialization": "private val providerMutex = Mutex()" in catalog_loader and "withProviderLock" in catalog_loader,
     "Catalog coordinator normalizes progressive and final snapshots": "PartialCatalog" in catalog_loader and catalog_loader.count("CatalogNormalizer.normalize") >= 2,
-    "Progressive refresh failure restores visible catalog": main_vm.count("restoreAfterRefreshFailure") >= 2,
+    "Complete source sections never publish progressive catalogs": (
+        "partialPublisher" not in main_vm
+        and "catalogLoader.section(pl, type, null, progress)" in main_vm
+        and "categories = categories" in main_vm
+    ),
+    "Category visibility applies locally to the complete session snapshot": (
+        "CatalogCategoryVisibilityPolicy.visibleChannels" in main_vm
+        and "val snapshot = catalogSession.getCatalog(cacheKey(pl, type))" in main_vm
+        and "loadSelectedCategoriesInternal" not in main_vm
+    ),
     "Series requests share the catalog provider boundary": (
         "SeriesLoadCoordinator(catalogLoader)" in main_vm
         and "catalogLoader.withProviderLock" in series_loader
@@ -172,7 +181,7 @@ source_contracts = {
     "Source switch invalidates generations before cancellation": source_switch.find("generationGate.invalidateAll()") < source_switch.find("callbacks.cancelActiveWork()"),
     "Source switch publishes before optional auto-load": source_switch.find("callbacks.publish(plan)") < source_switch.find("callbacks.autoLoad()"),
     "Source-bound UI is reset transactionally": all(marker in source_switch for marker in ["loading = false", 'status = ""', "selectedGroup = UiState.ALL_GROUP", "openSeriesTitle = null"]),
-    "Catalog and series callbacks use generation gate": main_vm.count("sourceGeneration.isCurrentLoad") >= 10 and main_vm.count("sourceGeneration.isCurrent(request)") >= 2,
+    "Catalog and series callbacks use generation gate": main_vm.count("sourceGeneration.isCurrentLoad") >= 5 and main_vm.count("sourceGeneration.isCurrent(request)") >= 2,
     "TextureView has no unsupported background drawable": not re.search(
         r"TextureView\(ctx\)\.also\s*\{\s*it\.setBackgroundColor",
         player_video_surface,

@@ -30,19 +30,16 @@
     <string name="catalog_sort_year_desc">Έτος (νεότερα πρώτα)</string>
     <string name="catalog_favorite">Αγαπημένο</string>
 
-    <string name="catalog_refresh_section">Ανανέωση · %1$s</string>
-    <string name="catalog_refresh_mode_body">Διάλεξε αν θα κρατηθούν τα groups που έχεις ήδη επιλέξει ή αν θέλεις να κατέβει ξανά η διαθέσιμη λίστα groups.</string>
-    <string name="catalog_refresh_current">Ανανέωση τρέχουσας επιλογής</string>
-    <string name="catalog_refresh_current_body">Κρατά ακριβώς τα groups που χρησιμοποιείς τώρα</string>
-    <string name="catalog_refresh_available">Ανανέωση + επιλογή νέων groups</string>
-    <string name="catalog_refresh_available_body">Φέρνει φρέσκια λίστα για Live TV, Ταινίες ή Σειρές</string>
     <string name="catalog_cancel">Άκυρο</string>
-    <string name="catalog_load_what">Τι να φορτώσω;</string>
-    <string name="catalog_load_categories_body">Βρέθηκαν %1$d κατηγορίες. Τα δεδομένα της ενότητας κατεβαίνουν φρέσκα κάθε φορά.</string>
-    <string name="catalog_all_categories">Όλες οι κατηγορίες</string>
-    <string name="catalog_current_section_only">Μόνο για την τρέχουσα ενότητα</string>
-    <string name="catalog_choose_categories">Θέλω να επιλέξω</string>
-    <string name="catalog_choose_categories_body">Διάλεξε κατηγορίες για την τρέχουσα ενότητα</string>
+    <string name="catalog_visibility_section_title">Ποιες κατηγορίες να φαίνονται · %1$s</string>
+    <string name="catalog_visibility_summary">%1$d από %2$d κατηγορίες · %3$d στοιχεία ορατά</string>
+    <string name="catalog_visibility_tv_hint">Δεξί βελάκι → πάει κατευθείαν στην Εφαρμογή</string>
+    <string name="catalog_visibility_mobile_hint">Η επιλογή αλλάζει μόνο τι φαίνεται· δεν γίνεται νέα λήψη</string>
+    <string name="catalog_select_all">Όλες</string>
+    <string name="catalog_select_none">Καμία</string>
+    <string name="catalog_filter_categories">Φίλτρο…</string>
+    <string name="catalog_no_category_match">Καμία κατηγορία δεν ταιριάζει στο «%1$s».</string>
+    <string name="catalog_apply_categories">Εφαρμογή (%1$d)</string>
 
     <string name="catalog_loading">Λήψη από την πηγή…</string>
     <string name="catalog_loading_with_progress">%1$s · Λήψη από την πηγή…</string>

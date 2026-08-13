@@ -327,8 +327,7 @@ private fun Root(vm: MainViewModel = viewModel()) {
                             )
                         }
                     }
-                    val catalogOverlayOpen = catalog.chooseContent || catalog.pickCategories ||
-                        catalog.askLoadMode || catalog.askRefreshMode
+                    val catalogOverlayOpen = catalog.chooseContent || catalog.pickCategories
                     if (!isTvDevice() && tab == Tab.SETTINGS && !catalogOverlayOpen) {
                         fun openDestination(destination: String) {
                             returnToBrowseAfterSettings = false

@@ -133,9 +133,7 @@ class SourceSwitchCoordinatorTest {
             epgStatus = EpgStatus.Ready(matches = 1),
             pickCategories = true,
             categories = listOf("1" to "Old"),
-            askLoadMode = true,
-            askRefreshMode = true,
-            categoryPickerFromRefresh = true,
+            categoryCounts = mapOf("1" to 1),
             categorySelectionIds = setOf("1"),
             askLoadType = "series",
             fontScale = 1.4f,
@@ -173,9 +171,7 @@ class SourceSwitchCoordinatorTest {
         assertEquals(EpgStatus.Idle, next.epgStatus)
         assertFalse(next.pickCategories)
         assertTrue(next.categories.isEmpty())
-        assertFalse(next.askLoadMode)
-        assertFalse(next.askRefreshMode)
-        assertFalse(next.categoryPickerFromRefresh)
+        assertTrue(next.categoryCounts.isEmpty())
         assertEquals(null, next.categorySelectionIds)
         assertEquals(null, next.askLoadType)
         assertEquals(null, next.openSeriesTitle)

@@ -2,8 +2,8 @@
 
 - **Date:** 2026-08-13
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** `71c6d6b` (1.62.0) · **worktree NOT clean — 1.63.0 uncommitted**
-- **Version on disk:** 1.63.0 (`versionCode 135`) · **last committed:** 1.62.0 (134)
+- **Branch:** `main` · **HEAD:** this file ships in the 1.65.0 commit; verify with `git log --oneline -5`
+- **Version on disk:** 1.65.0 (`versionCode 137`) · slices 2 and 3 are separate commits
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -20,10 +20,17 @@ reasoning, the open questions and the traps that the changelog does not carry.
 
 ## 0. START HERE — state, what is open, what to do first
 
-Last session: **2026-08-11**. HEAD `5745b1a`, worktree clean, all six static
-gates pass. Three commits landed this session: `c11678e` (release 1.47.0),
-`3de4925` (release 1.49.0) and `5745b1a` (TV bottom-bar focus, 1.49.1). All
-three are **owner-confirmed on device**.
+Current session: **2026-08-13**. Slice 2 landed separately as `9a1e787`
+(1.64.0): a source downloads all three sections and publishes each section only
+when it is complete. Slice 3 is the 1.65.0 commit containing this handoff:
+category choice moved after download and applies locally to the full snapshot.
+All six static gates must pass before that commit. The owner builds; Gradle was
+not run here.
+
+**Next action is owner build/device validation of 1.65.0-qa**, including the
+matrix below. Do not start slice 1β or disk cache on top of an unverified build.
+The 1.63.0 APK was installed and its Settings version confirmed, but the actual
+bar wording remains visually unconfirmed on both mobile and TV.
 
 ### Status at a glance
 
@@ -69,8 +76,9 @@ D-pad movement unchanged. The owner's first report after this build was that the
 pre-load category screen was unchanged, which is correct and expected: 1.63.0
 does not touch it. Do not read that as a failure of 1.63.0.
 
-**First action: slices 2+3 (see the table below).** That is what the owner asked
-for next, and it is the visible change he is waiting on.
+**Slices 2+3 are now written in separate commits (see the table below).** The
+next evidence needed is the owner's 1.65.0-qa build and the mobile/TV matrix,
+not another code change.
 
 #### The pile that is now closed, for reference:
 
@@ -146,7 +154,7 @@ with EPG, TMDB and subtitles, so the change must be additive.
 so far the failures are cancellations, and a retry would re-request pages that we
 cancelled on purpose.
 
-### THE ACTIVE WORK: full load, then choose. Approved, slice 1α written.
+### THE ACTIVE WORK: full load, then choose. Slices 2+3 written.
 
 The owner approved `prototypes/full_load_then_choose.html` on 2026-08-13, and
 answered the two structural questions: **the pre-load category picker goes away
@@ -157,9 +165,10 @@ Agreed slice order, deliberately smallest-risk first:
 
 | # | Slice | State |
 | --- | --- | --- |
-| 1α | Loading bar names the section | **written, 1.63.0, not compiled** |
-| **2+3** | **Load everything; selection moves to quick actions** | **next — owner reordered** |
-| 1β | Type the progress stage → "category 45 of 271" | after 2+3 |
+| 1α | Loading bar names the section | **1.63.0 installed; visual confirmation still open** |
+| 2 | Load everything; publish only complete sections | **committed separately: `9a1e787`, 1.64.0** |
+| 3 | Selection in quick actions, names/counts, local filter | **written as 1.65.0; owner build/device validation next** |
+| 1β | Type the progress stage → "category 45 of 271" | only after 1.65.0 validation |
 | 4 | Disk cache, movies and series only | last |
 
 **The owner reordered on 2026-08-13, deliberately, after seeing 1.63.0 change
@@ -225,19 +234,20 @@ user choose what to see.** Three conditions, none optional:
 
 ### Do this first
 
-0. **Build 1.63.0, confirm the loading bar on mobile and TV, commit it.** Nothing
-   else starts on top of an uncompiled release. (The 1.61.0 page-pool question is
-   **settled**: the owner's device returned the same film with `rating_imdb=6.7`,
-   `tmdb_id=1284465`, its description and its poster. The revert worked.)
-0b. **Then slice 1β**, then 2, 3, 4 in the table above. One at a time.
-0c. **Android TV** has no layout editor and ignores `HomeLayoutPolicy` entirely —
-   it renders every provider category as a rail. The policy, the per-destination
-   storage and multi-category selection are already shared and ready; only the
-   D-pad surface is missing. Owner has asked for it.
-0d. **`backfillHomeSections` reports no progress.** Deliberate when it was
-   supplementary work, wrong now that it is how the home fills. The new model
-   probably deletes it outright.
-0e. **`CatalogLoad` logging** was added for diagnosis and earned its place twice.
+0. **Owner builds 1.65.0-qa and confirms that exact version in Settings.** Do not
+   infer the APK from screenshots or logs.
+0b. Validate one source from a clean open: Live appears only after Live is
+   complete; Movies and Series never show partial or cross-section data; the
+   overall load continues after Live opens.
+0c. On mobile and TV, open Categories from Live, Movies and Series. Confirm names
+   and counts, zero-count rows grey/non-focusable, Apply changes visibility
+   immediately, and changing the selection causes no provider download.
+0d. On TV, confirm initial picker focus, Right → Apply, Back returns to the
+   navigation item, and D-pad movement elsewhere is unchanged.
+0e. Separately capture the still-open 1.63.0 bar evidence on mobile and TV:
+   section wording must change with the active download.
+0f. If 1.65.0 passes, take slice 1β next. Disk cache remains last. The page-pool
+   question stays settled at 6, and the cancellation counter remains parked.
    Decide whether it ships.
 
 1. **Decide what happens to "play a single stream".** `SingleStreamDialog` in

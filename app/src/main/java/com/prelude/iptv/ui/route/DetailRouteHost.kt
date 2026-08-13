@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -206,13 +208,17 @@ internal fun fmtTime(s: String): String {
 @Composable
 internal fun CategoryPicker(
     categories: List<Pair<String, String>>,
+    counts: Map<String, Int>,
+    contentType: String,
     initialSelectedIds: Set<String>? = null,
     onCancel: (() -> Unit)? = null,
     onLoad: (List<String>?) -> Unit
 ) {
-    val selected = remember(categories, initialSelectedIds) {
+    val selected = remember(categories, counts, initialSelectedIds) {
         mutableStateMapOf<String, Boolean>().apply {
-            categories.forEach { (id, _) -> put(id, initialSelectedIds == null || id in initialSelectedIds) }
+            categories.forEach { (id, _) ->
+                put(id, (counts[id] ?: 0) > 0 && (initialSelectedIds == null || id in initialSelectedIds))
+            }
         }
     }
     val first = rememberInitialFocus()
@@ -238,10 +244,29 @@ internal fun CategoryPicker(
                 Spacer(Modifier.width(12.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text("Διάλεξε κατηγορίες", color = TextHi, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                val sectionName = when (contentType) {
+                    "vod" -> stringResource(R.string.catalog_movies)
+                    "series" -> stringResource(R.string.catalog_series)
+                    else -> stringResource(R.string.catalog_live)
+                }
+                Text(stringResource(R.string.catalog_visibility_section_title, sectionName), color = TextHi,
+                    fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                val selectedCount = selected.count { it.value }
+                val visibleItems = categories.sumOf { (id, _) -> if (selected[id] == true) counts[id] ?: 0 else 0 }
                 Text(
-                    if (isTv) "Δεξί βελάκι → πάει κατευθείαν στη Φόρτωση"
-                    else "Φορτώνει μόνο ό,τι επιλέξεις (όχι τα πάντα)",
+                    stringResource(
+                        R.string.catalog_visibility_summary,
+                        selectedCount,
+                        categories.size,
+                        visibleItems,
+                    ),
+                    color = TextMid, fontSize = 11.sp,
+                )
+                Text(
+                    stringResource(
+                        if (isTv) R.string.catalog_visibility_tv_hint
+                        else R.string.catalog_visibility_mobile_hint
+                    ),
                     color = TextLo, fontSize = 11.sp
                 )
             }
@@ -253,21 +278,24 @@ internal fun CategoryPicker(
         ) {
             // «Όλες/Καμία» δρουν στα ΟΡΑΤΑ: αν έχεις φιλτράρει «sport», το
             // «Όλες» επιλέγει μόνο τις αθλητικές — αυτό περιμένει ο χρήστης.
-            listOf("Όλες" to true, "Καμία" to false).forEachIndexed { bi, (label, v) ->
+            listOf(
+                stringResource(R.string.catalog_select_all) to true,
+                stringResource(R.string.catalog_select_none) to false,
+            ).forEachIndexed { bi, (label, v) ->
                 Box(
                     Modifier.padding(end = 8.dp).clip(RoundedCornerShape(16.dp)).background(BgElev)
                         .border(1.dp, Line, RoundedCornerShape(16.dp))
                         .then(if (bi == 0) Modifier.focusRequester(first).testTag("category-select-all") else Modifier)
                         .focusProperties { right = okFocus }
                         .tvFocus(RoundedCornerShape(16.dp))
-                        .clickable { visible.forEach { selected[it.first] = v } }
+                        .clickable { visible.filter { (counts[it.first] ?: 0) > 0 }.forEach { selected[it.first] = v } }
                         .padding(horizontal = 16.dp, vertical = 7.dp)
                 ) { Text(label, color = TextMid) }
             }
             // φίλτρο: σε λίστες με 100+ κατηγορίες, το scroll δεν είναι λύση
             OutlinedTextField(
                 value = filter, onValueChange = { filter = it },
-                placeholder = { Text("Φίλτρο…", color = TextLo, fontSize = 13.sp) },
+                placeholder = { Text(stringResource(R.string.catalog_filter_categories), color = TextLo, fontSize = 13.sp) },
                 singleLine = true, shape = RoundedCornerShape(16.dp),
                 textStyle = androidx.compose.ui.text.TextStyle(color = TextHi, fontSize = 13.sp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -281,21 +309,27 @@ internal fun CategoryPicker(
 
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 16.dp)) {
             items(visible) { (id, title) ->
+                val itemCount = counts[id] ?: 0
+                val enabled = itemCount > 0
                 Row(
                     Modifier.fillMaxWidth()
                         .focusProperties { right = okFocus }   // δεξί = Φόρτωση, ΟΧΙ scroll ως κάτω
+                        .focusProperties { canFocus = enabled }
                         .tvFocus(RoundedCornerShape(8.dp))
-                        .clickable { selected[id] = !(selected[id] ?: false) }
+                        .clickable(enabled = enabled) { selected[id] = !(selected[id] ?: false) }
                         .padding(vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Checkbox(checked = selected[id] == true, onCheckedChange = { selected[id] = it },
+                    Checkbox(checked = selected[id] == true, enabled = enabled, onCheckedChange = { selected[id] = it },
                         colors = CheckboxDefaults.colors(checkedColor = Accent))
-                    Text(title, color = TextHi, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(title, color = if (enabled) TextHi else TextLo, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    Text(pluralStringResource(R.plurals.catalog_item_count, itemCount, itemCount),
+                        color = if (enabled) TextMid else TextLo, fontSize = 12.sp)
                 }
             }
             if (visible.isEmpty()) item {
-                Text("Καμία κατηγορία δεν ταιριάζει στο «$filter».",
+                Text(stringResource(R.string.catalog_no_category_match, filter),
                     color = TextLo, fontSize = 13.sp,
                     modifier = Modifier.padding(vertical = 16.dp))
             }
@@ -310,19 +344,19 @@ internal fun CategoryPicker(
                     border = BorderStroke(1.dp, Line),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = TextHi),
                     modifier = Modifier.weight(1f).height(48.dp).tvFocus(RoundedCornerShape(14.dp))
-                ) { Text("Ακύρωση") }
+                ) { Text(stringResource(R.string.catalog_cancel)) }
             }
             Button(
                 onClick = {
-                    val ids = categories.map { it.first }.filter { selected[it] == true }
-                    onLoad(if (ids.size == categories.size) null else ids)
+                    val selectableIds = categories.map { it.first }.filter { (counts[it] ?: 0) > 0 }
+                    val ids = selectableIds.filter { selected[it] == true }
+                    onLoad(if (ids.size == selectableIds.size) null else ids)
                 },
-                enabled = count > 0,
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, disabledContainerColor = BgElev2),
                 modifier = Modifier.weight(1.4f).height(48.dp)
                     .focusRequester(okFocus).testTag("category-load").tvFocus(RoundedCornerShape(14.dp), tint = false)
-            ) { Text("Φόρτωση ($count)", fontWeight = FontWeight.Bold) }
+            ) { Text(stringResource(R.string.catalog_apply_categories, count), fontWeight = FontWeight.Bold) }
         }
     }
 }

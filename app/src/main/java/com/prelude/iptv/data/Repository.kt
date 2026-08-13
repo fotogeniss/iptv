@@ -188,11 +188,12 @@ object Repository {
         contentType: String,
         ids: List<String>?,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> = when (contentType) {
-        "vod" -> cli.getVodChannels(ids, onProgress, onPartial)
-        "series" -> cli.getSeriesChannels(ids, onProgress, onPartial)
-        else -> cli.getChannels(ids, onProgress, onPartial)
+        "vod" -> cli.getVodChannels(ids, onProgress, onPartial, onCategories)
+        "series" -> cli.getSeriesChannels(ids, onProgress, onPartial, onCategories)
+        else -> cli.getChannels(ids, onProgress, onPartial, onCategories)
     }
 
     fun xtreamLiveCategories(pl: Playlist, onProgress: SourceProgressCallback? = null): List<Pair<String, String>> =
@@ -200,27 +201,30 @@ object Repository {
 
     fun xtreamLiveSelected(
         pl: Playlist, ids: List<String>?, onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> =
-        XtreamClient.live(pl.server, pl.username, pl.password, pl.output, ids, onProgress, onPartial)
+        XtreamClient.live(pl.server, pl.username, pl.password, pl.output, ids, onProgress, onPartial, onCategories)
 
     fun xtreamVodCategories(pl: Playlist, onProgress: SourceProgressCallback? = null): List<Pair<String, String>> =
         XtreamClient.vodCategories(pl.server, pl.username, pl.password, onProgress)
 
     fun xtreamVodSelected(
         pl: Playlist, ids: List<String>?, onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> =
-        XtreamClient.vod(pl.server, pl.username, pl.password, ids, onProgress, onPartial)
+        XtreamClient.vod(pl.server, pl.username, pl.password, ids, onProgress, onPartial, onCategories)
 
     fun xtreamSeriesCategories(pl: Playlist, onProgress: SourceProgressCallback? = null): List<Pair<String, String>> =
         XtreamClient.seriesCategories(pl.server, pl.username, pl.password, onProgress)
 
     fun xtreamSeriesSelected(
         pl: Playlist, ids: List<String>?, onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> =
-        XtreamClient.seriesList(pl.server, pl.username, pl.password, ids, onProgress, onPartial)
+        XtreamClient.seriesList(pl.server, pl.username, pl.password, ids, onProgress, onPartial, onCategories)
 
     fun xtreamVodInfo(pl: Playlist, streamId: String): Map<String, String> =
         XtreamClient.vodInfo(pl.server, pl.username, pl.password, streamId)

@@ -3,6 +3,7 @@ package com.prelude.iptv.source
 import android.util.Base64
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgEntry
+import com.prelude.iptv.data.SourceCategoriesCallback
 import com.prelude.iptv.data.SourceProgressCallback
 import com.prelude.iptv.data.SourcePartialCallback
 import com.prelude.iptv.net.Http
@@ -121,7 +122,7 @@ object XtreamClient {
         rangeStart: Int = 10,
         rangeEnd: Int = 25
     ): Map<String, String> {
-        val out = HashMap<String, String>()
+        val out = LinkedHashMap<String, String>()
         try {
             val arr = JSONArray(fetchX(
                 "$base/player_api.php?${q(user, pass)}&action=$action",
@@ -188,10 +189,12 @@ object XtreamClient {
         server: String, user: String, pass: String, output: String,
         categoryIds: List<String>? = null,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> {
         val b = base(server); auth(b, user, pass, onProgress)
         val cats = categories(b, user, pass, "get_live_categories", onProgress, 10, 22)
+        onCategories?.invoke(cats.map { it.key to it.value })
         val requests: List<String?> = categoryIds?.filter { it.isNotBlank() }?.distinct()?.map { it }
             ?.takeIf { it.isNotEmpty() } ?: listOf(null)
         val out = ArrayList<Channel>()
@@ -245,10 +248,12 @@ object XtreamClient {
         server: String, user: String, pass: String,
         categoryIds: List<String>? = null,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> {
         val b = base(server); auth(b, user, pass, onProgress)
         val cats = categories(b, user, pass, "get_vod_categories", onProgress, 10, 22)
+        onCategories?.invoke(cats.map { it.key to it.value })
         val requests: List<String?> = categoryIds?.filter { it.isNotBlank() }?.distinct()?.map { it }
             ?.takeIf { it.isNotEmpty() } ?: listOf(null)
         val out = ArrayList<Channel>()
@@ -302,10 +307,12 @@ object XtreamClient {
         server: String, user: String, pass: String,
         categoryIds: List<String>? = null,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> {
         val b = base(server); auth(b, user, pass, onProgress)
         val cats = categories(b, user, pass, "get_series_categories", onProgress, 10, 22)
+        onCategories?.invoke(cats.map { it.key to it.value })
         val requests: List<String?> = categoryIds?.filter { it.isNotBlank() }?.distinct()?.map { it }
             ?.takeIf { it.isNotEmpty() } ?: listOf(null)
         val out = ArrayList<Channel>()

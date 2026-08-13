@@ -27,6 +27,7 @@ import com.prelude.iptv.ui.coordinator.SourceSwitchCoordinator
 import com.prelude.iptv.ui.coordinator.SourceSwitchStatePolicy
 import com.prelude.iptv.ui.epg.EpgStatus
 import com.prelude.iptv.ui.policy.CatalogPresentationPolicy
+import com.prelude.iptv.ui.policy.CatalogCategoryVisibilityPolicy
 import com.prelude.iptv.ui.profile.ProfileDisplayName
 import com.prelude.iptv.category.CategoryEditorState
 import com.prelude.iptv.category.CategoryLayout
@@ -54,7 +55,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** EPG δηλωμένο στην κεφαλίδα του M3U (url-tvg) */
     private var m3uEpgUrl: String = ""
 
-    /** Τι διάλεξε ο χρήστης ανά (λίστα, ενότητα): null = όλα. Αν υπάρχει, δεν ξαναρωτάμε. */
+    /** Τι θέλει να βλέπει ανά (πηγή, ενότητα): null = όλα, πάνω στο πλήρες snapshot. */
     private val loadChoice = HashMap<String, List<String>?>()
 
     /** Bounded process-only catalogs and source working sets. */
@@ -146,7 +147,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * already unwinding after cancellation.
      */
     private fun cancelActiveLoad() {
-        lastPartialPublishMs = 0L
         sourceGeneration.invalidateAll()
         cancelActiveLoadJobs()
     }
@@ -218,22 +218,23 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private fun categoryChoice(pl: Playlist, type: String): Pair<Boolean, List<String>?> =
         rememberedChoice("${plId(pl)}:$type")
 
-    private fun cacheKey(pl: Playlist, type: String, ids: List<String>?) =
-        catalogSession.catalogKey(PlaylistIdentity.stableId(pl), type, ids)
+    private fun cacheKey(pl: Playlist, type: String) =
+        catalogSession.catalogKey(PlaylistIdentity.stableId(pl), type, null)
 
     private fun cacheCatalog(
         pl: Playlist,
         type: String,
-        ids: List<String>?,
         channels: List<Channel>,
         groups: List<String>,
+        categories: List<Pair<String, String>>,
         seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>>
     ) {
         catalogSession.putCatalog(
-            cacheKey(pl, type, ids),
+            cacheKey(pl, type),
             SessionCatalogSnapshot(
                 channels = channels,
                 groups = groups,
+                categories = categories,
                 seriesEpisodes = seriesEpisodes,
                 epgUrl = if (pl.type == com.prelude.iptv.data.PlaylistType.M3U) m3uEpgUrl else ""
             )
@@ -261,7 +262,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val homeSectionTypes = listOf("live", "vod", "series")
 
     private fun cachedSection(pl: Playlist, type: String): List<Channel>? {
-        return catalogSession.getCatalog(cacheKey(pl, type, null))?.channels
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return null
+        val (hasChoice, ids) = categoryChoice(pl, type)
+        return CatalogCategoryVisibilityPolicy.visibleChannels(
+            snapshot.categories,
+            snapshot.channels,
+            ids.takeIf { hasChoice },
+        )
     }
 
     private fun refreshHomeCatalog() {
@@ -279,9 +286,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         seasons: List<Pair<String, List<Channel>>>
     ) {
         if (seriesId.isBlank() || seasons.isEmpty()) return
-        val (hasChoice, ids) = categoryChoice(pl, "series")
-        if (!hasChoice) return
-        val key = cacheKey(pl, "series", ids)
+        val key = cacheKey(pl, "series")
         val snapshot = catalogSession.getCatalog(key) ?: return
         catalogSession.putCatalog(
             key,
@@ -290,8 +295,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Restores a catalog without network, parsing or normalization work. */
-    private fun restoreSessionCatalog(pl: Playlist, type: String, ids: List<String>?): Boolean {
-        val snapshot = catalogSession.getCatalog(cacheKey(pl, type, ids)) ?: return false
+    private fun restoreSessionCatalog(pl: Playlist, type: String): Boolean {
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return false
+        val (hasChoice, rememberedIds) = categoryChoice(pl, type)
+        val visibleChannels = CatalogCategoryVisibilityPolicy.visibleChannels(
+            snapshot.categories,
+            snapshot.channels,
+            rememberedIds.takeIf { hasChoice },
+        )
         loadedContentType = type
         store.saveLastSection(plId(pl), type)
         catalogSession.seriesEpisodes = if (type == "series") snapshot.seriesEpisodes else emptyMap()
@@ -312,27 +323,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         store.reconcileFavorites(sourceId, favoriteCandidates)
         persistCatalogCount(sourceId, type, snapshot.channels.size)
         val favoriteKeys = store.loadFavorites(sourceId)
-        val restoredGroups = buildGroups(snapshot.channels, favoriteKeys.isNotEmpty())
+        val restoredGroups = buildGroups(visibleChannels, favoriteKeys.isNotEmpty())
         _state.value = _state.value.copy(
             chooseContent = false,
             askLoadType = null,
-            askLoadMode = false,
             pickCategories = false,
             contentType = type,
-            channels = snapshot.channels,
+            channels = visibleChannels,
             favorites = favoriteKeys,
             groups = restoredGroups,
             selectedGroup = UiState.ALL_GROUP,
             loading = false,
-            status = "Έτοιμα ${snapshot.channels.size} στοιχεία · μνήμη συνεδρίας"
+            status = "Έτοιμα ${visibleChannels.size} από ${snapshot.channels.size} στοιχεία · μνήμη συνεδρίας"
         )
         if (type == "live") loadEpgIfAny(pl)
         return true
-    }
-
-    private fun restoreRememberedSession(pl: Playlist, type: String): Boolean {
-        val (hasChoice, ids) = categoryChoice(pl, type)
-        return hasChoice && restoreSessionCatalog(pl, type, ids)
     }
 
     private fun rememberM3uPayload(
@@ -383,7 +388,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             currentSourceId = ::currentSourceId,
             currentContentType = { _state.value.contentType },
             loadLayout = store::loadCategoryLayout,
-            loadCategories = { playlist, type -> catalogLoader.categories(playlist, type) },
+            loadCategories = { playlist, type ->
+                catalogSession.getCatalog(cacheKey(playlist, type))?.categories
+                    ?: catalogLoader.categories(playlist, type)
+            },
             saveLayout = store::saveCategoryLayout,
             saveChoice = { key, ids ->
                 loadChoice[key] = ids
@@ -689,7 +697,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // remain immediately browsable; selecting a section that is still pending
         // must not cancel the import or blank the currently visible catalog.
         if (_state.value.loadingAllSections) {
-            if (restoreSessionCatalog(pl, t, null)) {
+            if (restoreSessionCatalog(pl, t)) {
                 _state.value = _state.value.copy(chooseContent = false)
                 return
             }
@@ -708,180 +716,43 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             channels = emptyList(),
             groups = emptyList(),
             selectedGroup = UiState.ALL_GROUP,
-            askRefreshMode = false,
-            askLoadMode = false,
             pickCategories = false,
-            categoryPickerFromRefresh = false,
+            categories = emptyList(),
+            categoryCounts = emptyMap(),
             categorySelectionIds = null,
             loading = false,
             status = ""
         )
-        if (restoreSessionCatalog(pl, t, null)) return
+        if (restoreSessionCatalog(pl, t)) return
         loadAllSections()
     }
 
     // Τα confirmLoadType/cancelLoadType αφαιρέθηκαν μαζί με το ενδιάμεσο
     // dialog «Φόρτωση Χ;» — το setContentType πάει πλέον κατευθείαν στη ροή.
 
-    /** Router: Stalker/Xtream → κατηγορίες· M3U → επιλογή group (μετά το parse). */
+    /** Restores the complete section snapshot or restarts the complete source load. */
     fun loadCurrent(forceNetwork: Boolean = false) {
         val pl = currentPlaylist() ?: return
         val type = _state.value.contentType
-        if (!forceNetwork && restoreSessionCatalog(pl, type, null)) return
+        if (!forceNetwork && restoreSessionCatalog(pl, type)) return
         loadAllSections()
     }
 
     /** Refresh is available whenever an active source exists. */
     fun canRefreshCurrentSection(): Boolean = currentPlaylist() != null
 
-    /** Opens the shared TV/mobile refresh choice without starting network work. */
+    /** Refreshes the complete source; category visibility remains a local preference. */
     fun requestRefresh() {
         if (currentPlaylist() == null || _state.value.loading) return
-        _state.value = _state.value.copy(askRefreshMode = true)
+        loadAllSections()
     }
 
-    fun cancelRefreshChoice() {
-        _state.value = _state.value.copy(askRefreshMode = false)
-    }
+    fun cancelRefreshChoice() = Unit
 
-    private fun invalidateForRefresh(pl: Playlist) {
-        cancelActiveLoad()
-        Repository.invalidate(pl)
-        clearSourceSession(pl)
-        stalker = null
-        stalkerSourceId = ""
-    }
-
-    /**
-     * Refreshes only the groups already stored for the current source/section.
-     * The visible catalog stays in place until fresh data succeeds.
-     */
-    fun refreshExistingSelection() {
-        val pl = currentPlaylist() ?: return
-        val type = _state.value.contentType
-        val hasRememberedChoice = rememberedChoice("${plId(pl)}:$type").first
-        if (!hasRememberedChoice) {
-            refreshAndChooseGroups()
-            return
-        }
-        invalidateForRefresh(pl)
-        updateSourceProgress(pl, 0, "Ανανέωση υπαρχόντων groups…", active = true, contentType = type)
-        _state.value = _state.value.copy(
-            askRefreshMode = false,
-            loading = true,
-            status = "Ανανέωση υπαρχόντων groups…"
-        )
-        loadRemembered(pl, force = true)
-    }
-
-    /**
-     * Downloads a fresh provider group list and opens the picker directly.
-     * Existing channels remain visible if the user cancels the new selection.
-     */
-    fun refreshAndChooseGroups() {
-        val pl = currentPlaylist() ?: return
-        val type = _state.value.contentType
-        val (_, rememberedIds) = categoryChoice(pl, type)
-        invalidateForRefresh(pl)
-        updateSourceProgress(pl, 0, "Ανανέωση διαθέσιμων groups…", active = true, contentType = type)
-        _state.value = _state.value.copy(
-            askRefreshMode = false,
-            askLoadMode = false,
-            pickCategories = false,
-            categoryPickerFromRefresh = false,
-            categorySelectionIds = null,
-            loading = true,
-            status = "Ανανέωση διαθέσιμων groups…"
-        )
-        startCategoryPick(
-            pl = pl,
-            forceAsk = true,
-            openPickerDirectly = true,
-            initialSelectionIds = rememberedIds
-        )
-    }
-
-    /** Compatibility entry point for older call sites. */
-    fun refresh() = refreshExistingSelection()
-
-    /**
-     * Φέρνει τη λίστα κατηγοριών.
-     * ΔΕΝ αγγίζει τα κανάλια που βλέπει ο χρήστης: αν ακυρώσει, όλα μένουν ως έχουν.
-     */
-    private fun startCategoryPick(
-        pl: Playlist,
-        forceAsk: Boolean = false,
-        openPickerDirectly: Boolean = false,
-        initialSelectionIds: List<String>? = null
-    ) {
-        // Ξέρουμε ήδη τι θέλει (από προηγούμενη φορά); Τότε ΔΕΝ κατεβάζουμε καν
-        // κατηγορίες και δεν ξαναρωτάμε: φορτώνουμε κατευθείαν ό,τι είχε
-        // επιλέξει — ΣΕ ΟΛΕΣ τις ενότητες που είχε ανοίξει, όχι μόνο στην τελευταία.
-        if (!forceAsk && loadRemembered(pl)) return
-        _state.value = _state.value.copy(loading = true, status = "Σύνδεση…")
-        // Παγώνουμε ΤΩΡΑ τι φορτώνουμε: αν στο μεταξύ ο χρήστης αλλάξει
-        // λίστα/ενότητα, τα captured pl/type/gen δεν «γλιστράνε» στη νέα.
-        val gen = sourceGeneration.currentLoad()
-        val type = _state.value.contentType
-        val progress = progressCallback(pl, gen, type)
-        updateSourceProgress(pl, 1, "Σύνδεση…", active = true, contentType = type)
-        catalogLoadJob = viewModelScope.launch {
-            try {
-                val cats = catalogLoader.categories(pl, type, progress)
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch     // άλλαξε λίστα στο μεταξύ
-                val k = "${plId(pl)}:$type"
-                val (remembered, rememberedIds) = rememberedChoice(k)
-                when {
-                    // Καμία κατηγορία -> φόρτωσε τα πάντα. Αν αυτό ξεκίνησε από
-                    // «Ανανέωση + επιλογή νέων groups», κράτησε transactional
-                    // persistence ακόμη και χωρίς ενδιάμεσο picker.
-                    cats.isEmpty() -> loadSelectedCategoriesInternal(
-                        ids = null,
-                        replaceActive = false,
-                        refreshSelectionOverride = openPickerDirectly
-                    )
-                    // refresh + επιλογή: πήγαινε κατευθείαν στον picker, με την παλιά επιλογή προσημειωμένη
-                    openPickerDirectly -> {
-                        finishSourceProgress(pl, "Τα διαθέσιμα groups είναι έτοιμα", success = true, type = type)
-                        _state.value = _state.value.copy(
-                            loading = false,
-                            categories = cats,
-                            askLoadMode = false,
-                            pickCategories = true,
-                            categoryPickerFromRefresh = true,
-                            categorySelectionIds = CatalogRefreshPolicy.initialSelection(cats, initialSelectionIds),
-                            status = "${cats.size} διαθέσιμα groups"
-                        )
-                    }
-                    // ξέρουμε ήδη τι θέλει (ακόμα κι από προηγούμενη εκτέλεση) -> φόρτωσε
-                    !forceAsk && remembered -> loadSelectedCategoriesInternal(rememberedIds, replaceActive = false)
-                    // αλλιώς ρώτα: όλα ή επιλογή;
-                    else -> {
-                        finishSourceProgress(pl, "Οι κατηγορίες είναι έτοιμες", success = true, type = type)
-                        _state.value = _state.value.copy(
-                            loading = false,
-                            categories = cats,
-                            askLoadMode = true,
-                            pickCategories = false,
-                            categoryPickerFromRefresh = false,
-                            categorySelectionIds = null,
-                            status = "${cats.size} κατηγορίες"
-                        )
-                    }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: Exception) {
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch     // μην εμφανίσεις σφάλμα άλλης λίστας
-                // απέτυχε: γύρνα το pill στην ενότητα που όντως έχει περιεχόμενο
-                finishSourceProgress(pl, "Σφάλμα: ${e.message}", success = false, type = type)
-                _state.value = _state.value.copy(
-                    loading = false, status = "Σφάλμα: ${e.message}",
-                    contentType = loadedContentType
-                )
-            }
-        }
-    }
+    /** Compatibility entry points now refresh the same complete source snapshot. */
+    fun refreshExistingSelection() = requestRefresh()
+    fun refreshAndChooseGroups() = requestRefresh()
+    fun refresh() = requestRefresh()
 
     private fun sectionLabel(type: String): String = when (type) {
         "live" -> "Live TV"
@@ -909,8 +780,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val sections = listOf("live", "vod", "series")
         _state.value = _state.value.copy(
             chooseContent = false,
-            askLoadMode = false,
             pickCategories = false,
+            categories = emptyList(),
+            categoryCounts = emptyMap(),
             channels = emptyList(),
             groups = emptyList(),
             selectedGroup = UiState.ALL_GROUP,
@@ -950,8 +822,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     store.reconcileHistory(sourceId, historyCandidates)
                     store.reconcileFavorites(sourceId, historyCandidates)
                     val favoriteKeys = store.loadFavorites(sourceId)
-                    val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
-                    cacheCatalog(pl, type, null, channels, groups, loaded.seriesEpisodes)
+                    val fullGroups = buildGroups(channels, favoriteKeys.isNotEmpty(), type)
+                    cacheCatalog(
+                        pl, type, channels, fullGroups, loaded.categories, loaded.seriesEpisodes
+                    )
                     persistCatalogCount(sourceId, type, channels.size)
                     if (type == "live") catalogSession.liveChannels = channels
                     if (type == "series") catalogSession.seriesEpisodes = loaded.seriesEpisodes
@@ -959,13 +833,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     val completed = _state.value.loadedSections + type
                     val shouldPublish = !published || _state.value.contentType == type
                     if (shouldPublish) {
+                        val (hasChoice, selectedIds) = categoryChoice(pl, type)
+                        val visibleChannels = CatalogCategoryVisibilityPolicy.visibleChannels(
+                            loaded.categories,
+                            channels,
+                            selectedIds.takeIf { hasChoice },
+                        )
+                        val visibleGroups = buildGroups(visibleChannels, favoriteKeys.isNotEmpty(), type)
                         published = true
                         loadedContentType = type
                         store.saveLastSection(plId(pl), type)
                         _state.value = _state.value.copy(
                             contentType = type,
-                            channels = channels,
-                            groups = groups,
+                            channels = visibleChannels,
+                            groups = visibleGroups,
                             favorites = favoriteKeys,
                             selectedGroup = UiState.ALL_GROUP,
                             loading = true,
@@ -1010,307 +891,84 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** «Όλα» σημαίνει όλες τις κατηγορίες της ορατής ενότητας. */
-    fun loadEverything() {
-        loadSelectedCategories(null)
-    }
+    fun loadEverything() = loadSelectedCategories(null)
 
-    /** Restores the session snapshot first; network is only the cache-miss path. */
-    private fun loadRemembered(pl: Playlist, force: Boolean = false): Boolean {
-        val id = plId(pl)
-        val type = _state.value.contentType
-        val (hasChoice, ids) = rememberedChoice("$id:$type")
-        if (!hasChoice) return false
-        if (!force && restoreSessionCatalog(pl, type, ids)) return true
-        val gen = sourceGeneration.currentLoad()
-        val selectedGroupBeforeRefresh = _state.value.selectedGroup
-        val rollbackSnapshot = if (force) catalogLoader.captureVisible(_state.value) else null
-        val progress = progressCallback(pl, gen, type)
-        updateSourceProgress(pl, 0, if (force) "Ανανέωση από την πηγή…" else "Λήψη από την πηγή…", active = true, contentType = type)
-        _state.value = _state.value.copy(
-            loading = true,
-            status = if (force) "Ανανέωση από την πηγή…" else "Λήψη από την πηγή…",
-            askLoadMode = false,
-            pickCategories = false,
-            chooseContent = false,
-            askLoadType = null
-        )
-        catalogLoadJob = viewModelScope.launch {
-            try {
-                val loaded = catalogLoader.section(
-                    pl, type, ids, progress,
-                    partialPublisher(pl, type, gen, "Λήψη σε εξέλιξη")
-                )
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                val rawChannels = loaded.rawItems
-                val channels = loaded.items
-                catalogSession.seriesEpisodes = if (type == "series") loaded.seriesEpisodes else emptyMap()
-                loadedContentType = type
-                store.saveLastSection(id, type)
-                val sourceId = PlaylistIdentity.stableId(pl)
-                val historyCandidates = if (type == "series") rawChannels else channels
-                store.migrateLegacyHistory(sourceId, historyCandidates)
-                store.reconcileHistory(sourceId, historyCandidates)
-                store.reconcileFavorites(sourceId, historyCandidates)
-                val favoriteKeys = store.loadFavorites(sourceId)
-                val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
-                catalogSession.liveChannels = if (type == "live") channels else emptyList()
-                cacheCatalog(pl, type, ids, channels, groups, loaded.seriesEpisodes)
-                persistCatalogCount(sourceId, type, channels.size)
-                finishSourceProgress(pl, "Ολοκληρώθηκε · ${channels.size} στοιχεία", success = true, type = type)
-                _state.value = _state.value.copy(
-                    contentType = type,
-                    channels = channels,
-                    groups = groups,
-                    favorites = favoriteKeys,
-                    selectedGroup = if (force) {
-                        CatalogRefreshPolicy.restoredVisibleGroup(
-                            previousGroup = selectedGroupBeforeRefresh,
-                            freshGroups = groups,
-                            allGroup = UiState.ALL_GROUP
-                        )
-                    } else UiState.ALL_GROUP,
-                    loading = false,
-                    status = if (force) "Ενημερώθηκε · ${channels.size} στοιχεία"
-                    else "Φορτώθηκαν ${channels.size} στοιχεία"
-                )
-                if (type == "live") loadEpgIfAny(pl)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: Exception) {
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                finishSourceProgress(pl, "Σφάλμα ανανέωσης: ${e.message}", success = false, type = type)
-                val status = "Σφάλμα ανανέωσης: ${e.message}"
-                _state.value = rollbackSnapshot?.let {
-                    catalogLoader.restoreAfterRefreshFailure(_state.value, it, status)
-                } ?: _state.value.copy(loading = false, status = status)
-            }
-        }
-        return true
-    }
+    /** Compatibility entry point: category choice now always opens the local picker. */
+    fun chooseCategories() = changeCategories()
 
-    /** «Θέλω να επιλέξω» → ανοίγει ο διαλογέας κατηγοριών */
-    fun chooseCategories() {
-        _state.value = _state.value.copy(
-            askLoadMode = false,
-            pickCategories = true,
-            categoryPickerFromRefresh = false,
-            categorySelectionIds = null,
-            status = "Διάλεξε κατηγορίες (${_state.value.categories.size})"
-        )
-    }
-
-    /** ⋮ → «Κατηγορίες / Ομάδες…»: το ΜΟΝΟ σημείο που ξαναρωτάει επίτηδες. */
+    /** Quick action: opens category visibility for an already complete section. */
     fun changeCategories() {
         val pl = currentPlaylist() ?: return
-        cancelActiveLoad()
-        // Keep the old snapshot until the user confirms a new selection.
-        // The parsed M3U payload is also reusable because this is a local filter change.
-        startCategoryPick(pl, forceAsk = true)
+        if (_state.value.loadingAllSections) return
+        val type = _state.value.contentType
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return
+        val (hasChoice, rememberedIds) = categoryChoice(pl, type)
+        _state.value = _state.value.copy(
+            pickCategories = true,
+            categories = snapshot.categories,
+            categoryCounts = CatalogCategoryVisibilityPolicy.counts(snapshot.categories, snapshot.channels),
+            categorySelectionIds = CatalogCategoryVisibilityPolicy.initialSelection(
+                snapshot.categories,
+                hasChoice,
+                rememberedIds,
+            ),
+            status = "${snapshot.channels.size} στοιχεία σε ${snapshot.categories.size} κατηγορίες"
+        )
     }
 
-    /** Loads the complete provider category catalogue for the settings editor. */
+    /** Opens the editor from cached category metadata; network is only a cache-miss fallback. */
     fun openCategoryEditor() = categoryEditor.open()
 
     fun updateCategoryEditorLayout(type: String, layout: CategoryLayout) =
         categoryEditor.updateLayout(type, layout)
 
-    /** Persists all three tabs and immediately reloads the active section when needed. */
+    /** Persists all three tabs and reapplies the active section locally when needed. */
     fun saveCategoryEditor() = categoryEditor.save()
 
-    /** Πίσω από τον διαλογέα κατηγοριών στην ερώτηση «όλα ή επιλογή;». */
-    fun backToLoadMode() {
-        _state.value = _state.value.copy(
-            pickCategories = false,
-            askLoadMode = true,
-            categoryPickerFromRefresh = false,
-            categorySelectionIds = null
-        )
-    }
+    fun backToLoadMode() = cancelCategoryPicker()
 
-    /** Back from a refresh picker cancels it; normal initial-load picker returns to mode choice. */
     fun cancelCategoryPicker() {
-        if (_state.value.categoryPickerFromRefresh) cancelLoadMode() else backToLoadMode()
-    }
-
-    /** Άκυρο σε οποιαδήποτε ερώτηση: μένουμε σε ό,τι είναι ήδη φορτωμένο. */
-    fun cancelLoadMode() {
         _state.value = _state.value.copy(
-            askLoadMode = false,
-            askRefreshMode = false,
             pickCategories = false,
-            categoryPickerFromRefresh = false,
-            categorySelectionIds = null,
-            loading = false,
             categories = emptyList(),
-            contentType = loadedContentType
+            categoryCounts = emptyMap(),
+            categorySelectionIds = null,
         )
     }
+
+    fun cancelLoadMode() = cancelCategoryPicker()
 
     /** Συμβατότητα για παλιότερα call sites. */
     fun cancelCategoryPick() = cancelCategoryPicker()
 
-    /**
-     * Publishes immutable partial catalogs while provider work continues.
-     * Provider dispatch and normalization live in CatalogLoadCoordinator;
-     * this boundary only applies source/generation guards and updates UI state.
-     */
-    /**
-     * Throttle για progressive partials: το UI ανανεωνόταν σε ΚΑΘΕ batch κατά το
-     * loading, με O(όλα τα κανάλια) recompute κάθε φορά — «σερνόταν» σε μεγάλους
-     * καταλόγους. Τώρα δημοσιεύουμε ένα intermediate partial το πολύ ανά
-     * [partialThrottleMs]. Το ΤΕΛΙΚΟ πλήρες αποτέλεσμα δημοσιεύεται πάντα ξεχωριστά,
-     * οπότε δεν χάνεται περιεχόμενο.
-     */
-    private var lastPartialPublishMs = 0L
-    private val partialThrottleMs = 900L
-
-    private fun shouldPublishPartial(): Boolean {
-        val now = System.currentTimeMillis()
-        if (now - lastPartialPublishMs < partialThrottleMs) return false
-        lastPartialPublishMs = now
-        return true
-    }
-
-    private fun partialPublisher(
-        pl: Playlist,
-        type: String,
-        gen: Int,
-        stage: String
-    ): (CatalogLoadCoordinator.PartialCatalog) -> Unit = { partialCatalog ->
-        val partial = partialCatalog.items
-        if (partial.isNotEmpty() && sourceGeneration.isCurrentLoad(gen) && currentSourceId() == PlaylistIdentity.stableId(pl) && shouldPublishPartial()) {
-            val favorites = store.loadFavorites(PlaylistIdentity.stableId(pl))
-            val groups = buildGroups(partial, favorites.isNotEmpty())
-            _state.update { current ->
-                if (!sourceGeneration.isCurrentLoad(gen) || current.contentType != type) current
-                else current.copy(
-                    channels = partial,
-                    groups = groups,
-                    favorites = favorites,
-                    selectedGroup = CatalogRefreshPolicy.restoredVisibleGroup(
-                        current.selectedGroup, groups, UiState.ALL_GROUP
-                    ),
-                    loading = true,
-                    status = "$stage · ${partial.size} στοιχεία διαθέσιμα"
-                )
-            }
-        }
-    }
-
-    fun loadSelectedCategories(ids: List<String>?) =
-        loadSelectedCategoriesInternal(ids, replaceActive = true)
-
-    private fun loadSelectedCategoriesInternal(
-        ids: List<String>?,
-        replaceActive: Boolean,
-        refreshSelectionOverride: Boolean = false
-    ) {
+    /** Applies visibility without provider I/O; the complete snapshot remains cached. */
+    fun loadSelectedCategories(ids: List<String>?) {
         val pl = currentPlaylist() ?: return
-        if (replaceActive && catalogLoadJob?.isActive == true) {
-            sourceGeneration.invalidateLoad()
-            catalogLoadJob?.cancel()
-            catalogLoadJob = null
-            stalker?.cancelPendingRequests()
-            stalker = null
-            stalkerSourceId = ""
-            Http.cancelProviderRequests()
-        }
-        // Παγώνουμε source/type ΤΩΡΑ, ώστε αλλαγή λίστας στη μέση της λήψης
-        // να μην ενημερώσει το state της επόμενης πηγής.
         val type = _state.value.contentType
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return
         val k = "${plId(pl)}:$type"
-        val refreshSelection = CatalogRefreshPolicy.usesTransactionalSelectionCommit(
-            pickerFromRefresh = _state.value.categoryPickerFromRefresh,
-            directRefreshFallback = refreshSelectionOverride
+        loadChoice[k] = ids
+        store.saveLoadChoice(k, ids)
+        val channels = CatalogCategoryVisibilityPolicy.visibleChannels(
+            snapshot.categories,
+            snapshot.channels,
+            ids,
         )
-        val selectedGroupBeforeRefresh = _state.value.selectedGroup
-        val rollbackSnapshot = if (refreshSelection) catalogLoader.captureVisible(_state.value) else null
-        val gen = sourceGeneration.currentLoad()
-        catalogSession.invalidateSection(PlaylistIdentity.stableId(pl), type)
-        val progress = progressCallback(pl, gen, type)
-        updateSourceProgress(
-            pl,
-            0,
-            if (refreshSelection) "Ανανέωση επιλεγμένων groups…" else "Φόρτωση $type…",
-            active = true,
-            contentType = type
-        )
-        // Στην κανονική πρώτη φόρτωση η επιλογή αποθηκεύεται αμέσως, όπως πριν.
-        // Στο refresh picker όμως η νέα επιλογή γίνεται commit μόνο μετά από
-        // επιτυχημένη λήψη, ώστε failure/cancellation να μην αλλάξει σιωπηλά
-        // τα αποθηκευμένα groups πίσω από το παλιό ορατό catalog.
-        if (!refreshSelection) {
-            loadChoice[k] = ids
-            store.saveLoadChoice(k, ids)
-        }
+        val favoriteKeys = store.loadFavorites(PlaylistIdentity.stableId(pl))
+        val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
         _state.value = _state.value.copy(
-            askRefreshMode = false,
-            askLoadMode = false,
             pickCategories = false,
-            categoryPickerFromRefresh = false,
+            categories = emptyList(),
+            categoryCounts = emptyMap(),
             categorySelectionIds = null,
-            loading = true,
-            status = if (refreshSelection) "Ανανέωση επιλεγμένων groups…" else "Φόρτωση…"
+            channels = channels,
+            groups = groups,
+            favorites = favoriteKeys,
+            selectedGroup = UiState.ALL_GROUP,
+            loading = false,
+            status = "Εμφανίζονται ${channels.size} από ${snapshot.channels.size} στοιχεία",
         )
-        catalogLoadJob = viewModelScope.launch {
-            try {
-                val loaded = catalogLoader.section(
-                    pl, type, ids, progress,
-                    partialPublisher(pl, type, gen, "Λήψη σε εξέλιξη")
-                )
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch    // άλλαξε λίστα όσο κατέβαινε
-                val rawChannels = loaded.rawItems
-                val channels = loaded.items
-                catalogSession.seriesEpisodes = if (type == "series") loaded.seriesEpisodes else emptyMap()
-                loadedContentType = type
-                store.saveLastSection(plId(pl), type)
-                val sourceId = PlaylistIdentity.stableId(pl)
-                val historyCandidates = if (type == "series") rawChannels else channels
-                store.migrateLegacyHistory(sourceId, historyCandidates)
-                store.reconcileHistory(sourceId, historyCandidates)
-                store.reconcileFavorites(sourceId, historyCandidates)
-                val favoriteKeys = store.loadFavorites(sourceId)
-                val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
-                catalogSession.liveChannels = if (type == "live") channels else emptyList()
-                cacheCatalog(pl, type, ids, channels, groups, loaded.seriesEpisodes)
-                if (refreshSelection) {
-                    loadChoice[k] = ids
-                    store.saveLoadChoice(k, ids)
-                }
-                val st = if (refreshSelection) {
-                    "Ενημερώθηκαν ${channels.size} στοιχεία."
-                } else {
-                    "Φορτώθηκαν ${channels.size} στοιχεία."
-                }
-                finishSourceProgress(pl, "Ολοκληρώθηκε · ${channels.size} στοιχεία", success = true, type = type)
-                _state.value = _state.value.copy(
-                    channels = channels,
-                    groups = groups,
-                    favorites = favoriteKeys,
-                    selectedGroup = if (refreshSelection) {
-                        CatalogRefreshPolicy.restoredVisibleGroup(
-                            previousGroup = selectedGroupBeforeRefresh,
-                            freshGroups = groups,
-                            allGroup = UiState.ALL_GROUP
-                        )
-                    } else UiState.ALL_GROUP,
-                    loading = false,
-                    status = st,
-                    askLoadMode = false,
-                    askLoadType = null
-                )
-                if (type == "live") loadEpgIfAny(pl)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: Exception) {
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                val status = "Σφάλμα: ${e.message}"
-                finishSourceProgress(pl, status, success = false, type = type)
-                _state.value = rollbackSnapshot?.let {
-                    catalogLoader.restoreAfterRefreshFailure(_state.value, it, status)
-                } ?: _state.value.copy(loading = false, status = status)
-            }
-        }
+        refreshHomeCatalog()
     }
 
     /** Άμεση φόρτωση (M3U, Xtream VOD/Series). */
@@ -1478,10 +1136,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             epgSources = emptyList(),
             epgStatus = EpgStatus.Idle,
             chooseContent = false,
-            askRefreshMode = false,
-            askLoadMode = false,
             pickCategories = false,
-            categoryPickerFromRefresh = false,
+            categories = emptyList(),
+            categoryCounts = emptyMap(),
             categorySelectionIds = null,
             openSeriesTitle = null,
             seriesSeasons = emptyList(),
@@ -1577,9 +1234,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun nowText(tvgId: String): String? = epgCoordinator.nowText(tvgId)
 
-    private fun buildGroups(channels: List<Channel>, hasFavs: Boolean): List<String> {
+    private fun buildGroups(
+        channels: List<Channel>,
+        hasFavs: Boolean,
+        contentType: String = _state.value.contentType,
+    ): List<String> {
         val sourceId = currentSourceId()
-        val preferred = store.loadCategoryLayout(sourceId, _state.value.contentType).orderedTitles
+        val preferred = store.loadCategoryLayout(sourceId, contentType).orderedTitles
         return CatalogPresentationPolicy.groups(
             channels = channels,
             hasFavorites = hasFavs,
@@ -1715,7 +1376,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
         seriesLoadJob = viewModelScope.launch {
             val cached = catalogSession.seriesEpisodes[ch.seriesId]
-            val (_, rememberedIds) = rememberedChoice("${plId(pl)}:series")
             val requiresFresh = seriesLoader.requiresFreshCatalog(pl, ch, cached)
             if (requiresFresh) {
                 updateSourceProgress(
@@ -1732,7 +1392,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     playlist = pl,
                     series = ch,
                     cached = cached,
-                    rememberedCategoryIds = rememberedIds,
+                    rememberedCategoryIds = null,
                     progress = progressCallback(pl, gen, "series"),
                 )
                 Log.d(

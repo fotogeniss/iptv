@@ -7,7 +7,8 @@ import org.junit.Test
 class SessionCatalogCacheTest {
     private fun snapshot(name: String) = SessionCatalogSnapshot(
         channels = listOf(Channel(name = name)),
-        groups = listOf("Όλα")
+        groups = listOf("Όλα"),
+        categories = listOf("provider-id" to "Provider category"),
     )
 
     @Test
@@ -35,6 +36,7 @@ class SessionCatalogCacheTest {
         cache.put(selected, snapshot("Sports A"))
 
         assertEquals("Live A", cache.get(live)?.channels?.single()?.name)
+        assertEquals(listOf("provider-id" to "Provider category"), cache.get(live)?.categories)
         assertEquals("Movie A", cache.get(movies)?.channels?.single()?.name)
         assertEquals("Live B", cache.get(otherSource)?.channels?.single()?.name)
         assertEquals("Sports A", cache.get(selected)?.channels?.single()?.name)

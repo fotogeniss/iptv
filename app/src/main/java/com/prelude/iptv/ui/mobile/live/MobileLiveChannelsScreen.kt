@@ -49,6 +49,7 @@ fun MobileLiveChannelsScreen(
     onPlay: (Channel) -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenCategories: () -> Unit,
     nowTextFor: (Channel) -> String? = { null },
     onOpenEpg: (() -> Unit)? = null,
     onNavigationCollapsedChange: (Boolean) -> Unit = {},
@@ -129,6 +130,7 @@ fun MobileLiveChannelsScreen(
                 title = selectedGroup?.title ?: stringResource(R.string.live_title),
                 onBack = { if (openGroup != null) openGroup = null else onBack() },
                 onOpenEpg = onOpenEpg,
+                onOpenCategories = onOpenCategories,
                 onSettings = onOpenSettings,
             )
             LiveSearchField(

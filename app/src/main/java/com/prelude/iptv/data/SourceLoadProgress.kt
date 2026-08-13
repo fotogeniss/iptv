@@ -13,5 +13,8 @@ data class SourceLoadProgress(
 
 typealias SourceProgressCallback = (percent: Int?, stage: String) -> Unit
 
+/** Publishes the provider category id/title catalogue already fetched by a section load. */
+typealias SourceCategoriesCallback = (categories: List<Pair<String, String>>) -> Unit
+
 /** Publishes an immutable accumulated catalog while provider loading continues. */
 typealias SourcePartialCallback = (items: List<Channel>) -> Unit

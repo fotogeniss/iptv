@@ -39,15 +39,10 @@ data class UiState(
     val epgLoaded: Boolean = false,
     val epgSources: List<EpgSourceOption> = emptyList(),
     val epgStatus: EpgStatus = EpgStatus.Idle,
-    // επιλογή κατηγοριών πριν τη φόρτωση
+    // τοπική επιλογή ορατών κατηγοριών μετά την πλήρη φόρτωση
     val pickCategories: Boolean = false,
     val categories: List<Pair<String, String>> = emptyList(),
-    /** ερώτηση πριν τη φόρτωση: όλα ή επιλογή κατηγοριών; */
-    val askLoadMode: Boolean = false,
-    /** επιλογή τρόπου ανανέωσης: υπάρχοντα groups ή φρέσκια επιλογή. */
-    val askRefreshMode: Boolean = false,
-    /** Ο picker άνοιξε από refresh και το Back πρέπει να επιστρέψει στο catalog. */
-    val categoryPickerFromRefresh: Boolean = false,
+    val categoryCounts: Map<String, Int> = emptyMap(),
     /** null = όλα επιλεγμένα, set = προεπιλεγμένα ids από την προηγούμενη επιλογή. */
     val categorySelectionIds: Set<String>? = null,
     /** ενότητα που ζητήθηκε αλλά δεν είναι φορτωμένη -> «να τη φορτώσω;» */

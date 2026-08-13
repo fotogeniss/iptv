@@ -53,6 +53,7 @@ class CatalogLoadCoordinatorTest {
         }
 
         assertEquals(listOf("One"), loaded.items.map(Channel::name))
+        assertEquals(listOf("News" to "News"), loaded.categories)
         assertEquals(loaded.items.map(Channel::name), partials.single())
         assertEquals(2, loaded.rawItems.size)
     }

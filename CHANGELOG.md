@@ -5,6 +5,29 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.65.0 - versionCode 137
+
+- Category selection now happens after the complete Live TV, Movies and Series
+  download. The picker reads provider category ids and names from the completed
+  in-memory snapshot, shows the item count beside every category and keeps
+  provider categories with zero items visible but disabled.
+- Applying a category selection is a local visibility change. It does not
+  invalidate the full section, contact the provider or download the selected
+  categories again; reopening the section and Home uses the same persisted
+  visibility choice over the complete session snapshot.
+- Removed the pre-download load-mode and refresh-mode dialogs from active state
+  and routing. Refresh now fetches the complete source again, while category
+  choice remains independent.
+- Added the post-download category quick action to Mobile Live and to the
+  existing Android TV navigation rail. The full-screen picker retains explicit
+  initial focus, right-arrow focus to Apply, non-focusable zero-count rows and
+  returns to the still-composed TV rail item when closed.
+- Greek and English QA resources cover the new names, summaries, counts and
+  actions. The interaction follows the approved
+  `prototypes/full_load_then_choose.html` preview.
+- Build and device verification are pending. The separate 1.63.0 progress-bar
+  wording also still awaits visual confirmation on mobile and TV.
+
 ## 1.64.0 - versionCode 136
 
 - Opening a source now downloads Live TV, movies and series in one sequential

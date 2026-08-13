@@ -16,6 +16,7 @@ data class SessionCatalogKey(
 data class SessionCatalogSnapshot(
     val channels: List<Channel>,
     val groups: List<String>,
+    val categories: List<Pair<String, String>> = emptyList(),
     val seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>> = emptyMap(),
     val epgUrl: String = "",
     val loadedAtMs: Long = System.currentTimeMillis()

@@ -5,6 +5,7 @@ import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.data.Repository
+import com.prelude.iptv.data.SourceCategoriesCallback
 import com.prelude.iptv.data.SourcePartialCallback
 import com.prelude.iptv.data.SourceProgressCallback
 import com.prelude.iptv.source.StalkerClient
@@ -34,6 +35,7 @@ internal class CatalogLoadCoordinator(
     data class LoadedCatalog(
         val rawItems: List<Channel>,
         val items: List<Channel>,
+        val categories: List<Pair<String, String>> = emptyList(),
         val seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>> = emptyMap(),
     )
 
@@ -89,6 +91,8 @@ internal class CatalogLoadCoordinator(
         onPartial: ((PartialCatalog) -> Unit)? = null,
     ): LoadedCatalog = withProviderLock {
         withContext(Dispatchers.IO) {
+            var loadedCategories = emptyList<Pair<String, String>>()
+            val categoriesCallback: SourceCategoriesCallback = { loadedCategories = it }
             var lastPartialSize = 0
             var lastPartialAtMs = 0L
             val partialCallback: SourcePartialCallback? = onPartial?.let { publish ->
@@ -112,16 +116,22 @@ internal class CatalogLoadCoordinator(
             }
             val rawItems = when (playlist.type) {
                 PlaylistType.STALKER -> Repository.stalkerLoad(
-                    stalkerFor(playlist), type, categoryIds, progress, partialCallback
+                    stalkerFor(playlist), type, categoryIds, progress, partialCallback, categoriesCallback
                 )
                 PlaylistType.XTREAM -> when (type) {
-                    "vod" -> Repository.xtreamVodSelected(playlist, categoryIds, progress, partialCallback)
-                    "series" -> Repository.xtreamSeriesSelected(playlist, categoryIds, progress, partialCallback)
-                    else -> Repository.xtreamLiveSelected(playlist, categoryIds, progress, partialCallback)
+                    "vod" -> Repository.xtreamVodSelected(playlist, categoryIds, progress, partialCallback, categoriesCallback)
+                    "series" -> Repository.xtreamSeriesSelected(playlist, categoryIds, progress, partialCallback, categoriesCallback)
+                    else -> Repository.xtreamLiveSelected(playlist, categoryIds, progress, partialCallback, categoriesCallback)
                 }
                 PlaylistType.M3U -> {
                     val payload = m3uPayload(playlist, progress)
                     val ofType = payload.channels.filter { it.kind == type }
+                    loadedCategories = ofType.asSequence()
+                        .map { it.group.ifEmpty { "Χωρίς ομάδα" } }
+                        .distinct()
+                        .sortedBy(String::lowercase)
+                        .map { it to it }
+                        .toList()
                     val selected = if (categoryIds == null) {
                         ofType
                     } else {
@@ -133,7 +143,22 @@ internal class CatalogLoadCoordinator(
                 }
             }
             val normalized = CatalogNormalizer.normalize(type, rawItems)
-            LoadedCatalog(rawItems, normalized.items, normalized.seriesEpisodes)
+            val knownCategories = loadedCategories
+                .filter { (id, title) -> id.isNotBlank() && title.isNotBlank() }
+                .distinctBy { it.second }
+            val knownTitles = knownCategories.mapTo(HashSet()) { it.second }
+            val missingGroups = normalized.items.asSequence()
+                .map { it.group.ifBlank { "Χωρίς ομάδα" } }
+                .filter { it !in knownTitles }
+                .distinct()
+                .map { it to it }
+                .toList()
+            LoadedCatalog(
+                rawItems,
+                normalized.items,
+                knownCategories + missingGroups,
+                normalized.seriesEpisodes,
+            )
         }
     }
 

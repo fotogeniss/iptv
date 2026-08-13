@@ -113,13 +113,7 @@ internal fun SettingsTab(
         pendingBackupPassword = ""
     }
 
-    BackHandler(enabled = catalog.askRefreshMode || catalog.pickCategories || catalog.askLoadMode) {
-        when {
-            catalog.askRefreshMode -> vm.cancelRefreshChoice()
-            catalog.pickCategories -> vm.cancelCategoryPicker()
-            catalog.askLoadMode -> vm.cancelLoadMode()
-        }
-    }
+    BackHandler(enabled = catalog.pickCategories) { vm.cancelCategoryPicker() }
 
     AdaptiveSettingsScreen(
         playlists = st.playlists,
@@ -213,20 +207,10 @@ internal fun SettingsTab(
         context = ctx
     )
 
-    if (catalog.askRefreshMode) RefreshModeDialog(
-        contentType = catalog.contentType,
-        onExisting = { vm.refreshExistingSelection() },
-        onChooseGroups = { vm.refreshAndChooseGroups() },
-        onCancel = { vm.cancelRefreshChoice() }
-    )
-    if (catalog.askLoadMode) LoadModeDialog(
-        count = catalog.categories.size,
-        onAll = { vm.loadEverything() },
-        onChoose = { vm.chooseCategories() },
-        onCancel = { vm.cancelLoadMode() }
-    )
     if (catalog.pickCategories) CategoryPicker(
         categories = catalog.categories,
+        counts = catalog.categoryCounts,
+        contentType = catalog.contentType,
         initialSelectedIds = catalog.categorySelectionIds,
         onCancel = { vm.cancelCategoryPicker() },
         onLoad = { vm.loadSelectedCategories(it) }

@@ -3,6 +3,7 @@ package com.prelude.iptv.source
 import android.util.Log
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgEntry
+import com.prelude.iptv.data.SourceCategoriesCallback
 import com.prelude.iptv.data.SourceProgressCallback
 import com.prelude.iptv.data.SourcePartialCallback
 import com.prelude.iptv.net.Http
@@ -265,10 +266,12 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
     fun getChannels(
         genreIds: List<String>? = null,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> {
         if (base == null) connect()
         val genreList = getGenres()
+        onCategories?.invoke(genreList)
         val genres = genreList.toMap()
         val ids = genreIds ?: genreList.map { it.first }
         val result = ArrayList<Channel>()
@@ -386,14 +389,16 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
     fun getVodChannels(
         catIds: List<String>?,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
-    ): List<Channel> = getVodLike("vod", catIds, onProgress, onPartial)
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
+    ): List<Channel> = getVodLike("vod", catIds, onProgress, onPartial, onCategories)
 
     fun getSeriesChannels(
         catIds: List<String>?,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
-    ): List<Channel> = getVodLike("series", catIds, onProgress, onPartial)
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
+    ): List<Channel> = getVodLike("series", catIds, onProgress, onPartial, onCategories)
 
     /**
      * Πραγματικά επεισόδια μιας σειράς, ΟΛΩΝ των σεζόν.
@@ -759,11 +764,13 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         type: String,
         catIds: List<String>?,
         onProgress: SourceProgressCallback? = null,
-        onPartial: SourcePartialCallback? = null
+        onPartial: SourcePartialCallback? = null,
+        onCategories: SourceCategoriesCallback? = null,
     ): List<Channel> {
         if (base == null) connect()
         onProgress?.invoke(5, "Σύνδεση Stalker έτοιμη")
         val allCats = getCategories(type)
+        onCategories?.invoke(allCats)
         val cats = allCats.toMap()
         val ids = catIds ?: allCats.map { it.first }
         onProgress?.invoke(12, "Βρέθηκαν ${ids.size} κατηγορίες")

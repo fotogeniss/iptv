@@ -120,8 +120,11 @@ require("private suspend fun fetchChannels" not in main_vm and "providerLoadMute
         "MainViewModel no longer owns provider dispatch or provider mutex")
 require("private val providerMutex = Mutex()" in catalog_loader and "withProviderLock" in catalog_loader,
         "CatalogLoadCoordinator owns one serialized provider boundary")
-require(main_vm.count("restoreAfterRefreshFailure") >= 2,
-        "Progressive refresh failures roll back the prior visible catalog")
+require("partialPublisher" not in main_vm and "catalogLoader.section(pl, type, null, progress)" in main_vm,
+        "Complete source sections bypass progressive UI publication")
+require("CatalogCategoryVisibilityPolicy.visibleChannels" in main_vm and
+        "loadSelectedCategoriesInternal" not in main_vm,
+        "Post-download category selection is a local complete-snapshot policy")
 
 source_switch = text("app/src/main/java/com/prelude/iptv/ui/coordinator/SourceSwitchCoordinator.kt")
 select_start = main_vm.find("    fun selectPlaylist(i: Int)")

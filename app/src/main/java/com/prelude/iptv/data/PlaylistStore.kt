@@ -594,7 +594,7 @@ class PlaylistStore(context: Context) {
         get() = prefs.getBoolean("epg_enabled", true)
         set(v) = prefs.edit().putBoolean("epg_enabled", v).apply()
 
-    // ---- τι επέλεξε ο χρήστης να φορτώνει (επιβιώνει σε επανεκκίνηση) ----
+    // ---- ποιες κατηγορίες θέλει να βλέπει (επιβιώνει σε επανεκκίνηση) ----
 
     /** ids = null σημαίνει «όλες οι κατηγορίες». */
     fun saveLoadChoice(key: String, ids: List<String>?) {

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Search
@@ -74,6 +75,7 @@ fun PremiumTvNavigationRail(
     onLive: () -> Unit,
     onMovies: () -> Unit,
     onSeries: () -> Unit,
+    onCategories: () -> Unit,
     onEpg: () -> Unit,
     onSources: () -> Unit,
     onSettings: () -> Unit,
@@ -84,6 +86,7 @@ fun PremiumTvNavigationRail(
      * βρίσκεται ο χρήστης και όχι στην κορυφή της λίστας.
      */
     selectedFocus: androidx.compose.ui.focus.FocusRequester? = null,
+    categoriesFocus: androidx.compose.ui.focus.FocusRequester? = null,
     /**
      * false = κανένα στοιχείο του μενού δεν είναι εστιάσιμο.
      *
@@ -184,6 +187,16 @@ fun PremiumTvNavigationRail(
                 enabled = interactive,
             )
         }
+
+        TvNavIcon(
+            Icons.Default.Category,
+            stringResource(R.string.catalog_categories_groups),
+            false,
+            onCategories,
+            expanded,
+            categoriesFocus,
+            interactive,
+        )
 
         Spacer(Modifier.weight(1f))
         TvNavIcon(Icons.Default.Settings, stringResource(R.string.nav_settings), false, onSettings, expanded, null, interactive)
