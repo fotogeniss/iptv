@@ -49,6 +49,14 @@ internal val MiniPlayerHeight = PremiumMobileMiniPlayerHeight
 @Composable
 internal fun MobileMiniPlayer(
     engine: PlaybackEngine,
+    /**
+     * Η ΙΔΙΑ επιφάνεια που έδειχνε την πλήρη οθόνη, μεταφερμένη εδώ.
+     *
+     * Δίνεται από τα έξω και δεν φτιάχνεται εδώ, γιατί δεύτερη επιφάνεια πάνω
+     * στον ίδιο player σημαίνει δύο διεκδικητές της μίας εξόδου βίντεο. Δες το
+     * `movableContentOf` στο [MobilePlaybackOverlay].
+     */
+    video: @Composable (Modifier) -> Unit,
     playing: Boolean,
     title: String,
     subtitle: String,
@@ -81,16 +89,9 @@ internal fun MobileMiniPlayer(
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            PlayerVideoSurface(
-                engine = engine,
-                // Και μαζεμένος, ο χρήστης ΒΛΕΠΕΙ. Η οθόνη δεν πρέπει να σβήσει
-                // πάνω σε βίντεο που παίζει, όσο μικρό κι αν είναι.
-                keepScreenOn = playing,
-                // Ίδιο TextureView με τον μεγάλο mobile player ώστε η μετάβαση
-                // να μη γυρίζει σε SurfaceView πίσω από το Compose background.
-                preferSmoothResize = true,
-                modifier = Modifier.fillMaxSize()
-            )
+            // Και μαζεμένος, ο χρήστης ΒΛΕΠΕΙ. Δεν είναι αφίσα: είναι η ίδια
+            // ζωντανή επιφάνεια, απλώς σε 121x68dp.
+            video(Modifier.fillMaxSize())
         }
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
             Text(

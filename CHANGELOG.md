@@ -5,6 +5,28 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.74.0 - versionCode 146
+
+- The collapsed mini player now keeps the picture because it no longer builds a
+  second video surface. The full-screen layout and the strip previously each
+  created their own TextureView, so collapsing destroyed one and created the
+  other on top of a player that was already running; which of the two ended up
+  owning the video output depended on the order Compose applies insertions and
+  disposals, on the SurfaceTexture lifecycle and on whether the codec accepts a
+  live output swap. When it lost, audio continued and the picture disappeared.
+- The surface is now a single `movableContentOf` owned by the overlay and
+  handed to whichever layout is showing. The same nodes move between parents,
+  so the TextureView is never destroyed and the player's video output never
+  changes. The 1.71.0 libVLC detach guard remains correct and still applies to
+  the engine's own teardown.
+- Added a `PlayerSurface` diagnostic log at the attach/detach boundary,
+  recording the surface identity, the active engine and whether a detach was
+  applied or ignored. The previous round cost a build cycle to a plausible but
+  unproven cause; this makes the next report decisive.
+- No layout, size, wording, gesture, icon or TV behavior changed. The strip is
+  the same 121x68dp video, the same controls and the same position. Gradle was
+  not run; the owner QA build is pending.
+
 ## 1.73.0 - versionCode 145
 
 - The mobile player's progress bar is thinner at rest and reacts slightly to

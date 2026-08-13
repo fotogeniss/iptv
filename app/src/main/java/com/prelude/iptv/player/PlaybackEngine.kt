@@ -2,6 +2,7 @@ package com.prelude.iptv.player
 
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import android.os.Looper
 import android.view.SurfaceView
 import android.view.TextureView
@@ -110,6 +111,9 @@ class PlaybackEngine(private val appContext: Context) {
     // TextureView ή SurfaceView — δες [attachSurface]. Κρατιέται ως View ώστε να
     // μπορεί να ξαναπροσαρτηθεί σωστά όταν χτίζεται νέος player.
     private var surface: View? = null
+
+    /** Διαγνωστικό ίχνος του ορίου επιφάνειας. Δες `docs/NEXT_CHAT_HANDOFF.md`. */
+    private val SURFACE_TAG = "PlayerSurface"
     private var retryAttempt = 0
     private var currentUrl: String = ""
     private var externalSubtitleCues: List<Cue>? = null
@@ -411,16 +415,32 @@ class PlaybackEngine(private val appContext: Context) {
      * φαίνεται -> TextureView· πλήρης οθόνη όπου φαίνεται -> SurfaceView.
      */
     fun attachSurface(view: TextureView) {
-        if (surface === view) return
+        if (surface === view) {
+            Log.d(SURFACE_TAG, "attach TextureView#${System.identityHashCode(view)} ήδη ενεργή")
+            return
+        }
         surface = view
         exo?.setVideoTextureView(view)
+        Log.d(
+            SURFACE_TAG,
+            "attach TextureView#${System.identityHashCode(view)} " +
+                "μηχανή=${_renderer.value} exo=${exo != null}"
+        )
     }
 
     /** Detaches only if [view] is still the active surface. */
     fun detachSurface(view: TextureView) {
-        if (surface !== view) return
+        if (surface !== view) {
+            Log.d(
+                SURFACE_TAG,
+                "detach TextureView#${System.identityHashCode(view)} ΑΓΝΟΗΘΗΚΕ, " +
+                    "ενεργή είναι #${surface?.let { System.identityHashCode(it) }}"
+            )
+            return
+        }
         exo?.clearVideoTextureView(view)
         surface = null
+        Log.d(SURFACE_TAG, "detach TextureView#${System.identityHashCode(view)} ΕΓΙΝΕ")
     }
 
     /** Δες [attachSurface] για το γιατί υπάρχουν δύο. */
@@ -513,11 +533,13 @@ class PlaybackEngine(private val appContext: Context) {
 
     /** Προσαρτά την επιφάνεια του LibVLC. Αγνοείται όταν παίζει το ExoPlayer. */
     fun attachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
+        Log.d(SURFACE_TAG, "attach VLCVideoLayout#${System.identityHashCode(layout)} vlc=${vlc != null}")
         vlc?.attachLayout(layout)
     }
 
     /** Αποσυνδέει μόνο αν το [layout] είναι ακόμη το ενεργό. Δες [detachSurface]. */
     fun detachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
+        Log.d(SURFACE_TAG, "detach VLCVideoLayout#${System.identityHashCode(layout)}")
         vlc?.detachLayout(layout)
     }
 
