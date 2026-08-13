@@ -46,6 +46,16 @@
 
     <string name="catalog_loading">Λήψη από την πηγή…</string>
     <string name="catalog_loading_with_progress">%1$s · Λήψη από την πηγή…</string>
+    <!--
+      Ποια ενότητα κατεβαίνει τώρα. Ξεχωριστό αλφαριθμητικό ανά ενότητα αντί για
+      ένα με μεταβλητή: στα ελληνικά η πτώση αλλάζει («ταινιών», «σειρών»,
+      «ζωντανών καναλιών») και μια κοινή πρόταση με placeholder θα έβγαζε
+      ασυμφωνία σε τουλάχιστον μία από τις τρεις.
+    -->
+    <string name="catalog_loading_live">Λήψη ζωντανών καναλιών…</string>
+    <string name="catalog_loading_movies">Λήψη ταινιών…</string>
+    <string name="catalog_loading_series">Λήψη σειρών…</string>
+    <string name="catalog_loading_section_with_progress">%1$s · %2$s</string>
     <string name="catalog_voice_prompt">Τι θέλεις να δεις;</string>
     <string name="catalog_voice_unavailable">Η φωνητική αναζήτηση δεν είναι διαθέσιμη</string>
 

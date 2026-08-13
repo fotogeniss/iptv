@@ -1,10 +1,12 @@
 # Prelude+ next-chat handoff
 
-- **Date:** 2026-08-11
+- **Date:** 2026-08-13
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Date:** 2026-08-12
-- **Branch:** `main` · **HEAD:** `bfbcc27` (1.54.0) · **worktree NOT clean — 1.54.1→1.61.0 uncommitted**
-- **Version on disk:** 1.61.0 (`versionCode 133`) · **last committed:** 1.49.1 (119)
+- **Branch:** `main` · **HEAD:** `71c6d6b` (1.62.0) · **worktree NOT clean — 1.63.0 uncommitted**
+- **Version on disk:** 1.63.0 (`versionCode 135`) · **last committed:** 1.62.0 (134)
+
+> This header has been wrong twice. Run `git log --oneline -5` and
+> `git status --short` and believe those, not this line.
 
 This document is the operational source of truth for continuing in a fresh
 chat. **Section 0 is written to be read first and on its own** — it says where
@@ -47,22 +49,30 @@ were all already fixed in the tree, and only a leftover "#" in a title revealed
 the APK was stale. **Bump the version on every change and check the Settings
 screen against it before believing any device report.**
 
-### 2026-08-12 — UNCOMMITTED PILE, READ THIS BEFORE ANYTHING
+### 2026-08-13 — WHERE WE ARE AND WHAT TO DO FIRST
 
-**This paragraph was wrong when written and is corrected here — trust `git log`.**
-It claimed history ended at `5ecce5f` (1.49.1). It does not: `1805771`, `4910278`
-and `bfbcc27` had already landed, so **everything through 1.54.0 is committed**,
-including 1.50.0's `tmdb_id` route (it went in unnamed inside `1805771` — the
-proof is that `TmdbClient.kt` carries the `«από τον πάροχο, χωρίς αναζήτηση»`
-line and is not modified).
+The 2026-08-12 pile is **committed and closed**. `81724e2` landed 1.54.1→1.61.0
+as one commit and `71c6d6b` landed 1.62.0. Both passed all six gates. The
+"twelve uncommitted releases" panic in the previous handoff was wrong on the
+facts: three commits had already landed unnamed, so the pile was eight, not
+twelve. That is why the header now tells you to trust `git log` over this file.
 
-The genuinely uncommitted pile is **1.54.1 → 1.61.0** — eight releases, sixteen
-modified files plus the untracked `prototypes/home_editor_per_destination.html`.
+**1.63.0 (`versionCode 135`) compiles.** The owner built it and the Settings
+screen reports `1.63.0-qa`, so the APK on the device matches the tree. All six
+gates pass and `git diff --check` is clean. Four files: `strings_catalog.xml`
+(both languages), `CatalogLocalizationResources.kt`, `BrowseRoute.kt`.
 
-**First action of the next session: build, run the six gates, commit.** Do not
-start new work on top of eight uncommitted releases.
+**Still unreported: whether the bar itself reads correctly.** Ask for it —
+during "Update content" it must read `45% · Λήψη σειρών…` and change section as
+the load moves, and on Android TV the same text in the floating overlay with
+D-pad movement unchanged. The owner's first report after this build was that the
+pre-load category screen was unchanged, which is correct and expected: 1.63.0
+does not touch it. Do not read that as a failure of 1.63.0.
 
-What is in that pile, in order:
+**First action: slices 2+3 (see the table below).** That is what the owner asked
+for next, and it is the visible change he is waiting on.
+
+#### The pile that is now closed, for reference:
 
 | Version | What |
 | --- | --- |
@@ -97,7 +107,101 @@ by reading the timing alone** — the failure counter catches dropped pages but
 cannot catch stub rows, which look well-formed until "N/A" reaches the screen.
 Some of the original "N · A" report was probably this, not app code.
 
-### The agreed change of approach — not started
+### PARKED 2026-08-13: the failure counter counts our own cancellations
+
+Deliberately stopped mid-diagnosis to start the new loading model. Resume here.
+
+**What is proven.** 1.62.0 made each lost page state its kind. On the first real
+run two pages failed with `SocketException: Software caused connection abort`,
+three seconds *after* the section had already logged `0 ΑΠΟΤΥΧΙΕΣ`, on different
+threads. The owner confirmed he had closed the app at that moment. So those two
+were **our own teardown**, recorded as provider data loss.
+
+**Why the existing guard missed it.** Cancellation is declared in two places that
+do not agree: `Http.cancelProviderRequests()` is global (`dispatcher.cancelAll()`,
+every instance), while `StalkerClient.requestCancelled` is per-instance and only
+set by whoever holds that instance. `MainViewModel.onCleared()` cancels `stalker`,
+but `SeriesLoadCoordinator` builds its own temporary clients (`pendingStalker`,
+`connectedStalker`) and the load-all-sections path has its own job. Any instance
+not told individually sees its sockets die without knowing why. `rethrowIfCancelled`
+anticipated this and missed by a hair: it matches OkHttp's `IOException("Canceled")`
+by message text, and this arrives as `SocketException` with a different message.
+
+**Why it matters more than it looks.** The 14 failures behind 1.60.0's conclusion
+that "the portal drops pages under load" were measured with this same counter. If
+some of them were self-inflicted, the premise of 1.59.0/1.60.0/1.61.0 is partly
+wrong and three releases have been chasing it. **Not established — do not act on
+it as fact.** It has also never been retested on the 271-category source; the
+clean runs since were a different source with 6 series categories.
+
+**Proposed fix, not yet approved or written.** Give `Http` a cancellation epoch
+incremented by `cancelProviderRequests()`. `StalkerClient` records the epoch when
+a load starts and `rethrowIfCancelled` compares epochs instead of matching message
+text. Exact rather than time-based, and the same shape as the existing
+`SourceGenerationGate`. The alternative — hunting down which instance was not
+notified — fixes today's case and lets the next one recur. `Http.kt` is shared
+with EPG, TMDB and subtitles, so the change must be additive.
+
+**Do not write a retry for dropped pages** until this is settled. On the evidence
+so far the failures are cancellations, and a retry would re-request pages that we
+cancelled on purpose.
+
+### THE ACTIVE WORK: full load, then choose. Approved, slice 1α written.
+
+The owner approved `prototypes/full_load_then_choose.html` on 2026-08-13, and
+answered the two structural questions: **the pre-load category picker goes away
+entirely**, and **"everything" includes live** (live still must never be written
+to disk). Selection moves to the quick actions of each section, after the load.
+
+Agreed slice order, deliberately smallest-risk first:
+
+| # | Slice | State |
+| --- | --- | --- |
+| 1α | Loading bar names the section | **written, 1.63.0, not compiled** |
+| **2+3** | **Load everything; selection moves to quick actions** | **next — owner reordered** |
+| 1β | Type the progress stage → "category 45 of 271" | after 2+3 |
+| 4 | Disk cache, movies and series only | last |
+
+**The owner reordered on 2026-08-13, deliberately, after seeing 1.63.0 change
+nothing he could feel.** He built it, still met the pre-load category screen, and
+said so. He is right that 1α is invisible on its own; slices 2 and 3 are the
+product. They are taken together because **3 cannot ship without 2** — remove the
+pre-load picker while the loader still expects a category list and the app has
+nothing to download.
+
+The cost of merging them is stated so it is not discovered later: if the next
+build misbehaves, the cause could be the loading flow or the navigation, and
+there is no way to tell them apart from one report. Mitigate it by keeping the
+two commits separate even though they ship in one build, and by asking the owner
+for the `CatalogLoad` summary lines alongside any visual report.
+
+**Why 1β is separate from 1α.** The rich stage text already exists —
+`StalkerClient:859` emits `onProgress(pct, "Λήψη σειρών · κατηγορία 45/271")` and
+`SourceLoadProgress` carries it intact to the UI, where `CatalogLoadingProgress`
+throws it away. But it is a **Greek sentence built inside the data layer**.
+Rendering it verbatim would hardcode Greek into a release surface, which rule 16
+forbids and the parity inversion would later break. So the stage must become a
+typed value (section + done/total) composed into a sentence at the Compose
+boundary. `SourceProgressCallback` has roughly thirty call sites across
+`StalkerClient`, `XtreamClient` and `Repository`; that migration is mechanical
+and compiler-checked, and was kept out of 1.63.0 so a build failure would have
+one obvious cause. Note `SourceLoadProgress.stage` is **already rendered raw** in
+the mobile and TV Settings source cards, so the debt exists there too and 1β
+should clear both.
+
+**Why slice 2 is the real one.** Publishing a section only when it is complete is
+the actual fix; the percentage is only the instrument. Every symptom the previous
+releases chased — empty rails, the home union, live appearing under Movies,
+silent backfill — came from `state.channels` holding whichever section finished
+first while the screen rendered anyway. Live finishes in under four seconds and
+can open immediately; the rule is not "wait a minute", it is "never half a
+section".
+
+**Slice 4 last, and not before the counter is honest.** Caching a load that
+silently dropped pages freezes the holes onto disk. See the parked cancellation
+item above.
+
+### The original statement of the change of approach
 
 The owner proposed, and it was agreed, that the current progressive model is
 wrong. Empty rails, missing sections, the home union, the silent backfill and
@@ -121,12 +225,11 @@ user choose what to see.** Three conditions, none optional:
 
 ### Do this first
 
-0. **Build, run the six gates, commit the 1.50→1.61 pile.** Then have the owner
-   confirm the pool revert restored full rows — the same film should come back
-   with `rating_imdb=6.7`, a real description and a poster. Nothing else starts
-   while the catalog is filling with N/A.
-0b. **Then the new model above:** real progress, then disk cache for
-   movies/series, then category selection after the download.
+0. **Build 1.63.0, confirm the loading bar on mobile and TV, commit it.** Nothing
+   else starts on top of an uncompiled release. (The 1.61.0 page-pool question is
+   **settled**: the owner's device returned the same film with `rating_imdb=6.7`,
+   `tmdb_id=1284465`, its description and its poster. The revert worked.)
+0b. **Then slice 1β**, then 2, 3, 4 in the table above. One at a time.
 0c. **Android TV** has no layout editor and ignores `HomeLayoutPolicy` entirely —
    it renders every provider category as a rail. The policy, the per-destination
    storage and multi-category selection are already shared and ready; only the
@@ -1157,6 +1260,21 @@ Then inspect the exact diff and confirm no unrelated files changed. If the owner
 later reports a successful Android Studio build, record that as owner-provided
 build evidence; do not imply Codex ran it.
 
+**The mounted workspace is too slow for these scripts** — running them in place
+times out. Copy the tree to local disk first and run there; it takes seconds:
+
+```bash
+rm -rf /tmp/aud && mkdir -p /tmp/aud
+tar cf - --exclude=.git --exclude=build --exclude=.gradle . | (cd /tmp/aud && tar xf -)
+cd /tmp/aud && for s in architecture_audit compatibility_contracts \
+  deep_validation_audit risk_inventory; do python3 scripts/$s.py | tail -3; done
+```
+
+**PowerShell has no heredoc.** `git commit -F- <<'MSG'` fails and scatters the
+message across the shell as commands. Write the message to
+`.git/COMMIT_MSG.txt` with the file tools, then `git commit -F .git/COMMIT_MSG.txt`
+and delete it. `.git/` is never tracked.
+
 Documentation rules are defined in `docs/MAINTENANCE.md`. In short:
 
 - behavior/bug fix -> `CHANGELOG.md`;
@@ -1183,57 +1301,69 @@ The owner can paste the following after attaching or referencing this file:
 > before acting. Run `git status --short` and `git log --oneline -12` first and
 > trust those over anything written in a document.
 >
-> Everything through episode switching, the live-transition flash and the
-> Stalker catalog performance work is committed and owner-confirmed on mobile
-> and Android TV. Do not re-verify or re-commit any of it.
+> **ΞΕΚΙΝΑ ΑΠΟ ΤΙΣ ΦΕΤΕΣ 2+3 — αυτό περιμένω να δω.** Όταν ανοίγω πηγή να
+> κατεβαίνουν ΟΛΑ (και τα ζωντανά), με πραγματική πρόοδο, και η επιλογή
+> κατηγοριών ΠΡΙΝ τη λήψη να καταργηθεί εντελώς: μεταφέρεται στα quick actions
+> κάθε ενότητας, ΜΕΤΑ τη λήψη, με ονόματα και πλήθη μπροστά μου. Εγκεκριμένο
+> preview: `prototypes/full_load_then_choose.html`. Το 3 δεν γίνεται χωρίς το 2 —
+> αν φύγει ο επιλογέας ενώ ο loader περιμένει λίστα κατηγοριών, δεν έχει τι να
+> κατεβάσει. Πάνε μαζί στο ίδιο build αλλά σε **ξεχωριστά commits**.
 >
-> **Two things are code-complete but not device-confirmed** — ask me to build
-> and check them before anything else: that provider `N/A` values no longer
-> render as "N · A" or as a synopsis, and that back returns to the previous
-> section (Series → Live → back must give Series, and the on-screen arrow must
-> behave identically to the device button).
+> **Η φέτα 2 είναι η ουσιαστική, όχι το ποσοστό:** μια ενότητα δημοσιεύεται μόνο
+> όταν ολοκληρωθεί ολόκληρη. Όλα τα συμπτώματα που κυνηγήσαμε επί τρεις εκδόσεις —
+> άδειες ράγες, η ένωση της αρχικής, ζωντανά κάτω από τις Ταινίες — ήταν το ίδιο
+> πράγμα: η `state.channels` κρατούσε όποια ενότητα πρόλαβε πρώτη. Τα ζωντανά
+> τελειώνουν σε 4 δευτερόλεπτα και ανοίγουν αμέσως· ο κανόνας δεν είναι «περίμενε
+> ένα λεπτό», είναι «ποτέ μισή ενότητα».
 >
-> **The one thing still broken** is per-episode synopses for Greek series whose
-> list title is written in Latin characters. Greek-titled series work. If it is
-> still failing, ask me for a Logcat filtered on `TmdbLookup` and use the table
-> in section 0 to tell the three possible causes apart — they need opposite
-> fixes. Do not adjust the transliteration before seeing that capture, and if
-> the query itself is the problem, ask me for ten real titles from my list
-> first. Section 0 also lists the open follow-ups (whether
-> `fetchEpisodeDescription` is dead weight, Xtream's matching gap,
-> `MainViewModel`'s size).
+> **Μετά από αυτά, η φέτα 1β:** τυποποίηση του stage ώστε η μπάρα να δείχνει
+> «κατηγορία 45 από 271». Το κείμενο υπάρχει ήδη στον `StalkerClient:859` αλλά
+> είναι **ελληνική πρόταση φτιαγμένη στο data layer** — δεν τυπώνεται ως έχει,
+> γίνεται τυποποιημένη τιμή και συντίθεται στο Compose. ~30 σημεία κλήσης,
+> μηχανικά, ΜΟΝΑ ΤΟΥΣ σε δικό τους commit. Το ίδιο `stage` εμφανίζεται ήδη ωμό
+> και στις κάρτες πηγών των Ρυθμίσεων, σε κινητό και τηλεόραση — καθάρισέ τα μαζί.
 >
-> **Before writing code, read section 0's "Codebase traps".** In particular:
-> this project has two persisted identity functions that disagree, and a fix
-> applied to one and not the other has already cost two separate bugs — check
-> whether a field appears in an identity function before normalising it.
-> `BackHandler` declaration order is reverse priority in Compose. And the
-> diagnostic logging under `SeriesLoad` and `TmdbLookup` is deliberate, not
-> leftover.
+> **Το 1.63.0 (135) χτίζει** — το επιβεβαίωσα, οι Ρυθμίσεις γράφουν `1.63.0-qa`.
+> Αλλάζει ΜΟΝΟ το κείμενο της μπάρας φόρτωσης («45% · Λήψη σειρών…»), όχι την
+> οθόνη επιλογής. Δεν έχω επιβεβαιώσει ακόμα αν η μπάρα διαβάζεται σωστά σε
+> κινητό και τηλεόραση — ζήτα μου το.
 >
-> **Only after the above is settled**, resume the localization audit: the final
-> release-surface hardcoded-string sweep across every active manifest, Kotlin
-> and XML file. A reconnaissance sweep already found 50 files with unclassified
-> Greek literals outside Library (list in the handoff body). Classify each
-> literal as app copy, invariant brand/protocol text, provider/user data,
-> diagnostic data or developer comment; migrate only app copy. Parity inversion
-> and public picker activation come after that plus my build and device QA.
+> **Παρκαρισμένο, με στοιχεία, στην ενότητα 0:** ο μετρητής αποτυχιών χρεώνει στον
+> πάροχο τις ΔΙΚΕΣ ΜΑΣ ακυρώσεις. Αποδείχθηκε: δύο `SocketException` καταγράφηκαν
+> τρία δευτερόλεπτα μετά το «0 ΑΠΟΤΥΧΙΕΣ», επειδή έκλεισα την εφαρμογή.
+> **Μη γράψεις retry για χαμένες σελίδες** πριν λυθεί αυτό, και μην εμπιστευτείς
+> τον αριθμό «14 αποτυχίες» του 1.60.0 ως απόδειξη ότι μας κόβει το portal.
 >
-> Work as a 30-year senior engineer: one responsibility at a time, small
-> patches, never rewrite a whole file, preserve public and storage behaviour,
-> add focused tests. Prefer real evidence over inference — ask me for a
-> screenshot, a log or a sample before reasoning about a subsystem you have not
-> confirmed is reachable; that mistake has cost this project several rounds.
-> Visual, layout, navigation or focus changes need an HTML preview under
-> `prototypes/` and my approval; copy-only resource migrations and timing-only
-> fixes to an approved effect do not. Do not run Gradle unless I ask. Never
-> claim runtime success from static checks. Run the section 9 gates and
-> `git diff --check`, record behaviour changes in `CHANGELOG.md`, update this
-> handoff, and commit each cohesive slice separately.
+> **Λυμένα, μην τα ξανανοίξεις:** το pagePool=6 δικαιώθηκε στη συσκευή (η ίδια
+> ταινία γύρισε με `rating_imdb=6.7`, `tmdb_id=1284465`, περιγραφή και αφίσα). Το
+> διπλό `seriesId` (`58875:58875`) το στέλνει έτσι ο πάροχος — δεν είναι δικό μας
+> bug και συμμετέχει στο `favKey`, οπότε είναι αποθηκευμένο δεδομένο.
 >
-> Git writes from the sandbox leave `.git/HEAD.lock` and
-> `.git/objects/maintenance.lock` behind and a stale `HEAD.lock` blocks the next
-> command. Grant file deletion for the folder once, then append
-> `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` to every
-> git write command. You do not need to ask me to delete lock files from
-> Windows.
+> **Ακόμα ανοιχτό:** οι περιγραφές επεισοδίων για ελληνικές σειρές με λατινικό
+> τίτλο. Αν ξαναπροκύψει, ζήτα μου Logcat σε `TmdbLookup` και χρησιμοποίησε τον
+> πίνακα της ενότητας 0 — οι τρεις αιτίες θέλουν αντίθετες διορθώσεις. Μετά από
+> όλα αυτά έρχεται ο τελικός έλεγχος καρφωμένων αλφαριθμητικών (50 αρχεία).
+>
+> **Πριν γράψεις κώδικα, διάβασε τις «Codebase traps» της ενότητας 0.** Δύο
+> συναρτήσεις ταυτότητας που διαφωνούν και έχουν ήδη κοστίσει δύο bugs· η σειρά
+> δήλωσης των `BackHandler` είναι ανάποδη προτεραιότητα· το logging σε `SeriesLoad`
+> και `TmdbLookup` είναι σκόπιμο.
+>
+> Δούλεψε ως 30 χρόνια senior: μία ευθύνη τη φορά, μικρά patches, ποτέ ξαναγράψιμο
+> ολόκληρου αρχείου, στοχευμένα τεστ. **Θέλω να έχεις άποψη** — αν δεις ότι
+> διορθώνουμε συμπτώματα, πες το και πρότεινε αλλαγή προσέγγισης πριν γράψεις.
+> Απόδειξη πριν από θεωρία: ζήτα μου log ή screenshot πριν συμπεράνεις για
+> υποσύστημα που δεν έχεις επιβεβαιώσει ότι εκτελείται. Αλλαγές σε εμφάνιση,
+> διάταξη, πλοήγηση ή focus θέλουν HTML preview στο `prototypes/` και έγκρισή μου·
+> μεταφορές κειμένου σε resources δεν θέλουν. **Η τηλεόραση θέλει σωστό focus σε
+> κάθε αλλαγή — μη το ξεχάσεις ποτέ.** Αύξησε έκδοση και γράψε CHANGELOG σε ΚΑΘΕ
+> αλλαγή. Μην τρέχεις Gradle· χτίζω εγώ. Ποτέ μην ισχυριστείς επιτυχία από στατικό
+> έλεγχο. Μίλα μου στα ελληνικά.
+>
+> Πρακτικά, για να μη χαθεί χρόνος: το mounted workspace είναι πολύ αργό για τα
+> scripts — αντίγραψέ το σε τοπικό δίσκο και τρέξε εκεί (εντολή στην ενότητα 9).
+> Το PowerShell ΔΕΝ έχει heredoc: γράψε το commit message σε
+> `.git/COMMIT_MSG.txt` και κάνε `git commit -F .git/COMMIT_MSG.txt`. Τα git
+> writes από το sandbox αφήνουν `.git/HEAD.lock` — πρόσθεσε
+> `rm -f .git/HEAD.lock .git/objects/maintenance.lock .git/index.lock` σε κάθε
+> εντολή εγγραφής.

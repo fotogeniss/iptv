@@ -5,6 +5,34 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.63.0 - versionCode 135
+
+- **The loading bar now says which section it is downloading.** It read
+  "Downloading from source… 45%" regardless of whether that 45% belonged to live
+  channels, movies or series. During a full load that is three different waits
+  wearing the same label, and the number appears to jump backwards when one
+  section finishes and the next starts from zero. It now reads "45% ·
+  Downloading series…".
+  - The section identity was already there. `SourceLoadProgress` has carried
+    `contentType` all along and the bar ignored it.
+  - It is read from the **active progress entry**, not from the screen the user
+    is standing on: during a full load you may be looking at Movies while Series
+    is what is actually downloading, and a bar that names the screen instead of
+    the work would be a more confident kind of wrong.
+  - Three separate strings rather than one with a placeholder, because Greek
+    inflects the section name and a shared sentence would be ungrammatical in at
+    least one of the three.
+  - An unrecognised `contentType` falls back to the general wording instead of
+    printing the raw key, so a future section cannot leak "vod2" onto the screen.
+- First step of the agreed new model, approved in
+  `prototypes/full_load_then_choose.html`. Category counts ("category 45 of 271")
+  come next: that text is currently built as a Greek sentence inside
+  `StalkerClient`, and showing it would hardcode Greek into a release surface, so
+  the stage has to become a typed value first. Kept separate on purpose — it
+  touches around thirty call sites and should not share a build with a UI change.
+- No change to Android TV focus or navigation: the progress bar is a floating
+  overlay with no focusable modifier on either surface.
+
 ## 1.62.0 - versionCode 134
 
 - **A failed page now records why it failed.** The counter added in 1.60.0 said

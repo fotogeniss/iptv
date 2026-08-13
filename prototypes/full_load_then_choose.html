@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Πλήρης λήψη, μετά επιλογή</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#0b0b0d; color:#e9eaec; padding:26px 28px 60px;
+         font:14px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  .lead { color:#8b8f96; max-width:70ch; margin:0 0 8px; }
+  .prob { border-left:3px solid #b9553f; background:#16100f; padding:10px 14px;
+          border-radius:0 8px 8px 0; max-width:70ch; margin:14px 0 26px; }
+  .row { display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
+  .cap { font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+         color:#7d818a; font-weight:700; margin:0 0 9px; }
+  .phone { width:300px; background:#000; border:1px solid #232529; border-radius:24px;
+           overflow:hidden; }
+  .top { display:flex; align-items:center; gap:12px; padding:16px 15px 12px; }
+  .top .b { color:#9aa0a8; }
+  .top h2 { font-size:16px; margin:0; font-weight:700; }
+
+  /* ---- progress ---- */
+  .pwrap { padding:8px 16px 18px; }
+  .pct { font-size:38px; font-weight:800; letter-spacing:-.02em; line-height:1; }
+  .pct small { font-size:16px; font-weight:700; color:#7d818a; margin-left:2px; }
+  .stage { font-size:12.5px; color:#b6bac0; margin-top:7px; }
+  .bar { height:4px; background:#1b1d21; border-radius:99px; margin-top:12px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#e9eaec; border-radius:99px; transition:width .35s; }
+  .secs { margin-top:18px; }
+  .sec { display:flex; align-items:center; gap:10px; padding:9px 0;
+         border-top:1px solid #141519; font-size:12.5px; }
+  .sec .ic { width:16px; text-align:center; color:#5c6067; }
+  .sec.done .ic { color:#7fc79a; }
+  .sec.run .ic { color:#e9eaec; }
+  .sec .grow { flex:1; }
+  .sec.wait { color:#5c6067; }
+  .sec .n { color:#6f737a; font-size:11.5px; }
+  .foot { font-size:10.5px; color:#6f737a; padding:2px 16px 16px; }
+
+  /* ---- quick actions ---- */
+  .qa { display:flex; gap:7px; padding:2px 14px 14px; flex-wrap:wrap; }
+  .qchip { font-size:11.5px; padding:7px 11px; border-radius:99px;
+           background:#141519; color:#c3c7cd; border:1px solid #1f2126; font-weight:600; }
+  .qchip.hi { background:#fff; color:#000; border-color:#fff; }
+
+  /* ---- category sheet ---- */
+  .sheet { width:300px; background:#101115; border:1px solid #232529; border-radius:16px;
+           overflow:hidden; }
+  .sheet h3 { font-size:14px; margin:0; padding:14px 15px 3px; }
+  .sheet .sub { font-size:11px; color:#7d818a; padding:0 15px 10px; }
+  .tabs { display:flex; gap:6px; padding:0 12px 10px; }
+  .tab { flex:1; text-align:center; font-size:11px; padding:6px 0; border-radius:8px;
+         background:#141519; color:#9aa0a8; border:1px solid #1f2126; font-weight:600;
+         cursor:pointer; }
+  .tab.on { background:#fff; color:#000; border-color:#fff; }
+  .cat { display:flex; align-items:center; gap:11px; padding:10px 15px;
+         border-top:1px solid #16171b; font-size:12.5px; cursor:pointer; }
+  .box { width:16px; height:16px; border-radius:4px; border:1.5px solid #3a3d44; flex:none; }
+  .box.on { background:#fff; border-color:#fff; position:relative; }
+  .box.on::after { content:"✓"; color:#000; font-size:11px; font-weight:900;
+                   position:absolute; left:2.5px; top:-1.5px; }
+  .cat .grow { flex:1; }
+  .cnt { color:#6f737a; font-size:11px; }
+  .cat.zero { color:#5c6067; }
+  .cat.zero .cnt { color:#4a4e55; }
+  .bulk { display:flex; gap:14px; padding:11px 15px; border-top:1px solid #16171b;
+          font-size:11.5px; color:#5b9dd9; }
+  .bulk span { cursor:pointer; }
+  .note { max-width:74ch; margin-top:34px; }
+  .note h4 { font-size:13px; margin:22px 0 6px; color:#cfd3d8; }
+  .note p, .note li { color:#b6bac0; }
+  code { background:#1b1d21; padding:1px 5px; border-radius:4px; font-size:12px; }
+  .ok { color:#7fc79a; }
+  .no { color:#c9584a; }
+</style>
+
+<h1>Πλήρης λήψη με πραγματική πρόοδο, μετά επιλογή</h1>
+<p class="lead">Η πηγή κατεβάζει τα πάντα μία φορά. Η επιλογή κατηγοριών γίνεται
+μετά, βλέποντας ονόματα και πλήθη αντί να μαντεύεις.</p>
+
+<div class="prob">
+  <strong>Τι αλλάζει στην ουσία:</strong> σήμερα διαλέγεις κατηγορίες
+  <em>πριν</em> δεις τι υπάρχει, και η οθόνη γεμίζει ενώ τα δεδομένα ακόμα
+  έρχονται. Οι άδειες ράγες, οι ενότητες που λείπουν και τα ζωντανά κάτω από τις
+  Ταινίες ήταν όλα το ίδιο πράγμα: η εφαρμογή μάντευε τι να δείξει στο ενδιάμεσο.
+  Αν δεν υπάρχει ενδιάμεσο, δεν υπάρχει τι να μαντέψει.
+</div>
+
+<div class="row">
+  <div>
+    <p class="cap">1 · Λήψη σε εξέλιξη</p>
+    <div class="phone">
+      <div class="top"><span class="b">←</span><h2>Ενημέρωση περιεχομένου</h2></div>
+      <div class="pwrap">
+        <div class="pct" id="pct">0<small>%</small></div>
+        <div class="stage" id="stage">Σύνδεση…</div>
+        <div class="bar"><i id="bar" style="width:0%"></i></div>
+        <div class="secs" id="secs"></div>
+      </div>
+      <div class="foot">Οι ολοκληρωμένες ενότητες ανοίγουν αμέσως. Η επιλογή
+        κατηγοριών εμφανίζεται όταν τελειώσουν όλες.</div>
+    </div>
+    <p class="cap" style="margin-top:14px">
+      <span id="replay" style="color:#5b9dd9;cursor:pointer">↻ ξαναπαίξ' το</span>
+    </p>
+  </div>
+
+  <div>
+    <p class="cap">2 · Quick actions, μετά τη λήψη</p>
+    <div class="phone">
+      <div class="top"><span class="b">←</span><h2>Σειρές</h2></div>
+      <div class="qa">
+        <div class="qchip hi">Κατηγορίες…</div>
+        <div class="qchip">Ταξινόμηση</div>
+        <div class="qchip">Αγαπημένα</div>
+        <div class="qchip">Ενημέρωση</div>
+      </div>
+      <div class="foot" style="padding-top:0">4.487 σειρές σε 271 κατηγορίες,
+        κατεβασμένες. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</div>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap">3 · Επιλογη κατηγοριων</p>
+    <div class="sheet">
+      <h3>Ποιες κατηγορίες να φαίνονται</h3>
+      <div class="sub" id="chosen">— </div>
+      <div class="tabs">
+        <div class="tab on">Σειρές</div>
+        <div class="tab">Ταινίες</div>
+        <div class="tab">Live</div>
+      </div>
+      <div id="cats"></div>
+      <div class="bulk">
+        <span id="all">Όλες</span><span id="none">Καμία</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <h4>Οι τρεις αποφάσεις που θέλω να εγκρίνεις</h4>
+
+  <p><strong>1. Η πρόοδος λέει την αλήθεια, γιατί την έχουμε ήδη.</strong>
+  Ο <code>StalkerClient</code> στέλνει σήμερα
+  <code>onProgress(ποσοστό, "Λήψη σειρών · κατηγορία 45/271")</code>. Το
+  <code>SourceLoadProgress</code> το μεταφέρει ολόκληρο. Το
+  <code>CatalogLoadingProgress</code> κρατά το ποσοστό και
+  <span class="no">πετάει την περιγραφή</span>. Δεν χτίζουμε υποδομή —
+  σταματάμε να πετάμε αυτή που υπάρχει.</p>
+
+  <p><strong>2. Μια ενότητα δημοσιεύεται μόνο όταν τελειώσει ολόκληρη.</strong>
+  Αυτό είναι η καρδιά. Δεν είναι «μην δείξεις τίποτα για ένα λεπτό» — τα Live
+  τελειώνουν σε 4 δευτερόλεπτα και ανοίγουν αμέσως. Είναι «μη δείξεις μια
+  ενότητα μισή», που είναι διαφορετικό πράγμα και είναι αυτό που μας έσπαγε:
+  η <code>state.channels</code> κρατούσε όποια ενότητα πρόλαβε πρώτη, και οι
+  Ταινίες γέμιζαν με κανάλια.</p>
+
+  <p><strong>3. Η επιλογή κατηγοριών φεύγει από το «πριν» και πάει στο «μετά».</strong>
+  Στα quick actions κάθε ενότητας, με ονόματα και πλήθη. Μια κατηγορία με 0
+  στοιχεία φαίνεται γκρίζα αντί να την ανακαλύπτεις άδεια αργότερα.
+  <span class="ok">Καμία λήψη δεν ξαναγίνεται</span> όταν αλλάζεις επιλογή —
+  τα δεδομένα είναι ήδη εδώ, αλλάζει μόνο το φίλτρο.</p>
+
+  <h4>Τι ΔΕΝ κάνει αυτό το preview</h4>
+  <p>Δεν δείχνει την αποθήκευση στον δίσκο. Είναι ξεχωριστό βήμα, έρχεται μετά,
+  και ισχύει <strong>μόνο για ταινίες και σειρές</strong> — ποτέ για ζωντανά,
+  γιατί το <code>cmd</code> τους είναι συχνά η τελική διεύθυνση με token και ένα
+  αποθηκευμένο token είναι νεκρή ροή.</p>
+</div>
+
+<script>
+  const SECS = [
+    { name:"Ζωντανά",  cats:4,   items:360,  ms:900  },
+    { name:"Ταινίες",  cats:10,  items:3738, ms:2600 },
+    { name:"Σειρές",   cats:271, items:4487, ms:3400 },
+  ];
+  const secsEl = document.getElementById("secs");
+  const pctEl  = document.getElementById("pct");
+  const stgEl  = document.getElementById("stage");
+  const barEl  = document.getElementById("bar");
+  let timers = [];
+
+  function paint(state) {
+    secsEl.innerHTML = SECS.map((s,i) => {
+      const st = state[i];
+      const cls = st.done ? "done" : st.run ? "run" : "wait";
+      const ic  = st.done ? "✓" : st.run ? "•" : "·";
+      const right = st.done ? s.items.toLocaleString("el") + " στοιχεία"
+                  : st.run ? st.cat + "/" + s.cats
+                  : "σε αναμονή";
+      return `<div class="sec ${cls}"><span class="ic">${ic}</span>
+              <span class="grow">${s.name}</span>
+              <span class="n">${right}</span></div>`;
+    }).join("");
+  }
+
+  function run() {
+    timers.forEach(clearInterval); timers = [];
+    const state = SECS.map(() => ({ done:false, run:false, cat:0 }));
+    paint(state); pctEl.innerHTML = '0<small>%</small>';
+    stgEl.textContent = "Σύνδεση…"; barEl.style.width = "0%";
+    let idx = 0;
+    function nextSection() {
+      if (idx >= SECS.length) {
+        pctEl.innerHTML = '100<small>%</small>'; barEl.style.width = "100%";
+        stgEl.textContent = "Έτοιμο — 8.585 στοιχεία";
+        return;
+      }
+      const s = SECS[idx], st = state[idx];
+      st.run = true;
+      const steps = Math.min(s.cats, 40);
+      let k = 0;
+      const t = setInterval(() => {
+        k++;
+        st.cat = Math.round(s.cats * k / steps);
+        const base = idx / SECS.length, frac = (k/steps) / SECS.length;
+        const pct = Math.round((base + frac) * 100);
+        pctEl.innerHTML = pct + '<small>%</small>';
+        barEl.style.width = pct + "%";
+        stgEl.textContent = "Λήψη " + s.name.toLowerCase() +
+                            " · κατηγορία " + st.cat + " από " + s.cats;
+        paint(state);
+        if (k >= steps) {
+          clearInterval(t); st.run = false; st.done = true;
+          paint(state); idx++; nextSection();
+        }
+      }, s.ms / steps);
+      timers.push(t);
+    }
+    nextSection();
+  }
+  document.getElementById("replay").onclick = run;
+  run();
+
+  // ---- category sheet ----
+  const CATS = [
+    ["Ελληνικές σειρές", 412], ["Netflix", 388], ["Disney+", 240],
+    ["Amazon Prime", 197], ["Τουρκικές", 631], ["Ντοκιμαντέρ", 88],
+    ["Παιδικά", 154], ["Anime", 0],
+  ];
+  const on = new Set([0,1,4]);
+  const catsEl = document.getElementById("cats");
+  const chosenEl = document.getElementById("chosen");
+  function drawCats() {
+    catsEl.innerHTML = CATS.map(([n,c],i) =>
+      `<div class="cat ${c===0?'zero':''}" data-i="${i}">
+         <span class="box ${on.has(i)?'on':''}"></span>
+         <span class="grow">${n}</span>
+         <span class="cnt">${c.toLocaleString("el")}</span></div>`).join("");
+    const total = [...on].reduce((a,i) => a + CATS[i][1], 0);
+    chosenEl.textContent = on.size + " από " + CATS.length +
+      " · " + total.toLocaleString("el") + " σειρές ορατές";
+    catsEl.querySelectorAll(".cat").forEach(el => el.onclick = () => {
+      const i = +el.dataset.i;
+      on.has(i) ? on.delete(i) : on.add(i);
+      drawCats();
+    });
+  }
+  document.getElementById("all").onclick  = () => { CATS.forEach((_,i)=>on.add(i)); drawCats(); };
+  document.getElementById("none").onclick = () => { on.clear(); drawCats(); };
+  drawCats();
+</script>

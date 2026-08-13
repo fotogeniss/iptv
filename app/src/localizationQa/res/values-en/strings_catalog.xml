@@ -46,6 +46,10 @@
 
     <string name="catalog_loading">Downloading from source…</string>
     <string name="catalog_loading_with_progress">%1$s · Downloading from source…</string>
+    <string name="catalog_loading_live">Downloading live channels…</string>
+    <string name="catalog_loading_movies">Downloading movies…</string>
+    <string name="catalog_loading_series">Downloading series…</string>
+    <string name="catalog_loading_section_with_progress">%1$s · %2$s</string>
     <string name="catalog_voice_prompt">What do you want to watch?</string>
     <string name="catalog_voice_unavailable">Voice search is unavailable</string>
 

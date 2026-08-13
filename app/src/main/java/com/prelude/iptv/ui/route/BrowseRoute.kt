@@ -1437,7 +1437,10 @@ private fun CatalogLoadingProgress(vm: MainViewModel) {
     val progressState by vm.catalogProgressState.collectAsStateWithLifecycle()
     val active = progressState.sourceProgress[vm.currentSourceId()]?.takeIf { it.active }
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-        val label = localizedCatalogProgress(active?.percent)
+        // Η ενότητα έρχεται από το ΕΝΕΡΓΟ progress, όχι από το state.contentType:
+        // κατά τη «λήψη όλων» ο χρήστης μπορεί να στέκεται στις Ταινίες ενώ
+        // κατεβαίνουν οι Σειρές, και η μπάρα πρέπει να λέει τι όντως τρέχει.
+        val label = localizedCatalogProgress(active?.percent, active?.contentType)
         Text(label, color = TextMid, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(6.dp))
         val percent = active?.percent
