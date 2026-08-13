@@ -298,8 +298,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
         // Οι κατηγορίες κατεβαίνουν ΠΑΡΑΛΛΗΛΑ και παραδίδονται με τη σειρά. Μόλις
         // ολοκληρωθεί μία, δημοσιεύεται ενώ οι επόμενες συνεχίζουν να κατεβαίνουν.
         val liveStartedAtMs = System.currentTimeMillis()
-        pageRequests.set(0)
-        pageFailures.set(0)
+        resetLoadCounters()
         forEachCategoryParallel(
             ids = ids.filter { it.isNotBlank() && it != "*" },
             urlFor = { gid, page ->
@@ -544,6 +543,50 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
      * είναι το portal και όχι εμείς — και τότε σταματάμε αντί να το πιέζουμε
      * μέχρι να αρχίσει να απαντά 429.
      */
+    /**
+     * Η ΠΡΩΤΗ σελίδα μιας κατηγορίας που αποτυγχάνει χάνει ΟΛΟΚΛΗΡΗ την κατηγορία.
+     *
+     * Το [fetchAllPages] επιστρέφει κενή λίστα αν πέσει το πρώτο αίτημα ή αν
+     * λείπει το `js`/`data`, και μέχρι τώρα ΔΕΝ το μετρούσε πουθενά: ο μετρητής
+     * [pageFailures] πιάνει μόνο τις παράλληλες σελίδες 2..N. Με 271 κατηγορίες
+     * στις σειρές, μια χαμένη πρώτη σελίδα είναι αόρατη απώλεια άγνωστου μεγέθους
+     * — χειρότερη από τις 14 μετρημένες, γιατί δεν ξέρουμε καν πόσα στοιχεία είχε.
+     */
+    private val firstPageFailures = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /**
+     * Πόσα δείγματα αιτίας έχουν καταγραφεί σε αυτή την ενότητα.
+     *
+     * ΦΡΑΓΜΕΝΟ ΣΤΑ 3 ΕΠΙΤΗΔΕΣ. Δεκατέσσερα stack traces δεν λένε περισσότερα από
+     * τρία, και πνίγουν το logcat ακριβώς όταν το διαβάζεις. Ο συνολικός αριθμός
+     * ζει ήδη στη γραμμή `ΣΥΝΟΨΗ`· εδώ θέλουμε μόνο το ΕΙΔΟΣ της αποτυχίας.
+     */
+    private val failureSamplesLogged = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /**
+     * Καταγράφει ΓΙΑΤΙ χάθηκε μια σελίδα — τη μία πληροφορία που ο μετρητής δεν
+     * κρατά και που καθορίζει την επόμενη κίνηση.
+     *
+     * «άδεια απόκριση» και «σφάλμα» οδηγούν σε ΑΝΤΙΘΕΤΕΣ διορθώσεις: το πρώτο
+     * σημαίνει ότι το portal απάντησε χωρίς δεδομένα, δηλαδή η ίδια υποβάθμιση
+     * υπό πίεση που ακύρωσε τα 12 νήματα, και τότε μια επανάληψη απλώς προσθέτει
+     * πίεση. Το δεύτερο είναι παροδικό και μια φραγμένη επανάληψη το σώζει.
+     * ΜΗΝ ΓΡΑΨΕΙΣ RETRY ΠΡΙΝ ΔΕΙΣ ΠΟΙΟ ΑΠΟ ΤΑ ΔΥΟ ΕΙΝΑΙ.
+     */
+    private fun notePageFailure(reason: String, error: Exception? = null) {
+        if (failureSamplesLogged.incrementAndGet() > 3) return
+        val message = "ΑΙΤΙΑ ΑΠΟΤΥΧΙΑΣ ΣΕΛΙΔΑΣ ($reason)"
+        if (error == null) Log.w("CatalogLoad", message)
+        else Log.w("CatalogLoad", "$message: ${error.javaClass.simpleName}", error)
+    }
+
+    private fun resetLoadCounters() {
+        pageRequests.set(0)
+        pageFailures.set(0)
+        firstPageFailures.set(0)
+        failureSamplesLogged.set(0)
+    }
+
     private fun logLoadSummary(type: String, categories: Int, items: Int, startedAtMs: Long) {
         val elapsedMs = (System.currentTimeMillis() - startedAtMs).coerceAtLeast(1)
         val requests = pageRequests.get()
@@ -560,8 +603,20 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                 "CatalogLoad",
                 "ΧΑΘΗΚΑΝ ΔΕΔΟΜΕΝΑ: $failures σελίδες του «$type» απέτυχαν και " +
                     "αγνοήθηκαν σιωπηλά — έως ${failures * 14} στοιχεία λείπουν. " +
-                    "Αν συμβαίνει σταθερά, ο παραλληλισμός (pagePool) είναι πολύ ψηλά " +
-                    "για αυτό το portal.",
+                    "Δες τις γραμμές «ΑΙΤΙΑ ΑΠΟΤΥΧΙΑΣ ΣΕΛΙΔΑΣ» παραπάνω: «άδεια " +
+                    "απόκριση» σημαίνει ότι το portal λυγίζει υπό πίεση και ο " +
+                    "παραλληλισμός (pagePool) είναι πολύ ψηλά· «σφάλμα» σημαίνει " +
+                    "παροδική αποτυχία δικτύου.",
+            )
+        }
+        val lostCategories = firstPageFailures.get()
+        if (lostCategories > 0) {
+            Log.w(
+                "CatalogLoad",
+                "ΧΑΘΗΚΑΝ ΚΑΤΗΓΟΡΙΕΣ: σε $lostCategories κατηγορίες του «$type» απέτυχε " +
+                    "η ΠΡΩΤΗ σελίδα, οπότε χάθηκε ολόκληρη η κατηγορία. Το πλήθος των " +
+                    "στοιχείων που λείπουν είναι άγνωστο — η απάντηση που θα το έλεγε " +
+                    "είναι αυτή που δεν ήρθε.",
             )
         }
     }
@@ -573,10 +628,20 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
             JSONObject(providerText(urlFor(1), activeHeaders()))
         } catch (e: Exception) {
             rethrowIfCancelled(e)
+            firstPageFailures.incrementAndGet()
+            notePageFailure("σφάλμα, 1η σελίδα κατηγορίας", e)
             return out
         }
-        val js = first.optJSONObject("js") ?: return out
-        val data = js.optJSONArray("data") ?: return out
+        val js = first.optJSONObject("js") ?: run {
+            firstPageFailures.incrementAndGet()
+            notePageFailure("άδεια απόκριση, 1η σελίδα κατηγορίας — λείπει το js")
+            return out
+        }
+        val data = js.optJSONArray("data") ?: run {
+            firstPageFailures.incrementAndGet()
+            notePageFailure("άδεια απόκριση, 1η σελίδα κατηγορίας — λείπει το data")
+            return out
+        }
         if (data.length() == 0) return out
         for (i in 0 until data.length()) out.add(data.getJSONObject(i))
 
@@ -626,11 +691,13 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
                         .optJSONObject("js")?.optJSONArray("data")
                     if (arr == null) {
                         pageFailures.incrementAndGet()
+                        notePageFailure("άδεια απόκριση, σελίδα $p")
                         emptyList()
                     } else (0 until arr.length()).map { arr.getJSONObject(it) }
                 } catch (e: Exception) {
                     rethrowIfCancelled(e)
                     pageFailures.incrementAndGet()
+                    notePageFailure("σφάλμα, σελίδα $p", e)
                     emptyList()
                 }
             }
@@ -780,8 +847,7 @@ class StalkerClient(portal: String, mac: String, userAgent: String = "") {
 
         val label = if (type == "vod") "ταινιών" else "σειρών"
         val startedAtMs = System.currentTimeMillis()
-        pageRequests.set(0)
-        pageFailures.set(0)
+        resetLoadCounters()
         forEachCategoryParallel(
             ids = ids.filter { it.isNotBlank() },
             urlFor = { cid, page ->

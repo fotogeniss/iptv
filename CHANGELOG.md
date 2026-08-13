@@ -5,6 +5,29 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.62.0 - versionCode 134
+
+- **A failed page now records why it failed.** The counter added in 1.60.0 said
+  *how many* pages were lost and never *why*, and the two possible reasons need
+  opposite fixes: an exception is a transient network failure that a bounded
+  retry would rescue, while a well-formed response with no `js.data` means the
+  portal answered without data — the same degradation that made twelve workers
+  unusable, where retrying only adds pressure. Each failure now logs its kind,
+  capped at three samples per section so fourteen stack traces cannot bury the
+  line you are trying to read.
+- **Found a larger hole while looking: a lost first page was never counted at
+  all.** `fetchAllPages` returns an empty list when the first request fails or
+  the response carries no `js`/`data`, and that path incremented nothing. The
+  parallel counter only ever watched pages 2..N. With 271 categories in the
+  series section, one failed first page silently deletes an entire category, and
+  the number of missing items cannot even be estimated — the response that would
+  have stated it is the one that did not arrive. Now counted and reported
+  separately from page failures, because the two losses are not the same size.
+- No retry, no change to the page pool, no change to what the user sees. This
+  release exists to answer one question: which of the two failures the owner's
+  portal is actually producing under the series load — 14 pages of 597, at 20
+  requests per second, where live at 7 and movies at 12 lose nothing.
+
 ## 1.61.0 - versionCode 133
 
 - **Reverted the page pool from 12 to 6.** The speed gain was real — 27.1s to
