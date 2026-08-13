@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -30,7 +29,6 @@ import com.prelude.iptv.billing.hasQaPremiumOverride
 import com.prelude.iptv.billing.rememberPremiumTier
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.CatalogSectionQuickActions
 import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 
@@ -46,12 +44,6 @@ import com.prelude.iptv.ui.mobile.navigation.MobileSettingsAction
 internal fun MobileHomeHeader(
     /** true όταν έχει φύγει το hero από την οθόνη — τότε γίνεται συμπαγής. */
     solid: Boolean,
-    selectedDestination: String,
-    itemCount: Int,
-    categoryCount: Int,
-    onSectionBack: () -> Unit,
-    onSort: () -> Unit,
-    onFavorites: () -> Unit,
     onUpdateContents: () -> Unit,
     onEditHome: () -> Unit,
     onCategories: () -> Unit,
@@ -63,39 +55,6 @@ internal fun MobileHomeHeader(
         if (solid) IptvColors.Background.copy(alpha = .96f) else Color.Transparent,
         tween(220), label = "headerBg"
     )
-    if (selectedDestination != "home") {
-        val contentType = if (selectedDestination == "movies") "vod" else "series"
-        Column(modifier.fillMaxWidth().background(Color.Black)) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 11.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    stringResource(R.string.catalog_back),
-                    tint = IptvColors.TextPrimary,
-                    modifier = Modifier.size(30.dp).clip(CircleShape).clickable(onClick = onSectionBack),
-                )
-                Text(
-                    stringResource(if (contentType == "vod") R.string.catalog_movies else R.string.catalog_series),
-                    color = IptvColors.TextPrimary,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.padding(start = 10.dp),
-                )
-            }
-            CatalogSectionQuickActions(
-                contentType = contentType,
-                itemCount = itemCount,
-                categoryCount = categoryCount,
-                onCategories = onCategories,
-                onSort = onSort,
-                onFavorites = onFavorites,
-                onRefresh = onUpdateContents,
-            )
-        }
-        return
-    }
     Row(
         modifier
             .fillMaxWidth()
@@ -145,6 +104,7 @@ internal fun MobileHomeHeader(
             QuickMenu(
                 onUpdateContents = onUpdateContents,
                 onEditHome = onEditHome,
+                onCategories = onCategories,
                 onExport = onExport
             )
             Spacer(Modifier.width(4.dp))
@@ -163,6 +123,7 @@ internal fun MobileHomeHeader(
 private fun QuickMenu(
     onUpdateContents: () -> Unit,
     onEditHome: () -> Unit,
+    onCategories: () -> Unit,
     onExport: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -194,6 +155,7 @@ private fun QuickMenu(
         ) {
             QuickItem(stringResource(R.string.home_refresh_content), Icons.Default.Refresh) { open = false; onUpdateContents() }
             QuickItem(stringResource(R.string.home_edit_title), Icons.Default.Tune) { open = false; onEditHome() }
+            QuickItem(stringResource(R.string.home_categories_groups), Icons.Default.Category) { open = false; onCategories() }
             QuickItem(stringResource(R.string.home_export_playlist), Icons.Default.IosShare) { open = false; onExport() }
         }
     }

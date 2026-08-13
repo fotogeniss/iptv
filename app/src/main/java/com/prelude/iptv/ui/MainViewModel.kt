@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.prelude.iptv.data.CatalogDownloadManager
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistIdentity
@@ -794,6 +795,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         updateSourceProgress(pl, 0, "Προετοιμασία όλων των ενοτήτων…", active = true, contentType = "all")
 
         allSectionsLoadJob = viewModelScope.launch {
+            val foregroundLease = CatalogDownloadManager.protectProcessDuringCatalogLoad()
+            try {
             val failures = mutableListOf<String>()
             var published = false
             for ((index, type) in sections.withIndex()) {
@@ -886,7 +889,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     "Ολοκληρώθηκε με προβλήματα: ${failures.joinToString(" · ")}"
                 }
             )
-            allSectionsLoadJob = null
+            } finally {
+                foregroundLease.close()
+                allSectionsLoadJob = null
+            }
         }
     }
 

@@ -35,6 +35,9 @@ import com.prelude.iptv.ui.components.library.PremiumLibraryContent
 import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.ui.tvFocus
 
+@Suppress("DEPRECATION")
+private val acceptedSortIcon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Default.Sort
+
 @Composable
 internal fun TvLibraryHeading(
     content: PremiumLibraryContent,
@@ -92,7 +95,7 @@ internal fun TvLibraryControls(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TvLibraryTool(Icons.Default.Sort, stringResource(sort.labelRes()), onSort)
+            TvLibraryTool(acceptedSortIcon, stringResource(sort.labelRes()), onSort)
             TvLibraryTool(
                 Icons.Default.Check,
                 stringResource(if (managementMode) R.string.library_action_done else R.string.library_action_manage),

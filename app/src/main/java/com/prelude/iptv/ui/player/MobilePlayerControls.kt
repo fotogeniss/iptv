@@ -1,6 +1,8 @@
 package com.prelude.iptv.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -265,23 +267,49 @@ private fun Scrubber(
     onInteract: () -> Unit,
 ) {
     val fraction = (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
+    // ΛΕΠΤΗ ΟΣΟ ΔΕΝ ΤΗΝ ΑΓΓΙΖΕΙΣ, ΕΛΑΧΙΣΤΑ ΠΙΟ ΧΟΝΤΡΗ ΟΤΑΝ ΤΗΝ ΠΑΤΑΣ.
+    //
+    // Αλλάζουν ΜΟΝΟ το πάχος της γραμμής και η διάμετρος της λαβής. Η περιοχή
+    // αφής μένει 26dp: αν μίκραινε μαζί με τη γραμμή, η μπάρα θα γινόταν
+    // ωραιότερη και ταυτόχρονα δυσκολότερη να πιαστεί.
+    var pressed by remember { mutableStateOf(false) }
+    val trackHeight by animateDpAsState(
+        targetValue = if (pressed) 3.dp else 1.5f.dp,
+        animationSpec = tween(130),
+        label = "scrubberTrack",
+    )
+    val thumbSize by animateDpAsState(
+        targetValue = if (pressed) 11.dp else 7.dp,
+        animationSpec = tween(130),
+        label = "scrubberThumb",
+    )
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .height(26.dp)
             .pointerInput(durationMs) {
-                detectTapGestures { offset ->
-                    onInteract()
-                    onScrub(((offset.x / size.width) * durationMs).toLong())
-                    onScrubEnd()
-                }
+                detectTapGestures(
+                    // Το πάχος ακολουθεί το ΔΑΧΤΥΛΟ, όχι το αποτέλεσμα: πιάνεται
+                    // στο πάτημα και αφήνεται στο σήκωμα, ακόμη κι αν ο χρήστης
+                    // τελικά δεν άλλαξε θέση.
+                    onPress = {
+                        pressed = true
+                        tryAwaitRelease()
+                        pressed = false
+                    },
+                    onTap = { offset ->
+                        onInteract()
+                        onScrub(((offset.x / size.width) * durationMs).toLong())
+                        onScrubEnd()
+                    },
+                )
             }
             .pointerInput(durationMs) {
                 detectHorizontalDragGestures(
-                    onDragStart = { onScrubStart(); onInteract() },
-                    onDragEnd = { onScrubEnd() },
-                    onDragCancel = { onScrubEnd() },
+                    onDragStart = { pressed = true; onScrubStart(); onInteract() },
+                    onDragEnd = { pressed = false; onScrubEnd() },
+                    onDragCancel = { pressed = false; onScrubEnd() },
                 ) { change, _ ->
                     onScrub(((change.position.x / size.width) * durationMs).toLong())
                 }
@@ -293,22 +321,24 @@ private fun Scrubber(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(2.dp)
+                .height(trackHeight)
                 .background(Color.White.copy(alpha = .30f))
         )
         // Παιγμένο
         Box(
             Modifier
                 .width(width * fraction)
-                .height(2.dp)
+                .height(trackHeight)
                 .background(SCRUB_RED)
         )
         // Λαβή. Το offset είναι η θέση μείον η μισή λαβή, ώστε το κέντρο του
-        // κύκλου να πέφτει ΠΑΝΩ στη θέση και όχι δεξιά της.
+        // κύκλου να πέφτει ΠΑΝΩ στη θέση και όχι δεξιά της. Η μισή λαβή
+        // διαβάζεται από το τρέχον μέγεθος, αλλιώς θα μετατοπιζόταν καθώς
+        // μεγαλώνει.
         Box(
             Modifier
-                .offset(x = width * fraction - 4.dp)
-                .size(8.dp)
+                .offset(x = width * fraction - thumbSize / 2)
+                .size(thumbSize)
                 .clip(CircleShape)
                 .background(SCRUB_RED)
         )

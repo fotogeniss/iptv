@@ -3,6 +3,7 @@ package com.prelude.iptv.ui.mobile.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +50,10 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.components.home.HomeCinematicBackdrop
 import com.prelude.iptv.ui.components.home.homeHeroCandidates
 import com.prelude.iptv.ui.components.home.rememberHomeMeta
+import kotlinx.coroutines.delay
+
+/** Πόσο μένει ακίνητη μια σελίδα του hero πριν περάσει μόνη της στην επόμενη. */
+private const val HERO_AUTO_ADVANCE_MS = 5_000L
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -74,6 +80,21 @@ internal fun MobilePremiumHomeHero(
 ) {
     val heroes = homeHeroCandidates(channels)
     val pager = rememberPagerState(pageCount = { heroes.size })
+    // ΑΥΤΟΜΑΤΗ ΕΝΑΛΛΑΓΗ, ΜΟΝΟ ΟΣΟ ΔΕΝ ΤΟ ΑΓΓΙΖΕΙ Ο ΧΡΗΣΤΗΣ.
+    //
+    // Το κλειδί είναι το `dragged` και ΟΧΙ το `isScrollInProgress`: το
+    // δεύτερο γίνεται true και από τη δική μας κίνηση, οπότε το effect θα
+    // ακύρωνε το ίδιο του το animation στη μέση. Με το άγγιγμα το effect
+    // ακυρώνεται· με το άφημα ξαναξεκινά από την αρχή, δηλαδή η επόμενη
+    // αυτόματη αλλαγή έρχεται πέντε δευτερόλεπτα μετά το τελευταίο σύρσιμο.
+    val dragged by pager.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(pager, heroes.size, dragged) {
+        if (dragged || heroes.size <= 1) return@LaunchedEffect
+        while (true) {
+            delay(HERO_AUTO_ADVANCE_MS)
+            pager.animateScrollToPage((pager.currentPage + 1) % heroes.size)
+        }
+    }
     Box(Modifier.fillMaxWidth().height(515.dp)) {
         HorizontalPager(
             state = pager,

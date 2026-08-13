@@ -121,7 +121,6 @@ fun TvLiveBrowseScreen(
     programmesOf: (Channel) -> List<LiveProgramme>,
     resolveUrl: suspend (Channel) -> String,
     onSelectGroup: (String) -> Unit,
-    quickActions: @Composable () -> Unit = {},
     /** Διπλή προβολή: δύο κανάλια ταυτόχρονα. */
     onMultiview: (Channel, Channel) -> Unit = { _, _ -> },
     /**
@@ -276,7 +275,6 @@ fun TvLiveBrowseScreen(
         // μπάρας. 64dp = ακριβώς όσο η κλειστή μπάρα εικονιδίων.
         if (!fullscreen) Column(Modifier.fillMaxSize().padding(start = 64.dp)) {
             TvBrowseHeaderPublic()
-            quickActions()
             // Οδηγία όσο το multiview είναι οπλισμένο — αλλιώς δεν θα ήταν σαφές
             // ότι η εφαρμογή περιμένει δεύτερη επιλογή.
             multiviewPrimary?.let { first ->

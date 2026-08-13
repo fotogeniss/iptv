@@ -231,6 +231,21 @@ class VlcBackend(
         attachedLayout = null
     }
 
+    /**
+     * Αποσυνδέει ΜΟΝΟ αν το [layout] είναι ακόμη το ενεργό.
+     *
+     * ΓΙΑΤΙ ΥΠΑΡΧΕΙ: όταν ο player μαζεύεται σε λωρίδα, η νέα μικρή επιφάνεια
+     * προσαρτάται ΠΡΙΝ φύγει από τη σύνθεση η παλιά πλήρης — έτσι δουλεύει η
+     * σειρά του Compose. Η παλιά, φεύγοντας, καλούσε [detachLayout] χωρίς όρο
+     * και ξήλωνε την ΚΑΙΝΟΥΡΓΙΑ επιφάνεια: ο ήχος συνέχιζε, η εικόνα χανόταν.
+     * Το ExoPlayer μονοπάτι είχε ήδη αυτόν τον έλεγχο ταυτότητας
+     * ([PlaybackEngine.detachSurface])· το LibVLC δεν τον είχε ποτέ.
+     */
+    fun detachLayout(layout: VLCVideoLayout) {
+        if (attachedLayout !== layout) return
+        detachLayout()
+    }
+
     // ---------------------------------------------------------------- γεγονότα
 
     private fun onEvent(event: MediaPlayer.Event) {

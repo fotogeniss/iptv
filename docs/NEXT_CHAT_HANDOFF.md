@@ -2,8 +2,8 @@
 
 - **Date:** 2026-08-13
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** 1.66.0 exact-preview correction is ready to commit; verify with `git log --oneline -5`
-- **Version on disk:** 1.66.0 (`versionCode 138`) · owner-confirmed QA build
+- **Branch:** `main` · **HEAD:** `2e04e97` is the owner-built 1.66.0 exact-preview correction; verify with `git log --oneline -5`
+- **Version on disk:** 1.69.0 (`versionCode 141`) · six-warning cleanup pending owner build
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -20,6 +20,28 @@ reasoning, the open questions and the traps that the changelog does not carry.
 
 ## 0. START HERE — state, what is open, what to do first
 
+### STOP — authorization is exact, never inferred
+
+**Do not change anything beyond the exact behavior the owner has explicitly
+approved.** An HTML preview, screenshot or example authorizes only the element
+being discussed. It is not permission to redesign surrounding chrome, headers,
+rails/sliders, navigation, layout, focus, gestures, wording or controls. If a
+wider change appears necessary, stop before editing and ask. "Helpful",
+"consistent" and "premium" are not authorization.
+
+This rule exists because 1.66.0 violated it: the approved loading/category
+preview was expanded without permission into a new full-width Movies/Series/
+Live header and downloaded-count sentence, and the rails stopped working. The
+1.68.0 work restores the accepted UI. Read and obey root `AGENTS.md` before any
+future edit.
+
+**Separate explicit owner order:** for every visual change, however small,
+first make the exact HTML preview in `prototypes/`, show it to the owner and
+wait for an explicit "OK". Only after that approval may production code change.
+No screenshot, previous approval, silence or inference substitutes for that
+sequence. This includes spacing, color, typography, icons, layout, navigation,
+gestures, animation and TV focus.
+
 Current session: **2026-08-13**. Slice 2 landed separately as `9a1e787`
 (1.64.0), and the first functional slice 3 landed as `f673175` (1.65.0).
 The owner correctly rejected its presentation because it treated the approved
@@ -27,12 +49,36 @@ HTML as inspiration: it kept a full-screen Apply picker and placed the TV action
 in the navigation rail. The uncommitted 1.66.0 correction now treats
 `prototypes/full_load_then_choose.html` as the exact contract: compact three-tab
 sheet, immediate local changes, per-section quick-action chips and the full
-three-section progress surface. The owner confirmed that the QA build compiles;
-Gradle was not run by Codex.
+three-section progress surface. The owner confirmed that the QA build compiles
+and it was committed as `2e04e97`; Gradle was not run by Codex.
 
-**Next action is mobile/TV device validation of 1.66.0-qa**, including the
-matrix below. The compile gate has passed, but the exact visuals and focus have
-not yet been confirmed.
+The owner's next evidence exposed a separate defect: when the phone screen
+turned off, Stalker/Xtream full loading stopped and reopening showed no catalog.
+The uncommitted 1.67.0 work extends the existing foreground M3U protection to
+the whole three-section provider load and holds a bounded partial CPU wake lock
+plus a platform-appropriate Wi-Fi performance lock.
+
+The subsequent 1.66.0 device screenshot also proved that the full-width
+quick-action bar was an unintended redesign of the established Movies/Series
+chrome and the owner reported that the rails no longer interacted correctly.
+The uncommitted 1.68.0 correction restores the original mobile header, Live
+control, TV navigation and rail layout exactly, removes the normal-screen
+downloaded-count sentence, and keeps only the compact category sheet and full
+load progress surface from that visual slice.
+
+The owner compiled 1.68.0 successfully and reported six deprecation warnings.
+The uncommitted 1.69.0 cleanup removes those warnings without changing the
+accepted icons or any layout/focus behavior.
+
+**Next action is an owner build of 1.69.0-qa.** First verify that compilation
+finishes without the six warnings. Then verify that Movies/Series
+look exactly as before 1.66.0 and that every horizontal rail scrolls and opens
+items. Then start a
+full load, turn the screen off for long enough that at least one section should
+advance, then reopen and confirm that progress/results continued. Also capture
+the three `CatalogLoad` summary lines (`live`, `vod`, `series`) from one full
+Stalker load; those numbers, not a higher guessed pool, decide the real speed
+patch. Exact 1.66.0 mobile/TV visuals and focus remain unconfirmed.
 The 1.63.0 APK was installed and its Settings version confirmed, but the actual
 bar wording remains visually unconfirmed on both mobile and TV.
 

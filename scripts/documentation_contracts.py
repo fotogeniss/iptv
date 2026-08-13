@@ -16,6 +16,9 @@ def read(path: str) -> str:
 gradle = read("app/build.gradle.kts")
 readme = read("README.md")
 changelog = read("CHANGELOG.md")
+agents = read("AGENTS.md")
+maintenance = read("docs/MAINTENANCE.md")
+handoff = read("docs/NEXT_CHAT_HANDOFF.md")
 
 name_match = re.search(r'versionName\s*=\s*"([^"]+)"', gradle)
 code_match = re.search(r"versionCode\s*=\s*(\d+)", gradle)
@@ -26,6 +29,15 @@ if not name_match or not code_match:
 version_name = name_match.group(1)
 version_code = code_match.group(1)
 failures: list[str] = []
+
+authorization_markers = {
+    "AGENTS.md": (agents, "no exceptions", "There is no \"too small to preview\" exception"),
+    "docs/MAINTENANCE.md": (maintenance, "Every visual change", "owner's explicit statement that it is OK"),
+    "docs/NEXT_CHAT_HANDOFF.md": (handoff, "Separate explicit owner order", "wait for an explicit \"OK\""),
+}
+for path, (body, first, second) in authorization_markers.items():
+    if first not in body or second not in body:
+        failures.append(f"mandatory exact-scope authorization rule is missing from {path}")
 
 if f"Current app version: **{version_name}** (`versionCode {version_code}`)" not in readme:
     failures.append("README current-version line does not match app/build.gradle.kts")

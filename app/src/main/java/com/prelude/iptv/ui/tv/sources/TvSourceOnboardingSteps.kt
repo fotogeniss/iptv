@@ -41,6 +41,9 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.sources.PlaylistSourceSubmissionStage
 
+@Suppress("DEPRECATION")
+private val acceptedHelpOutlineIcon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Default.HelpOutline
+
 internal enum class TvSourceOnboardingStep {
     CHOOSE,
     DETAILS,
@@ -72,7 +75,7 @@ internal fun TvSourceOnboardingTopBar(
             label = stringResource(R.string.sources_help),
             primary = false,
             focusRequester = helpFocus,
-            icon = Icons.Default.HelpOutline,
+            icon = acceptedHelpOutlineIcon,
             modifier = Modifier.align(Alignment.CenterEnd).size(width = 126.dp, height = 48.dp),
             onClick = onHelp,
         )

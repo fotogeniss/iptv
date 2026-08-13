@@ -5,6 +5,126 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.73.0 - versionCode 145
+
+- The mobile player's progress bar is thinner at rest and reacts slightly to
+  touch: the line goes from 1.5dp to 3dp and the handle from 7dp to 11dp over
+  130ms while a finger is down, then returns. The change follows the finger,
+  not the result, so simply holding the bar shows the response even when the
+  position is not moved.
+- The 26dp touch area is deliberately unchanged. A thinner line that was also
+  harder to grab would be a worse control, not a nicer one.
+- Nothing else in the player moved: colors, spacing, times, buttons, gestures
+  and the Android TV scrubber are untouched, and no arrow affordance was added
+  anywhere.
+- The frozen architecture contract for the mobile scrubber was updated to the
+  new animated values; it still enforces a slim line and the preserved touch
+  target. Follows `prototypes/player_scrubber_slim.html`, approved by the owner
+  before this edit. Gradle was not run; the owner QA build is pending.
+
+## 1.72.0 - versionCode 144
+
+- The phone's Back button now collapses the mobile player into the mini strip
+  instead of ending playback, so the most common exit gesture no longer kills
+  the stream. Pulling the page down still does the same thing, and closing
+  stays an explicit action through the strip's close button. In fullscreen,
+  Back still leaves fullscreen first, and while the strip is docked Back still
+  belongs to the page underneath.
+- Follows `prototypes/mini_player_back_button.html`, approved by the owner
+  before this edit. No layout, size, wording, icon or TV behavior changed.
+  Gradle was not run; the owner QA build is pending.
+
+## 1.71.0 - versionCode 143
+
+- Fixed the collapsed mini player playing sound with no picture whenever the
+  libVLC engine was in use. Collapsing composes the small surface before the
+  full-screen one leaves, so the departing full-screen surface called an
+  unconditional libVLC detach and tore down the strip's freshly attached video
+  layout; audio kept running because only the video output was removed.
+- libVLC detach now verifies that the layout being released is still the active
+  one, which is the identity guard the ExoPlayer surface path already had. The
+  two engines now behave the same way at the same boundary.
+- Nothing about the strip's layout, size, controls, wording or gestures
+  changed. Gradle was not run; the owner QA build and an on-device check that
+  the mini player shows moving picture are pending.
+
+## 1.70.0 - versionCode 142
+
+- Fixed the top hero slider on Home, Movies and Series showing a single item.
+  The hero was fed the Explore/category-filtered list, so selecting a category
+  that holds one title left the pager with one page and it could not move. The
+  hero now takes its up-to-six candidates from the whole current destination,
+  while the Explore/category choice keeps filtering only the content below the
+  hero.
+- The hero advances on its own every five seconds while the user is not
+  touching it. Touching cancels the timer and releasing restarts it, so the
+  next automatic change arrives five seconds after the last swipe. Finger swipe
+  left/right remains the only manual control; no arrow buttons were added.
+- Layout, height, dots, buttons, wording, typography, colors, navigation and TV
+  focus are unchanged. Follows `prototypes/hero_carousel_restoration.html`,
+  approved by the owner before this edit. Gradle was not run; owner QA build and
+  the on-device slider check are pending.
+
+## 1.69.0 - versionCode 141
+
+- Removed the six deprecation warnings reported by the owner's successful
+  1.68.0 QA compilation. The relay notification now uses the channel-aware
+  constructor on every supported Android version, since the app's minimum SDK
+  is already Android 8.
+- Catalog loading now requests Android's low-latency Wi-Fi mode on Android 14+
+  and retains the former high-performance mode only on older releases where it
+  is still the appropriate API.
+- Kept the four accepted Send, Help and Sort icons byte-for-byte unchanged.
+  Their narrowly scoped deprecation suppressions deliberately avoid switching
+  to auto-mirrored assets, which would be a visual RTL change requiring a
+  separately approved HTML preview.
+- No layout, wording, navigation, gesture or TV focus changed. Gradle was not
+  run; owner QA compilation is pending.
+
+## 1.68.0 - versionCode 140
+
+- Reverted the unintended replacement of the established Movies, Series and
+  Live screen chrome. The 1.66.0 full-width quick-action header, extra content
+  padding and downloaded-count sentence changed the whole screen even though
+  the approved HTML described the loading/category flow, not a redesign of the
+  existing catalog UI.
+- Restored the original mobile header, Live category control, TV navigation and
+  original rail layout/gesture surface exactly. Category selection still opens
+  after download from the controls that already existed, and the compact
+  three-tab category sheet and complete-load progress screen remain intact.
+- Removed the downloaded item/category sentence from normal catalog screens.
+  Counts remain inside the category sheet, where they are needed to make a
+  visibility choice, and on the active download progress screen.
+- This release includes the 1.67.0 foreground-service, CPU wake-lock and Wi-Fi
+  lock protection for screen-off downloads. Gradle was not run; owner QA build,
+  rail interaction check and screen-off test are pending.
+- Recorded the exact-scope authorization boundary in root `AGENTS.md`, the
+  maintenance guide and the next-session handoff. The documentation gate now
+  fails if that rule is removed: previews authorize only their agreed element,
+  and any adjacent UI/navigation/focus/gesture change must be approved first.
+- Strengthened that boundary with the owner's explicit visual-change sequence:
+  every visual change, however small, requires its exact HTML preview and a new
+  explicit owner "OK" before production code may be edited. The documentation
+  gate checks that this no-exceptions sequence remains recorded.
+
+## 1.67.0 - versionCode 139
+
+- Fixed complete Stalker/Xtream source loads being abandoned when a phone's
+  screen turned off and the OS cached the unprotected app process. The complete
+  Live/Movies/Series job now holds the same foreground-service protection that
+  already kept large M3U downloads alive.
+- The foreground service now holds a bounded partial CPU wake lock and a
+  high-performance Wi-Fi lock while protected catalog work is active, then
+  releases both with the service on success, failure or cancellation.
+  Concurrent/nested downloads share a reference-counted service lease; each
+  lease can close only once.
+- This deliberately does not raise Stalker's proven-safe `pagePool=6`, run the
+  three sections concurrently or publish partial sections. Those would trade
+  correctness for an unmeasured speed claim. The next throughput decision must
+  use the existing three `CatalogLoad` summary lines from a real full load.
+- No app layout, navigation or focus changed. Gradle was not run; owner QA build
+  and the screen-off test are pending.
+
 ## 1.66.0 - versionCode 138
 
 - Corrected the 1.65.0 category UI to follow the approved

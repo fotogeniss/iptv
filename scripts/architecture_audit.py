@@ -254,8 +254,9 @@ mobile_controls = text("app/src/main/java/com/prelude/iptv/ui/player/MobilePlaye
 scrubber_start = mobile_controls.find("private fun Scrubber(")
 scrubber_end = mobile_controls.find("private fun QualityBadge", scrubber_start)
 scrubber = mobile_controls[scrubber_start:scrubber_end]
-require(scrubber.count(".height(2.dp)") == 2 and ".size(8.dp)" in scrubber and
-        ".height(26.dp)" in scrubber,
+require(scrubber.count(".height(trackHeight)") == 2 and ".size(thumbSize)" in scrubber and
+        ".height(26.dp)" in scrubber and "1.5f.dp" in scrubber and "3.dp" in scrubber and
+        "7.dp" in scrubber and "11.dp" in scrubber,
         "Mobile scrubber is visually slim while retaining its touch target")
 
 tv_controls = text("app/src/main/java/com/prelude/iptv/ui/player/PlayerControls.kt")

@@ -5,10 +5,6 @@
     <string name="catalog_all_movies">All movies</string>
     <string name="catalog_all_series">All series</string>
     <string name="catalog_favorites">Favorites</string>
-    <string name="catalog_quick_categories">Categories…</string>
-    <string name="catalog_downloaded_summary_series">%1$d series in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
-    <string name="catalog_downloaded_summary_movies">%1$d movies in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
-    <string name="catalog_downloaded_summary_live">%1$d channels in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
     <string name="catalog_empty_category">There is no content in this category</string>
     <string name="catalog_in_my_list">In my list</string>
 

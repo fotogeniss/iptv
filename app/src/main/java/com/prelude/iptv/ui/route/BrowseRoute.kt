@@ -70,7 +70,6 @@ import com.prelude.iptv.ui.MainViewModel
 import com.prelude.iptv.ui.PremiumContentRail
 import com.prelude.iptv.ui.PremiumTvHero
 import com.prelude.iptv.ui.PremiumTvNavigationRail
-import com.prelude.iptv.ui.CatalogSectionQuickActions
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
@@ -162,7 +161,7 @@ internal fun BrowseScreen(
     // ΜΕΝΟΥ αντί να σε βγάζει από τη λίστα. Δεύτερο BACK (με το μενού ήδη
     // εστιασμένο) φεύγει κανονικά.
     val navRailFocus = remember { FocusRequester() }
-    val categoryQuickActionFocus = remember { FocusRequester() }
+    val categoryNavFocus = remember { FocusRequester() }
     var navRailFocused by remember { mutableStateOf(false) }
 
     /**
@@ -224,7 +223,8 @@ internal fun BrowseScreen(
             categoryPickerWasOpen = true
         } else if (isTv && categoryPickerWasOpen) {
             categoryPickerWasOpen = false
-            categoryQuickActionFocus.requestFocusWithRetry()
+            navRailArmed = true
+            categoryNavFocus.requestFocusWithRetry()
         }
     }
 
@@ -451,13 +451,6 @@ internal fun BrowseScreen(
         state.channels, state.selectedGroup, state.search, state.favorites,
         state.lockedGroups, state.parentalUnlocked, state.sortMode
     ) { vm.visibleChannels() }
-    val catalogSummary = remember(state.contentType, state.loadedSections, state.loadingAllSections) {
-        vm.currentCatalogSummary()
-    }
-    val cycleSort: () -> Unit = {
-        val modes = listOf("default", "az", "za", "year")
-        vm.setSortMode(modes[(modes.indexOf(state.sortMode).coerceAtLeast(0) + 1) % modes.size])
-    }
     // Η ΑΡΧΙΚΗ ΤΡΩΕΙ ΑΠΟ ΟΛΕΣ ΤΙΣ ΕΝΟΤΗΤΕΣ, ΟΧΙ ΜΟΝΟ ΑΠΟ ΤΗΝ ΕΝΕΡΓΗ.
     //
     // Ο επεξεργαστής αρχικής απαριθμεί ζωντανά, ταινίες και σειρές, αλλά το
@@ -884,11 +877,6 @@ internal fun BrowseScreen(
                     onOpenMyList = { libraryDestination = LibraryDestination.MY_LIST },
                     onOpenSettings = onOpenSettings,
                     onOpenCategories = { vm.changeCategories() },
-                    onSort = cycleSort,
-                    onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
-                    onSectionBack = { if (!goBackSection()) openSection("home") },
-                    downloadedItemCount = catalogSummary.first,
-                    downloadedCategoryCount = catalogSummary.second,
                     // ΟΛΟΚΛΗΡΟΣ ο κατάλογος: τα πλακίδια μετρούν και τα ζωντανά,
                     // που το `channels` έχει ήδη φιλτράρει για την ενότητα.
                     allChannels = homeItems,
@@ -932,11 +920,6 @@ internal fun BrowseScreen(
                     onOpenEpg = if (state.epgLoaded) ({ showGrid = true }) else null,
                     onOpenSettings = onOpenSettings,
                     onOpenCategories = { vm.changeCategories() },
-                    downloadedItemCount = catalogSummary.first,
-                    downloadedCategoryCount = catalogSummary.second,
-                    onSort = cycleSort,
-                    onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
-                    onRefresh = { vm.requestRefresh() },
                     onNavigationCollapsedChange = { mobileNavCollapsed = it },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -962,20 +945,6 @@ internal fun BrowseScreen(
                         if (channel.kind == "series") vm.openSeries(channel)
                     },
                     onPlay = playChannel,
-                    quickActions = {
-                        if (!state.loading) {
-                            CatalogSectionQuickActions(
-                                contentType = state.contentType,
-                                itemCount = catalogSummary.first,
-                                categoryCount = catalogSummary.second,
-                                onCategories = { vm.changeCategories() },
-                                onSort = cycleSort,
-                                onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
-                                onRefresh = { vm.requestRefresh() },
-                                categoryFocus = categoryQuickActionFocus,
-                            )
-                        }
-                    },
                     // Επιστρέφοντας από ταινία, σειρά ή λεπτομέρειες, το focus
                     // πηγαίνει στο στοιχείο που άνοιξες — όχι στην κορυφή του
                     // πλέγματος και όχι στο αριστερό μενού.
@@ -1301,6 +1270,7 @@ internal fun BrowseScreen(
                 onLive = { openSection("live") },
                 onMovies = { openSection("movies") },
                 onSeries = { openSection("series") },
+                onCategories = { vm.changeCategories() },
                 onEpg = {
                     if (state.epgLoaded) showGrid = true
                     else toast(ctx, "Δεν έχει φορτωθεί EPG")
@@ -1311,6 +1281,7 @@ internal fun BrowseScreen(
                 // όταν το focus απλώς περνά από πάνω του.
                 expanded = navRailExpanded,
                 selectedFocus = navRailFocus,
+                categoriesFocus = categoryNavFocus,
                 // Εστιάσιμο όσο κάτι άλλο κρατά το focus (άρα ο χρήστης πλοηγείται
                 // και το αριστερό πρέπει να δουλέψει με το πρώτο πάτημα), όσο το
                 // ζήτησε ρητά με BACK, ή όσο το χρησιμοποιεί ήδη.

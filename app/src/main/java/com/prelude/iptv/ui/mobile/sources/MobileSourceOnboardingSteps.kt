@@ -51,6 +51,9 @@ import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.sources.PlaylistSourceMethod
 import com.prelude.iptv.ui.sources.PlaylistSourceSubmissionStage
 
+@Suppress("DEPRECATION")
+private val acceptedHelpOutlineIcon: ImageVector = Icons.Default.HelpOutline
+
 internal enum class MobileSourceOnboardingStep {
     CHOOSE,
     DETAILS,
@@ -72,7 +75,7 @@ internal fun MobileSourceOnboardingTopBar(
         }
         MobilePlaylistBrand()
         IconButton(onClick = onHelp, modifier = Modifier.align(Alignment.CenterEnd)) {
-            Icon(Icons.Default.HelpOutline, stringResource(R.string.sources_help), tint = IptvColors.TextSecondary)
+            Icon(acceptedHelpOutlineIcon, stringResource(R.string.sources_help), tint = IptvColors.TextSecondary)
         }
     }
 }

@@ -59,11 +59,6 @@ fun MobilePremiumHomeScreen(
     onOpenMyList: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCategories: () -> Unit = {},
-    onSort: () -> Unit = {},
-    onFavorites: () -> Unit = {},
-    onSectionBack: () -> Unit = {},
-    downloadedItemCount: Int = channels.size,
-    downloadedCategoryCount: Int = 0,
     /**
      * ΟΛΟΚΛΗΡΟΣ ο κατάλογος, χωρίς φίλτρα.
      *
@@ -366,11 +361,7 @@ fun MobilePremiumHomeScreen(
             // η επόμενη ενότητα ξεκινά από την κορυφή και μπαίνει από κάτω της:
             // τότε χρειάζεται κανονικό περιθώριο.
             contentPadding = PaddingValues(
-                top = when {
-                    heroVisible -> 0.dp
-                    selectedDestination != "home" -> 126.dp
-                    else -> 56.dp
-                },
+                top = if (heroVisible) 0.dp else 56.dp,
                 bottom = premiumMobileNavigationContentPadding()
             )
         ) {
@@ -392,7 +383,13 @@ fun MobilePremiumHomeScreen(
                     HomeLayoutPolicy.HERO -> {
                         item(key = "home-hero") {
                             MobilePremiumHomeHero(
-                                channels = displayedChannels,
+                                // Το hero παίρνει candidates από ΟΛΟΚΛΗΡΟ τον
+                                // τρέχοντα προορισμό (Home: ένωση ταινιών/σειρών,
+                                // Movies/Series: όλη η ενότητα), όχι από το
+                                // `displayedChannels` που φιλτράρει το Explore/
+                                // category chip. Αλλιώς μία επιλεγμένη κατηγορία
+                                // με 1 στοιχείο άφηνε το slider ακίνητο.
+                                channels = channels,
                                 favoriteKeys = favoriteKeys,
                                 profileName = profileName,
                                 tmdbFor = tmdbFor,
@@ -448,12 +445,6 @@ fun MobilePremiumHomeScreen(
 
         MobileHomeHeader(
             solid = headerSolid,
-            selectedDestination = selectedDestination,
-            itemCount = downloadedItemCount,
-            categoryCount = downloadedCategoryCount,
-            onSectionBack = onSectionBack,
-            onSort = onSort,
-            onFavorites = onFavorites,
             onUpdateContents = onUpdateContents,
             // Η απόφαση παίρνεται ΕΔΩ, τη στιγμή του πατήματος, και όχι με μια
             // σιωπηλή συνθήκη παρακάτω: ή ανοίγει η οθόνη, ή εξηγείται γιατί όχι.

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hero carousel restoration — swipe + auto</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#171717;color:#fff;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center;min-height:100vh;padding:20px}
+    .note{position:fixed;top:12px;left:12px;max-width:400px;color:#b8b8b8;font-size:12.5px;line-height:1.5}
+    .note b{color:#fff}
+    .note ul{margin:8px 0 0;padding-left:17px}
+    .note li{margin-bottom:5px}
+    .phone{width:356px;height:771px;background:#050505;overflow:hidden;position:relative;box-shadow:0 20px 70px #000;border-radius:10px}
+    .header{height:55px;position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;padding:0 15px;background:linear-gradient(#050505aa,transparent)}
+    .tier{flex:1;color:#999;font-size:9px;font-weight:800;letter-spacing:1.2px}
+    .brand{font-size:17px;font-weight:900}.brand b{color:#e81f36}
+    .quick{flex:1;text-align:right;font-size:12px;font-weight:700}
+
+    /* ΤΟ HERO: ίδιο ύψος 515dp, ίδια dots, ΚΑΝΕΝΑ βελάκι. */
+    .hero{height:515px;position:relative;overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none}
+    .hero.dragging{cursor:grabbing}
+    .track{position:absolute;inset:0;display:flex;will-change:transform}
+    .slide{position:relative;flex:0 0 100%;height:100%;background:linear-gradient(180deg,transparent 25%,#000 91%),var(--bg);background-size:cover;background-position:center}
+    .copy{position:absolute;left:18px;right:18px;bottom:30px;text-align:center;text-shadow:0 2px 10px #000}
+    .pick{font-size:9px;font-weight:900;letter-spacing:2px;color:#e81f36}
+    .title{font-size:32px;line-height:34px;font-weight:900;margin:11px 0 8px}
+    .meta{font-size:11px;font-weight:700;color:#cfcfcf}
+    .plot{font-size:12px;line-height:17px;color:#d0d0d0;margin:10px auto 15px;max-width:320px}
+    .actions{display:flex;gap:8px}
+    .play{height:44px;flex:1;border:0;border-radius:8px;font-weight:900;background:#fff;color:#111;font-size:14px}
+    .square{width:44px;height:44px;border:0;border-radius:8px;background:#ffffff25;color:#fff;font-size:20px}
+    .dots{position:absolute;z-index:4;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
+    .dot{width:5px;height:5px;border-radius:9px;background:#ffffff47;transition:width .2s}
+    .dot.active{width:18px;background:#fff}
+
+    .explore{padding:18px 8px 0}
+    .explore h2{font-size:17px;margin:0 0 4px}
+    .explore p{font-size:10px;color:#8f8f8f;margin:0 0 13px}
+    .chips{display:flex;gap:9px;overflow:hidden}
+    .chip{min-width:113px;height:65px;border:1px solid #333;border-radius:14px;background:#1b1b1b;color:#fff;text-align:left;padding:11px;font-size:10px;font-weight:800}
+    .chip.selected{background:#fff;color:#111}
+    .chip small{display:block;margin-top:12px;color:#888}
+    .selected small{color:#555}
+    .contract{position:absolute;left:10px;right:10px;bottom:10px;background:#122116;border:1px solid #2c7840;color:#bfe7c8;padding:9px 11px;border-radius:8px;font-size:10px;line-height:1.4}
+  </style>
+</head>
+<body>
+  <div class="note">
+    <b>Συμφωνούμενη αλλαγή — μόνο αυτά τα τρία:</b>
+    <ul>
+      <li>Το hero κρατά έως <b>6 σελίδες από ΟΛΟΚΛΗΡΟ τον προορισμό</b> (Home / Ταινίες / Σειρές), όχι από το φιλτραρισμένο Explore.</li>
+      <li><b>Καμία μπάρα με βελάκια.</b> Η αλλαγή γίνεται <b>μόνο με σύρσιμο δαχτύλου δεξιά–αριστερά</b>, όπως ήδη κάνει το HorizontalPager.</li>
+      <li><b>Αυτόματη εναλλαγή</b> ανά 5 δευτερόλεπτα όσο ο χρήστης δεν αγγίζει. Με το άγγιγμα σταματά και ξαναρχίζει 5΄΄ μετά το τελευταίο σύρσιμο.</li>
+    </ul>
+    Το επιλεγμένο chip «ANIME ΣΕΙΡΕΣ · 1» εξακολουθεί να φιλτράρει <b>μόνο ό,τι είναι κάτω από το hero</b>. Ύψος 515dp, dots, κουμπιά, γραμματοσειρές και χρώματα μένουν ακριβώς ως έχουν.
+  </div>
+
+  <main class="phone">
+    <div class="header">
+      <div class="tier">PREMIUM · QA</div>
+      <div class="brand"><b>▶</b> PRELUDE+</div>
+      <div class="quick">Γρήγορα ⌄</div>
+    </div>
+
+    <section class="hero" id="hero">
+      <div class="track" id="track"></div>
+      <div class="dots" id="dots"></div>
+    </section>
+
+    <section class="explore">
+      <h2>Explore</h2>
+      <p>Quickly find the series you want</p>
+      <div class="chips">
+        <button class="chip">All<small>1.968</small></button>
+        <button class="chip selected">ANIME ΣΕΙΡΕΣ<small>1</small></button>
+        <button class="chip">ΑΣΙΑΤΙΚΕΣ ΣΕΙΡΕΣ<small>3</small></button>
+      </div>
+    </section>
+
+    <div class="contract">Το «ANIME ΣΕΙΡΕΣ» παραμένει επιλεγμένο με 1 στοιχείο, και παρ’ όλα αυτά το επάνω slider εναλλάσσει 6 τίτλους ολόκληρης της ενότητας — μόνος του, ή με σύρσιμο δαχτύλου.</div>
+  </main>
+
+  <script>
+    const items = [
+      ['One Piece', 'Περιπέτεια · Δράση · 2023', 'Ο Λούφι και το πλήρωμά του αναζητούν τον θρυλικό θησαυρό του Gol D. Roger.', '#7f3c27', '#eeb96f'],
+      ['Dark', 'Μυστήριο · Επιστημονική φαντασία · 2020', 'Η εξαφάνιση δύο παιδιών αποκαλύπτει τα μυστικά τεσσάρων οικογενειών.', '#101820', '#476071'],
+      ['The Last Kingdom', 'Δράμα · Ιστορία · 2022', 'Ο Uhtred διεκδικεί την πατρογονική του γη ανάμεσα σε Σάξονες και Δανούς.', '#3e2b20', '#a78355'],
+      ['Arcane', 'Animation · Δράση · 2021', 'Δύο αδελφές βρίσκονται σε αντίπαλες πλευρές ενός πολέμου.', '#15294b', '#8f4776'],
+      ['Sherlock', 'Έγκλημα · Μυστήριο · 2017', 'Ο σύγχρονος Σέρλοκ Χολμς λύνει υποθέσεις στο Λονδίνο.', '#222222', '#7c8790'],
+      ['The Bear', 'Κωμωδία · Δράμα · 2023', 'Ένας σεφ υψηλής κουζίνας κληρονομεί το σάντουιτς-μαγαζί της οικογένειας.', '#422517', '#c0793f']
+    ];
+
+    const track = document.getElementById('track');
+    const dotsEl = document.getElementById('dots');
+    const hero = document.getElementById('hero');
+
+    items.forEach(([title, meta, plot, c1, c2], i) => {
+      const s = document.createElement('div');
+      s.className = 'slide';
+      s.style.setProperty('--bg', `linear-gradient(135deg, ${c1}, ${c2})`);
+      s.innerHTML = `
+        <div class="copy">
+          <div class="pick">Η ΕΠΙΛΟΓΗ ΜΑΣ</div>
+          <div class="title">${title}</div>
+          <div class="meta">${meta}</div>
+          <div class="plot">${plot}</div>
+          <div class="actions">
+            <button class="play">▶  Αναπαραγωγή</button>
+            <button class="square">＋</button>
+            <button class="square">ⓘ</button>
+          </div>
+        </div>`;
+      track.appendChild(s);
+
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      dotsEl.appendChild(d);
+    });
+
+    const dots = [...dotsEl.children];
+    const width = 356;
+    let index = 0, dragging = false, startX = 0, dx = 0, timer = null;
+
+    function render(animate) {
+      track.style.transition = animate ? 'transform .28s cubic-bezier(.2,.8,.2,1)' : 'none';
+      track.style.transform = `translateX(${-index * width + dx}px)`;
+      dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    }
+
+    // ΑΥΤΟΜΑΤΗ ΕΝΑΛΛΑΓΗ: μόνο όταν ο χρήστης δεν αγγίζει.
+    function startAuto() {
+      stopAuto();
+      timer = setInterval(() => {
+        index = (index + 1) % items.length;
+        render(true);
+      }, 5000);
+    }
+    function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+
+    hero.addEventListener('pointerdown', e => {
+      dragging = true; startX = e.clientX; dx = 0;
+      hero.classList.add('dragging');
+      hero.setPointerCapture(e.pointerId);
+      stopAuto();
+    });
+    hero.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      dx = e.clientX - startX;
+      // Αντίσταση στα άκρα, όπως ο pager.
+      if ((index === 0 && dx > 0) || (index === items.length - 1 && dx < 0)) dx *= 0.35;
+      render(false);
+    });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      hero.classList.remove('dragging');
+      if (dx < -60 && index < items.length - 1) index++;
+      else if (dx > 60 && index > 0) index--;
+      dx = 0;
+      render(true);
+      startAuto();
+    }
+    hero.addEventListener('pointerup', endDrag);
+    hero.addEventListener('pointercancel', endDrag);
+    hero.addEventListener('pointerleave', endDrag);
+
+    render(false);
+    startAuto();
+  </script>
+</body>
+</html>

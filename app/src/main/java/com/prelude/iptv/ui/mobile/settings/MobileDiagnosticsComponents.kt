@@ -48,6 +48,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+@Suppress("DEPRECATION")
+private val acceptedSendIcon: ImageVector = Icons.Default.Send
+
 @Composable
 internal fun MobileDiagnosticsHero(state: DiagnosticsState) {
     Column(
@@ -238,7 +241,7 @@ internal fun PendingDiagnosticCard(
                 colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary),
                 modifier = Modifier.weight(1f),
             ) {
-                Icon(Icons.Default.Send, null, modifier = Modifier.size(17.dp))
+                Icon(acceptedSendIcon, null, modifier = Modifier.size(17.dp))
                 Spacer(Modifier.size(6.dp))
                 Text(stringResource(R.string.diagnostics_send_once), fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }

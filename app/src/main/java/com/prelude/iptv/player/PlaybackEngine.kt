@@ -516,8 +516,9 @@ class PlaybackEngine(private val appContext: Context) {
         vlc?.attachLayout(layout)
     }
 
-    fun detachVlcLayout() {
-        vlc?.detachLayout()
+    /** Αποσυνδέει μόνο αν το [layout] είναι ακόμη το ενεργό. Δες [detachSurface]. */
+    fun detachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
+        vlc?.detachLayout(layout)
     }
 
     /** true όταν η τρέχουσα ροή είναι ζωντανή — καθορίζει την αποθήκευση του VLC. */

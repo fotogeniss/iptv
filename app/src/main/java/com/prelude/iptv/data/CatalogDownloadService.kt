@@ -7,8 +7,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.prelude.iptv.MainActivity
@@ -47,6 +49,8 @@ import kotlinx.coroutines.launch
 class CatalogDownloadService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var wifiLock: WifiManager.WifiLock? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -57,6 +61,22 @@ class CatalogDownloadService : Service() {
         // ForegroundServiceDidNotStartInTimeException αν το startForeground
         // αργήσει πάνω από πέντε δευτερόλεπτα.
         startForeground(NOTIFICATION_ID, buildNotification(null))
+        wakeLock = runCatching {
+            (getSystemService(Context.POWER_SERVICE) as PowerManager)
+                .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "$packageName:catalog-download")
+                .apply {
+                    setReferenceCounted(false)
+                    acquire(MAX_WAKE_LOCK_MS)
+                }
+        }.getOrNull()
+        wifiLock = runCatching {
+            (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager)
+                .createWifiLock(wifiLockMode(), "$packageName:catalog-wifi")
+                .apply {
+                    setReferenceCounted(false)
+                    acquire()
+                }
+        }.getOrNull()
 
         scope.launch {
             CatalogDownloadManager.progress.collectLatest { progress ->
@@ -74,6 +94,10 @@ class CatalogDownloadService : Service() {
     }
 
     override fun onDestroy() {
+        wifiLock?.let { lock -> if (lock.isHeld) lock.release() }
+        wifiLock = null
+        wakeLock?.let { lock -> if (lock.isHeld) lock.release() }
+        wakeLock = null
         scope.cancel()
         super.onDestroy()
     }
@@ -115,6 +139,16 @@ class CatalogDownloadService : Service() {
     private fun notificationManager(): NotificationManager =
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+    private fun wifiLockMode(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            WifiManager.WIFI_MODE_FULL_LOW_LATENCY
+        } else {
+            legacyHighPerformanceWifiMode()
+        }
+
+    @Suppress("DEPRECATION")
+    private fun legacyHighPerformanceWifiMode(): Int = WifiManager.WIFI_MODE_FULL_HIGH_PERF
+
     private fun createChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
@@ -133,6 +167,7 @@ class CatalogDownloadService : Service() {
     companion object {
         private const val CHANNEL_ID = "catalog_download"
         private const val NOTIFICATION_ID = 4711
+        private const val MAX_WAKE_LOCK_MS = 6L * 60L * 60L * 1_000L
 
         /**
          * Ξεκινά την υπηρεσία. Ασφαλές να κληθεί όταν τρέχει ήδη.

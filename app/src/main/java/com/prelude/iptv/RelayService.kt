@@ -48,9 +48,7 @@ class RelayService : Service() {
             mgr.createNotificationChannel(ch)
         }
         val ip = RelayHub.localIp()
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            Notification.Builder(this, CHANNEL_ID) else Notification.Builder(this)
-        return builder
+        return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notif_relay_title))
             .setContentText("http://$ip:${RelayHub.port}/playlist.m3u")
             .setSmallIcon(android.R.drawable.stat_sys_upload)

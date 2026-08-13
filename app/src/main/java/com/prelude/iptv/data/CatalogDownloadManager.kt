@@ -5,9 +5,11 @@ import com.prelude.iptv.net.Http
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.FutureTask
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -64,9 +66,39 @@ object CatalogDownloadManager {
 
     /** Πόσες λήψεις τρέχουν. Η υπηρεσία σταματά μόνο όταν μηδενίσει. */
     private val active = AtomicInteger(0)
+    private val foregroundLock = Any()
 
     fun initialize(context: Context) {
         appContext = context.applicationContext
+    }
+
+    /**
+     * Keeps the existing foreground download service alive for provider work
+     * which is not one large M3U file (for example paged Stalker/Xtream loads).
+     * The returned lease is idempotent so cancellation paths can close it safely.
+     */
+    fun protectProcessDuringCatalogLoad(): Closeable {
+        val context = appContext
+        synchronized(foregroundLock) {
+            if (active.getAndIncrement() == 0 && context != null) {
+                CatalogDownloadService.start(context)
+            }
+        }
+        val closed = AtomicBoolean(false)
+        return Closeable {
+            if (closed.compareAndSet(false, true)) {
+                releaseForegroundProtection(context)
+            }
+        }
+    }
+
+    private fun releaseForegroundProtection(context: Context?) {
+        synchronized(foregroundLock) {
+            if (active.decrementAndGet() == 0) {
+                _progress.value = null
+                context?.let(CatalogDownloadService::stop)
+            }
+        }
     }
 
     /**
@@ -123,18 +155,12 @@ object CatalogDownloadManager {
             // περιμένουμε ΕΚΕΙΝΟΝ αντί να ξεκινήσουμε δεύτερη λήψη.
             if (inFlight.putIfAbsent(url, task) != null) continue
 
-            val context = appContext
-            if (active.getAndIncrement() == 0 && context != null) {
-                CatalogDownloadService.start(context)
-            }
+            val lease = protectProcessDuringCatalogLoad()
             try {
                 task.run()
                 return task.get()
             } finally {
-                if (active.decrementAndGet() == 0) {
-                    _progress.value = null
-                    context?.let(CatalogDownloadService::stop)
-                }
+                lease.close()
                 inFlight.remove(url, task)
             }
         }

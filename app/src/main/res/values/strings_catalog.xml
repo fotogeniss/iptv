@@ -5,10 +5,6 @@
     <string name="catalog_all_movies">Όλες οι ταινίες</string>
     <string name="catalog_all_series">Όλες οι σειρές</string>
     <string name="catalog_favorites">Αγαπημένα</string>
-    <string name="catalog_quick_categories">Κατηγορίες…</string>
-    <string name="catalog_downloaded_summary_series">%1$d σειρές σε %2$d κατηγορίες, κατεβασμένες. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
-    <string name="catalog_downloaded_summary_movies">%1$d ταινίες σε %2$d κατηγορίες, κατεβασμένες. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
-    <string name="catalog_downloaded_summary_live">%1$d κανάλια σε %2$d κατηγορίες, κατεβασμένα. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
     <string name="catalog_empty_category">Δεν υπάρχει περιεχόμενο σε αυτή την κατηγορία</string>
     <string name="catalog_in_my_list">Στη λίστα μου</string>
 

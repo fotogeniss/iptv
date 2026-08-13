@@ -3,6 +3,33 @@
 The source of truth for the app version is `app/build.gradle.kts`. Do not hard-code
 the current version in validation scripts.
 
+## Authorization boundary — mandatory
+
+The owner authorizes only the exact change explicitly agreed in the current
+task. This is a hard scope boundary:
+
+- Never infer permission for adjacent cleanup, redesign, consistency work or
+  "helpful" additions.
+- A preview or screenshot defines only the discussed element. It does not grant
+  permission to replace surrounding headers, chrome, rails/sliders, navigation,
+  layout, focus, gestures, wording or unrelated controls.
+- If implementation would require any behavior outside that boundary, stop
+  before editing and request explicit approval.
+- **Every visual change, without a small-change exception, follows this strict
+  sequence:** create/update a dedicated HTML preview in `prototypes/`; show it
+  to the owner; wait for the owner's explicit statement that it is OK; only
+  then edit production code. An older approval, screenshot, silence or inferred
+  intent is not approval for the current visual change.
+- This sequence also covers spacing, colors, typography, wording placement,
+  icons, layout, navigation, gestures, animation and focus.
+- Before handoff, compare all touched shared UI files with the last accepted
+  revision and prove that unrelated behavior stayed unchanged.
+
+The 1.66.0 incident is the permanent counterexample: an approved loading and
+category-flow preview was incorrectly expanded into a full-width catalog-header
+redesign. That exceeded authorization and broke the rails. See root `AGENTS.md`;
+the documentation gate deliberately requires this rule to remain present.
+
 ## For every change
 
 | Change | Required documentation |

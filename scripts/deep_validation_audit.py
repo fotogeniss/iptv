@@ -26,6 +26,9 @@ def require(ok: bool, label: str) -> None:
 
 gradle = read("app/build.gradle.kts")
 main_vm = read("app/src/main/java/com/prelude/iptv/ui/MainViewModel.kt")
+manifest = read("app/src/main/AndroidManifest.xml")
+catalog_download_manager = read("app/src/main/java/com/prelude/iptv/data/CatalogDownloadManager.kt")
+catalog_download_service = read("app/src/main/java/com/prelude/iptv/data/CatalogDownloadService.kt")
 route_policy = read("app/src/main/java/com/prelude/iptv/tvhome/TvHomePlaybackRoutePolicy.kt")
 tv_playback = read("app/src/main/java/com/prelude/iptv/tvhome/TvHomePlaybackActivity.kt")
 tv_worker = read("app/src/main/java/com/prelude/iptv/tvhome/TvHomeSyncWorker.kt")
@@ -56,6 +59,16 @@ require((ROOT / "scripts/verify-device.ps1").exists() and
         "cross-platform physical-device QA runners exist")
 require((ROOT / "docs/DEVICE_QA_MATRIX.md").exists(),
         "mandatory device QA matrix exists")
+require('android.permission.WAKE_LOCK' in manifest and
+        'PowerManager.PARTIAL_WAKE_LOCK' in catalog_download_service and
+        'WifiManager.WIFI_MODE_FULL_LOW_LATENCY' in catalog_download_service and
+        'legacyHighPerformanceWifiMode()' in catalog_download_service,
+        "foreground catalog service holds CPU and platform-appropriate Wi-Fi locks")
+load_all = main_vm[main_vm.find('fun loadAllSections()'):main_vm.find('fun loadEverything()')]
+require('CatalogDownloadManager.protectProcessDuringCatalogLoad()' in load_all and
+        'foregroundLease.close()' in load_all and
+        'AtomicBoolean(false)' in catalog_download_manager,
+        "complete provider load owns an idempotent foreground-service lease")
 
 billing_policy = read("app/src/main/java/com/prelude/iptv/billing/PremiumPolicy.kt")
 billing_repository = read("app/src/main/java/com/prelude/iptv/billing/PlayBillingRepository.kt")
@@ -151,8 +164,9 @@ for rel in focus_files:
 category_picker = read("app/src/main/java/com/prelude/iptv/ui/route/DetailRouteHost.kt")
 require('rememberInitialFocus()' in category_picker and '.focusProperties { canFocus = enabled }' in category_picker,
         "post-download category sheet has initial tab focus and skips empty rows")
-require('categoryQuickActionFocus.requestFocusWithRetry()' in read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt"),
-        "TV category sheet returns focus to its section quick action")
+require('categoryNavFocus.requestFocusWithRetry()' in read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt") and
+        'categoriesFocus = categoryNavFocus' in read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt"),
+        "TV category sheet returns focus to the existing Categories control")
 
 require((TEST / "com/prelude/iptv/ui/SourceDeletionPolicyTest.kt").exists(),
         "source deletion policy tests exist")

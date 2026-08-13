@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Back → mini player</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#171717;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;gap:26px;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px}
+  .note{width:330px;color:#b8b8b8;font-size:12.5px;line-height:1.5}
+  .note h3{color:#fff;font-size:14px;margin:0 0 8px}
+  .note ul{margin:6px 0 16px;padding-left:17px}.note li{margin-bottom:6px}
+  .note b{color:#fff}
+  .warn{background:#2a1c12;border:1px solid #7a4a1e;color:#e8c9a4;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45}
+
+  .stage{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .phone{width:340px;height:720px;background:#050505;overflow:hidden;position:relative;box-shadow:0 20px 70px #000;border-radius:12px}
+
+  /* κάτω σελίδα */
+  .page{position:absolute;inset:0;background:#0b0b0b;padding:52px 14px 0}
+  .page h2{font-size:16px;margin:0 0 10px}
+  .row{display:flex;gap:9px;margin-bottom:14px}
+  .card{width:88px;height:126px;border-radius:9px;background:linear-gradient(150deg,#2a2f38,#171a1f);flex:0 0 auto}
+
+  /* πλήρης player */
+  .full{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .2s}
+  .full.gone{transform:translateY(100%);opacity:0;pointer-events:none}
+  .video{height:192px;background:linear-gradient(135deg,#1d3b5c,#7a4a63);position:relative;display:grid;place-items:center;font-size:11px;color:#ffffff9c;letter-spacing:1px}
+  .ctrl{position:absolute;bottom:8px;left:12px;right:12px;height:3px;border-radius:3px;background:#ffffff33}
+  .ctrl i{display:block;height:100%;width:38%;background:#e81f36;border-radius:3px}
+  .meta{padding:14px}
+  .meta .t{font-size:18px;font-weight:900}
+  .meta .s{font-size:11px;color:#8f8f8f;margin-top:4px}
+  .meta p{font-size:12px;line-height:18px;color:#c9c9c9}
+
+  /* mini */
+  .mini{position:absolute;left:12px;right:12px;bottom:86px;height:68px;border-radius:13px 13px 0 0;background:#000000db;display:flex;align-items:center;opacity:0;transform:translateY(14px);transition:opacity .24s,transform .24s;pointer-events:none}
+  .mini.on{opacity:1;transform:none;pointer-events:auto}
+  .thumb{width:121px;height:68px;border-radius:13px 0 0 0;background:linear-gradient(135deg,#1d3b5c,#7a4a63);flex:0 0 auto;display:grid;place-items:center;font-size:8px;color:#ffffffb0;letter-spacing:.6px;text-align:center;padding:0 4px}
+  .mtxt{flex:1;padding:0 10px;min-width:0}
+  .mtxt b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mtxt span{display:block;font-size:10px;color:#8b8b8b;margin-top:2px}
+  .micon{width:42px;height:42px;display:grid;place-items:center;font-size:17px;color:#fff;flex:0 0 auto}
+
+  /* nav */
+  .nav{position:absolute;left:12px;right:12px;bottom:12px;height:62px;border-radius:16px;background:#141414ee;display:flex;align-items:center;justify-content:space-around;font-size:9px;color:#8b8b8b}
+  .nav div{text-align:center}.nav div.sel{color:#fff}.nav i{display:block;font-size:16px;font-style:normal;margin-bottom:3px}
+
+  .keys{display:flex;gap:9px}
+  .keys button{background:#242424;color:#fff;border:1px solid #383838;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:700;cursor:pointer}
+  .keys button:hover{background:#303030}
+  .state{font-size:11px;color:#7d7d7d;min-height:15px}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h3>Μοναδική αλλαγή: τι κάνει το BACK του κινητού</h3>
+  <ul>
+    <li><b>Τώρα:</b> BACK στον πλήρη player <b>κλείνει</b> την αναπαραγωγή. Ο μόνος τρόπος να μαζευτεί σε λωρίδα είναι το τράβηγμα προς τα κάτω.</li>
+    <li><b>Μετά:</b> BACK στον πλήρη player <b>μαζεύει σε mini player</b>, ακριβώς όπως το τράβηγμα. Ο ήχος και η εικόνα συνεχίζουν.</li>
+    <li>Το τράβηγμα προς τα κάτω μένει ως έχει.</li>
+    <li>Σε πλήρη οθόνη (οριζόντια), το BACK πρώτα βγάζει από την πλήρη οθόνη — αμετάβλητο.</li>
+    <li>Όσο είναι mini, το BACK ανήκει στη σελίδα από κάτω — αμετάβλητο.</li>
+    <li>Το <b>×</b> της λωρίδας κλείνει την αναπαραγωγή.</li>
+  </ul>
+  <div class="warn"><b>Συνέπεια που πρέπει να εγκρίνεις ρητά:</b> μετά την αλλαγή, το BACK δεν κλείνει πια τον player με μία κίνηση. Το κλείσιμο γίνεται με το <b>×</b> πάνω στη λωρίδα, δηλαδή δύο κινήσεις αντί για μία.</div>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="page">
+      <h2>Σειρές</h2>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+    </div>
+
+    <div class="full" id="full">
+      <div class="video">ΒΙΝΤΕΟ ΠΑΙΖΕΙ<div class="ctrl"><i></i></div></div>
+      <div class="meta">
+        <div class="t">Dark</div>
+        <div class="s">Μυστήριο · Επιστημονική φαντασία · S2 E4</div>
+        <p>Η εξαφάνιση δύο παιδιών αποκαλύπτει τα μυστικά τεσσάρων οικογενειών σε μια μικρή γερμανική πόλη.</p>
+      </div>
+    </div>
+
+    <div class="mini" id="mini">
+      <div class="thumb">ΒΙΝΤΕΟ<br>ΣΥΝΕΧΙΖΕΙ</div>
+      <div class="mtxt"><b>Dark</b><span>S2 E4</span></div>
+      <div class="micon">❙❙</div>
+      <div class="micon" id="close">×</div>
+    </div>
+
+    <div class="nav">
+      <div class="sel"><i>⌂</i>Αρχική</div>
+      <div><i>▤</i>Ζωντανά</div>
+      <div><i>▶</i>Ταινίες</div>
+      <div><i>≡</i>Σειρές</div>
+      <div><i>⚙</i>Ρυθμίσεις</div>
+    </div>
+  </div>
+
+  <div class="keys">
+    <button id="back">◁ BACK συσκευής</button>
+    <button id="drag">↓ Τράβηγμα κάτω</button>
+    <button id="reset">Επαναφορά</button>
+  </div>
+  <div class="state" id="state">Πλήρης player. Πάτησε BACK.</div>
+</div>
+
+<script>
+  const full = document.getElementById('full');
+  const mini = document.getElementById('mini');
+  const state = document.getElementById('state');
+  let collapsed = false;
+
+  function collapse(how) {
+    if (collapsed) { state.textContent = 'Ήδη mini. Το BACK ανήκει στη σελίδα από κάτω — αμετάβλητο.'; return; }
+    collapsed = true;
+    full.classList.add('gone');
+    mini.classList.add('on');
+    state.textContent = how + ' → μαζεύτηκε σε mini player. Ήχος και εικόνα συνεχίζουν.';
+  }
+  document.getElementById('back').onclick = () => collapse('BACK συσκευής');
+  document.getElementById('drag').onclick = () => collapse('Τράβηγμα προς τα κάτω');
+  document.getElementById('close').onclick = () => {
+    collapsed = false; full.classList.remove('gone'); mini.classList.remove('on');
+    state.textContent = 'Το × έκλεισε την αναπαραγωγή.';
+  };
+  document.getElementById('reset').onclick = () => {
+    collapsed = false; full.classList.remove('gone'); mini.classList.remove('on');
+    state.textContent = 'Πλήρης player. Πάτησε BACK.';
+  };
+</script>
+</body>
+</html>
