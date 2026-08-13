@@ -259,13 +259,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val homeCatalogState: StateFlow<List<Channel>> = _homeCatalog.asStateFlow()
 
     private val homeSectionTypes = listOf("live", "vod", "series")
-    private val homeBackfilledSources = HashSet<String>()
-    private var homeBackfillJob: Job? = null
 
     private fun cachedSection(pl: Playlist, type: String): List<Channel>? {
-        val (known, remembered) = categoryChoice(pl, type)
-        val ids = if (known) remembered else null
-        return catalogSession.getCatalog(cacheKey(pl, type, ids))?.channels
+        return catalogSession.getCatalog(cacheKey(pl, type, null))?.channels
     }
 
     private fun refreshHomeCatalog() {
@@ -275,53 +271,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         _homeCatalog.value = homeSectionTypes.flatMap { cachedSection(pl, it).orEmpty() }
-    }
-
-    /**
-     * Κατεβάζει ΣΙΩΠΗΛΑ όσες ενότητες λείπουν, ώστε η Αρχική να δείξει αυτό που
-     * υπόσχεται ο επεξεργαστής της.
-     *
-     * ΤΡΕΙΣ ΟΡΟΙ, και κανένας δεν είναι λεπτομέρεια:
-     *
-     * 1. **Μία φορά ανά πηγή ανά συνεδρία.** Όχι σε κάθε επιστροφή στην Αρχική.
-     * 2. **ΔΕΝ δημοσιεύει στο `_state`.** Το [loadAllSections] αλλάζει το
-     *    `contentType` και την ορατή λίστα· αν το καλούσαμε εδώ, το άνοιγμα της
-     *    Αρχικής θα τραβούσε τον χρήστη σε άλλη ενότητα. Εδώ γράφουμε μόνο στο
-     *    cache, και η [refreshHomeCatalog] ειδοποιεί την οθόνη.
-     * 3. **Ο καλών αποφασίζει πότε.** Δεν ξεκινά ποτέ όσο ξεκινά ή παίζει βίντεο
-     *    — μόλις καθαρίσαμε 81 περιττά αιτήματα επειδή έκλεβαν το portal από το
-     *    `create_link`, και δεν βάζουμε καινούριο μαζικό κατέβασμα στη θέση τους.
-     */
-    fun backfillHomeSections() {
-        val pl = currentPlaylist() ?: return
-        val sourceId = PlaylistIdentity.stableId(pl)
-        if (sourceId in homeBackfilledSources) return
-        if (homeBackfillJob?.isActive == true) return
-        val missing = homeSectionTypes.filter { cachedSection(pl, it) == null }
-        homeBackfilledSources += sourceId
-        if (missing.isEmpty()) return
-
-        val gen = sourceGeneration.currentLoad()
-        homeBackfillJob = viewModelScope.launch {
-            for (type in missing) {
-                if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                try {
-                    val (known, remembered) = categoryChoice(pl, type)
-                    val ids = if (known) remembered else null
-                    val loaded = catalogLoader.section(pl, type, ids)
-                    if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                    val favoriteKeys = store.loadFavorites(sourceId)
-                    val groups = buildGroups(loaded.items, favoriteKeys.isNotEmpty())
-                    cacheCatalog(pl, type, ids, loaded.items, groups, loaded.seriesEpisodes)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    // Σιωπηλά: αυτή είναι συμπληρωματική δουλειά παρασκηνίου. Μια
-                    // ενότητα που δεν ήρθε απλώς λείπει από την Αρχική· δεν
-                    // επιτρέπεται να βγάλει σφάλμα πάνω από ό,τι ήδη δουλεύει.
-                }
-            }
-        }
     }
 
     private fun cacheSeriesEpisodes(
@@ -495,7 +444,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     loadedContentType = plan.contentType
                     _state.value = SourceSwitchStatePolicy.apply(_state.value, plan)
                 },
-                autoLoad = { loadCurrent(forceNetwork = true) },
+                autoLoad = ::loadAllSections,
             ),
         )
     }
@@ -600,12 +549,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val initialSourceId = pls.getOrNull(idx)?.let(PlaylistIdentity::stableId).orEmpty()
         val favs = store.loadFavorites(initialSourceId)
         _state.value = _state.value.copy(playlists = pls, currentIndex = idx, favorites = favs, lockedGroups = locked, fontScale = store.fontScale)
-        if (pls.isNotEmpty()) {
-            val t = pls[idx].type
-            if (t == com.prelude.iptv.data.PlaylistType.XTREAM || t == com.prelude.iptv.data.PlaylistType.STALKER)
-                _state.value = _state.value.copy(chooseContent = true)
-            else loadCurrent()
-        }
+        if (pls.isNotEmpty()) loadAllSections()
     }
 
     fun saveSubSettings(key: String, user: String, pass: String) {
@@ -703,7 +647,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         sourceSwitchCoordinator.switchTo(i)
         // Η ένωση της Αρχικής είναι δεμένη με την πηγή. Χωρίς αυτό, μετά την
         // αλλαγή θα έδειχνε για λίγο τον κατάλογο της προηγούμενης.
-        homeBackfillJob?.cancel()
         refreshHomeCatalog()
     }
 
@@ -746,8 +689,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // remain immediately browsable; selecting a section that is still pending
         // must not cancel the import or blank the currently visible catalog.
         if (_state.value.loadingAllSections) {
-            val (known, ids) = categoryChoice(pl, t)
-            if (known && restoreSessionCatalog(pl, t, ids)) {
+            if (restoreSessionCatalog(pl, t, null)) {
                 _state.value = _state.value.copy(chooseContent = false)
                 return
             }
@@ -774,14 +716,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             loading = false,
             status = ""
         )
-        if (restoreRememberedSession(pl, t)) return
-
-        updateSourceProgress(pl, 0, "Προετοιμασία λήψης…", active = true, contentType = t)
-        _state.value = _state.value.copy(
-            loading = true,
-            status = "Λήψη από την πηγή…"
-        )
-        startCategoryPick(pl)
+        if (restoreSessionCatalog(pl, t, null)) return
+        loadAllSections()
     }
 
     // Τα confirmLoadType/cancelLoadType αφαιρέθηκαν μαζί με το ενδιάμεσο
@@ -791,15 +727,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun loadCurrent(forceNetwork: Boolean = false) {
         val pl = currentPlaylist() ?: return
         val type = _state.value.contentType
-        if (!forceNetwork && restoreRememberedSession(pl, type)) return
-        if (forceNetwork) {
-            val (known, _) = categoryChoice(pl, type)
-            if (known) {
-                loadRemembered(pl, force = true)
-                return
-            }
-        }
-        startCategoryPick(pl)
+        if (!forceNetwork && restoreSessionCatalog(pl, type, null)) return
+        loadAllSections()
     }
 
     /** Refresh is available whenever an active source exists. */
@@ -962,10 +891,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * Downloads Live TV, Movies and Series sequentially. The first completed
-     * section is published immediately, while the remaining sections continue
-     * in the background and become available through the normal navigation.
-     * Sequential provider access also protects Stalker/Xtream sessions.
+     * Downloads Live TV, Movies and Series sequentially. A section is published
+     * only after its complete provider result has been normalized and cached;
+     * provider partials are deliberately never exposed to UiState. The first
+     * completed section opens immediately while the remaining complete sections
+     * become available through normal navigation. Sequential provider access
+     * also protects Stalker/Xtream sessions.
      */
     fun loadAllSections() {
         val pl = currentPlaylist() ?: return
@@ -995,9 +926,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             var published = false
             for ((index, type) in sections.withIndex()) {
                 if (!sourceGeneration.isCurrentLoad(gen)) return@launch
-                val key = "${plId(pl)}:$type"
-                val (known, rememberedIds) = rememberedChoice(key)
-                val ids = if (known) rememberedIds else null
                 val base = index * 100 / sections.size
                 val span = 100 / sections.size
                 val progress: SourceProgressCallback = { percent, stage ->
@@ -1010,29 +938,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 }
                 try {
-                    val partial: (CatalogLoadCoordinator.PartialCatalog) -> Unit = { partialCatalog ->
-                        val partialItems = partialCatalog.items
-                        // Το πρώτο partial (initial reveal) περνά πάντα· τα επόμενα throttle.
-                        if (sourceGeneration.isCurrentLoad(gen) && partialItems.isNotEmpty() && (!published || _state.value.contentType == type) && (!published || shouldPublishPartial())) {
-                            val favorites = store.loadFavorites(sourceId)
-                            val partialGroups = buildGroups(partialItems, favorites.isNotEmpty())
-                            if (!published) {
-                                published = true
-                                loadedContentType = type
-                                store.saveLastSection(plId(pl), type)
-                            }
-                            _state.value = _state.value.copy(
-                                contentType = type,
-                                channels = partialItems,
-                                groups = partialGroups,
-                                favorites = favorites,
-                                selectedGroup = UiState.ALL_GROUP,
-                                loading = false,
-                                status = "${sectionLabel(type)} · ${partialItems.size} στοιχεία διαθέσιμα, η λήψη συνεχίζεται"
-                            )
-                        }
-                    }
-                    val loaded = catalogLoader.section(pl, type, ids, progress, partial)
+                    val loaded = catalogLoader.section(pl, type, null, progress)
                     if (!sourceGeneration.isCurrentLoad(gen)) return@launch
                     val rawChannels = loaded.rawItems
                     val channels = loaded.items
@@ -1045,12 +951,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     store.reconcileFavorites(sourceId, historyCandidates)
                     val favoriteKeys = store.loadFavorites(sourceId)
                     val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
-                    cacheCatalog(pl, type, ids, channels, groups, loaded.seriesEpisodes)
+                    cacheCatalog(pl, type, null, channels, groups, loaded.seriesEpisodes)
                     persistCatalogCount(sourceId, type, channels.size)
-                    if (!known) {
-                        loadChoice[key] = null
-                        store.saveLoadChoice(key, null)
-                    }
                     if (type == "live") catalogSession.liveChannels = channels
                     if (type == "series") catalogSession.seriesEpisodes = loaded.seriesEpisodes
 
@@ -1066,7 +968,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                             groups = groups,
                             favorites = favoriteKeys,
                             selectedGroup = UiState.ALL_GROUP,
-                            loading = false,
+                            loading = true,
                             loadedSections = completed,
                             status = "${sectionLabel(type)} έτοιμο · συνεχίζεται η λήψη στο παρασκήνιο"
                         )

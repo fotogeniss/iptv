@@ -5,6 +5,22 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.64.0 - versionCode 136
+
+- Opening a source now downloads Live TV, movies and series in one sequential
+  source load, including live channels, instead of asking which section or
+  provider categories to fetch first.
+- A catalog section is published only after that whole section has completed,
+  normalized and entered the bounded session cache. Provider partial batches no
+  longer reach `state.channels`, so a Movies or Series screen cannot render a
+  half-built section or inherit whichever content type happened to finish a
+  batch first. A completed Live section can still open immediately while the
+  remaining sections continue.
+- Removed the Home background backfill trigger. The complete source load already
+  fills every section, and a second silent pass would duplicate provider work.
+- The installed `1.63.0-qa` build was confirmed before this change; visual
+  confirmation of the 1.63.0 progress-bar wording on mobile and TV remains open.
+
 ## 1.63.0 - versionCode 135
 
 - **The loading bar now says which section it is downloading.** It read

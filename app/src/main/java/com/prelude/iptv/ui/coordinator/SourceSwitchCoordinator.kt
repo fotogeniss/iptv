@@ -65,7 +65,7 @@ internal object SourceSwitchStatePolicy {
         currentIndex = plan.index,
         contentType = plan.contentType,
         favorites = plan.favorites,
-        chooseContent = !plan.hasRememberedChoice,
+        chooseContent = false,
         channels = emptyList(),
         groups = emptyList(),
         selectedGroup = UiState.ALL_GROUP,
@@ -100,7 +100,7 @@ internal object SourceSwitchStatePolicy {
  *  4. release source-bound runtime objects,
  *  5. invalidate caches for the requested source,
  *  6. publish one clean source state,
- *  7. auto-load only when a persisted section choice exists.
+ *  7. start one complete three-section load.
  *
  * Android lifecycle objects remain in MainViewModel through narrow callbacks.
  */
@@ -155,7 +155,7 @@ internal class SourceSwitchCoordinator(
             favorites = callbacks.favoritesFor(sourceId),
         )
         callbacks.publish(plan)
-        if (hasRememberedChoice) callbacks.autoLoad()
+        callbacks.autoLoad()
         return true
     }
 }

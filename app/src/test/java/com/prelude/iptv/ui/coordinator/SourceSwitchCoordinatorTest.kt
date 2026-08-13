@@ -77,12 +77,12 @@ class SourceSwitchCoordinatorTest {
     }
 
     @Test
-    fun unknownChoiceDoesNotStartNetworkLoad() {
+    fun unknownChoiceStillStartsCompleteSourceLoad() {
         val events = mutableListOf<String>()
         val coordinator = coordinator(SourceGenerationGate(), events, known = false)
 
         assertTrue(coordinator.switchTo(0))
-        assertFalse("auto-load" in events)
+        assertEquals("auto-load", events.last())
     }
 
     @Test
@@ -159,7 +159,7 @@ class SourceSwitchCoordinatorTest {
         assertEquals(1, next.currentIndex)
         assertEquals("vod", next.contentType)
         assertEquals(setOf("target favorite"), next.favorites)
-        assertTrue(next.chooseContent)
+        assertFalse(next.chooseContent)
         assertTrue(next.channels.isEmpty())
         assertTrue(next.groups.isEmpty())
         assertEquals(UiState.ALL_GROUP, next.selectedGroup)

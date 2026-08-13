@@ -803,14 +803,9 @@ internal fun BrowseScreen(
                 translationY = (1f - contentFade.value) * 26f
             }
         ) {
-            // Φέρνει όσες ενότητες λείπουν από τη μνήμη, ΜΙΑ φορά ανά πηγή και
-            // ΠΟΤΕ όσο παίζει κάτι: ένα μαζικό κατέβασμα στο ίδιο portal με το
-            // `create_link` είναι ακριβώς αυτό που έκανε την έναρξη αργή.
-            LaunchedEffect(isCatalogHome, inlinePlayback == null, mobilePrimaryDestination) {
-                if (isCatalogHome && inlinePlayback == null && mobilePrimaryDestination == "home") {
-                    vm.backfillHomeSections()
-                }
-            }
+            // Every source now loads all three sections once. Starting the old
+            // supplementary backfill here would request the same portal data a
+            // second time while the complete source load is already running.
             // ΜΟΝΟ Η ΑΡΧΙΚΗ ΠΑΙΡΝΕΙ ΤΗΝ ΕΝΩΣΗ.
             //
             // Το `isCatalogHome` δεν σημαίνει «Αρχική»: είναι αληθές και στις
