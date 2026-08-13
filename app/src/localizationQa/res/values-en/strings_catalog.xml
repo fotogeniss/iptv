@@ -5,6 +5,10 @@
     <string name="catalog_all_movies">All movies</string>
     <string name="catalog_all_series">All series</string>
     <string name="catalog_favorites">Favorites</string>
+    <string name="catalog_quick_categories">Categories…</string>
+    <string name="catalog_downloaded_summary_series">%1$d series in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
+    <string name="catalog_downloaded_summary_movies">%1$d movies in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
+    <string name="catalog_downloaded_summary_live">%1$d channels in %2$d categories, downloaded. Nothing is missing; you only choose what you see.</string>
     <string name="catalog_empty_category">There is no content in this category</string>
     <string name="catalog_in_my_list">In my list</string>
 
@@ -31,6 +35,10 @@
     <string name="catalog_favorite">Favorite</string>
 
     <string name="catalog_cancel">Cancel</string>
+    <string name="catalog_visibility_title">Choose visible categories</string>
+    <string name="catalog_visibility_summary_series">%1$d of %2$d · %3$d series visible</string>
+    <string name="catalog_visibility_summary_movies">%1$d of %2$d · %3$d movies visible</string>
+    <string name="catalog_visibility_summary_live">%1$d of %2$d · %3$d channels visible</string>
     <string name="catalog_visibility_section_title">Choose visible categories · %1$s</string>
     <string name="catalog_visibility_summary">%1$d of %2$d categories · %3$d visible items</string>
     <string name="catalog_visibility_tv_hint">Right arrow → jumps directly to Apply</string>
@@ -42,6 +50,16 @@
     <string name="catalog_apply_categories">Apply (%1$d)</string>
 
     <string name="catalog_loading">Downloading from source…</string>
+    <string name="catalog_update_content">Updating content</string>
+    <string name="catalog_preparing_sections">Preparing all sections…</string>
+    <string name="catalog_section_complete_count">%1$d items</string>
+    <string name="catalog_section_downloading">downloading</string>
+    <string name="catalog_category_progress_short">category %1$d/%2$d</string>
+    <string name="catalog_stage_live_category">Downloading live · category %1$d/%2$d</string>
+    <string name="catalog_stage_movies_category">Downloading movies · category %1$d/%2$d</string>
+    <string name="catalog_stage_series_category">Downloading series · category %1$d/%2$d</string>
+    <string name="catalog_section_waiting">waiting</string>
+    <string name="catalog_complete_sections_open_immediately">Completed sections open immediately. Category selection appears when all sections have finished.</string>
     <string name="catalog_loading_with_progress">%1$s · Downloading from source…</string>
     <string name="catalog_loading_live">Downloading live channels…</string>
     <string name="catalog_loading_movies">Downloading movies…</string>

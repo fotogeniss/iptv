@@ -805,7 +805,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         val mapped = percent?.let { (base + it * span / 100).coerceIn(0, 99) }
                         updateSourceProgress(
                             pl, mapped, "${sectionLabel(type)} · $stage",
-                            active = true, contentType = "all"
+                            active = true, contentType = type
                         )
                     }
                 }
@@ -897,22 +897,43 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun chooseCategories() = changeCategories()
 
     /** Quick action: opens category visibility for an already complete section. */
+    fun catalogSummary(type: String): Pair<Int, Int> {
+        val pl = currentPlaylist() ?: return 0 to 0
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return 0 to 0
+        return snapshot.channels.size to snapshot.categories.size
+    }
+
+    fun currentCatalogSummary(): Pair<Int, Int> = catalogSummary(_state.value.contentType)
+
+    /** Quick action: opens category visibility for an already complete section. */
     fun changeCategories() {
         val pl = currentPlaylist() ?: return
         if (_state.value.loadingAllSections) return
         val type = _state.value.contentType
-        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return
-        val (hasChoice, rememberedIds) = categoryChoice(pl, type)
+        val sections = listOf("series", "vod", "live").mapNotNull { sectionType ->
+            val snapshot = catalogSession.getCatalog(cacheKey(pl, sectionType)) ?: return@mapNotNull null
+            val (hasChoice, rememberedIds) = categoryChoice(pl, sectionType)
+            sectionType to CategoryPickerSection(
+                categories = snapshot.categories,
+                counts = CatalogCategoryVisibilityPolicy.counts(snapshot.categories, snapshot.channels),
+                selectedIds = CatalogCategoryVisibilityPolicy.initialSelection(
+                    snapshot.categories,
+                    hasChoice,
+                    rememberedIds,
+                ),
+            )
+        }.toMap()
+        if (sections.isEmpty()) return
+        val initialType = type.takeIf(sections::containsKey) ?: sections.keys.first()
+        val initial = sections.getValue(initialType)
         _state.value = _state.value.copy(
             pickCategories = true,
-            categories = snapshot.categories,
-            categoryCounts = CatalogCategoryVisibilityPolicy.counts(snapshot.categories, snapshot.channels),
-            categorySelectionIds = CatalogCategoryVisibilityPolicy.initialSelection(
-                snapshot.categories,
-                hasChoice,
-                rememberedIds,
-            ),
-            status = "${snapshot.channels.size} στοιχεία σε ${snapshot.categories.size} κατηγορίες"
+            categories = initial.categories,
+            categoryCounts = initial.counts,
+            categorySelectionIds = initial.selectedIds,
+            categoryPickerSections = sections,
+            categoryPickerType = initialType,
+            status = "${initial.counts.values.sum()} στοιχεία σε ${initial.categories.size} κατηγορίες"
         )
     }
 
@@ -933,6 +954,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             categories = emptyList(),
             categoryCounts = emptyMap(),
             categorySelectionIds = null,
+            categoryPickerSections = emptyMap(),
         )
     }
 
@@ -943,31 +965,44 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Applies visibility without provider I/O; the complete snapshot remains cached. */
     fun loadSelectedCategories(ids: List<String>?) {
+        setVisibleCategories(_state.value.categoryPickerType, ids)
+        cancelCategoryPicker()
+    }
+
+    /** Applies one tab immediately while the compact sheet remains open. */
+    fun setVisibleCategories(type: String, ids: List<String>?) {
         val pl = currentPlaylist() ?: return
-        val type = _state.value.contentType
         val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return
         val k = "${plId(pl)}:$type"
         loadChoice[k] = ids
         store.saveLoadChoice(k, ids)
-        val channels = CatalogCategoryVisibilityPolicy.visibleChannels(
-            snapshot.categories,
-            snapshot.channels,
-            ids,
-        )
-        val favoriteKeys = store.loadFavorites(PlaylistIdentity.stableId(pl))
-        val groups = buildGroups(channels, favoriteKeys.isNotEmpty())
-        _state.value = _state.value.copy(
-            pickCategories = false,
-            categories = emptyList(),
-            categoryCounts = emptyMap(),
-            categorySelectionIds = null,
-            channels = channels,
-            groups = groups,
-            favorites = favoriteKeys,
-            selectedGroup = UiState.ALL_GROUP,
-            loading = false,
-            status = "Εμφανίζονται ${channels.size} από ${snapshot.channels.size} στοιχεία",
-        )
+        val updatedSections = _state.value.categoryPickerSections.toMutableMap().apply {
+            val current = get(type)
+            if (current != null) put(type, current.copy(selectedIds = ids?.toSet()))
+        }
+        if (_state.value.contentType == type) {
+            val channels = CatalogCategoryVisibilityPolicy.visibleChannels(
+                snapshot.categories,
+                snapshot.channels,
+                ids,
+            )
+            val favoriteKeys = store.loadFavorites(PlaylistIdentity.stableId(pl))
+            val groups = buildGroups(channels, favoriteKeys.isNotEmpty(), type)
+            _state.value = _state.value.copy(
+                categoryPickerSections = updatedSections,
+                categories = updatedSections[type]?.categories.orEmpty(),
+                categoryCounts = updatedSections[type]?.counts.orEmpty(),
+                categorySelectionIds = ids?.toSet(),
+                channels = channels,
+                groups = groups,
+                favorites = favoriteKeys,
+                selectedGroup = UiState.ALL_GROUP,
+                loading = false,
+                status = "Εμφανίζονται ${channels.size} από ${snapshot.channels.size} στοιχεία",
+            )
+        } else {
+            _state.value = _state.value.copy(categoryPickerSections = updatedSections)
+        }
         refreshHomeCatalog()
     }
 

@@ -2,8 +2,8 @@
 
 - **Date:** 2026-08-13
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** this file ships in the 1.65.0 commit; verify with `git log --oneline -5`
-- **Version on disk:** 1.65.0 (`versionCode 137`) · slices 2 and 3 are separate commits
+- **Branch:** `main` · **HEAD:** 1.66.0 exact-preview correction is ready to commit; verify with `git log --oneline -5`
+- **Version on disk:** 1.66.0 (`versionCode 138`) · owner-confirmed QA build
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -21,14 +21,18 @@ reasoning, the open questions and the traps that the changelog does not carry.
 ## 0. START HERE — state, what is open, what to do first
 
 Current session: **2026-08-13**. Slice 2 landed separately as `9a1e787`
-(1.64.0): a source downloads all three sections and publishes each section only
-when it is complete. Slice 3 is the 1.65.0 commit containing this handoff:
-category choice moved after download and applies locally to the full snapshot.
-All six static gates must pass before that commit. The owner builds; Gradle was
-not run here.
+(1.64.0), and the first functional slice 3 landed as `f673175` (1.65.0).
+The owner correctly rejected its presentation because it treated the approved
+HTML as inspiration: it kept a full-screen Apply picker and placed the TV action
+in the navigation rail. The uncommitted 1.66.0 correction now treats
+`prototypes/full_load_then_choose.html` as the exact contract: compact three-tab
+sheet, immediate local changes, per-section quick-action chips and the full
+three-section progress surface. The owner confirmed that the QA build compiles;
+Gradle was not run by Codex.
 
-**Next action is owner build/device validation of 1.65.0-qa**, including the
-matrix below. Do not start slice 1β or disk cache on top of an unverified build.
+**Next action is mobile/TV device validation of 1.66.0-qa**, including the
+matrix below. The compile gate has passed, but the exact visuals and focus have
+not yet been confirmed.
 The 1.63.0 APK was installed and its Settings version confirmed, but the actual
 bar wording remains visually unconfirmed on both mobile and TV.
 
@@ -76,9 +80,9 @@ D-pad movement unchanged. The owner's first report after this build was that the
 pre-load category screen was unchanged, which is correct and expected: 1.63.0
 does not touch it. Do not read that as a failure of 1.63.0.
 
-**Slices 2+3 are now written in separate commits (see the table below).** The
-next evidence needed is the owner's 1.65.0-qa build and the mobile/TV matrix,
-not another code change.
+**Slices 2+3 are committed; their exact visual correction is 1.66.0.** Its QA
+build compiles. The remaining evidence is the mobile/TV matrix, not another
+speculative UI change.
 
 #### The pile that is now closed, for reference:
 
@@ -167,8 +171,8 @@ Agreed slice order, deliberately smallest-risk first:
 | --- | --- | --- |
 | 1α | Loading bar names the section | **1.63.0 installed; visual confirmation still open** |
 | 2 | Load everything; publish only complete sections | **committed separately: `9a1e787`, 1.64.0** |
-| 3 | Selection in quick actions, names/counts, local filter | **written as 1.65.0; owner build/device validation next** |
-| 1β | Type the progress stage → "category 45 of 271" | only after 1.65.0 validation |
+| 3 | Selection in quick actions, names/counts, local filter | **functional base `f673175`; exact approved UI corrected in uncommitted 1.66.0** |
+| 1β | Progress stage and three-section surface | **included in 1.66.0; owner validation next** |
 | 4 | Disk cache, movies and series only | last |
 
 **The owner reordered on 2026-08-13, deliberately, after seeing 1.63.0 change
@@ -234,19 +238,20 @@ user choose what to see.** Three conditions, none optional:
 
 ### Do this first
 
-0. **Owner builds 1.65.0-qa and confirms that exact version in Settings.** Do not
+0. **Owner builds 1.66.0-qa and confirms that exact version in Settings.** Do not
    infer the APK from screenshots or logs.
 0b. Validate one source from a clean open: Live appears only after Live is
    complete; Movies and Series never show partial or cross-section data; the
    overall load continues after Live opens.
 0c. On mobile and TV, open Categories from Live, Movies and Series. Confirm names
-   and counts, zero-count rows grey/non-focusable, Apply changes visibility
-   immediately, and changing the selection causes no provider download.
-0d. On TV, confirm initial picker focus, Right → Apply, Back returns to the
-   navigation item, and D-pad movement elsewhere is unchanged.
+   and bare counts, zero-count rows grey/non-focusable, the three tabs and the
+   immediate visibility change with no provider download. There must be no
+   filter field and no Apply/Cancel buttons.
+0d. On TV, confirm initial tab focus, Back returns to the Categories quick-action
+   chip (not the navigation rail), and D-pad movement elsewhere is unchanged.
 0e. Separately capture the still-open 1.63.0 bar evidence on mobile and TV:
    section wording must change with the active download.
-0f. If 1.65.0 passes, take slice 1β next. Disk cache remains last. The page-pool
+0f. If 1.66.0 passes, disk cache remains last. The page-pool
    question stays settled at 6, and the cancellation counter remains parked.
    Decide whether it ships.
 

@@ -9,24 +9,32 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +54,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +70,7 @@ import com.prelude.iptv.ui.MainViewModel
 import com.prelude.iptv.ui.PremiumContentRail
 import com.prelude.iptv.ui.PremiumTvHero
 import com.prelude.iptv.ui.PremiumTvNavigationRail
+import com.prelude.iptv.ui.CatalogSectionQuickActions
 import com.prelude.iptv.ui.TvDialogTextButton
 import com.prelude.iptv.ui.UiState
 import com.prelude.iptv.ui.buildCatalogRailSections
@@ -77,6 +87,7 @@ import com.prelude.iptv.ui.mobile.navigation.PremiumMobileBottomNavigation
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import com.prelude.iptv.ui.rememberInitialFocus
 import com.prelude.iptv.ui.requestFocusWithRetry
+import com.prelude.iptv.ui.tvFocus
 import kotlinx.coroutines.launch
 
 /**
@@ -151,7 +162,7 @@ internal fun BrowseScreen(
     // ΜΕΝΟΥ αντί να σε βγάζει από τη λίστα. Δεύτερο BACK (με το μενού ήδη
     // εστιασμένο) φεύγει κανονικά.
     val navRailFocus = remember { FocusRequester() }
-    val categoryNavFocus = remember { FocusRequester() }
+    val categoryQuickActionFocus = remember { FocusRequester() }
     var navRailFocused by remember { mutableStateOf(false) }
 
     /**
@@ -213,8 +224,7 @@ internal fun BrowseScreen(
             categoryPickerWasOpen = true
         } else if (isTv && categoryPickerWasOpen) {
             categoryPickerWasOpen = false
-            navRailArmed = true
-            categoryNavFocus.requestFocusWithRetry()
+            categoryQuickActionFocus.requestFocusWithRetry()
         }
     }
 
@@ -377,7 +387,18 @@ internal fun BrowseScreen(
         }
     }
 
-    val fullScreenCatalogOverlay = state.chooseContent || state.pickCategories
+    var loadProgressDismissed by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.loadingAllSections) {
+        if (state.loadingAllSections) loadProgressDismissed = false
+    }
+    LaunchedEffect(loadProgressDismissed, state.loadingAllSections, isTv) {
+        if (isTv && state.loadingAllSections && loadProgressDismissed) {
+            navRailArmed = true
+            navRailFocus.requestFocusWithRetry()
+        }
+    }
+    val fullScreenCatalogOverlay = state.chooseContent || state.pickCategories ||
+        (state.loadingAllSections && !loadProgressDismissed)
     LaunchedEffect(state.contentType, isTv) {
         if (!isTv) {
             val synced = when (state.contentType) {
@@ -430,6 +451,13 @@ internal fun BrowseScreen(
         state.channels, state.selectedGroup, state.search, state.favorites,
         state.lockedGroups, state.parentalUnlocked, state.sortMode
     ) { vm.visibleChannels() }
+    val catalogSummary = remember(state.contentType, state.loadedSections, state.loadingAllSections) {
+        vm.currentCatalogSummary()
+    }
+    val cycleSort: () -> Unit = {
+        val modes = listOf("default", "az", "za", "year")
+        vm.setSortMode(modes[(modes.indexOf(state.sortMode).coerceAtLeast(0) + 1) % modes.size])
+    }
     // Η ΑΡΧΙΚΗ ΤΡΩΕΙ ΑΠΟ ΟΛΕΣ ΤΙΣ ΕΝΟΤΗΤΕΣ, ΟΧΙ ΜΟΝΟ ΑΠΟ ΤΗΝ ΕΝΕΡΓΗ.
     //
     // Ο επεξεργαστής αρχικής απαριθμεί ζωντανά, ταινίες και σειρές, αλλά το
@@ -654,7 +682,7 @@ internal fun BrowseScreen(
             // παρασκήνιο»: μετακινεί το focus σε κρυμμένες λίστες αντί να
             // χειρίζεται τον player.
             .then(
-                if (inlinePlayback != null) {
+                if (inlinePlayback != null || fullScreenCatalogOverlay) {
                     Modifier.focusProperties { canFocus = false }
                 } else Modifier
             )
@@ -760,7 +788,7 @@ internal fun BrowseScreen(
         // εδώ, στη ροή του Column, ΕΣΠΡΩΧΝΕ ολόκληρο το home κάτω/πάνω κάθε φορά
         // που το loading άναβε/έσβηνε (partial section loads) = ο περιβόητος
         // κάθετος «σεισμός» σε κυκλάκια ΚΑΙ κάρτες, ανεξάρτητα από το home UI.
-        if (state.loading && !isTv) CatalogLoadingProgress(vm)
+        if (state.loading && !state.loadingAllSections && !isTv) CatalogLoadingProgress(vm)
         // ΤΑ STATUS ΕΦΥΓΑΝ ΑΠΟ ΕΔΩ: δύο μόνιμες γραμμές («Φορτώθηκαν 46 στοιχεία»
         // + «EPG: ταιριάζει σε 29 κανάλια») έτρωγαν ύψος ΓΙΑ ΠΑΝΤΑ, ενώ είναι
         // πληροφορία της στιγμής — και η πρώτη επαναλάμβανε το «46 στοιχεία»
@@ -856,6 +884,11 @@ internal fun BrowseScreen(
                     onOpenMyList = { libraryDestination = LibraryDestination.MY_LIST },
                     onOpenSettings = onOpenSettings,
                     onOpenCategories = { vm.changeCategories() },
+                    onSort = cycleSort,
+                    onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
+                    onSectionBack = { if (!goBackSection()) openSection("home") },
+                    downloadedItemCount = catalogSummary.first,
+                    downloadedCategoryCount = catalogSummary.second,
                     // ΟΛΟΚΛΗΡΟΣ ο κατάλογος: τα πλακίδια μετρούν και τα ζωντανά,
                     // που το `channels` έχει ήδη φιλτράρει για την ενότητα.
                     allChannels = homeItems,
@@ -899,6 +932,11 @@ internal fun BrowseScreen(
                     onOpenEpg = if (state.epgLoaded) ({ showGrid = true }) else null,
                     onOpenSettings = onOpenSettings,
                     onOpenCategories = { vm.changeCategories() },
+                    downloadedItemCount = catalogSummary.first,
+                    downloadedCategoryCount = catalogSummary.second,
+                    onSort = cycleSort,
+                    onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
+                    onRefresh = { vm.requestRefresh() },
                     onNavigationCollapsedChange = { mobileNavCollapsed = it },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -924,6 +962,20 @@ internal fun BrowseScreen(
                         if (channel.kind == "series") vm.openSeries(channel)
                     },
                     onPlay = playChannel,
+                    quickActions = {
+                        if (!state.loading) {
+                            CatalogSectionQuickActions(
+                                contentType = state.contentType,
+                                itemCount = catalogSummary.first,
+                                categoryCount = catalogSummary.second,
+                                onCategories = { vm.changeCategories() },
+                                onSort = cycleSort,
+                                onFavorites = { libraryDestination = LibraryDestination.MY_LIST },
+                                onRefresh = { vm.requestRefresh() },
+                                categoryFocus = categoryQuickActionFocus,
+                            )
+                        }
+                    },
                     // Επιστρέφοντας από ταινία, σειρά ή λεπτομέρειες, το focus
                     // πηγαίνει στο στοιχείο που άνοιξες — όχι στην κορυφή του
                     // πλέγματος και όχι στο αριστερό μενού.
@@ -1178,7 +1230,7 @@ internal fun BrowseScreen(
             // ΤΗΛΕΟΡΑΣΗ: η μπάρα προόδου φόρτωσης ΕΠΙΠΛΕΕΙ κάτω-αριστερά ως
             // discreet pill — ΔΕΝ μπαίνει στη ροή του layout, άρα το άναμμα/σβήσιμό
             // της δεν μετακινεί ΠΟΤΕ το περιεχόμενο (η ρίζα του κάθετου σεισμού).
-            if (isTv && state.loading) {
+            if (isTv && state.loading && !state.loadingAllSections) {
                 Box(
                     Modifier
                         .align(Alignment.TopEnd)
@@ -1249,7 +1301,6 @@ internal fun BrowseScreen(
                 onLive = { openSection("live") },
                 onMovies = { openSection("movies") },
                 onSeries = { openSection("series") },
-                onCategories = { vm.changeCategories() },
                 onEpg = {
                     if (state.epgLoaded) showGrid = true
                     else toast(ctx, "Δεν έχει φορτωθεί EPG")
@@ -1260,7 +1311,6 @@ internal fun BrowseScreen(
                 // όταν το focus απλώς περνά από πάνω του.
                 expanded = navRailExpanded,
                 selectedFocus = navRailFocus,
-                categoriesFocus = categoryNavFocus,
                 // Εστιάσιμο όσο κάτι άλλο κρατά το focus (άρα ο χρήστης πλοηγείται
                 // και το αριστερό πρέπει να δουλέψει με το πρώτο πάτημα), όσο το
                 // ζήτησε ρητά με BACK, ή όσο το χρησιμοποιεί ήδη.
@@ -1379,6 +1429,17 @@ internal fun BrowseScreen(
             }
         }
     }
+    BackHandler(enabled = state.loadingAllSections && !loadProgressDismissed) {
+        loadProgressDismissed = true
+    }
+    if (state.loadingAllSections && !loadProgressDismissed) {
+        FullCatalogLoadingScreen(
+            vm = vm,
+            loadedSections = state.loadedSections,
+            onBack = { loadProgressDismissed = true },
+        )
+    }
+
     if (state.chooseContent) ContentChooser(
         // Χωρίς φορτωμένο περιεχόμενο δεν υπάρχει «τρέχουσα» ενότητα:
         // το τικ στο Live μπέρδευε, έδειχνε σαν να είναι ήδη επιλεγμένο.
@@ -1388,12 +1449,11 @@ internal fun BrowseScreen(
             if (type == "all") vm.loadAllSections() else vm.setContentType(type)
         })
     if (state.pickCategories) CategoryPicker(
-        categories = state.categories,
-        counts = state.categoryCounts,
-        contentType = state.contentType,
-        initialSelectedIds = state.categorySelectionIds,
+        sections = state.categoryPickerSections,
+        initialType = state.categoryPickerType,
         onCancel = { vm.cancelCategoryPicker() },
-        onLoad = { vm.loadSelectedCategories(it) })
+        onSelectionChange = { type, ids -> vm.setVisibleCategories(type, ids) },
+    )
     if (showExport) Box(Modifier.fillMaxSize()) { ExportScreen(vm) { showExport = false } }
 
     epgChannel?.let { ch -> EpgSheet(ch, vm) { epgChannel = null } }
@@ -1424,6 +1484,142 @@ internal fun BrowseScreen(
             },
             containerColor = BgElev2
         )
+    }
+}
+
+@Composable
+private fun FullCatalogLoadingScreen(
+    vm: MainViewModel,
+    loadedSections: Set<String>,
+    onBack: () -> Unit,
+) {
+    val progressState by vm.catalogProgressState.collectAsStateWithLifecycle()
+    val active = progressState.sourceProgress[vm.currentSourceId()]?.takeIf { it.active }
+    val backFocus = rememberInitialFocus()
+    val percent = active?.percent ?: 0
+    val runningType = active?.contentType?.takeIf { it in setOf("live", "vod", "series") }
+    val categoryProgress = remember(active?.stage) {
+        Regex("""(\d+)\s*/\s*(\d+)""").find(active?.stage.orEmpty())?.destructured?.let { (done, total) ->
+            done.toIntOrNull()?.let { parsedDone -> total.toIntOrNull()?.let { parsedDone to it } }
+        }
+    }
+    val stageText = when {
+        runningType != null && categoryProgress != null -> stringResource(
+            when (runningType) {
+                "live" -> R.string.catalog_stage_live_category
+                "vod" -> R.string.catalog_stage_movies_category
+                else -> R.string.catalog_stage_series_category
+            },
+            categoryProgress.first,
+            categoryProgress.second,
+        )
+        runningType != null -> stringResource(
+            when (runningType) {
+                "live" -> R.string.catalog_loading_live
+                "vod" -> R.string.catalog_loading_movies
+                else -> R.string.catalog_loading_series
+            }
+        )
+        else -> stringResource(R.string.catalog_preparing_sections)
+    }
+
+    Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+        Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).padding(horizontal = 22.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    stringResource(R.string.catalog_back),
+                    tint = Color(0xFFE9EAEC),
+                    modifier = Modifier.size(30.dp).focusRequester(backFocus)
+                        .clip(RoundedCornerShape(99.dp)).tvFocus(RoundedCornerShape(99.dp))
+                        .clickable(onClick = onBack).padding(5.dp),
+                )
+                Text(
+                    stringResource(R.string.catalog_update_content),
+                    color = Color(0xFFE9EAEC),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 10.dp),
+                )
+            }
+            Spacer(Modifier.height(28.dp))
+            Text(
+                "$percent%",
+                color = Color(0xFFE9EAEC),
+                fontSize = 38.sp,
+                fontWeight = FontWeight.Black,
+            )
+            Text(
+                stageText,
+                color = Color(0xFF989CA5),
+                fontSize = 13.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(14.dp))
+            LinearProgressIndicator(
+                progress = { (percent / 100f).coerceIn(0f, 1f) },
+                color = Color(0xFFE9EAEC),
+                trackColor = Color(0xFF232529),
+                modifier = Modifier.fillMaxWidth().height(4.dp),
+            )
+            Spacer(Modifier.height(24.dp))
+
+            listOf("live", "vod", "series").forEach { type ->
+                val complete = type in loadedSections
+                val running = !complete && type == runningType
+                val count = if (complete) vm.catalogSummary(type).first else 0
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 11.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        if (complete) "✓" else "•",
+                        color = when {
+                            complete -> Color(0xFF6BBF83)
+                            running -> Color(0xFF5B9DD9)
+                            else -> Color(0xFF555861)
+                        },
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        stringResource(
+                            when (type) {
+                                "live" -> R.string.catalog_live
+                                "vod" -> R.string.catalog_movies
+                                else -> R.string.catalog_series
+                            }
+                        ),
+                        color = Color(0xFFE9EAEC),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.width(110.dp),
+                    )
+                    Text(
+                        when {
+                            complete -> stringResource(R.string.catalog_section_complete_count, count)
+                            running -> categoryProgress?.let { (done, total) ->
+                                stringResource(R.string.catalog_category_progress_short, done, total)
+                            } ?: stringResource(R.string.catalog_section_downloading)
+                            else -> stringResource(R.string.catalog_section_waiting)
+                        },
+                        color = if (complete) Color(0xFF6BBF83) else Color(0xFF7D818A),
+                        fontSize = 12.sp,
+                    )
+                }
+                androidx.compose.material3.HorizontalDivider(color = Color(0xFF16171B), thickness = 1.dp)
+            }
+
+            Text(
+                stringResource(R.string.catalog_complete_sections_open_immediately),
+                color = Color(0xFF7D818A),
+                fontSize = 11.sp,
+                lineHeight = 15.sp,
+                modifier = Modifier.padding(top = 20.dp),
+            )
+        }
     }
 }
 

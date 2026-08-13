@@ -5,6 +5,33 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.66.0 - versionCode 138
+
+- Corrected the 1.65.0 category UI to follow the approved
+  `prototypes/full_load_then_choose.html` as an exact contract. The picker is
+  now a compact dark sheet with Series, Movies and Live tabs, category names
+  and bare item counts, disabled zero-count rows, and only the `All` / `None`
+  bulk actions. The old full-screen picker, filter field, Cancel button and
+  Apply button are gone.
+- Category changes apply immediately to the complete in-memory snapshot while
+  the sheet remains open. Switching tabs edits all three downloaded sections
+  without provider I/O or another download.
+- Categories moved out of the Android TV navigation rail and the standalone
+  Mobile Live icon. Live, Movies and Series now expose the approved horizontal
+  quick-action chips for Categories, Sort, Favorites and Refresh, followed by
+  the downloaded item/category summary. Android TV returns focus to the
+  Categories chip after the sheet closes; empty category rows cannot receive
+  focus.
+- A full source refresh now uses the approved progress screen: overall percent
+  and stage, one status row for each section, completed item counts, waiting
+  states and the explanation that complete sections can open immediately. Back
+  dismisses the progress surface while the remaining sections continue in the
+  background.
+- Greek and English QA resources cover every new release string. The owner
+  confirmed that the 1.66.0 QA build compiles; exact mobile/TV visual and focus
+  verification is still pending. The older 1.63.0 bar wording also remains
+  visually unconfirmed.
+
 ## 1.65.0 - versionCode 137
 
 - Category selection now happens after the complete Live TV, Movies and Series

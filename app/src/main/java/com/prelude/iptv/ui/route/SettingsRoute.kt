@@ -208,11 +208,9 @@ internal fun SettingsTab(
     )
 
     if (catalog.pickCategories) CategoryPicker(
-        categories = catalog.categories,
-        counts = catalog.categoryCounts,
-        contentType = catalog.contentType,
-        initialSelectedIds = catalog.categorySelectionIds,
+        sections = catalog.categoryPickerSections,
+        initialType = catalog.categoryPickerType,
         onCancel = { vm.cancelCategoryPicker() },
-        onLoad = { vm.loadSelectedCategories(it) }
+        onSelectionChange = { type, ids -> vm.setVisibleCategories(type, ids) },
     )
 }

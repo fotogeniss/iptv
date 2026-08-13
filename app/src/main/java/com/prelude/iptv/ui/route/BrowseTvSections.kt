@@ -37,6 +37,7 @@ internal fun BrowseTvSections(
     onMultiview: (Channel, Channel) -> Unit,
     onOpenDetails: (Channel) -> Unit,
     onPlay: (Channel) -> Unit,
+    quickActions: @Composable () -> Unit = {},
     /** Κλειδί του στοιχείου που άνοιξε τελευταίο — εκεί επιστρέφει το focus. */
     lastOpenedKey: String? = null,
     /** true όσο παίζει ή φαίνεται κάτι από πάνω. */
@@ -76,6 +77,7 @@ internal fun BrowseTvSections(
             onSelectGroup = selectGroup,
             onFullscreenChange = onFullscreenChange,
             onMultiview = onMultiview,
+            quickActions = quickActions,
             // ΧΩΡΙΣ start padding: η οθόνη πρέπει να φτάνει ως την άκρη ώστε η
             // μεγέθυνση του player να καλύπτει ΟΛΟ το κάδρο. Το περιθώριο για το
             // αριστερό μενού μπαίνει εσωτερικά, μόνο στο περιεχόμενο.
@@ -102,6 +104,7 @@ internal fun BrowseTvSections(
             onLongOpen = { channel ->
                 if (channel.kind == "series") onOpenDetails(channel) else onPlay(channel)
             },
+            quickActions = quickActions,
             lastOpenedKey = lastOpenedKey,
             obscuredByPlayer = obscuredByPlayer,
             // ΟΛΗ η οθόνη: το μαύρο πρέπει να φτάνει ως τις άκρες. Το περιθώριο

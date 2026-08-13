@@ -149,10 +149,10 @@ focus_files = [
 for rel in focus_files:
     require('TvDialogTextButton' in read(rel), f"visible dialog focus action: {Path(rel).name}")
 category_picker = read("app/src/main/java/com/prelude/iptv/ui/route/DetailRouteHost.kt")
-require('rememberInitialFocus()' in category_picker and 'testTag("category-load")' in category_picker,
-        "post-download category picker has initial and Apply focus targets")
-require('categoryNavFocus.requestFocusWithRetry()' in read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt"),
-        "TV category picker returns focus to its navigation quick action")
+require('rememberInitialFocus()' in category_picker and '.focusProperties { canFocus = enabled }' in category_picker,
+        "post-download category sheet has initial tab focus and skips empty rows")
+require('categoryQuickActionFocus.requestFocusWithRetry()' in read("app/src/main/java/com/prelude/iptv/ui/route/BrowseRoute.kt"),
+        "TV category sheet returns focus to its section quick action")
 
 require((TEST / "com/prelude/iptv/ui/SourceDeletionPolicyTest.kt").exists(),
         "source deletion policy tests exist")

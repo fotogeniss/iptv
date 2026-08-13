@@ -6,6 +6,13 @@ import com.prelude.iptv.data.SourceLoadProgress
 import com.prelude.iptv.ui.epg.EpgSourceOption
 import com.prelude.iptv.ui.epg.EpgStatus
 
+data class CategoryPickerSection(
+    val categories: List<Pair<String, String>> = emptyList(),
+    val counts: Map<String, Int> = emptyMap(),
+    /** null means that every non-empty category is visible. */
+    val selectedIds: Set<String>? = null,
+)
+
 data class UiState(
     val playlists: List<Playlist> = emptyList(),
     val currentIndex: Int = 0,
@@ -45,6 +52,9 @@ data class UiState(
     val categoryCounts: Map<String, Int> = emptyMap(),
     /** null = όλα επιλεγμένα, set = προεπιλεγμένα ids από την προηγούμενη επιλογή. */
     val categorySelectionIds: Set<String>? = null,
+    /** Complete local category metadata for the Series / Movies / Live tabs. */
+    val categoryPickerSections: Map<String, CategoryPickerSection> = emptyMap(),
+    val categoryPickerType: String = "series",
     /** ενότητα που ζητήθηκε αλλά δεν είναι φορτωμένη -> «να τη φορτώσω;» */
     val askLoadType: String? = null,
     val fontScale: Float = 1.0f,

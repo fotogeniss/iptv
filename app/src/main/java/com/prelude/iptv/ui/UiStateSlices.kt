@@ -41,6 +41,8 @@ data class CatalogUiState(
     val categories: List<Pair<String, String>> = emptyList(),
     val categoryCounts: Map<String, Int> = emptyMap(),
     val categorySelectionIds: Set<String>? = null,
+    val categoryPickerSections: Map<String, CategoryPickerSection> = emptyMap(),
+    val categoryPickerType: String = "series",
     val seriesSeasons: List<Pair<String, List<Channel>>> = emptyList(),
     val seriesLoading: Boolean = false
 )
@@ -96,6 +98,8 @@ internal fun UiState.toCatalogUiState() = CatalogUiState(
     categories = categories,
     categoryCounts = categoryCounts,
     categorySelectionIds = categorySelectionIds,
+    categoryPickerSections = categoryPickerSections,
+    categoryPickerType = categoryPickerType,
     seriesSeasons = seriesSeasons,
     seriesLoading = seriesLoading
 )

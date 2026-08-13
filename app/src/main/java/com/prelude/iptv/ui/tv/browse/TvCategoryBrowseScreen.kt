@@ -96,6 +96,7 @@ fun TvCategoryBrowseScreen(
     onSelectGroup: (String) -> Unit,
     onOpen: (Channel) -> Unit,
     onLongOpen: (Channel) -> Unit = {},
+    quickActions: @Composable () -> Unit = {},
     /**
      * Το κλειδί του στοιχείου που άνοιξε τελευταίο, ή null.
      *
@@ -148,6 +149,7 @@ fun TvCategoryBrowseScreen(
         // το μαύρο φόντο να πιάνει ολόκληρη την οθόνη.
         Column(Modifier.fillMaxSize().padding(start = 64.dp)) {
             TvBrowseHeader()
+            quickActions()
             Row(Modifier.fillMaxSize()) {
                 // ---------- Αριστερά: κατηγορίες ----------
                 LazyColumn(

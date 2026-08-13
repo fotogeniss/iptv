@@ -9,6 +9,7 @@ import androidx.activity.compose.*
 import androidx.activity.result.contract.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -207,156 +209,171 @@ internal fun fmtTime(s: String): String {
 
 @Composable
 internal fun CategoryPicker(
-    categories: List<Pair<String, String>>,
-    counts: Map<String, Int>,
-    contentType: String,
-    initialSelectedIds: Set<String>? = null,
-    onCancel: (() -> Unit)? = null,
-    onLoad: (List<String>?) -> Unit
+    sections: Map<String, CategoryPickerSection>,
+    initialType: String,
+    onCancel: () -> Unit,
+    onSelectionChange: (String, List<String>?) -> Unit,
 ) {
-    val selected = remember(categories, counts, initialSelectedIds) {
-        mutableStateMapOf<String, Boolean>().apply {
-            categories.forEach { (id, _) ->
-                put(id, (counts[id] ?: 0) > 0 && (initialSelectedIds == null || id in initialSelectedIds))
-            }
-        }
+    val tabOrder = listOf("series", "vod", "live")
+    var activeType by remember(initialType) {
+        mutableStateOf(initialType.takeIf(sections::containsKey) ?: sections.keys.first())
     }
-    val first = rememberInitialFocus()
-    val isTv = isTvDevice()
-    // ΤΟ ΔΕΞΙ ΒΕΛΑΚΙ ΠΑΕΙ ΚΑΤΕΥΘΕΙΑΝ ΣΤΗ «ΦΟΡΤΩΣΗ»: αλλιώς, για να πατήσεις
-    // ΟΚ αφού διάλεξες 3 κατηγορίες, έπρεπε να διασχίσεις με το D-pad ΟΛΗ
-    // τη λίστα (και 200 γραμμές) μέχρι κάτω. Premium apps δεν το κάνουν αυτό.
-    val okFocus = remember { FocusRequester() }
-    var filter by remember { mutableStateOf("") }
-    val visible = remember(categories, filter) {
-        if (filter.isBlank()) categories
-        else categories.filter { it.second.contains(filter.trim(), ignoreCase = true) }
-    }
-    Column(Modifier.fillMaxSize().background(Bg).navigationBarsPadding()) {
-        // κεφαλίδα με «πίσω»: αν το μετανιώσεις, γυρνάς εκεί που ήσουν
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (onCancel != null) {
-                TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Πίσω", onClick = onCancel)
-            } else {
-                Spacer(Modifier.width(12.dp))
-            }
-            Column(Modifier.weight(1f)) {
-                val sectionName = when (contentType) {
-                    "vod" -> stringResource(R.string.catalog_movies)
-                    "series" -> stringResource(R.string.catalog_series)
-                    else -> stringResource(R.string.catalog_live)
-                }
-                Text(stringResource(R.string.catalog_visibility_section_title, sectionName), color = TextHi,
-                    fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                val selectedCount = selected.count { it.value }
-                val visibleItems = categories.sumOf { (id, _) -> if (selected[id] == true) counts[id] ?: 0 else 0 }
-                Text(
-                    stringResource(
-                        R.string.catalog_visibility_summary,
-                        selectedCount,
-                        categories.size,
-                        visibleItems,
-                    ),
-                    color = TextMid, fontSize = 11.sp,
-                )
-                Text(
-                    stringResource(
-                        if (isTv) R.string.catalog_visibility_tv_hint
-                        else R.string.catalog_visibility_mobile_hint
-                    ),
-                    color = TextLo, fontSize = 11.sp
-                )
-            }
-        }
+    val section = sections.getValue(activeType)
+    val selectableIds = section.categories.map { it.first }.filter { (section.counts[it] ?: 0) > 0 }
+    val selectedIds = section.selectedIds ?: selectableIds.toSet()
+    val selectedCount = selectableIds.count(selectedIds::contains)
+    val visibleItems = selectableIds.sumOf { id -> if (id in selectedIds) section.counts[id] ?: 0 else 0 }
+    val firstTab = rememberInitialFocus()
 
-        Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Box(
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = .72f)),
+        contentAlignment = if (isTvDevice()) Alignment.Center else Alignment.BottomCenter,
+    ) {
+        Box(
+            Modifier.fillMaxSize()
+                .focusProperties { canFocus = false }
+                .clickable(onClick = onCancel)
+        )
+        Column(
+            Modifier
+                .fillMaxWidth(.96f)
+                .widthIn(max = if (isTvDevice()) 520.dp else 360.dp)
+                .heightIn(max = if (isTvDevice()) 620.dp else 590.dp)
+                .navigationBarsPadding()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF101115))
+                .border(1.dp, Color(0xFF232529), RoundedCornerShape(16.dp))
+                .pointerInput(Unit) { detectTapGestures(onTap = {}) }
+                .padding(top = 20.dp),
         ) {
-            // «Όλες/Καμία» δρουν στα ΟΡΑΤΑ: αν έχεις φιλτράρει «sport», το
-            // «Όλες» επιλέγει μόνο τις αθλητικές — αυτό περιμένει ο χρήστης.
-            listOf(
-                stringResource(R.string.catalog_select_all) to true,
-                stringResource(R.string.catalog_select_none) to false,
-            ).forEachIndexed { bi, (label, v) ->
-                Box(
-                    Modifier.padding(end = 8.dp).clip(RoundedCornerShape(16.dp)).background(BgElev)
-                        .border(1.dp, Line, RoundedCornerShape(16.dp))
-                        .then(if (bi == 0) Modifier.focusRequester(first).testTag("category-select-all") else Modifier)
-                        .focusProperties { right = okFocus }
-                        .tvFocus(RoundedCornerShape(16.dp))
-                        .clickable { visible.filter { (counts[it.first] ?: 0) > 0 }.forEach { selected[it.first] = v } }
-                        .padding(horizontal = 16.dp, vertical = 7.dp)
-                ) { Text(label, color = TextMid) }
-            }
-            // φίλτρο: σε λίστες με 100+ κατηγορίες, το scroll δεν είναι λύση
-            OutlinedTextField(
-                value = filter, onValueChange = { filter = it },
-                placeholder = { Text(stringResource(R.string.catalog_filter_categories), color = TextLo, fontSize = 13.sp) },
-                singleLine = true, shape = RoundedCornerShape(16.dp),
-                textStyle = androidx.compose.ui.text.TextStyle(color = TextHi, fontSize = 13.sp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Accent, unfocusedBorderColor = Line,
-                    unfocusedContainerColor = BgElev, focusedContainerColor = BgElev,
-                    cursorColor = Accent
-                ),
-                modifier = Modifier.weight(1f).height(52.dp)
+            Text(
+                stringResource(R.string.catalog_visibility_title),
+                color = Color(0xFFE9EAEC),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 18.dp),
             )
-        }
+            Text(
+                stringResource(
+                    when (activeType) {
+                        "series" -> R.string.catalog_visibility_summary_series
+                        "vod" -> R.string.catalog_visibility_summary_movies
+                        else -> R.string.catalog_visibility_summary_live
+                    },
+                    selectedCount,
+                    section.categories.size,
+                    visibleItems,
+                ),
+                color = Color(0xFF7D818A),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 4.dp),
+            )
 
-        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 16.dp)) {
-            items(visible) { (id, title) ->
-                val itemCount = counts[id] ?: 0
-                val enabled = itemCount > 0
-                Row(
-                    Modifier.fillMaxWidth()
-                        .focusProperties { right = okFocus }   // δεξί = Φόρτωση, ΟΧΙ scroll ως κάτω
-                        .focusProperties { canFocus = enabled }
-                        .tvFocus(RoundedCornerShape(8.dp))
-                        .clickable(enabled = enabled) { selected[id] = !(selected[id] ?: false) }
-                        .padding(vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(checked = selected[id] == true, enabled = enabled, onCheckedChange = { selected[id] = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Accent))
-                    Text(title, color = if (enabled) TextHi else TextLo, maxLines = 1,
-                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                    Text(pluralStringResource(R.plurals.catalog_item_count, itemCount, itemCount),
-                        color = if (enabled) TextMid else TextLo, fontSize = 12.sp)
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                tabOrder.forEach { type ->
+                    val available = sections.containsKey(type)
+                    val active = type == activeType
+                    Box(
+                        Modifier
+                            .then(if (type == initialType) Modifier.focusRequester(firstTab) else Modifier)
+                            .focusProperties { canFocus = available }
+                            .clip(RoundedCornerShape(99.dp))
+                            .background(if (active) Color(0xFFE9EAEC) else Color.Transparent)
+                            .border(1.dp, if (active) Color(0xFFE9EAEC) else Color(0xFF34363C), RoundedCornerShape(99.dp))
+                            .tvFocus(RoundedCornerShape(99.dp), tint = false)
+                            .clickable(enabled = available) { activeType = type }
+                            .padding(horizontal = 14.dp, vertical = 7.dp),
+                    ) {
+                        Text(
+                            stringResource(
+                                when (type) {
+                                    "series" -> R.string.catalog_series
+                                    "vod" -> R.string.catalog_movies
+                                    else -> R.string.catalog_live
+                                }
+                            ),
+                            color = when {
+                                !available -> Color(0xFF555861)
+                                active -> Color.Black
+                                else -> Color(0xFFC7C9CE)
+                            },
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                 }
             }
-            if (visible.isEmpty()) item {
-                Text(stringResource(R.string.catalog_no_category_match, filter),
-                    color = TextLo, fontSize = 13.sp,
-                    modifier = Modifier.padding(vertical = 16.dp))
-            }
-        }
 
-        val count = selected.values.count { it }
-        Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (onCancel != null) {
-                OutlinedButton(
-                    onClick = onCancel,
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, Line),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextHi),
-                    modifier = Modifier.weight(1f).height(48.dp).tvFocus(RoundedCornerShape(14.dp))
-                ) { Text(stringResource(R.string.catalog_cancel)) }
+            LazyColumn(Modifier.weight(1f)) {
+                items(section.categories, key = { it.first }) { (id, title) ->
+                    val itemCount = section.counts[id] ?: 0
+                    val enabled = itemCount > 0
+                    val checked = enabled && id in selectedIds
+                    Row(
+                        Modifier.fillMaxWidth()
+                            .focusProperties { canFocus = enabled }
+                            .tvFocus(RoundedCornerShape(6.dp))
+                            .clickable(enabled = enabled) {
+                                val next = selectedIds.toMutableSet().apply {
+                                    if (!add(id)) remove(id)
+                                }
+                                onSelectionChange(activeType, if (next.size == selectableIds.size) null else next.toList())
+                            }
+                            .padding(horizontal = 18.dp, vertical = 11.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            Modifier.size(16.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(if (checked) Color(0xFFE9EAEC) else Color.Transparent)
+                                .border(1.dp, if (checked) Color(0xFFE9EAEC) else Color(0xFF555861), RoundedCornerShape(3.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (checked) Text("✓", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                        }
+                        Text(
+                            title,
+                            color = if (enabled) Color(0xFFE9EAEC) else Color(0xFF5E6169),
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                        )
+                        Text(
+                            itemCount.toString(),
+                            color = if (enabled) Color(0xFF989CA5) else Color(0xFF555861),
+                            fontSize = 12.sp,
+                        )
+                    }
+                    HorizontalDivider(color = Color(0xFF16171B), thickness = 1.dp)
+                }
             }
-            Button(
-                onClick = {
-                    val selectableIds = categories.map { it.first }.filter { (counts[it] ?: 0) > 0 }
-                    val ids = selectableIds.filter { selected[it] == true }
-                    onLoad(if (ids.size == selectableIds.size) null else ids)
-                },
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Accent, disabledContainerColor = BgElev2),
-                modifier = Modifier.weight(1.4f).height(48.dp)
-                    .focusRequester(okFocus).testTag("category-load").tvFocus(RoundedCornerShape(14.dp), tint = false)
-            ) { Text(stringResource(R.string.catalog_apply_categories, count), fontWeight = FontWeight.Bold) }
+
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                listOf(
+                    stringResource(R.string.catalog_select_all) to selectableIds,
+                    stringResource(R.string.catalog_select_none) to emptyList(),
+                ).forEach { (label, ids) ->
+                    Text(
+                        label,
+                        color = Color(0xFF5B9DD9),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .tvFocus(RoundedCornerShape(6.dp))
+                            .clickable {
+                                onSelectionChange(activeType, ids.takeUnless { it.size == selectableIds.size })
+                            }
+                            .padding(vertical = 4.dp),
+                    )
+                }
+            }
         }
     }
 }

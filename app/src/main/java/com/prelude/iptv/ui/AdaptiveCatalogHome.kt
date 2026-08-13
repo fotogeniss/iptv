@@ -34,6 +34,11 @@ fun AdaptiveCatalogHome(
     onOpenMyList: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCategories: () -> Unit = {},
+    onSort: () -> Unit = {},
+    onFavorites: () -> Unit = {},
+    onSectionBack: () -> Unit = {},
+    downloadedItemCount: Int = channels.size,
+    downloadedCategoryCount: Int = 0,
     /**
      * Ολόκληρος ο κατάλογος, χωρίς τα φίλτρα της τρέχουσας ενότητας.
      *
@@ -103,6 +108,11 @@ fun AdaptiveCatalogHome(
             onOpenMyList = onOpenMyList,
             onOpenSettings = onOpenSettings,
             onOpenCategories = onOpenCategories,
+            onSort = onSort,
+            onFavorites = onFavorites,
+            onSectionBack = onSectionBack,
+            downloadedItemCount = downloadedItemCount,
+            downloadedCategoryCount = downloadedCategoryCount,
             allChannels = allChannels,
             recentLive = recentLive,
             onClearHistory = onClearHistory,

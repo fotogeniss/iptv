@@ -25,6 +25,7 @@ import com.prelude.iptv.R
 import com.prelude.iptv.category.CategoryLayoutPolicy
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.CatalogSectionQuickActions
 import com.prelude.iptv.ui.mobile.home.MobileCategoryOption
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 
@@ -50,6 +51,11 @@ fun MobileLiveChannelsScreen(
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCategories: () -> Unit,
+    downloadedItemCount: Int = channels.size,
+    downloadedCategoryCount: Int = 0,
+    onSort: () -> Unit = {},
+    onFavorites: () -> Unit = {},
+    onRefresh: () -> Unit = {},
     nowTextFor: (Channel) -> String? = { null },
     onOpenEpg: (() -> Unit)? = null,
     onNavigationCollapsedChange: (Boolean) -> Unit = {},
@@ -130,8 +136,16 @@ fun MobileLiveChannelsScreen(
                 title = selectedGroup?.title ?: stringResource(R.string.live_title),
                 onBack = { if (openGroup != null) openGroup = null else onBack() },
                 onOpenEpg = onOpenEpg,
-                onOpenCategories = onOpenCategories,
                 onSettings = onOpenSettings,
+            )
+            CatalogSectionQuickActions(
+                contentType = "live",
+                itemCount = downloadedItemCount,
+                categoryCount = downloadedCategoryCount,
+                onCategories = onOpenCategories,
+                onSort = onSort,
+                onFavorites = onFavorites,
+                onRefresh = onRefresh,
             )
             LiveSearchField(
                 value = query,

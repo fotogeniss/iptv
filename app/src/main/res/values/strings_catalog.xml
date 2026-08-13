@@ -5,6 +5,10 @@
     <string name="catalog_all_movies">Όλες οι ταινίες</string>
     <string name="catalog_all_series">Όλες οι σειρές</string>
     <string name="catalog_favorites">Αγαπημένα</string>
+    <string name="catalog_quick_categories">Κατηγορίες…</string>
+    <string name="catalog_downloaded_summary_series">%1$d σειρές σε %2$d κατηγορίες, κατεβασμένες. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
+    <string name="catalog_downloaded_summary_movies">%1$d ταινίες σε %2$d κατηγορίες, κατεβασμένες. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
+    <string name="catalog_downloaded_summary_live">%1$d κανάλια σε %2$d κατηγορίες, κατεβασμένα. Τίποτα δεν λείπει· απλώς διαλέγεις τι βλέπεις.</string>
     <string name="catalog_empty_category">Δεν υπάρχει περιεχόμενο σε αυτή την κατηγορία</string>
     <string name="catalog_in_my_list">Στη λίστα μου</string>
 
@@ -31,6 +35,10 @@
     <string name="catalog_favorite">Αγαπημένο</string>
 
     <string name="catalog_cancel">Άκυρο</string>
+    <string name="catalog_visibility_title">Ποιες κατηγορίες να φαίνονται</string>
+    <string name="catalog_visibility_summary_series">%1$d από %2$d · %3$d σειρές ορατές</string>
+    <string name="catalog_visibility_summary_movies">%1$d από %2$d · %3$d ταινίες ορατές</string>
+    <string name="catalog_visibility_summary_live">%1$d από %2$d · %3$d κανάλια ορατά</string>
     <string name="catalog_visibility_section_title">Ποιες κατηγορίες να φαίνονται · %1$s</string>
     <string name="catalog_visibility_summary">%1$d από %2$d κατηγορίες · %3$d στοιχεία ορατά</string>
     <string name="catalog_visibility_tv_hint">Δεξί βελάκι → πάει κατευθείαν στην Εφαρμογή</string>
@@ -42,6 +50,16 @@
     <string name="catalog_apply_categories">Εφαρμογή (%1$d)</string>
 
     <string name="catalog_loading">Λήψη από την πηγή…</string>
+    <string name="catalog_update_content">Ενημέρωση περιεχομένου</string>
+    <string name="catalog_preparing_sections">Προετοιμασία όλων των ενοτήτων…</string>
+    <string name="catalog_section_complete_count">%1$d στοιχεία</string>
+    <string name="catalog_section_downloading">γίνεται λήψη</string>
+    <string name="catalog_category_progress_short">κατηγορία %1$d/%2$d</string>
+    <string name="catalog_stage_live_category">Λήψη Live · κατηγορία %1$d/%2$d</string>
+    <string name="catalog_stage_movies_category">Λήψη ταινιών · κατηγορία %1$d/%2$d</string>
+    <string name="catalog_stage_series_category">Λήψη σειρών · κατηγορία %1$d/%2$d</string>
+    <string name="catalog_section_waiting">σε αναμονή</string>
+    <string name="catalog_complete_sections_open_immediately">Οι ολοκληρωμένες ενότητες ανοίγουν αμέσως. Η επιλογή κατηγοριών εμφανίζεται όταν τελειώσουν όλες.</string>
     <string name="catalog_loading_with_progress">%1$s · Λήψη από την πηγή…</string>
     <!--
       Ποια ενότητα κατεβαίνει τώρα. Ξεχωριστό αλφαριθμητικό ανά ενότητα αντί για
