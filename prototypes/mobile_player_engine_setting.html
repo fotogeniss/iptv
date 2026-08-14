@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Επιλογή μηχανής στο κινητό</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#171717;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;gap:26px;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px;flex-wrap:wrap}
+  .note{width:330px;color:#b8b8b8;font-size:12.5px;line-height:1.55}
+  .note h3{color:#fff;font-size:14px;margin:0 0 8px}
+  .note b{color:#fff}
+  .note ul{margin:6px 0 14px;padding-left:17px}
+  .note li{margin-bottom:6px}
+  .ok{background:#122116;border:1px solid #2c7840;color:#bfe7c8;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45;margin-bottom:12px}
+  .warn{background:#2a1c12;border:1px solid #7a4a1e;color:#e8c9a4;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45}
+
+  .phone{width:340px;height:700px;background:#0a0a0a;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 20px 70px #000}
+  .top{height:56px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #1c1c1c}
+  .top .b{font-size:19px}
+  .top .t{font-size:16px;font-weight:800}
+  .body{padding:14px 14px 0;height:644px;overflow:hidden}
+  .grp{font-size:12px;color:#8d8d8d;font-weight:800;margin:14px 4px 8px}
+  .row{background:#161616;border-radius:11px;padding:14px;display:flex;align-items:center;margin-bottom:9px}
+  .row .l{flex:1;min-width:0}
+  .row .n{font-size:13px;font-weight:700}
+  .row .s{font-size:11px;color:#8d8d8d;margin-top:3px}
+  .row .v{font-size:12px;color:#9a9a9a;text-align:right;max-width:150px}
+  .row.new{outline:1.5px dashed #2c7840;outline-offset:2px;cursor:pointer}
+  .row.new:hover{background:#1b1b1b}
+  .tag{position:absolute;font-size:9px;color:#5fae76;font-weight:800;letter-spacing:.6px;margin-top:-30px;margin-left:236px}
+  .sw{width:44px;height:25px;border-radius:20px;background:#e81f36;position:relative}
+  .sw i{position:absolute;right:3px;top:3px;width:19px;height:19px;border-radius:50%;background:#fff}
+
+  .scrim{position:absolute;inset:0;background:#000a;opacity:0;pointer-events:none;transition:opacity .2s}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#1b1b1b;border-radius:16px 16px 0 0;padding:18px 16px 24px;transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+  .sheet.on{transform:none}
+  .sheet h4{margin:0 0 14px;font-size:15px;font-weight:800}
+  .opt{display:flex;align-items:center;gap:12px;padding:12px 4px;cursor:pointer;border-radius:9px}
+  .opt:hover{background:#232323}
+  .radio{width:19px;height:19px;border-radius:50%;border:2px solid #6d6d6d;flex:0 0 auto;position:relative}
+  .opt.sel .radio{border-color:#e81f36}
+  .opt.sel .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#e81f36}
+  .opt .lbl{font-size:13.5px}
+  .opt .sub{font-size:11px;color:#8d8d8d;margin-top:2px}
+
+  .keys{margin-top:12px;font-size:11px;color:#7d7d7d;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h3>Μία γραμμή στις «Ρυθμίσεις Player» του κινητού</h3>
+
+  <div class="ok">Καμία νέα δυνατότητα. Η ρύθμιση <b>υπάρχει ήδη</b> και αποθηκεύεται ήδη (<code>player_mode</code>). Απλώς στο κινητό δεν υπάρχει τρόπος να την αλλάξεις — ο διάλογος καλείται μόνο από τις ρυθμίσεις της τηλεόρασης. Και τα τρία κείμενα υπάρχουν ήδη μεταφρασμένα.</div>
+
+  <ul>
+    <li>Μπαίνει <b>μία γραμμή</b> στην ομάδα «Γενικά», ακριβώς κάτω από το Buffer.</li>
+    <li>Ανοίγει το <b>ίδιο bottom sheet</b> που χρησιμοποιούν ήδη το Buffer, το μέγεθος και η γλώσσα υποτίτλων. Ίδιο σχήμα, ίδια radio buttons, ίδια συμπεριφορά.</li>
+    <li>Οι τρεις επιλογές είναι αυτές που ήδη υπάρχουν: <b>Αυτόματο</b>, <b>Εσωτερικός 1 (ExoPlayer)</b>, <b>Εσωτερικός 2 (VLC)</b>.</li>
+    <li>Καμία αλλαγή σε άλλη γραμμή, ομάδα, απόσταση, εικονίδιο ή στην τηλεόραση.</li>
+  </ul>
+
+  <div class="warn"><b>Γιατί το θέλουμε τώρα:</b> χωρίς αυτό δεν μπορείς να απομονώσεις ποια μηχανή φταίει όταν κάτι δεν παίζει. Με αυτό, μία εναλλαγή απαντά σε ερώτηση που αλλιώς κοστίζει build και logcat.</div>
+</div>
+
+<div>
+  <div class="phone">
+    <div class="top"><span class="b">←</span><span class="t">Ρυθμίσεις Player</span></div>
+    <div class="body">
+      <div class="grp">Γενικά</div>
+      <div class="row"><div class="l"><div class="n">Buffer</div></div><div class="v">Χαμηλό — γρήγορη αλλαγή καναλιού</div></div>
+      <div class="row new" id="open"><div class="l"><div class="n">Player αναπαραγωγής</div><div class="s">Αυτόματο fallback μεταξύ ExoPlayer και VLC</div></div><div class="v" id="cur">Αυτόματο</div></div>
+      <div class="tag">ΝΕΑ ΓΡΑΜΜΗ</div>
+
+      <div class="grp">Βίντεο</div>
+      <div class="row"><div class="l"><div class="n">Έναρξη με υπότιτλους</div></div><div class="sw"><i></i></div></div>
+      <div class="row"><div class="l"><div class="n">Μέγεθος υποτίτλων</div></div><div class="v">Μεσαίο</div></div>
+      <div class="row"><div class="l"><div class="n">Γλώσσα υποτίτλων</div></div><div class="v">Αυτόματα</div></div>
+      <div class="row"><div class="l"><div class="n">Λογαριασμός OpenSubtitles</div></div><div class="v">API key &amp; σύνδεση</div></div>
+
+      <div class="grp">Ήχος</div>
+      <div class="row"><div class="l"><div class="n">Προεπιλεγμένη γλώσσα ήχου</div></div><div class="v">Αυτόματα</div></div>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet">
+      <h4>Player αναπαραγωγής</h4>
+      <div class="opt sel" data-v="Αυτόματο"><div class="radio"></div><div><div class="lbl">Αυτόματο</div><div class="sub">1 → 2 αν χρειαστεί</div></div></div>
+      <div class="opt" data-v="Εσωτερικός 1"><div class="radio"></div><div><div class="lbl">Εσωτερικός 1 (ExoPlayer)</div></div></div>
+      <div class="opt" data-v="Εσωτερικός 2"><div class="radio"></div><div><div class="lbl">Εσωτερικός 2 (VLC)</div></div></div>
+    </div>
+  </div>
+  <div class="keys">Πάτα τη γραμμή με το διακεκομμένο πλαίσιο.</div>
+</div>
+
+<script>
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  const cur = document.getElementById('cur');
+  const open = () => { sheet.classList.add('on'); scrim.classList.add('on'); };
+  const close = () => { sheet.classList.remove('on'); scrim.classList.remove('on'); };
+  document.getElementById('open').onclick = open;
+  scrim.onclick = close;
+  document.querySelectorAll('.opt').forEach(o => o.onclick = () => {
+    document.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+    o.classList.add('sel');
+    cur.textContent = o.dataset.v;
+    setTimeout(close, 160);
+  });
+</script>
+</body>
+</html>

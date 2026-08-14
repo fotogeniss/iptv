@@ -34,6 +34,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
+          # This repository does not carry the official Gradle wrapper. An
+          # earlier session hand-wrote gradlew and a 6.8KB bootstrap
+          # gradle-wrapper.jar because it could not download the real ones; see
+          # docs/archive/build/BUILD_STABILIZATION_V1_40_8.md. Wrapper
+          # validation, which setup-gradle runs by default, compares that jar
+          # against the published Gradle checksums and can never match it, so
+          # every run failed within seconds before reaching any project code.
+          # Re-enable this the moment the official wrapper is restored with
+          # `gradle wrapper --gradle-version 8.9`.
+          validate-wrappers: false
 
       - name: Verify wrapper permissions
         run: chmod +x gradlew

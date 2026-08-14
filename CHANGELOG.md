@@ -5,6 +5,15 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- CI: disabled Gradle wrapper validation, which had been failing every run
+  within seconds and never reaching the project's own checks or build. The
+  repository carries a hand-written `gradlew` and a 6.8KB bootstrap
+  `gradle-wrapper.jar` added in 1.40.8 because the official files could not be
+  downloaded at the time; those can never match the published Gradle checksums
+  that `gradle/actions/setup-gradle` verifies by default. Restoring the real
+  wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
+  the validation be turned back on. No application code is affected.
+
 ## 1.75.0 - versionCode 147
 
 - Fixed the mini player still losing the picture for streams played by libVLC.
