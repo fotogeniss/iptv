@@ -21,6 +21,27 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.83.0 - versionCode 155
+
+- Reverted every change made to the playback surfaces between 1.71.0 and 1.82.0.
+  The owner still had 1.46.0 installed and confirmed that switching between the
+  full player and the strip is instant and correct there, which settles it: the
+  surface handling in that build is right and each later attempt made it worse.
+- Restored `PlaybackEngine`, `VlcBackend`, `PlayerVlcSurface`, `MobileMiniPlayer`
+  and `MobilePlaybackOverlay` to their last owner-verified state. The full player
+  and the strip each own their video surface again, as they always did, instead
+  of sharing one that is moved between them.
+- The shared surface introduced in 1.74.0 was the root of the regression for
+  libVLC. Moving one surface between layouts destroys it, libVLC does not
+  rebuild its output on its own, and every trigger tried afterwards was either
+  too early, too frequent or too expensive. Two independent surfaces never had
+  that problem.
+- Kept only the two accepted behaviours from that range that are unrelated to
+  surfaces: Back collapsing the player instead of ending playback, and the
+  slimmer scrubber. The QA readout added for the diagnosis is removed with the
+  rest.
+- Gradle was not run; the owner QA build is pending.
+
 ## 1.82.0 - versionCode 154
 
 - The libVLC video output is now rebuilt only when its surface has actually been

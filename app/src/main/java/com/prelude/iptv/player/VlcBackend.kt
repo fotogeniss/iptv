@@ -26,22 +26,6 @@ import org.videolan.libvlc.util.VLCVideoLayout
  * πρέπει. Δεν το κάνουμε εδώ γιατί το [PlaybackEngine] έχει ήδη `Handler` κύριου
  * νήματος και δύο μηχανισμοί θα ήταν ένας παραπάνω.
  */
-/**
- * ΤΟ LIBVLC ΖΩΓΡΑΦΙΖΕΙ ΣΕ SurfaceView. ΜΗΝ ΤΟ ΓΥΡΙΣΕΙΣ ΣΕ TextureView.
- *
- * Δοκιμάστηκε στο 1.78.0, με τη λογική ότι το ExoPlayer δουλεύει με TextureView.
- * Δεν διόρθωσε τη μαζεμένη λωρίδα ΚΑΙ χάλασε την τηλεόραση: πολλά ζωντανά
- * κανάλια έβγαζαν μόνο ήχο, με μαύρο μπροστά από την εικόνα.
- *
- * Η αιτία είναι ότι το `VLCVideoLayout` περιέχει ΚΑΙ SurfaceView ΚΑΙ
- * TextureView. Με ενεργό το δεύτερο, το πρώτο μένει στην ιεραρχία και, επειδή
- * ένα SurfaceView συντίθεται σε δικό του system layer, ζωγραφίζεται ΜΠΡΟΣΤΑ από
- * το βίντεο ως αδιαφανές μαύρο.
- *
- * Δες `docs/PLAYER_SURFACE_DECISIONS.md`.
- */
-private const val VLC_USE_TEXTURE_VIEW = false
-
 class VlcBackend(
     private val appContext: Context,
     /** Καλείται σε ΚΑΘΕ αλλαγή. Το νήμα δεν είναι εγγυημένα το κύριο. */
@@ -103,7 +87,7 @@ class VlcBackend(
         val existingPlayer = player ?: MediaPlayer(vlc).also { created ->
             player = created
             created.setEventListener(::onEvent)
-            attachedLayout?.let { created.attachViews(it, null, false, VLC_USE_TEXTURE_VIEW) }
+            attachedLayout?.let { created.attachViews(it, null, false, false) }
         }
 
         val media = Media(vlc, android.net.Uri.parse(url)).apply {
@@ -238,45 +222,13 @@ class VlcBackend(
         if (attachedLayout === layout) return
         detachLayout()
         attachedLayout = layout
-        player?.attachViews(layout, null, false, VLC_USE_TEXTURE_VIEW)
+        player?.attachViews(layout, null, false, false)
     }
 
     fun detachLayout() {
         if (attachedLayout == null) return
         player?.detachViews()
         attachedLayout = null
-    }
-
-    /**
-     * Αποσυνδέει ΜΟΝΟ αν το [layout] είναι ακόμη το ενεργό.
-     *
-     * ΓΙΑΤΙ ΥΠΑΡΧΕΙ: όταν ο player μαζεύεται σε λωρίδα, η νέα μικρή επιφάνεια
-     * προσαρτάται ΠΡΙΝ φύγει από τη σύνθεση η παλιά πλήρης — έτσι δουλεύει η
-     * σειρά του Compose. Η παλιά, φεύγοντας, καλούσε [detachLayout] χωρίς όρο
-     * και ξήλωνε την ΚΑΙΝΟΥΡΓΙΑ επιφάνεια: ο ήχος συνέχιζε, η εικόνα χανόταν.
-     * Το ExoPlayer μονοπάτι είχε ήδη αυτόν τον έλεγχο ταυτότητας
-     * ([PlaybackEngine.detachSurface])· το LibVLC δεν τον είχε ποτέ.
-     */
-    fun detachLayout(layout: VLCVideoLayout) {
-        if (attachedLayout !== layout) return
-        detachLayout()
-    }
-
-    /**
-     * Ξαναχτίζει την έξοδο πάνω στην ΙΔΙΑ επιφάνεια, παρακάμπτοντας τον έλεγχο
-     * ταυτότητας του [attachLayout].
-     *
-     * ΓΙΑΤΙ ΕΙΝΑΙ ΑΠΑΡΑΙΤΗΤΟ: όταν η View φεύγει από το παράθυρο —και αυτό
-     * ακριβώς κάνει το μάζεμα, αφού η επιφάνεια μετακομίζει σε άλλον γονέα— το
-     * σύστημα καταστρέφει την επιφάνειά της. Το LibVLC χάνει την έξοδό του και
-     * δεν την ξαναχτίζει μόνο του. Επειδή η ταυτότητα του layout δεν αλλάζει,
-     * το [attachLayout] επέστρεφε αμέσως και η έξοδος έμενε νεκρή για πάντα:
-     * μαύρο στη λωρίδα ΚΑΙ μαύρο όταν ο player ξαναμεγάλωνε.
-     */
-    fun reattachLayout(layout: VLCVideoLayout) {
-        detachLayout()
-        attachedLayout = layout
-        player?.attachViews(layout, null, false, VLC_USE_TEXTURE_VIEW)
     }
 
     // ---------------------------------------------------------------- γεγονότα

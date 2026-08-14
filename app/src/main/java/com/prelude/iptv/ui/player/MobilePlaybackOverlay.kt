@@ -99,35 +99,6 @@ fun MobilePlaybackOverlay(
     val subtitleApplyUnavailable = stringResource(R.string.player_subtitle_apply_unavailable)
     val engine = remember { PlaybackEngine(context.applicationContext) }
     val videoFrameCapture = remember { PlayerVideoFrameCapture() }
-    // ΜΙΑ ΕΠΙΦΑΝΕΙΑ, ΠΟΥ ΜΕΤΑΚΟΜΙΖΕΙ. ΔΕΝ ΦΤΙΑΧΝΕΤΑΙ ΔΕΥΤΕΡΗ.
-    //
-    // Πριν, η πλήρης οθόνη και η λωρίδα έφτιαχναν η καθεμιά το δικό της
-    // TextureView. Το μάζεμα σήμαινε «σκότωσε τη μία, φτιάξε την άλλη» πάνω σε
-    // player που έπαιζε: δύο επιφάνειες διεκδικούσαν την ίδια έξοδο βίντεο και
-    // το αποτέλεσμα κρεμόταν από τη σειρά με την οποία το Compose εφαρμόζει
-    // εισαγωγές και ακυρώσεις, από τον κύκλο ζωής του SurfaceTexture και από το
-    // αν ο codec δέχεται εναλλαγή εξόδου εν κινήσει. Όταν έχανε, ο ήχος
-    // συνέχιζε και η εικόνα χανόταν — ακριβώς το σύμπτωμα.
-    //
-    // Το [movableContentOf] μεταφέρει τους ΙΔΙΟΥΣ κόμβους από τον έναν γονέα
-    // στον άλλο. Το TextureView δεν καταστρέφεται ποτέ, η έξοδος του ExoPlayer
-    // δεν αλλάζει ποτέ, και δεν υπάρχει πια σειρά που να μπορεί να χαθεί.
-    val videoSurface = remember(engine, videoFrameCapture) {
-        movableContentOf { keepOn: Boolean, surfaceModifier: Modifier ->
-            PlayerVideoSurface(
-                engine = engine,
-                keepScreenOn = keepOn,
-                // Ίδιο TextureView σε πλήρη οθόνη και σε λωρίδα: συντίθεται στο
-                // ίδιο layer με το Compose UI και ακολουθεί σωστά resize,
-                // clipping και z-order. Το SurfaceView ζει σε ξεχωριστό system
-                // layer και σε ορισμένες συσκευές μένει πίσω από το μαύρο
-                // container.
-                preferSmoothResize = true,
-                frameCapture = videoFrameCapture,
-                modifier = surfaceModifier,
-            )
-        }
-    }
     val liveTransitionCoordinator = remember(engine, videoFrameCapture) {
         LiveChannelTransitionCoordinator(engine, videoFrameCapture)
     }
@@ -428,7 +399,6 @@ fun MobilePlaybackOverlay(
         Box(modifier.fillMaxSize()) {
             MobileMiniPlayer(
                 engine = engine,
-                video = { surfaceModifier -> videoSurface(state.playing, surfaceModifier) },
                 playing = state.playing,
                 title = title,
                 subtitle = subtitle,
@@ -514,9 +484,19 @@ fun MobilePlaybackOverlay(
                 contentAlignment = Alignment.Center,
             ) {
                 val fitByWidth = videoAspect >= containerAspect
-                videoSurface(
-                    state.playing,
-                    when (aspectMode) {
+                PlayerVideoSurface(
+                    engine = engine,
+                    keepScreenOn = state.playing,
+                    // The complete mobile page now moves during collapse and the
+                    // video remains inside the same opaque Compose layer. The
+                    // SurfaceView ζει σε ξεχωριστό system layer και σε ορισμένες
+                    // συσκευές μένει πίσω από το μαύρο container: ακούγεται ήχος
+                    // αλλά δεν φαίνεται εικόνα. Το TextureView συντίθεται στο
+                    // ίδιο layer με το Compose UI και ακολουθεί σωστά resize,
+                    // clipping και z-order.
+                    preferSmoothResize = true,
+                    frameCapture = videoFrameCapture,
+                    modifier = when (aspectMode) {
                         // Γεμίζει χωρίς να παραμορφώνει: η μεγαλύτερη διάσταση
                         // περισσεύει και κόβεται από το clipToBounds του container.
                         AspectMode.FILL -> if (fitByWidth) {
@@ -529,7 +509,7 @@ fun MobilePlaybackOverlay(
                         } else {
                             Modifier.fillMaxHeight().width(boxHeight * videoAspect)
                         }
-                    },
+                    }
                 )
             }
 
