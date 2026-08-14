@@ -21,6 +21,24 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.82.0 - versionCode 154
+
+- The libVLC video output is now rebuilt only when its surface has actually been
+  destroyed, instead of every time the surface changes size. The rebuild is a
+  full restart of the output, so triggering it on a plain resize made every
+  transition between the small and large player feel like the stream was
+  starting over, on the phone and on Android TV alike, in both directions.
+- On Android TV the surface is never destroyed by a resize, so those transitions
+  were paying the entire cost for nothing. They are now immediate again.
+- The surface holder reports exactly what matters: the output is rebuilt when
+  the surface is created again, and only if it had been destroyed first. This
+  replaces the size trigger, which fired too often, and the window-attach
+  trigger from 1.79.0, which fired before the surface existed.
+- The collapsed mobile player still reparents its surface, which genuinely
+  destroys it, so a live stream there still waits for its next keyframe. That
+  remaining delay is a separate problem and is not addressed here.
+- Gradle was not run; the owner QA build is pending.
+
 ## 1.81.0 - versionCode 153
 
 - Restored the surface-size trigger for rebuilding the libVLC output, which is

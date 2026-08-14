@@ -550,7 +550,7 @@ class PlaybackEngine(private val appContext: Context) {
 
     /** Ξαναχτίζει την έξοδο όταν η επιφάνεια ξαναμπαίνει στο παράθυρο. */
     fun reattachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
-        Log.d(SURFACE_TAG, "reattach VLCVideoLayout#${System.identityHashCode(layout)} μετά από αλλαγή μεγέθους")
+        Log.d(SURFACE_TAG, "reattach VLCVideoLayout#${System.identityHashCode(layout)} η επιφάνεια ξαναδημιουργήθηκε")
         vlc?.reattachLayout(layout)
     }
 
