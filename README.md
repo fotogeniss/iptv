@@ -3,7 +3,7 @@
 Native IPTV media player for Android phones, tablets and Android TV, built with
 Kotlin, Jetpack Compose, Media3/ExoPlayer and a libVLC fallback.
 
-> Current app version: **1.74.0** (`versionCode 146`)
+> Current app version: **1.75.0** (`versionCode 147`)
 
 Prelude+ is a player only. It does not provide channels, subscriptions or media.
 Users connect sources they are authorized to use.

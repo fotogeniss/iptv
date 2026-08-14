@@ -246,6 +246,23 @@ class VlcBackend(
         detachLayout()
     }
 
+    /**
+     * Ξαναδένει την ΙΔΙΑ επιφάνεια, επίτηδες παρακάμπτοντας τον έλεγχο του
+     * [attachLayout].
+     *
+     * ΓΙΑΤΙ ΧΡΕΙΑΖΕΤΑΙ: το `attachViews` ρυθμίζει την έξοδο για τις διαστάσεις
+     * που έχει η επιφάνεια ΕΚΕΙΝΗ ΤΗ ΣΤΙΓΜΗ. Όταν ο player μαζεύεται, η ίδια
+     * `VLCVideoLayout` πέφτει από πλήρη οθόνη σε 121x68dp — και επειδή είναι η
+     * ίδια, το `attachLayout` επέστρεφε αμέσως και το LibVLC δεν το μάθαινε
+     * ποτέ. Συνέχιζε να ζωγραφίζει σε γεωμετρία που δεν υπάρχει: ήχος ναι,
+     * εικόνα όχι.
+     */
+    fun reattachLayout(layout: VLCVideoLayout) {
+        detachLayout()
+        attachedLayout = layout
+        player?.attachViews(layout, null, false, false)
+    }
+
     // ---------------------------------------------------------------- γεγονότα
 
     private fun onEvent(event: MediaPlayer.Event) {

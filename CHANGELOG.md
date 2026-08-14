@@ -5,6 +5,26 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+## 1.75.0 - versionCode 147
+
+- Fixed the mini player still losing the picture for streams played by libVLC.
+  Bare MPEG-TS sources, which is most provider live TV and a large part of
+  provider VOD, are routed to libVLC by policy, so the defect survived the
+  1.74.0 shared-surface work while ExoPlayer content played correctly. That is
+  why the failure looked intermittent: it followed the stream, not the timing.
+- libVLC configures its video output for the surface dimensions it sees at
+  attach time, and the attach call deliberately ignores a surface it is already
+  bound to. Once the same surface was shared between the full screen and the
+  strip, its identity stopped changing, so libVLC was never told the surface had
+  dropped from full screen to 121x68dp and kept drawing to geometry that no
+  longer existed.
+- The libVLC surface now re-attaches when its measured size changes materially,
+  with a threshold so ordinary reflows do not rebuild the output. ExoPlayer is
+  unaffected; it handles the same resize through the shared surface without a
+  re-attach.
+- No layout, size, wording, gesture, icon or TV behavior changed. Gradle was not
+  run; the owner QA build is pending.
+
 ## 1.74.0 - versionCode 146
 
 - The collapsed mini player now keeps the picture because it no longer builds a

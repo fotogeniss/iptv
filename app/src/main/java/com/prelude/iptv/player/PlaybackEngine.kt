@@ -537,6 +537,12 @@ class PlaybackEngine(private val appContext: Context) {
         vlc?.attachLayout(layout)
     }
 
+    /** Ξαναδένει την ίδια επιφάνεια μετά από ουσιαστική αλλαγή μεγέθους. */
+    fun reattachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
+        Log.d(SURFACE_TAG, "reattach VLCVideoLayout#${System.identityHashCode(layout)} λόγω αλλαγής μεγέθους")
+        vlc?.reattachLayout(layout)
+    }
+
     /** Αποσυνδέει μόνο αν το [layout] είναι ακόμη το ενεργό. Δες [detachSurface]. */
     fun detachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
         Log.d(SURFACE_TAG, "detach VLCVideoLayout#${System.identityHashCode(layout)}")
