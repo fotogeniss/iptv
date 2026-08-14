@@ -1,10 +1,15 @@
 package com.prelude.iptv.ui.player
 
-import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import com.prelude.iptv.player.PlaybackEngine
 import org.videolan.libvlc.util.VLCVideoLayout
@@ -34,19 +39,36 @@ internal fun PlayerVlcSurface(
     modifier: Modifier = Modifier,
 ) {
     val layoutRef = remember { arrayOfNulls<VLCVideoLayout>(1) }
-    // Η ΕΞΟΔΟΣ ΞΑΝΑΧΤΙΖΕΤΑΙ ΟΤΑΝ Η VIEW ΞΑΝΑΜΠΑΙΝΕΙ ΣΤΟ ΠΑΡΑΘΥΡΟ.
+    // Η ΕΞΟΔΟΣ ΞΑΝΑΧΤΙΖΕΤΑΙ ΟΤΑΝ ΑΛΛΑΞΕΙ ΟΥΣΙΑΣΤΙΚΑ ΤΟ ΜΕΓΕΘΟΣ.
     //
-    // Το μάζεμα μετακομίζει την επιφάνεια σε άλλον γονέα. Στο επίπεδο του
-    // Android αυτό σημαίνει ότι η View βγαίνει από το παράθυρο και ξαναμπαίνει,
-    // και το σύστημα καταστρέφει την επιφάνειά της στο ενδιάμεσο. Το LibVLC
-    // χάνει την έξοδό του και ΔΕΝ την ξαναχτίζει μόνο του· επειδή η ταυτότητα
-    // του layout δεν αλλάζει, το `attachLayout` επέστρεφε αμέσως. Γι' αυτό το
-    // μαύρο δεν έφευγε ούτε όταν ο player ξαναμεγάλωνε — που ήταν και η
-    // παρατήρηση που έλυσε το πρόβλημα.
+    // Το μάζεμα μετακομίζει την επιφάνεια σε άλλον γονέα, το σύστημα καταστρέφει
+    // την επιφάνεια του SurfaceView στο ενδιάμεσο, και το LibVLC δεν ξαναχτίζει
+    // την έξοδό του μόνο του — η ταυτότητα του layout δεν αλλάζει, οπότε το
+    // `attachLayout` επιστρέφει αμέσως. Πρέπει να του το πούμε εμείς.
     //
-    // Το γεγονός προσάρτησης είναι ΑΚΡΙΒΕΣ: συμβαίνει τη στιγμή που η νέα
-    // επιφάνεια είναι έτοιμη. Οι προηγούμενες προσπάθειες μάντευαν την ίδια
-    // στιγμή από την αλλαγή μεγέθους, που είναι και αργότερα και όχι πάντα.
+    // ΓΙΑΤΙ ΜΕ ΤΟ ΜΕΓΕΘΟΣ ΚΑΙ ΟΧΙ ΜΕ ΤΟ `onViewAttachedToWindow`: το δεύτερο
+    // δοκιμάστηκε στο 1.79.0 και απέτυχε, με απόδειξη από logcat. Πυροδοτείται
+    // όταν μπαίνει η VIEW στο παράθυρο, αλλά η πραγματική επιφάνεια του
+    // SurfaceView δημιουργείται αργότερα και ασύγχρονα· το `attachViews`
+    // δενόταν στο κενό και δεν εμφανιζόταν ποτέ γραμμή `vout display` ή
+    // `decoder: output` στο log. Η αλλαγή μεγέθους έρχεται ΜΕΤΑ το layout, όταν
+    // η επιφάνεια υπάρχει, και είναι η μόνη σκανδάλη που έχει επιβεβαιωθεί στη
+    // συσκευή ότι επαναφέρει την εικόνα. Δες `docs/PLAYER_SURFACE_DECISIONS.md`.
+    var surfaceSize by remember { mutableStateOf(IntSize.Zero) }
+    val reattachedFor = remember { intArrayOf(0, 0) }
+    LaunchedEffect(surfaceSize, engine) {
+        val layout = layoutRef[0] ?: return@LaunchedEffect
+        if (surfaceSize.width <= 0 || surfaceSize.height <= 0) return@LaunchedEffect
+        val previousWidth = reattachedFor[0]
+        val previousHeight = reattachedFor[1]
+        val materiallyDifferent = previousWidth == 0 || previousHeight == 0 ||
+            kotlin.math.abs(surfaceSize.width - previousWidth) * 5 > previousWidth ||
+            kotlin.math.abs(surfaceSize.height - previousHeight) * 5 > previousHeight
+        if (!materiallyDifferent) return@LaunchedEffect
+        reattachedFor[0] = surfaceSize.width
+        reattachedFor[1] = surfaceSize.height
+        engine.reattachVlcLayout(layout)
+    }
     DisposableEffect(engine) {
         onDispose {
             // Χωρίς αποσύνδεση, το LibVLC κρατά αναφορά σε View που έφυγε από τη
@@ -61,18 +83,7 @@ internal fun PlayerVlcSurface(
 
     AndroidView(
         factory = { context ->
-            VLCVideoLayout(context).also { layout ->
-                layoutRef[0] = layout
-                layout.addOnAttachStateChangeListener(
-                    object : View.OnAttachStateChangeListener {
-                        override fun onViewAttachedToWindow(v: View) {
-                            engine.reattachVlcLayout(layout)
-                        }
-
-                        override fun onViewDetachedFromWindow(v: View) = Unit
-                    }
-                )
-            }
+            VLCVideoLayout(context).also { layoutRef[0] = it }
         },
         update = { layout ->
             engine.attachVlcLayout(layout)
@@ -81,6 +92,6 @@ internal fun PlayerVlcSurface(
             // τηλεχειριστήριο.
             layout.keepScreenOn = keepScreenOn
         },
-        modifier = modifier
+        modifier = modifier.onSizeChanged { surfaceSize = it }
     )
 }

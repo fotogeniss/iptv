@@ -21,6 +21,25 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.81.0 - versionCode 153
+
+- Restored the surface-size trigger for rebuilding the libVLC output, which is
+  the only trigger confirmed on a device to bring the picture back, and removed
+  the window-attach trigger introduced in 1.79.0.
+- Device logs settled it. On collapse the rebuild was called on time, but the
+  libVLC log showed no `vout display` and no `decoder: output` line afterwards,
+  while a normal channel start shows both. The view had entered the window, but
+  a SurfaceView's rendering surface is created later and asynchronously, so the
+  attach bound to a surface that did not exist yet. The size change arrives
+  after layout, when the surface is real.
+- The known cost returns with it: a live stream must reach its next keyframe
+  before the rebuilt output shows anything, so the strip can stay black for a
+  few seconds after collapsing. That is now the only remaining defect, and it is
+  a separate problem from the picture never returning at all.
+- The libVLC messages about unimplemented window requests and the missing
+  subtitles surface are normal for this configuration and are not related.
+- Gradle was not run; the owner QA build is pending.
+
 ## 1.80.0 - versionCode 152
 
 - Reverted the 1.78.0 change that made libVLC render into a TextureView. It did
