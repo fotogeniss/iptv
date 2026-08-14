@@ -21,6 +21,23 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.79.0 - versionCode 151
+
+- Rebuilt the libVLC video output at the moment its view re-enters the window,
+  which is what collapsing and expanding the player actually does to it. Moving
+  the shared surface to another parent takes the view out of the window and puts
+  it back, and the system destroys its rendering surface in between. libVLC
+  loses its output and does not rebuild it on its own, and because the layout's
+  identity never changes the ordinary attach call returned immediately, leaving
+  the output dead.
+- The decisive evidence was that the picture stayed black after expanding back
+  to full screen. That ruled out every size and geometry explanation: the fault
+  was never that the surface became small, it was that the output was gone.
+- Reacting to the window attach event replaces the earlier attempts to infer the
+  same moment from a size change, which fired later and not always.
+- No layout, size, wording, gesture, icon or TV behavior changed. Gradle was not
+  run; the owner QA build is pending.
+
 ## 1.78.0 - versionCode 150
 
 - libVLC now renders into a TextureView instead of a SurfaceView, which is the

@@ -22,8 +22,8 @@ android {
         applicationId = "com.prelude.iptv"
         minSdk = 26
         targetSdk = 35
-        versionCode = 150
-        versionName = "1.78.0"
+        versionCode = 151
+        versionName = "1.79.0"
         resourceConfigurations += listOf("en", "el")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // The in-app picker remains QA-only until every release surface has

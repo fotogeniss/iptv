@@ -548,6 +548,12 @@ class PlaybackEngine(private val appContext: Context) {
         vlc?.attachLayout(layout)
     }
 
+    /** Ξαναχτίζει την έξοδο όταν η επιφάνεια ξαναμπαίνει στο παράθυρο. */
+    fun reattachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
+        Log.d(SURFACE_TAG, "reattach VLCVideoLayout#${System.identityHashCode(layout)} ξαναμπήκε στο παράθυρο")
+        vlc?.reattachLayout(layout)
+    }
+
     /** Αποσυνδέει μόνο αν το [layout] είναι ακόμη το ενεργό. Δες [detachSurface]. */
     fun detachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
         Log.d(SURFACE_TAG, "detach VLCVideoLayout#${System.identityHashCode(layout)}")

@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.player
 
+import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -33,15 +34,19 @@ internal fun PlayerVlcSurface(
     modifier: Modifier = Modifier,
 ) {
     val layoutRef = remember { arrayOfNulls<VLCVideoLayout>(1) }
-    // ΤΟ RESIZE ΔΕΝ ΧΡΕΙΑΖΕΤΑΙ ΠΙΑ ΧΕΙΡΟΚΙΝΗΤΟ ΧΕΙΡΙΣΜΟ.
+    // Η ΕΞΟΔΟΣ ΞΑΝΑΧΤΙΖΕΤΑΙ ΟΤΑΝ Η VIEW ΞΑΝΑΜΠΑΙΝΕΙ ΣΤΟ ΠΑΡΑΘΥΡΟ.
     //
-    // Όσο το LibVLC ζωγράφιζε σε SurfaceView, η επιφάνεια είχε δική της
-    // γεωμετρία σε ξεχωριστό system layer και έπρεπε να ειδοποιηθεί ρητά όταν ο
-    // player μάζευε. Και οι δύο τρόποι που δοκιμάστηκαν είχαν κόστος: το
-    // ξαναδέσιμο περίμενε keyframe, τρία με τέσσερα δευτερόλεπτα μαύρο, και το
-    // σκέτο `setWindowSize` δεν επανέφερε καθόλου την εικόνα. Τώρα που το
-    // LibVLC ζωγραφίζει σε TextureView, το resize το χειρίζεται η ίδια η View,
-    // ακριβώς όπως στο ExoPlayer. Δες [VlcBackend].
+    // Το μάζεμα μετακομίζει την επιφάνεια σε άλλον γονέα. Στο επίπεδο του
+    // Android αυτό σημαίνει ότι η View βγαίνει από το παράθυρο και ξαναμπαίνει,
+    // και το σύστημα καταστρέφει την επιφάνειά της στο ενδιάμεσο. Το LibVLC
+    // χάνει την έξοδό του και ΔΕΝ την ξαναχτίζει μόνο του· επειδή η ταυτότητα
+    // του layout δεν αλλάζει, το `attachLayout` επέστρεφε αμέσως. Γι' αυτό το
+    // μαύρο δεν έφευγε ούτε όταν ο player ξαναμεγάλωνε — που ήταν και η
+    // παρατήρηση που έλυσε το πρόβλημα.
+    //
+    // Το γεγονός προσάρτησης είναι ΑΚΡΙΒΕΣ: συμβαίνει τη στιγμή που η νέα
+    // επιφάνεια είναι έτοιμη. Οι προηγούμενες προσπάθειες μάντευαν την ίδια
+    // στιγμή από την αλλαγή μεγέθους, που είναι και αργότερα και όχι πάντα.
     DisposableEffect(engine) {
         onDispose {
             // Χωρίς αποσύνδεση, το LibVLC κρατά αναφορά σε View που έφυγε από τη
@@ -56,7 +61,18 @@ internal fun PlayerVlcSurface(
 
     AndroidView(
         factory = { context ->
-            VLCVideoLayout(context).also { layoutRef[0] = it }
+            VLCVideoLayout(context).also { layout ->
+                layoutRef[0] = layout
+                layout.addOnAttachStateChangeListener(
+                    object : View.OnAttachStateChangeListener {
+                        override fun onViewAttachedToWindow(v: View) {
+                            engine.reattachVlcLayout(layout)
+                        }
+
+                        override fun onViewDetachedFromWindow(v: View) = Unit
+                    }
+                )
+            }
         },
         update = { layout ->
             engine.attachVlcLayout(layout)
