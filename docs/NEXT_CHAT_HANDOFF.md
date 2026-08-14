@@ -1,9 +1,10 @@
 # Prelude+ next-chat handoff
 
-- **Date:** 2026-08-13
+- **Date:** 2026-08-14
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `main` · **HEAD:** `2e04e97` is the owner-built 1.66.0 exact-preview correction; verify with `git log --oneline -5`
-- **Version on disk:** 1.69.0 (`versionCode 141`) · six-warning cleanup pending owner build
+- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `e9ad793` (1.78.0). `main` is still at `2e04e97` (1.66.0) on purpose — verify with `git log --oneline -5` and `git branch`
+- **Remote:** `https://github.com/fotogeniss/iptv` (private). CI runs on pushes to `main` and on pull requests
+- **Version on disk:** 1.78.0 (`versionCode 150`)
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -19,6 +20,50 @@ for every change; this document does not repeat it. What lives here is the
 reasoning, the open questions and the traps that the changelog does not carry.
 
 ## 0. START HERE — state, what is open, what to do first
+
+### 2026-08-14 — where things actually stand
+
+**The versions are on a branch, not on `main`.** `qa/1.73.0-pending-build`
+carries 1.67.0 → 1.78.0. `main` deliberately still holds only owner-verified
+code. Fast-forward `main` only after the device checks below pass.
+
+**Confirmed on device:** hero slider on Home/Movies/Series, Back collapsing the
+player, the slim scrubber, and the mini player showing picture for both
+recorded video and live channels as of 1.76.0. **Not yet confirmed:** 1.78.0
+itself, which is the libVLC TextureView fix — the live strip must show picture
+immediately, with no three-second gap.
+
+**The mini player defect has its own document.** Read
+`docs/PLAYER_SURFACE_DECISIONS.md` before touching any playback surface. It
+records the rule (both engines render into a `TextureView`, never a
+`SurfaceView`), the QA readout that measures the problem in one photograph, and
+the four attempts that were tried and why three of them were wrong. That
+sequence cost six owner builds. Do not repeat it.
+
+**A QA-only readout is still in `MobileMiniPlayer`**, gated on
+`BuildConfig.PREMIUM_QA_OVERRIDE`. Remove it, and
+`PlaybackEngine.attachedSurfaceLabel()`, once the strip is confirmed.
+
+**CI was failing in nine seconds for reasons unrelated to any code.**
+`gradle/actions/setup-gradle` validates the Gradle wrapper checksum by default,
+and this repository carries a hand-written `gradlew` plus a 6.8KB bootstrap
+`gradle-wrapper.jar` added in 1.40.8 because the official files could not be
+downloaded then. Validation is disabled in the workflow with a comment. The real
+fix is `gradle wrapper --gradle-version 8.9` on the owner's machine, after which
+the validation should be turned back on.
+
+**One preview is waiting for approval:**
+`prototypes/mobile_player_engine_setting.html` adds the engine picker to the
+mobile settings. The dialog already exists in `SettingsPlaybackDialogs.kt` but is
+only reachable from Android TV, so on a phone the engine cannot be changed and a
+whole class of playback problems cannot be isolated. No production code has been
+written for it.
+
+**Environment note that keeps recurring:** git writes from the sandbox leave
+`.git/HEAD.lock`, `.git/index.lock` and `.git/objects/maintenance.lock` behind,
+and that environment cannot delete files. They are moved into `_to_delete/`
+instead; that folder is untracked and safe to delete from Windows.
+
 
 ### STOP — authorization is exact, never inferred
 

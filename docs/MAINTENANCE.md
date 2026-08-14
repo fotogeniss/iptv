@@ -65,6 +65,10 @@ public policy matches runtime behavior.
 - `README.md`: concise, current product and contributor entry point.
 - `CHANGELOG.md`: concise user-visible release history.
 - `docs/`: current detailed technical documentation.
+- `docs/PLAYER_SURFACE_DECISIONS.md`: why both playback engines must render into
+  a `TextureView`, how to measure a sound-without-picture report in one
+  photograph, and which fixes for it were tried and rejected. Read it before
+  changing any playback surface.
 - `docs/PRIVACY_POLICY.md`: release privacy source; publish the approved content
   to the public policy URL and expose it in-app.
 - `docs/PLAY_DATA_SAFETY.md`: code-audited worksheet for the Play Console form.

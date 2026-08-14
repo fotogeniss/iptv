@@ -5,6 +5,13 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
+- Documentation: added `docs/PLAYER_SURFACE_DECISIONS.md`, recording why the
+  mini player played sound without picture, the rule that both engines render
+  into a `TextureView`, the QA readout that measures the fault in one
+  photograph, and the four attempted fixes with the reason three of them were
+  wrong. Corrected the stale header and state in the next-session handoff, which
+  still described 1.69.0 and the wrong HEAD.
+
 - CI: disabled Gradle wrapper validation, which had been failing every run
   within seconds and never reaching the project's own checks or build. The
   repository carries a hand-written `gradlew` and a 6.8KB bootstrap
