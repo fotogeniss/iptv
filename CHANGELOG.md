@@ -14,6 +14,22 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.77.0 - versionCode 149
+
+- Removed the three to four second black gap before live channels reappeared in
+  the mini player. The 1.75.0 fix told libVLC about the smaller surface by
+  tearing the video output down and rebuilding it, and a live MPEG-TS stream
+  cannot resume until the next keyframe, so the strip sat black for a whole
+  group of pictures. Recorded VOD did not show it because it resumes from the
+  current position.
+- The surface change is now reported with a window-size update on the live
+  output instead, which does not touch the decoder, so the picture continues
+  without a break. The full re-attach is kept only as a safety net: if libVLC
+  reports no active video output shortly after the resize, the old path runs so
+  the strip can never be left permanently black.
+- No layout, size, wording, gesture, icon or TV behavior changed. Gradle was not
+  run; the owner QA build is pending.
+
 ## 1.76.0 - versionCode 148
 
 - Added a temporary QA-only readout inside the mini player's video area,

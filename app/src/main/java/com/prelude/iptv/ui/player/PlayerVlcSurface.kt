@@ -12,6 +12,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import com.prelude.iptv.player.PlaybackEngine
+import kotlinx.coroutines.delay
 import org.videolan.libvlc.util.VLCVideoLayout
 
 /**
@@ -62,7 +63,17 @@ internal fun PlayerVlcSurface(
         if (!materiallyDifferent) return@LaunchedEffect
         reattachedFor[0] = surfaceSize.width
         reattachedFor[1] = surfaceSize.height
-        engine.reattachVlcLayout(layout)
+        // ΠΡΩΤΑ Ο ΦΘΗΝΟΣ ΔΡΟΜΟΣ. Ενημερώνει τη γεωμετρία της ζωντανής εξόδου και
+        // δεν ακουμπά τον αποκωδικοποιητή, οπότε η εικόνα δεν κόβεται καθόλου.
+        engine.updateVlcWindowSize(surfaceSize.width, surfaceSize.height)
+        // ΔΙΧΤΥ ΑΣΦΑΛΕΙΑΣ. Αν μετά από αυτό το LibVLC δηλώνει ότι δεν έχει έξοδο
+        // βίντεο, τότε το σκέτο resize δεν έφτασε και ξαναδένουμε κανονικά. Το
+        // ξαναδέσιμο κοστίζει την αναμονή για keyframe, γι' αυτό είναι εφεδρεία
+        // και όχι ο κανονικός δρόμος.
+        delay(1_200)
+        if (!engine.vlcVideoOutputActive()) {
+            engine.reattachVlcLayout(layout)
+        }
     }
 
     DisposableEffect(engine) {
