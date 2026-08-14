@@ -548,21 +548,6 @@ class PlaybackEngine(private val appContext: Context) {
         vlc?.attachLayout(layout)
     }
 
-    /** Ενημερώνει τη γεωμετρία της ζωντανής εξόδου, χωρίς ξήλωμα. Δες [reattachVlcLayout]. */
-    fun updateVlcWindowSize(width: Int, height: Int) {
-        Log.d(SURFACE_TAG, "vlc window size -> ${width}x$height")
-        vlc?.updateWindowSize(width, height)
-    }
-
-    /** true όσο το LibVLC αναφέρει ενεργή έξοδο βίντεο. Δίχτυ ασφαλείας, όχι απόφαση. */
-    fun vlcVideoOutputActive(): Boolean = vlcFrameWasRendered
-
-    /** Ξαναδένει την ίδια επιφάνεια μετά από ουσιαστική αλλαγή μεγέθους. */
-    fun reattachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
-        Log.d(SURFACE_TAG, "reattach VLCVideoLayout#${System.identityHashCode(layout)} λόγω αλλαγής μεγέθους")
-        vlc?.reattachLayout(layout)
-    }
-
     /** Αποσυνδέει μόνο αν το [layout] είναι ακόμη το ενεργό. Δες [detachSurface]. */
     fun detachVlcLayout(layout: org.videolan.libvlc.util.VLCVideoLayout) {
         Log.d(SURFACE_TAG, "detach VLCVideoLayout#${System.identityHashCode(layout)}")

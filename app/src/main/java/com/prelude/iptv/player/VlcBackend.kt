@@ -26,6 +26,24 @@ import org.videolan.libvlc.util.VLCVideoLayout
  * πρέπει. Δεν το κάνουμε εδώ γιατί το [PlaybackEngine] έχει ήδη `Handler` κύριου
  * νήματος και δύο μηχανισμοί θα ήταν ένας παραπάνω.
  */
+/**
+ * ΤΟ LIBVLC ΖΩΓΡΑΦΙΖΕΙ ΣΕ TextureView, ΟΠΩΣ ΚΑΙ ΤΟ EXOPLAYER.
+ *
+ * Αυτό είναι όλη η διαφορά ανάμεσα στις ταινίες, που δούλευαν πάντα, και στα
+ * ζωντανά, που έβγαζαν ήχο χωρίς εικόνα μέσα στη μαζεμένη λωρίδα.
+ *
+ * Το `SurfaceView` ζει σε ΞΕΧΩΡΙΣΤΟ system layer, με δική του γεωμετρία που δεν
+ * ακολουθεί το resize, το clipping και το z-order του Compose. Όταν ο player
+ * μάζευε σε 121x68dp, η επιφάνεια έμενε στη γεωμετρία της πλήρους οθόνης και
+ * δεν φαινόταν τίποτα. Το `TextureView` συντίθεται στο ΙΔΙΟ layer με το
+ * υπόλοιπο UI και ακολουθεί σωστά όλα τα παραπάνω.
+ *
+ * Το ίδιο συμπέρασμα είχε ήδη καταγραφεί για το ExoPlayer στο
+ * [com.prelude.iptv.ui.player.PlayerVideoSurface] («ακούγεται ήχος αλλά δεν
+ * φαίνεται εικόνα») — απλώς δεν είχε εφαρμοστεί ποτέ και στο LibVLC.
+ */
+private const val VLC_USE_TEXTURE_VIEW = true
+
 class VlcBackend(
     private val appContext: Context,
     /** Καλείται σε ΚΑΘΕ αλλαγή. Το νήμα δεν είναι εγγυημένα το κύριο. */
@@ -87,7 +105,7 @@ class VlcBackend(
         val existingPlayer = player ?: MediaPlayer(vlc).also { created ->
             player = created
             created.setEventListener(::onEvent)
-            attachedLayout?.let { created.attachViews(it, null, false, false) }
+            attachedLayout?.let { created.attachViews(it, null, false, VLC_USE_TEXTURE_VIEW) }
         }
 
         val media = Media(vlc, android.net.Uri.parse(url)).apply {
@@ -222,7 +240,7 @@ class VlcBackend(
         if (attachedLayout === layout) return
         detachLayout()
         attachedLayout = layout
-        player?.attachViews(layout, null, false, false)
+        player?.attachViews(layout, null, false, VLC_USE_TEXTURE_VIEW)
     }
 
     fun detachLayout() {
@@ -244,38 +262,6 @@ class VlcBackend(
     fun detachLayout(layout: VLCVideoLayout) {
         if (attachedLayout !== layout) return
         detachLayout()
-    }
-
-    /**
-     * Λέει στην έξοδο βίντεο ότι το παράθυρο άλλαξε μέγεθος, ΧΩΡΙΣ να ξηλώσει
-     * τίποτα.
-     *
-     * ΓΙΑΤΙ ΟΧΙ [reattachLayout]: το ξαναδέσιμο σβήνει και ξαναχτίζει την έξοδο,
-     * και μια ζωντανή ροή MPEG-TS δεν μπορεί να ξαναρχίσει παρά μόνο στο επόμενο
-     * keyframe — τρία με τέσσερα δευτερόλεπτα μαύρο, που ο ιδιοκτήτης σωστά
-     * απέρριψε. Το `setWindowSize` ενημερώνει τη γεωμετρία πάνω στην ήδη ζωντανή
-     * έξοδο και δεν ακουμπά τον αποκωδικοποιητή.
-     */
-    fun updateWindowSize(width: Int, height: Int) {
-        if (width <= 0 || height <= 0) return
-        runCatching { player?.vlcVout?.setWindowSize(width, height) }
-    }
-
-    /**
-     * Ξαναδένει την ΙΔΙΑ επιφάνεια, επίτηδες παρακάμπτοντας τον έλεγχο του
-     * [attachLayout].
-     *
-     * ΓΙΑΤΙ ΧΡΕΙΑΖΕΤΑΙ: το `attachViews` ρυθμίζει την έξοδο για τις διαστάσεις
-     * που έχει η επιφάνεια ΕΚΕΙΝΗ ΤΗ ΣΤΙΓΜΗ. Όταν ο player μαζεύεται, η ίδια
-     * `VLCVideoLayout` πέφτει από πλήρη οθόνη σε 121x68dp — και επειδή είναι η
-     * ίδια, το `attachLayout` επέστρεφε αμέσως και το LibVLC δεν το μάθαινε
-     * ποτέ. Συνέχιζε να ζωγραφίζει σε γεωμετρία που δεν υπάρχει: ήχος ναι,
-     * εικόνα όχι.
-     */
-    fun reattachLayout(layout: VLCVideoLayout) {
-        detachLayout()
-        attachedLayout = layout
-        player?.attachViews(layout, null, false, false)
     }
 
     // ---------------------------------------------------------------- γεγονότα

@@ -14,6 +14,27 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.78.0 - versionCode 150
+
+- libVLC now renders into a TextureView instead of a SurfaceView, which is the
+  single difference that made recorded video work in the mini player while live
+  channels showed sound without picture. A SurfaceView lives in its own system
+  layer with its own geometry and does not follow the resize, clipping and
+  z-order of the surrounding UI, so when the player collapsed to 121x68dp the
+  output stayed at full-screen geometry and nothing was visible. A TextureView
+  composites in the same layer as the rest of the interface and follows all
+  three, exactly as the ExoPlayer path already did.
+- The project had already reached this conclusion for ExoPlayer and recorded it
+  in the surface composable, in the same words: sound is heard but no picture is
+  seen. It had simply never been applied to libVLC.
+- Removed both earlier workarounds for the same symptom. Re-attaching the output
+  on resize worked but forced a live stream to wait for the next keyframe, which
+  is the three to four second gap; reporting the new window size alone did not
+  restore the picture at all. Neither is needed once the surface follows the
+  layout by itself.
+- No layout, size, wording, gesture, icon or TV behavior changed. Gradle was not
+  run; the owner QA build is pending.
+
 ## 1.77.0 - versionCode 149
 
 - Removed the three to four second black gap before live channels reappeared in
