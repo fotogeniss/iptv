@@ -11,8 +11,15 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -21,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.BuildConfig
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
@@ -82,16 +90,41 @@ internal fun MobileMiniPlayer(
             .pointerInput(Unit) { detectTapGestures { onExpand() } },
         verticalAlignment = Alignment.CenterVertically
     ) {
+        var videoBoxSize by remember { mutableStateOf(IntSize.Zero) }
         Box(
             Modifier
                 .width(MiniPlayerHeight * 16f / 9f)
                 .fillMaxHeight()
-                .background(Color.Black),
+                .background(Color.Black)
+                .onSizeChanged { videoBoxSize = it },
             contentAlignment = Alignment.Center
         ) {
             // Και μαζεμένος, ο χρήστης ΒΛΕΠΕΙ. Δεν είναι αφίσα: είναι η ίδια
             // ζωντανή επιφάνεια, απλώς σε 121x68dp.
             video(Modifier.fillMaxSize())
+            // ΠΡΟΣΩΡΙΝΟ ΔΙΑΓΝΩΣΤΙΚΟ, ΜΟΝΟ ΣΤΟ QA BUILD.
+            //
+            // Η λωρίδα βγάζει ήχο χωρίς εικόνα και το ιστορικό δεν έχει τι να
+            // δείξει: ο κώδικας είναι ίδιος με το πρώτο commit. Αυτό μετατρέπει
+            // μια φωτογραφία της οθόνης σε μέτρηση — ποια μηχανή παίζει, πόσο
+            // μεγάλη είναι η επιφάνεια, ποια επιφάνεια είναι δεμένη, και κυρίως
+            // αν έχει έρθει έστω ένα καρέ σε αυτήν. Φεύγει μόλις βρεθεί η αιτία.
+            if (BuildConfig.PREMIUM_QA_OVERRIDE) {
+                val renderer by engine.renderer.collectAsState()
+                val engineState by engine.state.collectAsState()
+                Text(
+                    listOf(
+                        "$renderer f=${engineState.renderedFrames}",
+                        "${videoBoxSize.width}x${videoBoxSize.height}",
+                        "${engine.attachedSurfaceLabel()} ar=${"%.2f".format(engineState.videoAspect)}",
+                    ).joinToString("\n"),
+                    color = Color(0xFFFFD54F),
+                    fontSize = 7.sp,
+                    lineHeight = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 3.dp),
+                )
+            }
         }
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
             Text(

@@ -14,6 +14,27 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.76.0 - versionCode 148
+
+- Added a temporary QA-only readout inside the mini player's video area,
+  showing the active engine, the frame counter for the current surface, the
+  measured surface size, the identity of the attached surface and the reported
+  aspect ratio. It is gated on the QA build flag and never reaches a public
+  release.
+- Its purpose is to end the guessing about the strip playing sound without
+  picture. Git history cannot help: the mini player, the engine's surface
+  attach/detach and the surface composable are byte-identical to this
+  repository's root commit, and the earlier uncommitted work never touched the
+  player. A photograph of the strip now answers the question that three builds
+  of reasoning could not.
+- The frame counter is the decisive value. It increments each time the current
+  surface renders its first frame, so `f=0` means no frame ever reached the
+  strip's surface, while a non-zero count with a black strip means frames
+  arrive and something above them is hiding the picture. Those two answers need
+  opposite fixes.
+- Nothing else changed, and the readout will be removed once the cause is
+  found. Gradle was not run; the owner QA build is pending.
+
 ## 1.75.0 - versionCode 147
 
 - Fixed the mini player still losing the picture for streams played by libVLC.

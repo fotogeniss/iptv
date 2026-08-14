@@ -428,6 +428,17 @@ class PlaybackEngine(private val appContext: Context) {
         )
     }
 
+    /**
+     * Σύντομη ταυτότητα της ενεργής επιφάνειας, ΜΟΝΟ για το διαγνωστικό του QA.
+     *
+     * Δεν το διαβάζει καμία απόφαση αναπαραγωγής· υπάρχει για να απαντηθεί με
+     * ένα screenshot το «σε ποια επιφάνεια ζωγραφίζει τώρα».
+     */
+    fun attachedSurfaceLabel(): String = when (val current = surface) {
+        null -> "—"
+        else -> "${current.javaClass.simpleName.take(4)}#${System.identityHashCode(current) % 10000}"
+    }
+
     /** Detaches only if [view] is still the active surface. */
     fun detachSurface(view: TextureView) {
         if (surface !== view) {
