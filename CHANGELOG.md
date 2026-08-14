@@ -21,6 +21,25 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.80.0 - versionCode 152
+
+- Reverted the 1.78.0 change that made libVLC render into a TextureView. It did
+  not fix the collapsed mini player and it broke Android TV, where many live
+  channels played sound with an opaque black surface drawn in front of the
+  picture.
+- The cause is that libVLC's video layout contains both a SurfaceView and a
+  TextureView. Selecting the TextureView leaves the SurfaceView in the view
+  hierarchy, and a SurfaceView composites in its own system layer, so it is
+  painted in front of the video as solid black. Television was the visible
+  victim because it plays live channels almost exclusively.
+- libVLC renders into a SurfaceView again, which is the arrangement Android TV
+  has always worked with. The 1.79.0 output rebuild on window re-attach is kept:
+  it is independent of the surface type and is the correct trigger for the
+  collapsed player losing its output.
+- The mini player remains unresolved for libVLC streams and is being diagnosed
+  from device evidence rather than further changes. Gradle was not run; the
+  owner QA build is pending.
+
 ## 1.79.0 - versionCode 151
 
 - Rebuilt the libVLC video output at the moment its view re-enters the window,

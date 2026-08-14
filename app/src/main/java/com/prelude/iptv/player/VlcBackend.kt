@@ -27,22 +27,20 @@ import org.videolan.libvlc.util.VLCVideoLayout
  * νήματος και δύο μηχανισμοί θα ήταν ένας παραπάνω.
  */
 /**
- * ΤΟ LIBVLC ΖΩΓΡΑΦΙΖΕΙ ΣΕ TextureView, ΟΠΩΣ ΚΑΙ ΤΟ EXOPLAYER.
+ * ΤΟ LIBVLC ΖΩΓΡΑΦΙΖΕΙ ΣΕ SurfaceView. ΜΗΝ ΤΟ ΓΥΡΙΣΕΙΣ ΣΕ TextureView.
  *
- * Αυτό είναι όλη η διαφορά ανάμεσα στις ταινίες, που δούλευαν πάντα, και στα
- * ζωντανά, που έβγαζαν ήχο χωρίς εικόνα μέσα στη μαζεμένη λωρίδα.
+ * Δοκιμάστηκε στο 1.78.0, με τη λογική ότι το ExoPlayer δουλεύει με TextureView.
+ * Δεν διόρθωσε τη μαζεμένη λωρίδα ΚΑΙ χάλασε την τηλεόραση: πολλά ζωντανά
+ * κανάλια έβγαζαν μόνο ήχο, με μαύρο μπροστά από την εικόνα.
  *
- * Το `SurfaceView` ζει σε ΞΕΧΩΡΙΣΤΟ system layer, με δική του γεωμετρία που δεν
- * ακολουθεί το resize, το clipping και το z-order του Compose. Όταν ο player
- * μάζευε σε 121x68dp, η επιφάνεια έμενε στη γεωμετρία της πλήρους οθόνης και
- * δεν φαινόταν τίποτα. Το `TextureView` συντίθεται στο ΙΔΙΟ layer με το
- * υπόλοιπο UI και ακολουθεί σωστά όλα τα παραπάνω.
+ * Η αιτία είναι ότι το `VLCVideoLayout` περιέχει ΚΑΙ SurfaceView ΚΑΙ
+ * TextureView. Με ενεργό το δεύτερο, το πρώτο μένει στην ιεραρχία και, επειδή
+ * ένα SurfaceView συντίθεται σε δικό του system layer, ζωγραφίζεται ΜΠΡΟΣΤΑ από
+ * το βίντεο ως αδιαφανές μαύρο.
  *
- * Το ίδιο συμπέρασμα είχε ήδη καταγραφεί για το ExoPlayer στο
- * [com.prelude.iptv.ui.player.PlayerVideoSurface] («ακούγεται ήχος αλλά δεν
- * φαίνεται εικόνα») — απλώς δεν είχε εφαρμοστεί ποτέ και στο LibVLC.
+ * Δες `docs/PLAYER_SURFACE_DECISIONS.md`.
  */
-private const val VLC_USE_TEXTURE_VIEW = true
+private const val VLC_USE_TEXTURE_VIEW = false
 
 class VlcBackend(
     private val appContext: Context,
