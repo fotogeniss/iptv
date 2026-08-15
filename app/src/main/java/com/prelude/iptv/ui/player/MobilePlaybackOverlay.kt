@@ -392,11 +392,54 @@ fun MobilePlaybackOverlay(
         if (expanded) expanded = false else collapsed = true
     }
 
-    if (collapsed) {
-        // ΔΙΑΦΑΝΟ ΚΑΙ ΧΩΡΙΣ ΧΕΙΡΟΝΟΜΙΕΣ: ένα Box που δεν έχει gesture modifier δεν
-        // καταναλώνει αγγίγματα, οπότε περνούν στη λίστα από κάτω. Αν έβαζε
-        // background ή pointerInput, η οθόνη θα έμοιαζε ζωντανή αλλά θα ήταν νεκρή.
-        Box(modifier.fillMaxSize()) {
+    // Πλήρης οθόνη = ΓΥΡΙΣΜΑ της συσκευής, όχι μεγαλύτερο κουτί. Δες
+    // [FullscreenEffect] για το γιατί το δεύτερο δεν κάνει τίποτα σε 16:9 βίντεο.
+    FullscreenEffect(active = expanded && !collapsed)
+
+    BoxWithConstraints(
+        // ΜΑΖΕΜΕΝΟΣ: διάφανο και χωρίς χειρονομίες, ώστε τα αγγίγματα να περνούν
+        // στη σελίδα από κάτω. ΑΛΛΑ ΤΟ ΙΔΙΟ ΔΕΝΤΡΟ, ΠΑΝΤΑ: η επιφάνεια του βίντεο
+        // ζει μέσα σε αυτό. Αν έφευγε από τη σύνθεση, το libVLC θα έχανε την έξοδό
+        // του και δεν θα την ξανάχτιζε ποτέ — ήχος χωρίς εικόνα.
+        if (collapsed) {
+            modifier.fillMaxSize()
+        } else {
+            modifier
+                .fillMaxSize()
+                // The player is a page, not a loose video rectangle. During the
+                // downward gesture the video, title, metadata, seasons and episodes
+                // travel together, revealing the browse screen underneath. Once the
+                // threshold is crossed only the strip's geometry is left.
+                .graphicsLayer {
+                    translationY = renderedPageDragY
+                    val progress = (
+                        renderedPageDragY / (size.height.coerceAtLeast(1f) * .55f)
+                    ).coerceIn(0f, 1f)
+                    val pageScale = 1f - progress * .035f
+                    scaleX = pageScale
+                    scaleY = pageScale
+                    transformOrigin = TransformOrigin(.5f, 0f)
+                    shape = RoundedCornerShape(22.dp)
+                    clip = progress > .01f
+                    shadowElevation = if (progress > .01f) 18.dp.toPx() else 0f
+                }
+                .background(Color.Black)
+                // ΤΟ ΜΑΥΡΟ ΔΕΝ ΠΙΑΝΕΙ ΑΓΓΙΓΜΑΤΑ ΜΟΝΟ ΤΟΥ. Χωρίς αυτό, τα πατήματα
+                // κάτω από τον τίτλο περνούσαν στην προηγούμενη οθόνη και άνοιγαν
+                // αόρατες κάρτες.
+                .consumeAllTouches()
+        }
+    ) {
+        // YouTube συμπεριφορά: ο player είναι ξεχωριστό ανώτερο layer. Το
+        // περιεχόμενο κυλά κάτω από αυτόν αντί να τον παρασύρει μαζί του.
+        val stickyPlayerHeight = if (expanded) maxHeight else maxWidth / (16f / 9f)
+
+        // Η ΛΩΡΙΔΑ, ΧΩΡΙΣ ΤΗΝ ΕΙΚΟΝΑ ΤΗΣ.
+        //
+        // Ζωγραφίζεται ΠΡΙΝ το κουτί του βίντεο, ώστε να μένει από κάτω του. Κρατά
+        // μόνο τα δικά της χειριστήρια και αφήνει την τρύπα 121x68 στα αριστερά,
+        // όπου κάθεται η μία και μόνη επιφάνεια.
+        if (collapsed) {
             MobileMiniPlayer(
                 engine = engine,
                 playing = state.playing,
@@ -412,52 +455,37 @@ fun MobilePlaybackOverlay(
                     .padding(bottom = dockBottomPadding)
             )
         }
-        return
-    }
 
-    // Πλήρης οθόνη = ΓΥΡΙΣΜΑ της συσκευής, όχι μεγαλύτερο κουτί. Δες
-    // [FullscreenEffect] για το γιατί το δεύτερο δεν κάνει τίποτα σε 16:9 βίντεο.
-    FullscreenEffect(active = expanded)
-
-    BoxWithConstraints(
-        modifier
-            .fillMaxSize()
-            // The player is a page, not a loose video rectangle. During the
-            // downward gesture the video, title, metadata, seasons and episodes
-            // travel together, revealing the browse screen underneath. Once the
-            // threshold is crossed the layout is replaced by MobileMiniPlayer.
-            .graphicsLayer {
-                translationY = renderedPageDragY
-                val progress = (
-                    renderedPageDragY / (size.height.coerceAtLeast(1f) * .55f)
-                ).coerceIn(0f, 1f)
-                val pageScale = 1f - progress * .035f
-                scaleX = pageScale
-                scaleY = pageScale
-                transformOrigin = TransformOrigin(.5f, 0f)
-                shape = RoundedCornerShape(22.dp)
-                clip = progress > .01f
-                shadowElevation = if (progress > .01f) 18.dp.toPx() else 0f
-            }
-            .background(Color.Black)
-            // ΤΟ ΜΑΥΡΟ ΔΕΝ ΠΙΑΝΕΙ ΑΓΓΙΓΜΑΤΑ ΜΟΝΟ ΤΟΥ. Χωρίς αυτό, τα πατήματα
-            // κάτω από τον τίτλο περνούσαν στην προηγούμενη οθόνη και άνοιγαν
-            // αόρατες κάρτες.
-            .consumeAllTouches()
-    ) {
-        // YouTube συμπεριφορά: ο player είναι ξεχωριστό ανώτερο layer. Το
-        // περιεχόμενο κυλά κάτω από αυτόν αντί να τον παρασύρει μαζί του.
-        val stickyPlayerHeight = if (expanded) maxHeight else maxWidth / (16f / 9f)
-        val playerModifier = (if (expanded) Modifier.fillMaxSize()
+        val playerModifier = (when {
+            // ΜΑΖΕΜΕΝΟΣ: ΙΔΙΟ ΚΟΥΤΙ, ΑΛΛΗ ΓΕΩΜΕΤΡΙΑ.
+            //
+            // Πραγματική διάταξη (offset/size) και ΟΧΙ graphicsLayer: το
+            // `SurfaceView` του libVLC δεν ακολουθεί κλίμακα ή clip προγόνου,
+            // ακολουθεί μόνο τη δική του θέση και μέγεθος. Έτσι η επιφάνεια
+            // αλλάζει διαστάσεις ΕΠΙ ΤΟΠΟΥ, χωρίς αποσύνδεση και χωρίς αλλαγή
+            // γονιού — το μόνο που το libVLC επιβιώνει. Δες
+            // docs/PLAYER_SURFACE_DECISIONS.md.
+            collapsed -> Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 14.dp)
+                .padding(bottom = dockBottomPadding)
+                .size(width = MiniPlayerHeight * 16f / 9f, height = MiniPlayerHeight)
+                // Ίδια πάνω-αριστερή γωνία με τη λωρίδα. Ισχύει για το
+                // `TextureView` του ExoPlayer· το `SurfaceView` του libVLC δεν
+                // δέχεται clip από πρόγονο και μένει τετράγωνο.
+                .clip(RoundedCornerShape(topStart = 13.dp))
+                .zIndex(2f)
+            expanded -> Modifier.fillMaxSize()
             // 16:9 και όχι η αναλογία της ροής: το κουτί πρέπει να έχει σταθερό
             // ύψος. Με την αναλογία του βίντεο, το κουτί θα άλλαζε μέγεθος τη
             // στιγμή που φτάνουν οι διαστάσεις της ροής — και ο τίτλος από κάτω θα
             // πηδούσε.
-            else Modifier
+            else -> Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
-                .zIndex(1f))
+                .zIndex(1f)
+        })
             // The whole sticky slot must be opaque. The actual video may be
             // narrower/shorter in FIT mode; without this background, scrolling
             // cards were visible through its letterbox area.
@@ -511,6 +539,23 @@ fun MobilePlaybackOverlay(
                         }
                     }
                 )
+            }
+
+            // ΜΑΖΕΜΕΝΟΣ: ΜΟΝΟ ΕΙΚΟΝΑ ΚΑΙ ΑΓΓΙΓΜΑ.
+            //
+            // Η λωρίδα δεν είναι δεύτερος player: δεν έχει χειριστήρια, υπότιτλους,
+            // χειρονομίες, μετάβαση καναλιού ή μηνύματα. Ο πρόωρος τερματισμός εδώ
+            // κρατά όλα τα παρακάτω ΑΚΡΙΒΩΣ όπως είναι για την πλήρη κατάσταση,
+            // αντί να τα τυλίγει σε συνθήκη — ένα σημείο απόφασης, όχι δεκατέσσερα.
+            if (collapsed) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures { collapsed = false; interact() }
+                        }
+                )
+                return@BoxWithConstraints
             }
 
             if (isLive) {
@@ -745,7 +790,7 @@ fun MobilePlaybackOverlay(
                 engine = engine,
                 state = state,
                 isLive = isLive,
-                visible = controlsVisible,
+                visible = controlsVisible && !collapsed,
                 expanded = expanded,
                 scrubPositionMs = shownPositionMs,
                 onScrubStart = { scrubbing = true; scrubMs = state.positionMs },
@@ -789,7 +834,7 @@ fun MobilePlaybackOverlay(
         }
 
         // ---- Περιεχόμενο που κυλά ΚΑΤΩ από τον sticky player ----
-        if (!expanded) {
+        if (!expanded && !collapsed) {
             Column(
                 Modifier
                     .fillMaxSize()

@@ -74,24 +74,22 @@ internal fun MobileMiniPlayer(
             .pointerInput(Unit) { detectTapGestures { onExpand() } },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
+        // Η ΤΡΥΠΑ ΤΟΥ ΒΙΝΤΕΟ, ΟΧΙ ΤΟ ΒΙΝΤΕΟ.
+        //
+        // Η επιφάνεια ΔΕΝ ανήκει στη λωρίδα. Ανήκει στο [MobilePlaybackOverlay],
+        // που δεν φεύγει ποτέ από τη σύνθεση, και τοποθετείται από πάνω με τη
+        // γεωμετρία αυτής της τρύπας.
+        //
+        // ΓΙΑΤΙ: το libVLC χτίζει ΜΙΑ έξοδο βίντεο ανά ροή. Όταν η λωρίδα έφτιαχνε
+        // δική της επιφάνεια, η προηγούμενη καταστρεφόταν στο μάζεμα και το
+        // `attachViews` σε νέο layout ΔΕΝ την ξανάχτιζε ποτέ: ο ήχος συνέχιζε, η
+        // εικόνα χανόταν. Μετρημένο στο logcat, ένα `setOutputSurface` ανά ροή.
+        // Δες docs/PLAYER_SURFACE_DECISIONS.md.
+        Spacer(
             Modifier
                 .width(MiniPlayerHeight * 16f / 9f)
                 .fillMaxHeight()
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            PlayerVideoSurface(
-                engine = engine,
-                // Και μαζεμένος, ο χρήστης ΒΛΕΠΕΙ. Η οθόνη δεν πρέπει να σβήσει
-                // πάνω σε βίντεο που παίζει, όσο μικρό κι αν είναι.
-                keepScreenOn = playing,
-                // Ίδιο TextureView με τον μεγάλο mobile player ώστε η μετάβαση
-                // να μη γυρίζει σε SurfaceView πίσω από το Compose background.
-                preferSmoothResize = true,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        )
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
             Text(
                 title,

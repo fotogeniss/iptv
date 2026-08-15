@@ -1,111 +1,141 @@
 # Player surface decisions
 
-Why the mini player showed sound with no picture, what actually fixed it, and
-what must never be tried again. Written after the 1.71.0 → 1.78.0 sequence,
-which cost six owner builds because the symptom was diagnosed five times before
-it was measured once.
+Why the mobile strip played sound with no picture on live channels, what the
+logcat actually proved, and what must never be tried again.
+
+Rewritten at 1.84.0. The previous version of this document was written after
+1.78.0 and claimed the fix was to render both engines into a `TextureView`.
+That claim was wrong, it was never confirmed on a device, 1.80.0 reverted it
+because it broke Android TV, and 1.83.0 reverted the whole 1.71.0-1.82.0 range.
+Trust `git log` over any heading, including this one.
 
 ## The rule
 
-**Both playback engines must render into a `TextureView`. Never a `SurfaceView`
-inside the Compose player.**
+**libVLC builds exactly one video output per stream, and destroying it is
+permanent.** Therefore the video view must have **one instance and one parent**
+for the whole life of the playback. It may be resized and repositioned. It may
+never be detached, recreated, or reparented.
 
-- ExoPlayer: `PlayerVideoSurface(preferSmoothResize = true)`.
-- libVLC: `attachViews(layout, null, false, VLC_USE_TEXTURE_VIEW)` in
-  `VlcBackend`, where that constant is `true`.
+- `PlayerVlcSurface` hands libVLC a `VLCVideoLayout` through
+  `engine.attachVlcLayout`. `player.detachViews()` tears down the vout **and the
+  MediaCodec decoder**, and a later `attachViews` on a different layout does not
+  rebuild either one.
+- Audio survives because libVLC decodes it on a separate thread. That is the
+  entire explanation for "sound but no picture".
+- ExoPlayer does not have this property: `setVideoTextureView` /
+  `setVideoSurfaceView` can be swapped while playing. This is why recorded video
+  always worked and live never did — `PlaybackBackendPolicy` routes bare MPEG-TS
+  to libVLC and `m3u8`/`mp4`/`mkv`/`mpd` to ExoPlayer.
 
-A `SurfaceView` lives in its own system layer with its own geometry. It does not
-follow the resize, clipping or z-order of the Compose tree around it. The moment
-the player collapses to the 121x68dp strip, a SurfaceView-backed output stays at
-full-screen geometry and nothing is visible, while audio continues normally.
+## The measurement that settled it
 
-If someone changes either engine back to a SurfaceView to "reduce GPU cost" or
-"use the recommended surface", this defect returns immediately, and it returns
-only in the mini player, which is where nobody looks.
-
-## The signature
-
-Sound plays, picture is black, and the failure is **surface-shaped**, not
-engine-shaped:
-
-- Full screen works, the strip does not.
-- Expanding back sometimes restores the picture and sometimes does not.
-- Recorded video works, live channels do not — or the reverse, depending on
-  which engine each stream lands on.
-
-That last point is the trap that cost the most time. `PlaybackBackendPolicy`
-routes bare MPEG-TS to libVLC and `m3u8`/`mp4`/`mkv`/`mpd` to ExoPlayer, so
-"sometimes it works" almost always means "it depends which engine that stream
-used", not "there is a race". Establish the engine before theorising about
-timing.
-
-## Measure before theorising
-
-The QA build carries a readout inside the strip's video area, gated on
-`BuildConfig.PREMIUM_QA_OVERRIDE`, in `MobileMiniPlayer`:
+Two logcat captures on the owner's device (OPPO CPH2629, Android 16), filtered
+on `VLC|vout|Codec2|MediaCodec`, one stream each, collapse and expand included:
 
 ```
-VLC f=3
-363x204
-Text#5737 ar=1.78
+07.77   Codec2-DumpInput: [DumpInput] c2.mtk.avc.decoder_32
+07.79   Codec2Client: setOutputSurface -- generation=13155337
+07.79   Codec2Client: Surface configure completed
+07.81   libvlc decoder: output: 2130708361 unknown, 1280x720      ← playing
+
+14.175  MediaCodec: client does not own the buffer #4
+14.179  Codec2-DumpInput: [stop:L476]  c2.mtk.avc.decoder_32
+14.198  Codec2-DumpInput: [~DumpInput] c2.mtk.avc.decoder_32      ← destroyed
+
+after   nothing. no second decoder, no second setOutputSurface, no new vout.
 ```
 
-| Field | Meaning | What it decides |
-| --- | --- | --- |
-| `EXO` / `VLC` | active engine for this stream | which path to inspect at all |
-| `f=` | frames rendered on the **current** surface | the whole diagnosis, see below |
-| `363x204` | measured surface size in pixels | `0x0` means the surface was never laid out |
-| `Text#…` | identity of the attached surface | only meaningful for ExoPlayer |
-| `ar=` | aspect ratio reported by the stream | sanity check that video exists at all |
+The first capture showed the same shape with
+`MediaCodec: Pending dequeue output buffer request cancelled` in place of the
+buffer-ownership error.
 
-`f=` splits the problem in two, and the two halves need opposite fixes:
+**Exactly one `setOutputSurface` per stream is the whole proof.** If libVLC
+rebuilt its output for the strip there would be a second one with a different
+`generation`. There never is. The strip's `VLCVideoLayout` never received a
+surface at all.
 
-- **`f=0`** — no frame ever reached the strip's surface. The failure is in
-  surface delivery: attach/detach, engine ownership, or output configuration.
-- **`f>0` and still black** — frames arrive and something above them hides the
-  picture. The failure is in compositing: clipping, layer alpha, z-order, or a
-  cover drawn over the video.
+## How to reproduce the measurement
 
-One photograph of the strip answers this. Three rounds of reasoning did not.
-Take the photograph first.
+The owner has two apps installed with the same name and icon:
+`com.prelude.iptv` is 1.46.0-qa, `com.prelude.iptv.qa` is current. Stop the
+other one first or the log mixes them.
+
+```
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb shell am force-stop com.prelude.iptv
+& $adb logcat -c
+# on the phone: open a live channel, collapse, wait, expand
+& $adb logcat -d | Select-String "VLC|vout|Codec2|MediaCodec"
+```
+
+Read it this way:
+
+- **A second `setOutputSurface` appears** → the output was rebuilt. Any remaining
+  black is then a compositing question.
+- **Only one, and a `stop`/destructor after the transition** → the output was
+  destroyed and not rebuilt. Something detached or reparented the view.
+
+Noise, always present, never the cause: `libvlc window: request N not
+implemented`, `can't get Subtitles Surface`, `option --rtsp-caching no longer
+exists`, `Codec2Client: query -- param skipped`, and `OStatsManager_Calc` lines
+mentioning `org.videolan.vlc`.
+
+## The design that follows from it, as built in 1.84.0
+
+Collapsing the mobile player is a **change of geometry, not a change of
+content** — which is what the comment in `MobileMiniPlayer` always claimed while
+the code did the opposite.
+
+- `MobilePlaybackOverlay` never leaves the composition, and neither does the
+  single `BoxWithConstraints(playerModifier)` that contains the video. There is
+  no `if (collapsed) { ... return }` branch any more.
+- `playerModifier` has three geometries: full screen, the 16:9 sticky slot, and
+  — when collapsed — `align(BottomStart)` with the strip's paddings and
+  `size(121.dp, 68.dp)` at `zIndex(2f)`.
+- The geometry is **real layout** (`align`/`padding`/`size`), never
+  `graphicsLayer`. A `SurfaceView` does not follow an ancestor's scale or clip;
+  it follows only its own position and size. Scaling the page would leave the
+  libVLC surface at full-screen geometry.
+- `MobileMiniPlayer` draws a `Spacer` hole where its video used to be, and is
+  rendered **before** the video slot so it stays underneath it.
+- When collapsed, the inner box early-returns after the video and a
+  tap-to-expand layer. One decision point instead of fourteen conditionals over
+  the controls, subtitles, gestures, transition and toasts.
 
 ## What was tried, and what it was worth
 
 | Attempt | Verdict |
 | --- | --- |
-| 1.71.0 — identity guard on the libVLC detach | **Keep.** A real defect: the departing full-screen surface tore down the strip's freshly attached layout. Not the owner's bug, but correct and still required. |
-| 1.74.0 — one `movableContentOf` surface shared by both layouts | **Keep.** Removes the ExoPlayer output swap entirely, so `MediaCodec.setOutputSurface` is never called mid-playback and cannot be refused. |
-| 1.75.0 — re-attach libVLC on a material size change | **Removed.** It worked, but rebuilding the video output forces a live MPEG-TS stream to wait for the next keyframe: three to four seconds of black on every collapse. |
-| 1.77.0 — report the new window size instead of re-attaching | **Removed.** Cheap, but it did not restore the picture at all, and the safety net never fired because `vlcFrameWasRendered` is sticky: libVLC never reported the output as lost, so the fallback saw a healthy state that was not there. |
-| 1.78.0 — render libVLC into a TextureView | **The fix.** The surface now follows the layout by itself, so no manual resize handling exists at all. |
+| 1.71.0 — identity guard on the libVLC detach | Correctly implemented, changed nothing. The problem is not detach *ordering*, it is that any detach is fatal. Reverted with the rest in 1.83.0. |
+| 1.74.0 — one `movableContentOf` surface shared by both layouts | **Made live worse.** `movableContentOf` reparents the View, and reparenting a View destroys its Surface. Right instinct, wrong mechanism. |
+| 1.75.0 — re-attach libVLC on a material size change | Restored picture at the cost of 3-4 s of black per collapse: the rebuild waits for the next MPEG-TS keyframe. |
+| 1.77.0 — `setWindowSize` instead of re-attaching | Did not restore the picture at all. |
+| 1.78.0 — render libVLC into a `TextureView` | Never confirmed on device. Reverted in 1.80.0 because `VLCVideoLayout`'s unused `SurfaceView` stays in the hierarchy and paints black in front of the picture on Android TV. |
+| 1.79.0 / 1.82.0 — rebuild on `onViewAttachedToWindow` / on `surfaceCreated` after `surfaceDestroyed` | Both asked *when* to rebuild. There is no answer; `attachViews` does not rebuild. |
+
+**Never spend another build on these**, all ruled out by the log above rather
+than by argument:
+
+- `MainActivity: ComponentActivity → AppCompatActivity`.
+- `themes.xml: android:Theme.Material.NoActionBar → Theme.AppCompat.DayNight.NoActionBar`.
+- `SurfaceView` versus `TextureView` for libVLC, and z-order or compositing in
+  general. A compositing fault leaves the decoder alive rendering into something
+  invisible. The decoder is destroyed.
 
 ## Things that are correct — do not "simplify" them
 
 - `PlaybackEngine.attachSurface` / `detachSurface` detach **only** if the view
-  passed in is still the active one. Two surfaces briefly coexist while Compose
-  swaps layouts; an unconditional detach tears down the wrong one.
-- `VlcBackend.detachLayout(layout)` has the same guard for the same reason. The
-  ExoPlayer path had it from the first commit; the libVLC path did not, which is
-  what 1.71.0 corrected.
-- The video surface is a single `movableContentOf` owned by
-  `MobilePlaybackOverlay` and handed to whichever layout is showing. Do not give
-  the strip its own `PlayerVideoSurface` again. Two surfaces competing for one
-  output is how this started.
+  passed in is still the active one. Two surfaces can briefly coexist while
+  Compose swaps layouts.
 - `MobilePlaybackOverlay` does not leave the composition when it collapses. The
   engine lives in a `remember` inside it; removing the overlay releases the
-  engine and kills the audio too.
+  engine and kills the audio too. The same fact is now what keeps the video
+  surface alive.
+- Android TV is not part of any of this. Television never collapses, and
+  `PlayerHost` owns its own surface at a single call site.
 
-## Where git history could not help
+## This was never a regression
 
-`MobileMiniPlayer`, the engine's surface attach/detach and `PlayerVideoSurface`
-were byte-identical to `85de40a`, this repository's **root** commit, and the
-uncommitted 1.67.0–1.69.0 work never touched the player. The baseline is a
-squashed import, so nothing before it exists. Any regression older than the
-first commit is invisible here. Do not spend a session looking for it again —
-measure the running build instead.
-
-## Removing the QA readout
-
-It is deliberately temporary. Delete the `BuildConfig.PREMIUM_QA_OVERRIDE` block
-in `MobileMiniPlayer` and `PlaybackEngine.attachedSurfaceLabel()` once the strip
-is confirmed on device. Keep this document; it is the part worth keeping.
+The owner's installed 1.46.0-qa behaves identically once measured. No released
+version has ever shown a libVLC live stream inside the strip. Do not look for
+the commit that broke it; there isn't one.

@@ -5,12 +5,13 @@ implementation notes are preserved in `docs/archive/changelog`.
 
 ## Unreleased
 
-- Documentation: added `docs/PLAYER_SURFACE_DECISIONS.md`, recording why the
-  mini player played sound without picture, the rule that both engines render
-  into a `TextureView`, the QA readout that measures the fault in one
-  photograph, and the four attempted fixes with the reason three of them were
-  wrong. Corrected the stale header and state in the next-session handoff, which
-  still described 1.69.0 and the wrong HEAD.
+- Documentation: `docs/PLAYER_SURFACE_DECISIONS.md` rewritten at 1.84.0. Its
+  earlier claim that both engines must render into a `TextureView` was wrong,
+  was never confirmed on a device, and was reverted in 1.80.0 and 1.83.0. It now
+  carries the measurement that settles the defect - exactly one
+  `setOutputSurface` per libVLC stream - the command that reproduces it, the
+  design that follows, and the list of hypotheses the log rules out. The
+  next-session handoff header and state were corrected to match HEAD.
 
 - CI: disabled Gradle wrapper validation, which had been failing every run
   within seconds and never reaching the project's own checks or build. The
@@ -20,6 +21,36 @@ implementation notes are preserved in `docs/archive/changelog`.
   that `gradle/actions/setup-gradle` verifies by default. Restoring the real
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
+
+## 1.84.0 - versionCode 156
+
+- The mobile strip now shows live picture, because the video surface is no longer
+  created twice. Collapsing the player is a change of geometry, not a change of
+  content: one surface, one parent, from the moment playback starts until it ends.
+  Only its position and size change, from full width to the 121x68 slot in the
+  strip and back.
+- Measured, not guessed. Two logcat captures on a real device show exactly one
+  `setOutputSurface` and exactly one MediaCodec decoder per stream. When the
+  collapse destroyed that output (`MediaCodec: Pending dequeue output buffer
+  request cancelled`, then `client does not own the buffer #4`), libVLC never
+  rebuilt it: audio continued on its own thread while the picture was gone for
+  good. That is why expanding again cost several seconds - the output was being
+  built from scratch.
+- This was never a regression. The owner's installed 1.46.0 build behaves
+  identically, so no version has ever handled a libVLC live stream in the strip
+  correctly. It is also why the surface work between 1.71.0 and 1.82.0 could not
+  succeed: every attempt asked *when* to re-attach, and there is no answer,
+  because re-attaching does not rebuild the output at all.
+- `MobileMiniPlayer` keeps a hole where its video used to be and draws only its
+  own controls. The strip is rendered before the shared video slot so it stays
+  underneath it.
+- Appearance is unchanged: same full player, same strip, same 68dp height, same
+  13dp top corners, same 14dp margins, same controls, same wording, same
+  gestures. The one visible difference is that a live thumbnail keeps a square
+  top-left corner, because libVLC renders into a `SurfaceView` and a `SurfaceView`
+  does not accept an ancestor's clip. Recorded video is unaffected.
+- Android TV and the ExoPlayer path are untouched. Television never collapses.
+- Gradle was not run; the owner QA build is pending.
 
 ## 1.83.0 - versionCode 155
 

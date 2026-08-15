@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Μία επιφάνεια βίντεο που αλλάζει μέγεθος — ζωντανά κανάλια</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#171717;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;gap:26px;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px}
+  .note{width:360px;color:#b8b8b8;font-size:12.5px;line-height:1.5}
+  .note h3{color:#fff;font-size:14px;margin:0 0 8px}
+  .note h4{color:#fff;font-size:12.5px;margin:16px 0 6px}
+  .note ul{margin:6px 0 14px;padding-left:17px}.note li{margin-bottom:6px}
+  .note b{color:#fff}
+  .note code{background:#232323;padding:1px 4px;border-radius:4px;font-size:11px;color:#d7d7d7}
+  .warn{background:#2a1c12;border:1px solid #7a4a1e;color:#e8c9a4;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45;margin-bottom:12px}
+  .ok{background:#122a18;border:1px solid #2c6b3d;color:#a9dcb8;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45}
+
+  .stage{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .phone{width:340px;height:720px;background:#050505;overflow:hidden;position:relative;box-shadow:0 20px 70px #000;border-radius:12px}
+
+  /* ---- σελίδα από κάτω ---- */
+  .page{position:absolute;inset:0;background:#0b0b0b;padding:52px 14px 0}
+  .page h2{font-size:16px;margin:0 0 10px}
+  .row{display:flex;gap:9px;margin-bottom:14px}
+  .card{width:88px;height:126px;border-radius:9px;background:linear-gradient(150deg,#2a2f38,#171a1f);flex:0 0 auto}
+
+  /* ---- ο πλήρης player: ΜΟΝΟ το chrome, χωρίς το βίντεο ---- */
+  .full{position:absolute;inset:0;background:#000;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .22s}
+  .full.gone{transform:translateY(100%);opacity:0;pointer-events:none}
+  .fullmeta{position:absolute;left:0;right:0;top:191px;bottom:0;padding:14px}
+  .fullmeta .t{font-size:18px;font-weight:900}
+  .fullmeta .s{font-size:11px;color:#8f8f8f;margin-top:4px}
+  .fullmeta p{font-size:12px;line-height:18px;color:#c9c9c9}
+  .fullctrl{position:absolute;left:0;right:0;top:0;height:191px;pointer-events:none}
+  .fullctrl .bar{position:absolute;bottom:10px;left:20px;right:20px;height:1.5px;border-radius:2px;background:#ffffff4d}
+  .fullctrl .bar i{display:block;height:100%;width:38%;background:#e81f36;border-radius:2px}
+  .fullctrl .bar u{position:absolute;top:-2.75px;left:calc(38% - 3.5px);width:7px;height:7px;border-radius:50%;background:#e81f36}
+
+  /* ---- η λωρίδα: ΜΟΝΟ το chrome, χωρίς το βίντεο ---- */
+  .mini{position:absolute;left:14px;right:14px;bottom:86px;height:68px;border-radius:13px 13px 0 0;background:#000000db;display:flex;align-items:center;opacity:0;transition:opacity .22s;pointer-events:none}
+  .mini.on{opacity:1;pointer-events:auto}
+  .minihole{width:121px;height:68px;flex:0 0 auto}
+  .mtxt{flex:1;padding:0 10px;min-width:0}
+  .mtxt b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mtxt span{display:block;font-size:10px;color:#8b8b8b;margin-top:2px}
+  .micon{width:42px;height:42px;display:grid;place-items:center;font-size:17px;color:#fff;flex:0 0 auto}
+
+  /* ---- Η ΜΙΑ ΕΠΙΦΑΝΕΙΑ. Ένα στοιχείο, ένας γονιός, αλλάζει μόνο γεωμετρία ---- */
+  #surface{position:absolute;background:linear-gradient(135deg,#1d3b5c,#7a4a63);overflow:hidden;
+    left:0;top:0;width:340px;height:191px;border-radius:0;
+    transition:left .34s cubic-bezier(.2,.8,.2,1),top .34s cubic-bezier(.2,.8,.2,1),width .34s cubic-bezier(.2,.8,.2,1),height .34s cubic-bezier(.2,.8,.2,1),border-radius .34s;
+    z-index:5;display:grid;place-items:center}
+  #surface.mini{left:14px;top:566px;width:121px;height:68px;border-radius:13px 0 0 0}
+  #surface .tag{font-size:8.5px;letter-spacing:.5px;color:#ffffffc4;text-align:center;padding:0 5px;line-height:1.35}
+  #surface.dead{background:#000}
+  #surface.dead .tag{color:#ff8d8d}
+
+  /* ψεύτικο δεύτερο surface, μόνο στη σημερινή χαλασμένη λειτουργία */
+  #ghost{position:absolute;left:14px;top:566px;width:121px;height:68px;border-radius:13px 0 0 0;background:#000;z-index:6;display:none;place-items:center}
+  #ghost.show{display:grid}
+  #ghost .tag{font-size:8.5px;color:#ff8d8d;text-align:center;padding:0 5px;line-height:1.35}
+
+  /* ---- nav ---- */
+  .nav{position:absolute;left:12px;right:12px;bottom:12px;height:62px;border-radius:16px;background:#141414ee;display:flex;align-items:center;justify-content:space-around;font-size:9px;color:#8b8b8b;z-index:7}
+  .nav div{text-align:center}.nav div.sel{color:#fff}.nav i{display:block;font-size:16px;font-style:normal;margin-bottom:3px}
+
+  .keys{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;width:340px}
+  .keys button{background:#242424;color:#fff;border:1px solid #383838;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:700;cursor:pointer}
+  .keys button:hover{background:#303030}
+  .keys button.mode{background:#3a1d1d;border-color:#7a3030}
+  .keys button.mode.on{background:#7a3030}
+  .state{font-size:11px;color:#7d7d7d;min-height:30px;width:340px;text-align:center;line-height:1.45}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h3>Μία επιφάνεια βίντεο, που αλλάζει μόνο μέγεθος</h3>
+
+  <div class="warn"><b>Η εμφάνιση ΔΕΝ αλλάζει σε τίποτα.</b> Ο πλήρης player, η λωρίδα, τα χειριστήρια, οι γωνίες, τα περιθώρια, το μενού: όλα ακριβώς όπως τα ενέκρινες. Αυτό το preview δείχνει <b>πού ζει το βίντεο</b>, που είναι το μόνο που αλλάζει.</div>
+
+  <h4>Τι αλλάζει μηχανικά</h4>
+  <ul>
+    <li><b>Σήμερα:</b> ο πλήρης player και η λωρίδα έχουν ο καθένας <b>δική του</b> επιφάνεια. Στο μάζεμα η πρώτη καταστρέφεται και φτιάχνεται δεύτερη.</li>
+    <li><b>Μετά:</b> <b>μία</b> επιφάνεια, ίδιος γονιός, από την αρχή μέχρι το κλείσιμο. Στο μάζεμα αλλάζει μόνο θέση και μέγεθος — 340×191 σε 121×68. Ποτέ δεν αποσυνδέεται, ποτέ δεν αλλάζει γονιό.</li>
+    <li>Η λωρίδα και ο πλήρης player κρατούν μια <b>τρύπα</b> στη θέση του βίντεο και ζωγραφίζουν τα δικά τους χειριστήρια γύρω του.</li>
+  </ul>
+
+  <h4>Γιατί, με τα λόγια του logcat</h4>
+  <ul>
+    <li>Το libVLC χτίζει <b>μία</b> έξοδο βίντεο ανά ροή. Ένα <code>setOutputSurface</code>, ένας decoder.</li>
+    <li>Το <code>detachViews()</code> τη σκοτώνει. Το <code>attachViews()</code> σε νέο layout <b>δεν την ξαναχτίζει ποτέ</b>. Ο ήχος ζει, η εικόνα όχι.</li>
+    <li>Η μετακόμιση View <b>είναι</b> καταστροφή επιφάνειας. Γι' αυτό απέτυχε και το <code>movableContentOf</code>.</li>
+    <li>Το ExoPlayer δεν είχε ποτέ το πρόβλημα, γι' αυτό οι ταινίες δούλευαν.</li>
+  </ul>
+
+  <div class="ok"><b>Πάτα «Δείξε το σημερινό»</b> για να δεις τη διαφορά: εκεί η επιφάνεια πεθαίνει στο μάζεμα και η λωρίδα μένει μαύρη με ήχο, ακριβώς όπως στη συσκευή σου.</div>
+
+  <h4>Τι ΔΕΝ αγγίζεται</h4>
+  <ul>
+    <li>Η <b>τηλεόραση</b>. Δεν μαζεύει ποτέ, δεν μπαίνει στην αλλαγή.</li>
+    <li>Το <b>ExoPlayer</b> μονοπάτι, που δουλεύει.</li>
+    <li>Κάθε κείμενο, εικονίδιο, χειρονομία, focus, χρώμα και απόσταση.</li>
+  </ul>
+
+  <div class="warn"><b>Το preview εγκρίνει μόνο ό,τι δείχνει:</b> ότι το βίντεο ταξιδεύει ως ένα κουτί ανάμεσα στις δύο γεωμετρίες, και ότι τίποτα άλλο δεν αλλάζει όψη.</div>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="page">
+      <h2>Ζωντανά</h2>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+      <div class="row"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+    </div>
+
+    <!-- chrome του πλήρους player, ΧΩΡΙΣ βίντεο -->
+    <div class="full" id="full">
+      <div class="fullctrl"><div class="bar"><i></i><u></u></div></div>
+      <div class="fullmeta">
+        <div class="t">ERT1 HD</div>
+        <div class="s">Ζωντανά · MPEG-TS · libVLC</div>
+        <p>Ο τίτλος, η γραμμή προόδου και το περιεχόμενο από κάτω μένουν όπως είναι. Το μαύρο κουτί πάνω δεν είναι πια ξεχωριστή επιφάνεια — είναι η τρύπα όπου κάθεται η μία και μόνη.</p>
+      </div>
+    </div>
+
+    <!-- chrome της λωρίδας, ΧΩΡΙΣ βίντεο -->
+    <div class="mini" id="mini">
+      <div class="minihole"></div>
+      <div class="mtxt"><b>ERT1 HD</b><span>Ζωντανά</span></div>
+      <div class="micon">❙❙</div>
+      <div class="micon">✕</div>
+    </div>
+
+    <!-- Η ΜΙΑ ΕΠΙΦΑΝΕΙΑ -->
+    <div id="surface"><div class="tag" id="stag">ΕΠΙΦΑΝΕΙΑ #1<br>340×191</div></div>
+    <div id="ghost"><div class="tag">ΕΠΙΦΑΝΕΙΑ #2<br>χωρίς έξοδο<br>μόνο ήχος</div></div>
+
+    <div class="nav">
+      <div><i>⌂</i>Αρχική</div><div><i>▤</i>Ταινίες</div><div><i>≡</i>Σειρές</div><div class="sel"><i>◉</i>Ζωντανά</div><div><i>⚙</i>Ρυθμίσεις</div>
+    </div>
+  </div>
+
+  <div class="keys">
+    <button id="bCollapse">Μάζεψε (BACK)</button>
+    <button id="bExpand">Μεγάλωσε</button>
+    <button id="bMode" class="mode">Δείξε το σημερινό</button>
+  </div>
+  <div class="state" id="state">Πλήρης player. Μία επιφάνεια, 340×191.</div>
+</div>
+
+<script>
+(function(){
+  var full=document.getElementById('full'), mini=document.getElementById('mini');
+  var surf=document.getElementById('surface'), stag=document.getElementById('stag');
+  var ghost=document.getElementById('ghost'), state=document.getElementById('state');
+  var bMode=document.getElementById('bMode');
+  var collapsed=false, broken=false;
+
+  function render(){
+    full.classList.toggle('gone', collapsed);
+    mini.classList.toggle('on', collapsed);
+    surf.classList.toggle('mini', collapsed);
+
+    if(broken && collapsed){
+      surf.classList.add('dead');
+      ghost.classList.add('show');
+      stag.innerHTML='ΕΠΙΦΑΝΕΙΑ #1<br>ΝΕΚΡΗ';
+      state.innerHTML='<b style="color:#ff8d8d">Σημερινή συμπεριφορά.</b> Η #1 καταστράφηκε στο μάζεμα, η #2 δεν πήρε ποτέ έξοδο. Ήχος ναι, εικόνα όχι — και το μεγάλωμα χτίζει από την αρχή, γι\' αυτό αργεί.';
+    }else{
+      surf.classList.remove('dead');
+      ghost.classList.remove('show');
+      stag.innerHTML='ΕΠΙΦΑΝΕΙΑ #1<br>'+(collapsed?'121×68':'340×191');
+      if(broken){
+        state.innerHTML='<b style="color:#ff8d8d">Σημερινή συμπεριφορά.</b> Σε πλήρη οθόνη δουλεύει — γι\' αυτό το πρόβλημα φαίνεται μόνο στη λωρίδα.';
+      }else{
+        state.innerHTML= collapsed
+          ? 'Μαζεμένος. <b>Η ίδια</b> επιφάνεια, 121×68. Καμία αποσύνδεση, κανένας νέος decoder, εικόνα αμέσως.'
+          : 'Πλήρης player. Μία επιφάνεια, 340×191.';
+      }
+    }
+  }
+
+  document.getElementById('bCollapse').onclick=function(){collapsed=true;render();};
+  document.getElementById('bExpand').onclick=function(){collapsed=false;render();};
+  bMode.onclick=function(){
+    broken=!broken;
+    bMode.classList.toggle('on',broken);
+    bMode.textContent = broken ? 'Δείξε την πρόταση' : 'Δείξε το σημερινό';
+    render();
+  };
+  render();
+})();
+</script>
+</body>
+</html>

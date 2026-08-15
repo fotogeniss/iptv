@@ -2,9 +2,9 @@
 
 - **Date:** 2026-08-14
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `e9ad793` (1.78.0). `main` is still at `2e04e97` (1.66.0) on purpose — verify with `git log --oneline -5` and `git branch`
+- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `87d74f5` (1.83.0) plus uncommitted 1.84.0. `main` is still at `2e04e97` (1.66.0) on purpose — verify with `git log --oneline -5` and `git branch`
 - **Remote:** `https://github.com/fotogeniss/iptv` (private). CI runs on pushes to `main` and on pull requests
-- **Version on disk:** 1.78.0 (`versionCode 150`)
+- **Version on disk:** 1.84.0 (`versionCode 156`), uncommitted, owner build pending
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -27,22 +27,32 @@ reasoning, the open questions and the traps that the changelog does not carry.
 carries 1.67.0 → 1.78.0. `main` deliberately still holds only owner-verified
 code. Fast-forward `main` only after the device checks below pass.
 
-**Confirmed on device:** hero slider on Home/Movies/Series, Back collapsing the
-player, the slim scrubber, and the mini player showing picture for both
-recorded video and live channels as of 1.76.0. **Not yet confirmed:** 1.78.0
-itself, which is the libVLC TextureView fix — the live strip must show picture
-immediately, with no three-second gap.
+**1.83.0 reverted every playback-surface change from 1.71.0 to 1.82.0**, keeping
+only Back-collapses and the slim scrubber. The QA readout is gone with the rest.
 
-**The mini player defect has its own document.** Read
-`docs/PLAYER_SURFACE_DECISIONS.md` before touching any playback surface. It
-records the rule (both engines render into a `TextureView`, never a
-`SurfaceView`), the QA readout that measures the problem in one photograph, and
-the four attempts that were tried and why three of them were wrong. That
-sequence cost six owner builds. Do not repeat it.
+**The mini player defect is solved on paper and measured, not guessed. Read
+`docs/PLAYER_SURFACE_DECISIONS.md` in full before touching any playback
+surface.** Two logcat captures prove libVLC emits exactly one
+`setOutputSurface` per stream: destroying its video output is permanent, and
+`attachViews` on a new layout never rebuilds it. So collapsing must not create,
+destroy or reparent the video view. **1.84.0 implements that**: one video slot
+that only changes geometry, `MobileMiniPlayer` reduced to a hole plus its own
+controls, no `if (collapsed) { ... return }` branch. **Not yet confirmed on
+device.**
 
-**A QA-only readout is still in `MobileMiniPlayer`**, gated on
-`BuildConfig.PREMIUM_QA_OVERRIDE`. Remove it, and
-`PlaybackEngine.attachedSurfaceLabel()`, once the strip is confirmed.
+**Ruled out by that log, never spend a build on them again:** `AppCompatActivity`
+versus `ComponentActivity`, the `Theme.AppCompat.DayNight` base, `SurfaceView`
+versus `TextureView`, and compositing or z-order in general. A compositing fault
+leaves the decoder alive; the decoder was destroyed.
+
+**This was never a regression.** The owner's installed 1.46.0-qa behaves
+identically once measured. Do not look for the commit that broke it.
+
+**Two apps are installed with the same name and icon.** `com.prelude.iptv` is
+1.46.0-qa (no `applicationIdSuffix` back then); `com.prelude.iptv.qa` is
+everything since. Separate data, separate sources. `am force-stop` the other one
+before any measurement, and never compare the two without checking which engine
+each stream landed on.
 
 **CI was failing in nine seconds for reasons unrelated to any code.**
 `gradle/actions/setup-gradle` validates the Gradle wrapper checksum by default,
