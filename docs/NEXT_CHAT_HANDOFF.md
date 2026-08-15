@@ -2,7 +2,7 @@
 
 - **Date:** 2026-08-14
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `87d74f5` (1.83.0) plus uncommitted 1.84.0. `main` is still at `2e04e97` (1.66.0) on purpose — verify with `git log --oneline -5` and `git branch`
+- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `a02a391` (1.84.0). `main` was fast-forwarded to the same commit on 2026-08-15 and is **14 ahead of `origin/main`, not yet pushed** — verify with `git log --oneline -5` and `git branch -vv`
 - **Remote:** `https://github.com/fotogeniss/iptv` (private). CI runs on pushes to `main` and on pull requests
 - **Version on disk:** 1.84.0 (`versionCode 156`), uncommitted, owner build pending
 
@@ -23,9 +23,22 @@ reasoning, the open questions and the traps that the changelog does not carry.
 
 ### 2026-08-14 — where things actually stand
 
-**The versions are on a branch, not on `main`.** `qa/1.73.0-pending-build`
-carries 1.67.0 → 1.78.0. `main` deliberately still holds only owner-verified
-code. Fast-forward `main` only after the device checks below pass.
+**`main` is caught up.** It sat at `2e04e97` (1.66.0) for eighteen releases while
+1.67.0 → 1.84.0 accumulated on `qa/1.73.0-pending-build`, deliberately, so that
+it held only owner-verified code. The owner verified 1.84.0-qa on device — live,
+movies and series, collapsed and full — and `main` was fast-forwarded to
+`a02a391`. The previous position is kept as the branch `main-before-1.84.0`
+(`2e04e97`); delete it once the push is green.
+
+**Nothing is pushed yet.** `main` is 14 ahead of `origin/main`. Pushing triggers
+CI, which runs the six python gates (all passing locally) and then
+`./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease`. **That
+Gradle step has never actually executed on CI** — every previous run died in the
+wrapper-validation step, which is now disabled, so this is the first time the
+hand-written `gradlew` will be exercised on a runner. A failure there is a CI
+problem, not a code problem; the fix is the real wrapper
+(`gradle wrapper --gradle-version 8.9`), after which `validate-wrappers` should
+go back to `true`.
 
 **1.83.0 reverted every playback-surface change from 1.71.0 to 1.82.0**, keeping
 only Back-collapses and the slim scrubber. The QA readout is gone with the rest.
