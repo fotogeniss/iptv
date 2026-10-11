@@ -15,9 +15,23 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
+    <!--
+      ΓΙΑΤΙ largeHeap: αυτή η εφαρμογή κρατάει ΣΚΟΠΙΜΑ ολόκληρο τον κατάλογο
+      του παρόχου στη μνήμη ώστε αναζήτηση, ράγες και ταξινομήσεις να είναι
+      ακαριαίες. Σε πραγματικό portal ο κατάλογος είναι δεκάδες χιλιάδες
+      στοιχεία με περιγραφή, ηθοποιούς και σκηνοθέτη το καθένα.
+      ΜΕΤΡΗΜΕΝΟ: στο emulator Android TV το `dalvik.vm.heapgrowthlimit` είναι
+      192MB και ο κατάλογος ταινιών το χτυπούσε στη μέση της λήψης, με
+      `OutOfMemoryError`, ANR και θάνατο της διεργασίας. Το largeHeap δίνει
+      στην εφαρμογή το `dalvik.vm.heapsize` αντί για το growth limit.
+      ΔΕΝ ΕΙΝΑΙ ΑΔΕΙΑ ΓΙΑ ΣΠΑΤΑΛΗ: το πραγματικό διορθωτικό είναι το
+      κυλιόμενο παράθυρο στο StalkerClient (δες CATEGORY_WINDOW). Αυτό εδώ
+      είναι το περιθώριο, όχι η λύση.
+    -->
     <application
         android:name=".PreludeApp"
         android:allowBackup="false"
+        android:largeHeap="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@drawable/ic_app"

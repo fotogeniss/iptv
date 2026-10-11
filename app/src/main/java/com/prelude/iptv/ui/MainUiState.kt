@@ -26,6 +26,13 @@ data class UiState(
     val loadingAllSections: Boolean = false,
     /** Sections already available while the remaining sections continue in background. */
     val loadedSections: Set<String> = emptySet(),
+    /**
+     * Ποια ομάδα κατεβάζει αυτή τη στιγμή την επόμενη σελίδα της, ή `null`.
+     *
+     * Ένα πεδίο και όχι σύνολο: το κατ' απαίτηση κατέβασμα είναι σειριακό ώστε
+     * το portal να δέχεται ένα αίτημα τη φορά ενώ ο χρήστης σκρολάρει.
+     */
+    val loadingMoreGroup: String? = null,
     /** Transient progress keyed by stable source id; never persisted. */
     val sourceProgress: Map<String, SourceLoadProgress> = emptyMap(),
     /** Ανεβαίνει σε κάθε ON_RESUME: αναγκάζει το «Συνέχισε να βλέπεις» να

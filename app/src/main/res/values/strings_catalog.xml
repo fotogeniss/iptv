@@ -55,7 +55,10 @@
     <string name="catalog_stage_movies_category">Λήψη ταινιών · κατηγορία %1$d/%2$d</string>
     <string name="catalog_stage_series_category">Λήψη σειρών · κατηγορία %1$d/%2$d</string>
     <string name="catalog_section_waiting">σε αναμονή</string>
-    <string name="catalog_complete_sections_open_immediately">Οι ολοκληρωμένες ενότητες ανοίγουν αμέσως. Η επιλογή κατηγοριών εμφανίζεται όταν τελειώσουν όλες.</string>
+    <string name="catalog_loading_more">Λήψη κι άλλων…</string>
+    <string name="catalog_browse_now">Περιήγηση τώρα</string>
+    <string name="catalog_browse_now_hint">Οι έτοιμες ενότητες ανοίγουν. Η λήψη συνεχίζεται από κάτω.</string>
+    <string name="catalog_category_choice_when_all_done">Η επιλογή κατηγοριών εμφανίζεται όταν τελειώσουν όλες.</string>
     <string name="catalog_loading_with_progress">%1$s · Λήψη από την πηγή…</string>
     <!--
       Ποια ενότητα κατεβαίνει τώρα. Ξεχωριστό αλφαριθμητικό ανά ενότητα αντί για

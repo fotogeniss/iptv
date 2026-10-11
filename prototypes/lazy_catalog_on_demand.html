@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Κατάλογος κατ' απαίτηση — ταινίες και σειρές</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#0b0b0d; color:#e9eaec; padding:26px 28px 60px;
+         font:14px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  .lead { color:#8b8f96; max-width:74ch; margin:0 0 8px; }
+  .prob { border-left:3px solid #b9553f; background:#16100f; padding:10px 14px;
+          border-radius:0 8px 8px 0; max-width:74ch; margin:14px 0 10px; }
+  .meas { border-left:3px solid #4a6f8a; background:#0e1418; padding:10px 14px;
+          border-radius:0 8px 8px 0; max-width:74ch; margin:0 0 26px;
+          font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; color:#a9bccb; }
+  .row { display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
+  .cap { font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+         color:#7d818a; font-weight:700; margin:0 0 9px; }
+  .cap b { color:#c9584a; }
+  .cap i { color:#7fc79a; font-style:normal; }
+
+  .phone { width:300px; background:#000; border:1px solid #232529; border-radius:24px;
+           overflow:hidden; }
+  .top { display:flex; align-items:center; gap:12px; padding:16px 15px 12px; }
+  .top .b { color:#9aa0a8; }
+  .top h2 { font-size:16px; margin:0; font-weight:700; }
+  .top .grow { flex:1; }
+  .top .mag { color:#9aa0a8; font-size:14px; }
+
+  /* ---- η ΣΗΜΕΡΙΝΗ μπάρα ---- */
+  .pwrap { padding:8px 16px 18px; }
+  .pct { font-size:38px; font-weight:800; letter-spacing:-.02em; line-height:1; }
+  .pct small { font-size:16px; font-weight:700; color:#7d818a; margin-left:2px; }
+  .stage { font-size:12.5px; color:#b6bac0; margin-top:7px; }
+  .bar { height:4px; background:#1b1d21; border-radius:99px; margin-top:12px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#e9eaec; border-radius:99px; transition:width .3s; }
+  .foot { font-size:10.5px; color:#6f737a; padding:2px 16px 16px; }
+  .foot b { color:#c9584a; }
+
+  /* ---- quick actions ---- */
+  .qa { display:flex; gap:7px; padding:2px 14px 12px; flex-wrap:wrap; }
+  .qchip { font-size:11.5px; padding:7px 11px; border-radius:99px;
+           background:#141519; color:#c3c7cd; border:1px solid #1f2126; font-weight:600; }
+  .qchip.hi { background:#fff; color:#000; border-color:#fff; }
+
+  /* ---- ράγες ---- */
+  .rails { padding:0 0 14px; max-height:392px; overflow-y:auto; scroll-behavior:smooth; }
+  .rails::-webkit-scrollbar { width:5px }
+  .rails::-webkit-scrollbar-thumb { background:#26282d; border-radius:9px }
+  .rail { padding:10px 0 4px; }
+  .rt { display:flex; align-items:baseline; gap:8px; padding:0 15px 7px; }
+  .rt h3 { font-size:12.5px; margin:0; font-weight:700; }
+  .rt .n { font-size:10.5px; color:#6f737a; }
+  .rt .st { margin-left:auto; font-size:9.5px; color:#5c6067; letter-spacing:.04em; }
+  .rt .st.load { color:#d9b45b; }
+  .rt .st.ok { color:#7fc79a; }
+  .rt .st.disk { color:#5b9dd9; }
+  .strip { display:flex; gap:8px; padding:0 15px; overflow:hidden; }
+  .card { width:58px; flex:none; }
+  .art { width:58px; height:86px; border-radius:5px; background:#15161a; overflow:hidden; position:relative; }
+  .card.skel .art { background:linear-gradient(100deg,#141519 30%,#1e2025 50%,#141519 70%);
+                    background-size:220% 100%; animation:sh 1.1s linear infinite; }
+  .card.skel .t, .card.skel .y { background:#141519; color:transparent; border-radius:3px; }
+  @keyframes sh { from{background-position:120% 0} to{background-position:-120% 0} }
+  .card .t { font-size:8.5px; line-height:1.3; margin-top:5px; color:#c3c7cd;
+             height:22px; overflow:hidden; }
+  .card .y { font-size:8px; color:#6f737a; margin-top:1px; }
+  .art .p { position:absolute; inset:0; display:grid; place-items:center;
+            font-size:7.5px; letter-spacing:.06em; color:#ffffffb0; text-align:center;
+            padding:4px; line-height:1.35; }
+  .a1{background:linear-gradient(150deg,#243b52,#6c3f52)} .a2{background:linear-gradient(150deg,#2b3a2a,#5d5230)}
+  .a3{background:linear-gradient(150deg,#392a44,#2c4a58)} .a4{background:linear-gradient(150deg,#4a2f2c,#28323f)}
+  .a5{background:linear-gradient(150deg,#22404a,#5a3550)} .a6{background:linear-gradient(150deg,#3d3320,#26414a)}
+
+  /* ---- τηλεόραση ---- */
+  .tv { width:420px; height:262px; background:#07070a; border:1px solid #232529;
+        border-radius:9px; overflow:hidden; position:relative; }
+  .tvbar { display:flex; align-items:center; gap:13px; padding:9px 13px; font-size:10px; color:#8b8f96; }
+  .tvbar .on { color:#fff; font-weight:700; border-bottom:2px solid #fff; padding-bottom:2px; }
+  .tvrail { padding:7px 0 2px; }
+  .tvrt { display:flex; align-items:baseline; gap:7px; padding:0 13px 6px; }
+  .tvrt h3 { font-size:10.5px; margin:0; }
+  .tvrt .n { font-size:8.5px; color:#6f737a; }
+  .tvrt .st { margin-left:auto; font-size:8px; color:#5c6067; }
+  .tvrt .st.load { color:#d9b45b } .tvrt .st.ok { color:#7fc79a }
+  .tvstrip { display:flex; gap:7px; padding:0 13px; }
+  .tvcard { width:48px; height:71px; border-radius:4px; background:#15161a; flex:none; position:relative; }
+  .tvcard.skel { background:linear-gradient(100deg,#141519 30%,#1e2025 50%,#141519 70%);
+                 background-size:220% 100%; animation:sh 1.1s linear infinite; }
+  .tvcard.foc { outline:2.5px solid #fff; outline-offset:2px; }
+  .tvcard .p { position:absolute; inset:0; display:grid; place-items:center;
+               font-size:6.5px; color:#ffffffb0; text-align:center; padding:3px; line-height:1.3 }
+
+  .keys { display:flex; gap:9px; margin:14px 0 0; }
+  .keys button { background:#17181c; color:#e9eaec; border:1px solid #2a2c31; border-radius:9px;
+                 padding:9px 14px; font-size:12px; font-weight:700; cursor:pointer; }
+  .keys button:hover { background:#202227 }
+  .keys button.pri { background:#fff; color:#000; border-color:#fff }
+
+  .note { max-width:76ch; margin-top:34px; }
+  .note h4 { font-size:13px; margin:24px 0 6px; color:#cfd3d8; }
+  .note p, .note li { color:#b6bac0; }
+  .note li { margin-bottom:6px }
+  code { background:#1b1d21; padding:1px 5px; border-radius:4px; font-size:12px; }
+  .ok { color:#7fc79a; } .no { color:#c9584a; } .wt { color:#d9b45b; }
+  table { border-collapse:collapse; margin:10px 0 4px; font-size:12.5px; }
+  th,td { border-top:1px solid #1b1d21; padding:7px 14px 7px 0; text-align:left; vertical-align:top }
+  th { color:#7d818a; font-weight:700; font-size:11px; letter-spacing:.06em; text-transform:uppercase }
+</style>
+
+<h1>Μία σελίδα ανά ράφι μπροστά. Τα υπόλοιπα όταν τα ζητήσεις.</h1>
+<p class="lead">Κατεβαίνει <b>η πρώτη σελίδα κάθε κατηγορίας</b> και τίποτα άλλο:
+145 αιτήματα αντί για 3.402, <b>~16 δευτερόλεπτα αντί για 264</b>. Κάθε ράφι είναι
+γεμάτο με 14 αληθινές ταινίες και το πραγματικό του πλήθος. Οι υπόλοιπες σελίδες
+μιας κατηγορίας έρχονται <b>όταν την ανοίξεις ή κυλήσεις μέσα της</b>, και ό,τι κατέβει
+μένει στον δίσκο.</p>
+
+<p class="lead"><b>ΔΙΟΡΘΩΣΗ ΤΟΥ ΠΡΟΗΓΟΥΜΕΝΟΥ PREVIEW.</b> Η πρώτη έκδοση έδειχνε άδεια
+ράφια με σκελετούς και πλήθος από πουθενά. Το <code>get_categories</code> δίνει μόνο
+<code>id</code> και <code>title</code> — το πλήθος κοστίζει ένα αίτημα ανά κατηγορία.
+Αφού το πληρώνουμε, παίρνουμε μαζί και τις 14 πρώτες ταινίες: κανένα άδειο ράφι πουθενά.</p>
+
+<div class="prob">
+  <b>Το πρόβλημα δεν είναι ο παραλληλισμός, είναι το πλήθος.</b> Το portal δίνει
+  ~12,7 στοιχεία ανά απάντηση και κόβει με <code>HTTP 503</code> πάνω από εννέα
+  ταυτόχρονες συνδέσεις. Και τα δύο τα ορίζει ο πάροχος, όχι η εφαρμογή. Άρα
+  43.057 ταινίες είναι <b>3.402 αιτήματα για οποιονδήποτε</b>, και ο πάτος με
+  τέλειο παραλληλισμό είναι περίπου 255 δευτερόλεπτα.
+</div>
+<div class="meas">
+ΣΥΝΟΨΗ live    15538 σε   4.427s ·    1 αίτημα  ·   0 ΑΠΟΤΥΧΙΕΣ · 456 κατηγορίες<br>
+ΣΥΝΟΨΗ vod     43057 σε 263.518s · 3402 αιτήματα · 247 ΑΠΟΤΥΧΙΕΣ · 145 κατηγορίες → 3458 στοιχεία + 26 κατηγορίες χαμένα<br>
+ΣΥΝΟΨΗ series  11961 σε  72.891s · 1038 αιτήματα · 113 ΑΠΟΤΥΧΙΕΣ · 126 κατηγορίες → 1582 στοιχεία + 19 κατηγορίες χαμένα
+</div>
+
+<div class="row">
+
+  <div>
+    <p class="cap"><b>Σήμερα</b> · 4 λεπτά 24 δευτ. πριν δεις ταινία</p>
+    <div class="phone">
+      <div class="top"><span class="b">←</span><h2>Ενημέρωση περιεχομένου</h2></div>
+      <div class="pwrap">
+        <div class="pct" id="pct">34<small>%</small></div>
+        <div class="stage" id="stage">Λήψη ταινιών · κατηγορία 49/145</div>
+        <div class="bar"><i id="bar" style="width:34%"></i></div>
+      </div>
+      <div class="foot">3.402 αιτήματα σελίδας · <b>247 απέτυχαν σιωπηλά</b> ·
+        3.458 ταινίες και 26 ολόκληρες κατηγορίες δεν έφτασαν ποτέ.</div>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap"><i>Νέο</i> · κινητό, έτοιμο σε ~16 δευτ., γεμάτο</p>
+    <div class="phone">
+      <div class="top"><span class="b">←</span><h2>Ταινίες</h2><span class="grow"></span><span class="mag">⌕</span></div>
+      <div class="qa">
+        <div class="qchip hi">Κατηγορίες</div>
+        <div class="qchip">Ταξινόμηση</div>
+        <div class="qchip">Αγαπημένα</div>
+        <div class="qchip">Ενημέρωση</div>
+      </div>
+      <div class="rails" id="rails"></div>
+    </div>
+    <div class="keys">
+      <button class="pri" onclick="openScreen()">Άνοιξε «Ταινίες»</button>
+      <button onclick="scrollRails()">Άνοιξε ράφι (σελ. 2+)</button>
+      <button onclick="secondTime()">Δεύτερη φορά (δίσκος)</button>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap"><i>Νέο</i> · τηλεόραση, focus που δεν κουνιέται</p>
+    <div class="tv">
+      <div class="tvbar"><span class="on">Ταινίες</span><span>Σειρές</span><span>Live</span><span>Αναζήτηση</span></div>
+      <div id="tvrails"></div>
+    </div>
+    <div class="keys">
+      <button onclick="tvDown()">▼ Κάτω</button>
+      <button onclick="tvReset()">Από την αρχή</button>
+    </div>
+    <p class="foot" style="padding-left:0;max-width:300px">Το focus μένει στην κάρτα
+      που κρατάει ο χρήστης. Μια ράγα που γεμίζει από κάτω <b>δεν</b> το τραβάει
+      και <b>δεν</b> το ρίχνει.</p>
+  </div>
+
+</div>
+
+<div class="note">
+  <h4>Τι αλλάζει στην οθόνη — και μόνο αυτά</h4>
+  <table>
+    <tr><th>Στοιχείο</th><th>Σήμερα</th><th>Με αυτό το preview</th></tr>
+    <tr><td>Μπάρα «Λήψη ταινιών · κατηγορία 49/145»</td>
+        <td>Καταλαμβάνει την οθόνη μέχρι να τελειώσει</td>
+        <td class="ok">Φεύγει. Η οθόνη ανοίγει αμέσως με τα ράφια.</td></tr>
+    <tr><td>Ράφι μόλις ανοίξει η οθόνη</td>
+        <td>Δεν υπάρχει μέχρι να κατέβει ΟΛΗ η κατηγορία</td>
+        <td class="ok">Γεμάτο με 14 αληθινές ταινίες και το πραγματικό πλήθος</td></tr>
+    <tr><td>Σελίδες 2 και μετά</td>
+        <td>Όλες μπροστά, 3.402 αιτήματα</td>
+        <td class="ok">Όταν ανοίξεις το ράφι ή κυλήσεις μέσα του. 2-3 αιτήματα τη φορά.</td></tr>
+    <tr><td>Χρόνος μέχρι να δεις ταινία</td>
+        <td>4 λεπτά 24 δευτ.</td>
+        <td class="ok">~16 δευτερόλεπτα, με 145 αιτήματα</td></tr>
+    <tr><td>«Νέα» και «Κορυφαίες»</td>
+        <td>Ταξινομούν τη λίστα που κατέβηκε</td>
+        <td class="wt">Δικό τους αίτημα με <code>sortby=added</code>, δύο σελίδες</td></tr>
+    <tr><td>Αναζήτηση</td>
+        <td>Σαρώνει τα 43.057 στη μνήμη</td>
+        <td class="wt">Πάει στο portal. Βρίσκει και τα 3.458 που σήμερα λείπουν.</td></tr>
+    <tr><td>Ενημέρωση</td>
+        <td>Ξανακατεβάζει τα πάντα</td>
+        <td class="ok">Πετάει τον δίσκο και ξαναζητά μόνο ό,τι φαίνεται</td></tr>
+    <tr><td>Πλήθος στην κατηγορία</td>
+        <td>Μετρημένο από τα κατεβασμένα</td>
+        <td class="ok">Πραγματικό νούμερο, από το <code>total_items</code> της 1ης σελίδας</td></tr>
+  </table>
+
+  <h4>Τι ΔΕΝ αλλάζει</h4>
+  <ul>
+    <li>Ίδια ράφια, ίδια σειρά κατηγοριών, ίδιες διαστάσεις καρτών, ίδια γραμματοσειρά.</li>
+    <li>Ίδια quick actions και ίδια οθόνη επιλογής κατηγοριών.</li>
+    <li>Ίδια πλοήγηση και ίδιο focus στην τηλεόραση. Καμία νέα χειρονομία, κανένα νέο εικονίδιο.</li>
+    <li><b>Τα ζωντανά δεν αγγίζονται.</b> Κατεβαίνουν σε 4,4 δευτερόλεπτα με ένα αίτημα και μένουν όπως είναι.</li>
+    <li>Η <b>πλήρης λήψη</b> μένει διαθέσιμη από το «Ενημέρωση» για όποιον τη θέλει — παύει μόνο να είναι υποχρεωτική.</li>
+  </ul>
+
+  <h4>Σε τρία βήματα, το καθένα χτίζεται και δοκιμάζεται μόνο του</h4>
+  <ul>
+    <li><b>Βήμα 1 — μία σελίδα ανά κατηγορία.</b> 264s → ~16s. Αυτό δείχνει το preview.
+      Δεν αλλάζει τίποτα στη διάταξη· αλλάζει το κείμενο της μπάρας και εξαφανίζεται η αναμονή.</li>
+    <li><b>Βήμα 2 — δίσκος.</b> Δεύτερη φορά ακαριαίο, χωρίς δίκτυο. Ανανέωση από το «Ενημέρωση».</li>
+    <li><b>Βήμα 3 — υπόλοιπες σελίδες κατ' απαίτηση, αναζήτηση στο portal,
+      «Νέα»/«Κορυφαίες» με <code>sortby=added</code>.</b></li>
+  </ul>
+
+  <h4>Το ρίσκο που θέλει μάτι στη δοκιμή</h4>
+  <ul>
+    <li><span class="no">Focus στην τηλεόραση.</span> Μια ράγα που γεμίζει ενώ ο χρήστης κρατάει focus σε άλλη
+      είναι αλλαγή περιεχομένου κάτω από το focus. Πρέπει να αποδειχθεί στη συσκευή ότι το
+      focus δεν πηδάει και δεν χάνεται — αυτό είναι το ένα πράγμα που το preview δεν μπορεί να αποδείξει.</li>
+    <li><span class="no">Κύλιση που τρέχει.</span> Αν ανοίξεις γρήγορα δέκα ράφια, ζητάς δέκα φορές μαζί.
+      Χρειάζεται ουρά με προτεραιότητα σε ό,τι είναι στο κάδρο και ακύρωση σε ό,τι πέρασε — αλλιώς
+      επιστρέφουμε στα 503 από άλλη πόρτα.</li>
+    <li><span class="wt">Τα 145 αιτήματα είναι ακόμα 145.</span> Στα εννέα ταυτόχρονα βγαίνουν
+      ~16 δευτερόλεπτα. Αν το portal βγάλει 503 και εδώ, η επανάληψη του 1.88.0 τα σώζει αλλά
+      ο χρόνος ανεβαίνει. Η ΣΥΝΟΨΗ θα το πει.</li>
+    <li><span class="wt">Δεύτερη φορά.</span> Ο δίσκος πρέπει να δίνει τη ράγα πριν εμφανιστεί ο σκελετός,
+      αλλιώς κερδίσαμε αιτήματα και χάσαμε την αίσθηση.</li>
+  </ul>
+</div>
+
+<script>
+const CATS = [
+  ["Νέα", 40, "load"], ["Κορυφαίες", 40, "load"],
+  ["Δράση", 1284, ""], ["Κομεντί", 976, ""], ["4K UHD", 512, ""],
+  ["Θρίλερ", 803, ""], ["Παιδικά", 441, ""], ["Ντοκιμαντέρ", 388, ""],
+  ["Ελληνικά", 214, ""], ["Τρόμου", 655, ""]
+];
+const TITLES = ["The Death of Robin Hood","Umthetho","Νυχτερινή Βάρδια","Cold Harbour",
+  "Το Τελευταίο Τρένο","Sable Island","Καλοκαίρι '99","Ash & Salt","Ο Δρόμος Πίσω","Vireo"];
+const YEARS = ["2026","2025","2026","2024","2026","2025","2023","2026","2025","2024"];
+let fromDisk = false;
+
+function cardHTML(i, filled) {
+  const a = "a" + (1 + (i % 6));
+  if (!filled) return '<div class="card skel"><div class="art"></div><div class="t">·</div><div class="y">·</div></div>';
+  return '<div class="card"><div class="art ' + a + '"><div class="p">' +
+    TITLES[i % TITLES.length] + '</div></div><div class="t">' +
+    TITLES[i % TITLES.length] + '</div><div class="y">' + YEARS[i % YEARS.length] + '</div></div>';
+}
+function railHTML(idx, name, count, state) {
+  const filled = state === "ok" || state === "disk";
+  let cards = "";
+  for (let i = 0; i < 5; i++) cards += cardHTML(idx * 5 + i, filled);
+  const label = state === "load" ? "ΖΗΤΕΙΤΑΙ…" : state === "ok" ? "ΣΕΛΙΔΑ 1 ΑΠΟ ΤΟ PORTAL"
+              : state === "disk" ? "ΑΠΟ ΤΟΝ ΔΙΣΚΟ" : "ΑΝΑΜΟΝΗ ΣΕΙΡΑΣ";
+  const cls = state === "load" ? "load" : state === "ok" ? "ok" : state === "disk" ? "disk" : "";
+  const num = (state === "" ) ? "" : count.toLocaleString("el");
+  return '<div class="rail" data-i="' + idx + '"><div class="rt"><h3>' + name +
+    '</h3><span class="n">' + num + '</span><span class="st ' + cls +
+    '">' + label + '</span></div><div class="strip">' + cards + '</div></div>';
+}
+function render(states) {
+  document.getElementById("rails").innerHTML =
+    CATS.map((c, i) => railHTML(i, c[0], c[1], states[i])).join("");
+}
+let states = CATS.map(() => "");
+let opened = new Set();
+function openScreen() {
+  fromDisk = false; opened = new Set();
+  states = CATS.map(() => "load");
+  render(states);
+  document.getElementById("rails").scrollTop = 0;
+  // ~16 δευτερόλεπτα στην πραγματικότητα, συμπιεσμένα εδώ: τα ράφια γεμίζουν
+  // ΜΕ ΤΗ ΣΕΙΡΑ και το πρώτο είναι έτοιμο πολύ πριν το τελευταίο.
+  CATS.forEach((c, i) => setTimeout(() => { states[i] = "ok"; render(states); }, 260 + i * 150));
+}
+function scrollRails() {
+  const el = document.getElementById("rails");
+  const next = CATS.findIndex((c, i) => !opened.has(i) && states[i] === "ok");
+  if (next < 0) return;
+  opened.add(next);
+  states[next] = "load"; render(states);
+  setTimeout(() => { states[next] = fromDisk ? "disk" : "ok"; render(states); }, 420);
+  el.scrollTop = next * 128;
+}
+function secondTime() {
+  fromDisk = true; opened = new Set();
+  states = CATS.map(() => "disk");
+  render(states);
+  document.getElementById("rails").scrollTop = 0;
+}
+
+let tvFocus = 0, tvStates = ["load", "", "", ""];
+const TVCATS = [["Νέα", 40], ["Δράση", 1284], ["Κομεντί", 976], ["4K UHD", 512]];
+function tvRender() {
+  document.getElementById("tvrails").innerHTML = TVCATS.map((c, r) => {
+    const filled = tvStates[r] === "ok";
+    let cards = "";
+    for (let i = 0; i < 6; i++) {
+      const foc = (r === tvFocus && i === 0) ? " foc" : "";
+      cards += filled
+        ? '<div class="tvcard' + foc + '" style="background:linear-gradient(150deg,#243b52,#6c3f52)"><div class="p">' + TITLES[(r * 6 + i) % TITLES.length] + '</div></div>'
+        : '<div class="tvcard skel' + foc + '"></div>';
+    }
+    const st = tvStates[r] === "load" ? "ΖΗΤΕΙΤΑΙ…" : tvStates[r] === "ok" ? "ΕΤΟΙΜΗ" : "";
+    const cls = tvStates[r] === "load" ? "load" : tvStates[r] === "ok" ? "ok" : "";
+    return '<div class="tvrail"><div class="tvrt"><h3>' + c[0] + '</h3><span class="n">' +
+      c[1].toLocaleString("el") + '</span><span class="st ' + cls + '">' + st +
+      '</span></div><div class="tvstrip">' + cards + '</div></div>';
+  }).join("");
+}
+function tvDown() {
+  if (tvFocus < TVCATS.length - 1) tvFocus++;
+  const nxt = tvFocus + 1;
+  if (nxt < TVCATS.length && tvStates[nxt] === "") {
+    tvStates[nxt] = "load"; tvRender();
+    setTimeout(() => { tvStates[nxt] = "ok"; tvRender(); }, 520);
+  }
+  tvRender();
+}
+function tvReset() { tvFocus = 0; tvStates = ["load", "", "", ""]; tvRender();
+  setTimeout(() => { tvStates[0] = "ok"; tvRender(); }, 460); }
+
+openScreen(); tvReset();
+</script>

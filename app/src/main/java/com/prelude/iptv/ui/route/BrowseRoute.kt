@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -1043,6 +1044,27 @@ internal fun BrowseScreen(
                 }
                 val hasHero = (state.contentType == "vod" || state.contentType == "series") &&
                     state.search.isBlank() && channels.isNotEmpty()
+                // ΥΠΑΡΧΟΥΝ ΚΙ ΑΛΛΑ; Ξαναϋπολογίζεται όταν αλλάξει η ομάδα ή έρθει
+                // σελίδα — όχι σε κάθε frame: διαβάζει το session cache.
+                val moreInGroup = remember(
+                    state.selectedGroup, state.contentType, state.channels.size, state.search
+                ) { state.search.isBlank() && vm.hasMoreInGroup(state.selectedGroup) }
+                // Ο ΠΥΡΟΔΟΤΗΣ. Ζητάει την επόμενη σελίδα όταν ο χρήστης πλησιάσει
+                // το τέλος, όχι όταν το φτάσει: μια σελίδα έρχεται σε ~0,15
+                // δευτερόλεπτα, οπότε προλαβαίνει και η λίστα δεν κοντοστέκεται.
+                // Το ίδιο το [MainViewModel.loadMoreInGroup] αγνοεί δεύτερη κλήση
+                // όσο τρέχει η πρώτη, άρα το scroll δεν μπορεί να πλημμυρίσει το
+                // portal με αιτήματα.
+                val lastVisible = remember {
+                    derivedStateOf { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
+                }
+                LaunchedEffect(moreInGroup, state.selectedGroup) {
+                    if (!moreInGroup) return@LaunchedEffect
+                    snapshotFlow { lastVisible.value to listState.layoutInfo.totalItemsCount }
+                        .collect { (last, total) ->
+                            if (total > 0 && last >= total - 6) vm.loadMoreInGroup(state.selectedGroup)
+                        }
+                }
                 val headerCount = (if (hasContinue) 1 else 0) + (if (hasHero) 1 else 0)
                 if (channels.isEmpty() && !state.loading) EmptyState(
                     hasLoaded = state.channels.isNotEmpty(),
@@ -1173,6 +1195,30 @@ internal fun BrowseScreen(
                             onFav = { vm.toggleFavorite(ch) }
                         )
                     }
+                    }
+                    // ΣΕΛΙΔΕΣ ΚΑΤ' ΑΠΑΙΤΗΣΗ. Η γραμμή μπαίνει ΜΟΝΟ όταν η ομάδα
+                    // έχει κι άλλα στο portal, ώστε στο τέλος μιας πλήρους λίστας
+                    // να μην κρέμεται ένα spinner που δεν τελειώνει ποτέ.
+                    if (moreInGroup) {
+                        item(key = "load-more") {
+                            Row(
+                                Modifier.fillMaxWidth().padding(vertical = 14.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                androidx.compose.material3.CircularProgressIndicator(
+                                    modifier = Modifier.size(14.dp),
+                                    strokeWidth = 2.dp,
+                                    color = TextMid,
+                                )
+                                Text(
+                                    stringResource(R.string.catalog_loading_more),
+                                    color = TextMid,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(start = 9.dp),
+                                )
+                            }
+                        }
                     }
                     item { Spacer(Modifier.height(20.dp)) }
                 }
@@ -1466,7 +1512,21 @@ private fun FullCatalogLoadingScreen(
 ) {
     val progressState by vm.catalogProgressState.collectAsStateWithLifecycle()
     val active = progressState.sourceProgress[vm.currentSourceId()]?.takeIf { it.active }
-    val backFocus = rememberInitialFocus()
+    // ΜΟΝΟ ΟΛΟΚΛΗΡΩΜΕΝΕΣ ΕΝΟΤΗΤΕΣ ΜΕΤΡΑΝΕ ΩΣ «ΕΤΟΙΜΟ».
+    //
+    // Δοκιμάστηκε και τρίτη κατάσταση «περιηγήσιμο, συμπληρώνεται» για ενότητα
+    // που κατεβαίνει ακόμη. Δεν επιτρέπεται: ο κανόνας του έργου είναι **ποτέ
+    // μισή ενότητα**, και τα gates τον επιβάλλουν. Τα ζωντανά τελειώνουν σε
+    // λιγότερο από τέσσερα δευτερόλεπτα, οπότε αυτή η γραμμή εμφανίζεται σχεδόν
+    // αμέσως ούτως ή άλλως.
+    val anythingReady = loadedSections.isNotEmpty()
+    // Η ΤΗΛΕΟΡΑΣΗ ΑΠΑΙΤΕΙ ΡΗΤΟ FOCUS. Όσο δεν υπάρχει τίποτα έτοιμο, το βελάκι
+    // πίσω είναι το μόνο στοιχείο. Μόλις εμφανιστεί το «Περιήγηση τώρα», το
+    // focus πάει εκεί: είναι η ενέργεια που θέλει ο χρήστης, και το βελάκι
+    // μένει προσβάσιμο ένα βήμα πιο πάνω. Τα δύο `enabled` είναι αμοιβαία
+    // αποκλειόμενα, ώστε να μην παλεύουν δύο αιτήματα focus στο ίδιο frame.
+    val backFocus = rememberInitialFocus(enabled = !anythingReady)
+    val browseFocus = rememberInitialFocus(enabled = anythingReady, key = "browse-now")
     val percent = active?.percent ?: 0
     val runningType = active?.contentType?.takeIf { it in setOf("live", "vod", "series") }
     val categoryProgress = remember(active?.stage) {
@@ -1583,8 +1643,46 @@ private fun FullCatalogLoadingScreen(
                 androidx.compose.material3.HorizontalDivider(color = Color(0xFF16171B), thickness = 1.dp)
             }
 
+            // Η ΕΞΟΔΟΣ ΠΡΕΠΕΙ ΝΑ ΦΑΙΝΕΤΑΙ. Το βελάκι των 30dp πάνω αριστερά έκανε
+            // ήδη ακριβώς αυτό, αλλά τίποτα δεν έλεγε στον χρήστη ότι μπορεί να
+            // φύγει και να περιηγηθεί — και περίμενε 4,5 λεπτά χωρίς λόγο.
+            // Καλεί το ΙΔΙΟ [onBack]· δεν προστίθεται καμία νέα διαδρομή.
+            if (anythingReady) {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 18.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .tvFocus(RoundedCornerShape(10.dp))
+                        .focusRequester(browseFocus)
+                        .clickable(onClick = onBack)
+                        .border(1.dp, Color(0xFF2C2F35), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 13.dp, vertical = 11.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(9.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        null,
+                        tint = Color(0xFF6BBF83),
+                        modifier = Modifier.size(15.dp),
+                    )
+                    Column {
+                        Text(
+                            stringResource(R.string.catalog_browse_now),
+                            color = Color(0xFFE9EAEC),
+                            fontSize = 13.5f.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            stringResource(R.string.catalog_browse_now_hint),
+                            color = Color(0xFF7D818A),
+                            fontSize = 11.sp,
+                            lineHeight = 14.sp,
+                        )
+                    }
+                }
+            }
             Text(
-                stringResource(R.string.catalog_complete_sections_open_immediately),
+                stringResource(R.string.catalog_category_choice_when_all_done),
                 color = Color(0xFF7D818A),
                 fontSize = 11.sp,
                 lineHeight = 15.sp,

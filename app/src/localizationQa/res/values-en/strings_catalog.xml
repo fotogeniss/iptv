@@ -55,7 +55,10 @@
     <string name="catalog_stage_movies_category">Downloading movies · category %1$d/%2$d</string>
     <string name="catalog_stage_series_category">Downloading series · category %1$d/%2$d</string>
     <string name="catalog_section_waiting">waiting</string>
-    <string name="catalog_complete_sections_open_immediately">Completed sections open immediately. Category selection appears when all sections have finished.</string>
+    <string name="catalog_loading_more">Loading more…</string>
+    <string name="catalog_browse_now">Browse now</string>
+    <string name="catalog_browse_now_hint">Ready sections open now. The download continues underneath.</string>
+    <string name="catalog_category_choice_when_all_done">Category selection appears when all sections have finished.</string>
     <string name="catalog_loading_with_progress">%1$s · Downloading from source…</string>
     <string name="catalog_loading_live">Downloading live channels…</string>
     <string name="catalog_loading_movies">Downloading movies…</string>

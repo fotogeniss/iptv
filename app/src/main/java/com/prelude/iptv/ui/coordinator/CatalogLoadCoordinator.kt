@@ -6,6 +6,7 @@ import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.data.Repository
 import com.prelude.iptv.data.SourceCategoriesCallback
+import com.prelude.iptv.data.SourceCategoryTotalsCallback
 import com.prelude.iptv.data.SourcePartialCallback
 import com.prelude.iptv.data.SourceProgressCallback
 import com.prelude.iptv.source.StalkerClient
@@ -37,6 +38,20 @@ internal class CatalogLoadCoordinator(
         val items: List<Channel>,
         val categories: List<Pair<String, String>> = emptyList(),
         val seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>> = emptyMap(),
+        /**
+         * Πραγματικά πλήθη ανά κατηγορία, όπως τα δηλώνει ο πάροχος
+         * (`total_items`), όχι όπως προκύπτουν από τα φορτωμένα.
+         *
+         * Κενός χάρτης όταν ο πάροχος δεν τα δηλώνει (Xtream, M3U): τότε ισχύει
+         * η μέτρηση των φορτωμένων, ακριβώς όπως πριν.
+         */
+        val categoryTotals: Map<String, Int> = emptyMap(),
+        /**
+         * Πόσα στοιχεία δίνει ο πάροχος ανά σελίδα (`max_page_items`). Ορίζει
+         * ποια είναι η επόμενη σελίδα όταν ζητηθούν κι άλλα. Μηδέν = ο πάροχος
+         * δεν σελιδοποιεί έτσι, άρα δεν υπάρχει «επόμενη σελίδα».
+         */
+        val categoryPageSize: Int = 0,
     )
 
     /** Snapshot used to roll back progressive refresh publication on failure. */
@@ -93,6 +108,15 @@ internal class CatalogLoadCoordinator(
         withContext(Dispatchers.IO) {
             var loadedCategories = emptyList<Pair<String, String>>()
             val categoriesCallback: SourceCategoriesCallback = { loadedCategories = it }
+            // ΤΑ ΠΛΗΘΗ ΕΡΧΟΝΤΑΙ ΝΩΡΙΣ, ΤΑ ΣΤΟΙΧΕΙΑ ΑΡΓΑ. Ο πάροχος δηλώνει
+            // `total_items` μέσα στην 1η σελίδα κάθε κατηγορίας, δηλαδή αφού
+            // κατέβουν 14 στοιχεία και όχι 4.282.
+            var loadedTotals = emptyMap<String, Int>()
+            var loadedPageSize = 0
+            val totalsCallback: SourceCategoryTotalsCallback = { totals, pageSize ->
+                loadedTotals = totals
+                loadedPageSize = pageSize
+            }
             var lastPartialSize = 0
             var lastPartialAtMs = 0L
             val partialCallback: SourcePartialCallback? = onPartial?.let { publish ->
@@ -116,7 +140,8 @@ internal class CatalogLoadCoordinator(
             }
             val rawItems = when (playlist.type) {
                 PlaylistType.STALKER -> Repository.stalkerLoad(
-                    stalkerFor(playlist), type, categoryIds, progress, partialCallback, categoriesCallback
+                    stalkerFor(playlist), type, categoryIds, progress, partialCallback,
+                    categoriesCallback, totalsCallback,
                 )
                 PlaylistType.XTREAM -> when (type) {
                     "vod" -> Repository.xtreamVodSelected(playlist, categoryIds, progress, partialCallback, categoriesCallback)
@@ -158,7 +183,35 @@ internal class CatalogLoadCoordinator(
                 normalized.items,
                 knownCategories + missingGroups,
                 normalized.seriesEpisodes,
+                loadedTotals,
+                loadedPageSize,
             )
+        }
+    }
+
+    /**
+     * ΜΙΑ σελίδα μιας κατηγορίας, όταν ο χρήστης φτάσει στο τέλος της λίστας.
+     *
+     * ΠΕΡΝΑΕΙ ΑΠΟ ΤΟΝ ΙΔΙΟ ΣΕΙΡΙΑΚΟ ΦΡΑΓΜΟ με τη φόρτωση: αν κατεβαίνει ακόμη ο
+     * κατάλογος, η σελίδα περιμένει αντί να πιέσει το portal παράλληλα. Μετά το
+     * κόψιμο του 2ου περάσματος η αναμονή αυτή είναι δευτερόλεπτα, όχι λεπτά.
+     *
+     * Κενή λίστα = δεν υπάρχει άλλο, ή ο πάροχος δεν σελιδοποιεί (Xtream, M3U).
+     */
+    suspend fun categoryPage(
+        playlist: Playlist,
+        type: String,
+        categoryId: String,
+        categoryTitle: String,
+        page: Int,
+    ): List<Channel> = withProviderLock {
+        withContext(Dispatchers.IO) {
+            when (playlist.type) {
+                PlaylistType.STALKER -> Repository.stalkerCategoryPage(
+                    stalkerFor(playlist), type, categoryId, categoryTitle, page
+                )
+                else -> emptyList()
+            }
         }
     }
 

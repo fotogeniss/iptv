@@ -6,12 +6,26 @@ import com.prelude.iptv.data.Channel
 internal object CatalogCategoryVisibilityPolicy {
     private const val UNGROUPED = "Χωρίς ομάδα"
 
+    /**
+     * ΤΟ ΔΗΛΩΜΕΝΟ ΠΛΗΘΟΣ ΝΙΚΑΕΙ ΤΟ ΜΕΤΡΗΜΕΝΟ.
+     *
+     * Το μέτρημα των φορτωμένων είναι σωστό μόνο όταν έχουν φορτωθεί όλα. Όσο ο
+     * κατάλογος κατεβαίνει, λέει «14» για κατηγορία με 4.282 ταινίες — και αυτό
+     * ακριβώς το ψέμα ήταν μία από τις αιτίες που το προοδευτικό μοντέλο
+     * απορρίφθηκε. Το `total_items` του παρόχου το ξέρει από την 1η σελίδα.
+     *
+     * [declaredTotals] κενό (Xtream, M3U, ή portal που δεν το δηλώνει) =
+     * συμπεριφορά ακριβώς όπως πριν.
+     */
     fun counts(
         categories: List<Pair<String, String>>,
         channels: List<Channel>,
+        declaredTotals: Map<String, Int> = emptyMap(),
     ): Map<String, Int> {
         val countsByTitle = channels.groupingBy { it.group.ifBlank { UNGROUPED } }.eachCount()
-        return categories.associate { (id, title) -> id to (countsByTitle[title] ?: 0) }
+        return categories.associate { (id, title) ->
+            id to (declaredTotals[id] ?: countsByTitle[title] ?: 0)
+        }
     }
 
     fun visibleChannels(

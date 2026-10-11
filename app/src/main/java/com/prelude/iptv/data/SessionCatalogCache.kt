@@ -18,6 +18,13 @@ data class SessionCatalogSnapshot(
     val groups: List<String>,
     val categories: List<Pair<String, String>> = emptyList(),
     val seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>> = emptyMap(),
+    /**
+     * Πλήθος ανά κατηγορία όπως το ΔΗΛΩΝΕΙ ο πάροχος (`total_items`), όχι όπως
+     * προκύπτει από τα φορτωμένα. Κενό όταν ο πάροχος δεν το δίνει.
+     */
+    val categoryTotals: Map<String, Int> = emptyMap(),
+    /** `max_page_items` του παρόχου· 0 όταν δεν σελιδοποιεί έτσι. */
+    val categoryPageSize: Int = 0,
     val epgUrl: String = "",
     val loadedAtMs: Long = System.currentTimeMillis()
 )

@@ -190,11 +190,24 @@ object Repository {
         onProgress: SourceProgressCallback? = null,
         onPartial: SourcePartialCallback? = null,
         onCategories: SourceCategoriesCallback? = null,
+        onCategoryTotals: SourceCategoryTotalsCallback? = null,
     ): List<Channel> = when (contentType) {
-        "vod" -> cli.getVodChannels(ids, onProgress, onPartial, onCategories)
-        "series" -> cli.getSeriesChannels(ids, onProgress, onPartial, onCategories)
+        "vod" -> cli.getVodChannels(ids, onProgress, onPartial, onCategories, onCategoryTotals)
+        "series" -> cli.getSeriesChannels(ids, onProgress, onPartial, onCategories, onCategoryTotals)
         else -> cli.getChannels(ids, onProgress, onPartial, onCategories)
     }
+
+    /**
+     * ΜΙΑ σελίδα μιας κατηγορίας, κατ' απαίτηση. Μόνο Stalker: Xtream και M3U
+     * δεν σελιδοποιούν έτσι και επιστρέφουν κενό, δηλαδή «δεν υπάρχει άλλο».
+     */
+    fun stalkerCategoryPage(
+        cli: StalkerClient,
+        contentType: String,
+        categoryId: String,
+        categoryTitle: String,
+        page: Int,
+    ): List<Channel> = cli.categoryPage(contentType, categoryId, categoryTitle, page)
 
     fun xtreamLiveCategories(pl: Playlist, onProgress: SourceProgressCallback? = null): List<Pair<String, String>> =
         XtreamClient.liveCategories(pl.server, pl.username, pl.password, onProgress)

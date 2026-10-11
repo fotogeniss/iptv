@@ -93,6 +93,23 @@ private const val CONTROLS_TIMEOUT_MS = 4_000L
  */
 private const val FREEZE_MAX_MS = 900L
 
+/**
+ * Διάρκεια της μεγέθυνσης προεπισκόπηση <-> πλήρης οθόνη.
+ *
+ * Σταθερά και όχι αριθμός μέσα στο `tween`, επειδή το παγωμένο καρέ πρέπει να
+ * κρατήσει ΑΚΡΙΒΩΣ όσο η κίνηση. Δύο αριθμοί που πρέπει να συμφωνούν και ζουν
+ * χωριστά, αργά ή γρήγορα διαφωνούν.
+ */
+private const val PLAYER_EXPAND_MS = 360
+
+/**
+ * Πόσο περιμένουμε το `PixelCopy` πριν ξεκινήσει ακάλυπτη η κίνηση.
+ *
+ * 120ms: αρκετά για μια κανονική λήψη, λίγα ώστε να μη νιώθεται καθυστέρηση στο
+ * πάτημα. Το ΠΑΤΗΜΑ δεν περιμένει ποτέ — μόνο η γεωμετρία.
+ */
+private const val FREEZE_CAPTURE_MAX_MS = 120L
+
 /** Ένας και μόνο προορισμός focus όταν εμφανίζεται ξανά το TV chrome. */
 private enum class PlayerFocusTarget { PLAY, PROGRESS }
 
@@ -211,9 +228,16 @@ fun PlayerHost(
 ) {
     val density = LocalDensity.current
     val state by engine.state.collectAsState()
+    // Η ΚΙΝΗΣΗ ΔΕΝ ΞΕΚΙΝΑ ΠΡΙΝ ΥΠΑΡΞΕΙ ΤΟ ΚΑΡΕ ΠΟΥ ΘΑ ΤΗΝ ΚΑΛΥΨΕΙ.
+    //
+    // Το `fullscreen` απαντά αμέσως στο πάτημα — focus, χειριστήρια και πλήκτρα
+    // το διαβάζουν κατευθείαν. Η ΓΕΩΜΕΤΡΙΑ όμως ακολουθεί αυτό εδώ, που αλλάζει
+    // αφού επιστρέψει το `PixelCopy`. Αλλιώς τα δύο πρώτα καρέ της μεγέθυνσης
+    // έδειχναν την ακάλυπτη επιφάνεια να πηδάει.
+    var geometryFullscreen by remember { mutableStateOf(fullscreen) }
     val progress by animateFloatAsState(
-        if (fullscreen) 1f else 0f,
-        tween(durationMillis = 360, easing = FastOutSlowInEasing),
+        if (geometryFullscreen) 1f else 0f,
+        tween(durationMillis = PLAYER_EXPAND_MS, easing = FastOutSlowInEasing),
         label = "playerExpand"
     )
 
@@ -351,10 +375,59 @@ fun PlayerHost(
         tween(durationMillis = 200),
         label = "freezeFade"
     )
+    // ---- ΤΟ ΑΚΙΝΗΤΟ ΚΑΡΕ ΠΟΥ ΚΑΛΥΠΤΕΙ ΤΗΝ ΚΙΝΗΣΗ ----
+    //
+    // Το `SurfaceView` ζει σε δικό του system layer· ο compositor δεν το
+    // παρακολουθεί ομαλά όσο αλλάζει μέγεθος, το πετάει σε βήματα. Και οι δύο
+    // μηχανές παίζουν πλέον σε `SurfaceView`, άρα και οι δύο θέλουν κάλυψη —
+    // δεν ρωτάμε ποια παίζει.
+    //
+    // Τραβάμε ΕΝΑ καρέ με `PixelCopy` τη στιγμή που ξεκινά η μετάβαση και το
+    // δείχνουμε ΠΑΝΩ από την επιφάνεια για όλη τη διάρκεια. Μοιράζεται το
+    // `videoModifier` μαζί της, άρα καλύπτει ακριβώς το ίδιο ορθογώνιο και
+    // μεγαλώνει ομαλά μαζί με το κάδρο, ως απλό Compose layer. Ό,τι σκαλοπατάει
+    // από κάτω δεν φαίνεται ποτέ.
+    //
+    // Το βίντεο παγώνει για 360ms. Ίδιο κόλπο με την εναλλαγή καναλιού, και δεν
+    // γίνεται αντιληπτό: το μάτι παρακολουθεί την κίνηση, όχι το περιεχόμενο.
+    var freezeOwned by remember { mutableStateOf<CapturedVideoFrame?>(null) }
+    var freezeHoldMs by remember { mutableLongStateOf(0L) }
+    var expandSettled by remember { mutableStateOf(false) }
+    LaunchedEffect(fullscreen) {
+        // Η πρώτη σύνθεση δεν είναι μετάβαση: εκεί δεν υπάρχει ακόμη εικόνα να
+        // τραβηχτεί, και ένα καρέ από το πουθενά θα κάλυπτε το ξεκίνημα.
+        if (!expandSettled) {
+            expandSettled = true
+            geometryFullscreen = fullscreen
+            return@LaunchedEffect
+        }
+        // ΜΕ ΟΡΙΟ, ΠΑΝΤΑ. Αν το `PixelCopy` δεν απαντήσει — άκυρη επιφάνεια, ροή
+        // που πέθανε — η κίνηση ξεκινά ακάλυπτη αλλά ΞΕΚΙΝΑ. Χωρίς όριο, ο
+        // player θα έμενε για πάντα στο μέγεθος που ήταν.
+        val captured = kotlinx.coroutines.withTimeoutOrNull(FREEZE_CAPTURE_MAX_MS) {
+            frameCapture?.capture()
+        }
+        if (captured != null) {
+            freezeOwned?.recycle()
+            freezeOwned = captured
+            freezeHoldMs = PLAYER_EXPAND_MS.toLong()
+            freezeFrame = captured.image
+        }
+        geometryFullscreen = fullscreen
+    }
+
     LaunchedEffect(freezeFrame) {
-        if (freezeFrame == null) return@LaunchedEffect
+        if (freezeFrame == null) {
+            freezeOwned?.recycle()
+            freezeOwned = null
+            return@LaunchedEffect
+        }
         freezeVisible = true
         val framesAtStart = state.renderedFrames
+        // ΚΡΑΤΗΜΑ ΓΙΑ ΟΣΟ ΚΙΝΕΙΤΑΙ. Στα ζωντανά η επιφάνεια δεν αλλάζει, οπότε
+        // τα καρέ συνεχίζουν να έρχονται και η αναμονή από κάτω θα τελείωνε
+        // αμέσως — αποκαλύπτοντας ακριβώς το σκαλοπάτι που θέλαμε να κρύψουμε.
+        if (freezeHoldMs > 0L) kotlinx.coroutines.delay(freezeHoldMs)
         // Περιμένουμε την πρώτη εικόνα της νέας επιφάνειας — ΜΕ ΟΡΙΟ.
         //
         // Αν η καινούργια επιφάνεια δεν βγάλει ποτέ καρέ (σφάλμα ροής, κανάλι
@@ -368,6 +441,7 @@ fun PlayerHost(
         }
         freezeVisible = false
         kotlinx.coroutines.delay(220)
+        freezeHoldMs = 0L
         freezeFrame = null
     }
 
@@ -633,7 +707,25 @@ fun PlayerHost(
             PlayerVideoSurface(
                 engine = engine,
                 keepScreenOn = state.playing,
-                preferSmoothResize = !fullscreen,
+                // ΜΙΑ ΕΠΙΦΑΝΕΙΑ, ΓΙΑ ΟΛΗ ΤΗ ΖΩΗ ΤΟΥ PLAYER.
+                //
+                // Η τηλεόραση έπαιζε σε `TextureView` στην προεπισκόπηση και σε
+                // `SurfaceView` σε πλήρη οθόνη, και άλλαζε ανάμεσά τους σε κάθε
+                // μετάβαση. Το 1.85.0 μετέφερε την εναλλαγή στο τέλος της
+                // κίνησης· η κίνηση έγινε ομαλή, αλλά η εναλλαγή κοστίζει
+                // reconfigure του decoder και έδινε μαύρο περίπου ενός
+                // δευτερολέπτου, ακριβώς εκεί που ησυχάζει η εικόνα.
+                //
+                // Δεν υπάρχει σωστή στιγμή. Υπάρχει μόνο το να ΜΗΝ αλλάζει
+                // επιφάνεια: `SurfaceView` από την αρχή ως το τέλος, που δίνει
+                // και το ακριβές pacing που θέλει η τηλεόραση. Το σκαλοπάτι της
+                // αλλαγής μεγέθους το καλύπτει το ακίνητο καρέ παραπάνω, και
+                // στις δύο μηχανές. Δες docs/PLAYER_SURFACE_DECISIONS.md.
+                //
+                // Το κινητό συνεχίζει να περνά `true`: εκεί δεν υπάρχει
+                // προεπισκόπηση με judder, και το `TextureView` ακολουθεί το
+                // Compose.
+                preferSmoothResize = false,
                 frameCapture = frameCapture,
                 onLastFrame = { bitmap ->
                     if (bitmap != null) freezeFrame = bitmap.asImageBitmap()

@@ -1,10 +1,10 @@
 # Prelude+ next-chat handoff
 
-- **Date:** 2026-08-14
+- **Date:** 2026-08-15
 - **Workspace:** `C:\Users\konst\AndroidStudioProjects\chatgptiptv`
-- **Branch:** `qa/1.73.0-pending-build` · **HEAD:** `a02a391` (1.84.0). `main` was fast-forwarded to the same commit on 2026-08-15 and is **14 ahead of `origin/main`, not yet pushed** — verify with `git log --oneline -5` and `git branch -vv`
+- **Branch:** `main` and `qa/1.73.0-pending-build` both at **HEAD `f38e365`** (1.84.0 plus a docs commit), **15 ahead of `origin/main`, not yet pushed** — verify with `git log --oneline -5` and `git branch -vv`
 - **Remote:** `https://github.com/fotogeniss/iptv` (private). CI runs on pushes to `main` and on pull requests
-- **Version on disk:** 1.84.0 (`versionCode 156`), uncommitted, owner build pending
+- **Version on disk:** 1.90.0 (`versionCode 162`), **uncommitted**, owner build pending. Five versions sit on top of HEAD: 1.85.0/1.86.0 (Android TV player surface, never built), 1.87.0 (Stalker memory - **built, the crash is gone**), 1.88.0 (503 retry, concurrency back to 9) and 1.89.0 (first page of every category first). They will be built and judged together
 
 > This header has been wrong twice. Run `git log --oneline -5` and
 > `git status --short` and believe those, not this line.
@@ -21,7 +21,111 @@ reasoning, the open questions and the traps that the changelog does not carry.
 
 ## 0. START HERE — state, what is open, what to do first
 
-### 2026-08-14 — where things actually stand
+### 2026-08-15 (later) — the Stalker catalog, settled by measurement
+
+**The crash is fixed and confirmed on device.** 43057 movies now load to the end
+where 1.86.0 died halfway. What remains is speed, and the arithmetic below closes
+the question of how much of it is even available.
+
+```
+ΣΥΝΟΨΗ live    15538 σε   4.427s ·    1 αίτημα  ·   0 ΑΠΟΤΥΧΙΕΣ   (was 132.52s / 1345)
+ΣΥΝΟΨΗ vod     43057 σε 263.518s · 3402 αιτήματα · 247 ΑΠΟΤΥΧΙΕΣ  → 3458 items + 26 whole categories lost
+ΣΥΝΟΨΗ series  11961 σε  72.891s · 1038 αιτήματα · 113 ΑΠΟΤΥΧΙΕΣ  → 1582 + 19
+```
+
+**The portal caps concurrency.** It answered `HTTP 503` within the first second at
+sixteen concurrent requests. Nine (6 page + 3 category) is the only figure it has
+ever completed without a failure. 1.87.0 raised it to sixteen on the strength of a
+measurement taken from the **live** path, which after 1.87.0 sends one request and
+stresses nothing. A measurement is only valid for the path it measured. 1.88.0 put
+it back and added the retry those 503s needed - until then a failed page was
+dropped in silence.
+
+**The portal gives 12.7 items per response**, and `max_page_items` is server-side.
+So 43057 movies is 3402 requests for anybody, and the floor with perfect
+parallelism is around 255 seconds. There is no `get_all_*` for vod or series; only
+`get_all_channels` for `itv`, which is why live and only live collapsed to one
+request. **Downloading the whole catalog cannot be made fast.** That is settled.
+
+**So 1.89.0 stops trying to make it faster and changes the order instead.** First
+pass: page one of *every* category. Second pass: all remaining pages. At second 16
+all 145 categories hold fourteen items each, a home rail shows at most twenty, and
+the screen is genuinely usable while the rest arrives underneath. The final catalog
+is byte-for-byte what it was.
+
+**The approved plan is three steps** (`prototypes/lazy_catalog_on_demand.html`):
+step 1 is 1.89.0, step 2 is a disk cache, step 3 is on-demand pages plus portal
+search plus dedicated `sortby` requests for the New and Top rails. **Step 3 is the
+dangerous one:** cutting the second pass changes the meaning of rail ordering
+(`CatalogPolicy.kt`, `sortedByDescending { it.value.size }`), the New/Top rails and
+every "see all" list, because all three read whatever is in memory. They need their
+own requests and a real `categoryTotals` from `total_items` first.
+
+### 2026-08-15 — where things actually stand
+
+**Three versions are written and none is built.** HEAD is `f38e365` (1.84.0).
+On top of it, uncommitted:
+
+- **1.85.0 / 1.86.0 — Android TV, one surface for the player's whole life.**
+  1.85.0 moved the `TextureView`→`SurfaceView` swap to the end of the motion and
+  bought a second of black screen; the owner reported it. 1.86.0 removes the swap
+  entirely and covers the enlargement with a `PixelCopy` still frame for **both**
+  engines. Files: `PlayerHost.kt`, `PlayerVlcSurface.kt`, `PlayerVideoSurface.kt`,
+  `TvLiveBrowseScreen.kt`. Approved preview: `prototypes/tv_expand_smooth.html`.
+  **Known cost to check on device:** the small live preview now uses a
+  `SurfaceView`, so it may step while it resizes.
+- **1.87.0 — the Stalker catalog no longer runs out of memory.** This was
+  reported as slowness and is a crash. See below.
+
+**The Stalker defect was misdiagnosed as speed and is memory.** The owner's
+measurement on a real portal:
+
+```
+ΣΥΝΟΨΗ live — 15838 στοιχεία σε 132.52s · 1345 αιτήματα σελίδας ·
+0 ΑΠΟΤΥΧΙΕΣ · 456 κατηγορίες · 120 στοιχεία/δευτ. · 10 αιτήματα/δευτ.
+```
+
+Eleven point eight items per request, zero failures — latency-bound, portal not
+stressed. But the owner then reported the load never finishing and the app being
+killed halfway through movies, and the logcat says why: heap 19MB → 191MB against
+a 192MB growth limit, `WaitForGcToComplete blocked Alloc 4.905s`,
+`FATAL EXCEPTION: main java.lang.OutOfMemoryError`, a second one on
+`ExoPlayer:Playback`, `Exception creating thread peer: VlcObject`, libVLC
+`video output creation failed`, an ANR at 5002ms, and
+`Killing com.prelude.iptv.qa (adj -10000): bg anr`.
+
+**The cause is `forEachCategoryParallel`, not the catalog size.** It submitted all
+456 categories at once and delivered them in order, so every category that
+finished early held its raw `JSONObject` rows alive in its `Future` — the whole
+catalog resident twice, once as JSON and once as `Channel`. 1.87.0 replaces that
+with a sliding window of `CATEGORY_WINDOW = 12` and releases each category's rows
+in a separate method frame so they die before the next request is submitted.
+`android:largeHeap="true"` is added as **headroom, not as the fix**.
+
+**That open risk of 1.87.0 came true, and 1.90.0 closes it.** It was written here
+as: the `get_all_channels` single-shot path reads the whole live catalog into one
+`String` and then one `JSONObject` tree, a transient spike of tens of megabytes,
+and if it ever bites, stream it instead of using `providerText`. The owner then
+reported the live load hanging and dying, with no logcat captured. The shape is
+the movie crash exactly: the response held as text and as a parsed tree at the
+same time, with the `Channel` list built from both, and now landing on a heap
+that 1.89.0 fills earlier than before.
+
+**1.90.0 downloads that one response to a temporary file with
+`Http.providerDownloadTo` and reads it back with `android.util.JsonReader`, one
+row at a time.** A file rather than parsing straight from the socket, for the
+reason written above `Http.providerDownloadTo`: parsing from the stream holds the
+connection open for the whole parse and IPTV providers cut those connections, so
+the work gets done and then thrown away. The request count and the 4.4 seconds
+are unchanged - only where the bytes live changed. `providerProgress` had no
+other caller and was removed with it.
+
+**Still unconfirmed on device.** The diagnosis is from the code and from the
+1.87.0 note, not from a logcat of this crash. Capture the live load and check for
+`OutOfMemoryError`; if it is absent, this fix is aimed at the wrong thing and the
+measurement wins. Either way, do not raise thread counts to compensate.
+
+### 2026-08-14 — how the mini player defect was settled
 
 **`main` is caught up.** It sat at `2e04e97` (1.66.0) for eighteen releases while
 1.67.0 → 1.84.0 accumulated on `qa/1.73.0-pending-build`, deliberately, so that

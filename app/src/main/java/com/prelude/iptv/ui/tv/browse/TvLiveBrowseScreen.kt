@@ -74,6 +74,7 @@ import com.prelude.iptv.R
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.ui.player.PlayerExtraAction
 import com.prelude.iptv.ui.player.PlayerHost
+import com.prelude.iptv.ui.player.PlayerVideoFrameCapture
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.localization.localizedLiveGroupLabel
@@ -137,6 +138,9 @@ fun TvLiveBrowseScreen(
     val nowTitleOf: (Channel) -> String = { ch -> TvLiveBrowsePolicy.nowTitle(programmesOf(ch)) }
 
     var showingChannels by remember { mutableStateOf(false) }
+    // Μία λαβή για όλη την οθόνη, όχι μία ανά κανάλι: κρατά μόνο αναφορά στην
+    // ενεργή επιφάνεια και δίνει ένα bitmap όταν της ζητηθεί.
+    val videoFrameCapture = remember { PlayerVideoFrameCapture() }
     var preview by remember { mutableStateOf<Channel?>(null) }
     // Πλήρης οθόνη: ΙΔΙΑ μηχανή και ίδια επιφάνεια, απλώς μεγαλώνει το δοχείο.
     var fullscreen by remember { mutableStateOf(false) }
@@ -407,6 +411,9 @@ fun TvLiveBrowseScreen(
                 engine = engine,
                 title = channel.name,
                 subtitle = nowTitleOf(channel),
+                // Χωρίς αυτό, η οθόνη καναλιών δεν είχε καθόλου παγωμένο καρέ:
+                // η μεγέθυνση έδειχνε ωμά την επιφάνεια να αλλάζει μέγεθος.
+                frameCapture = videoFrameCapture,
                 inlineBounds = slot,
                 fullscreen = fullscreen,
                 fullWidthPx = fullWidthPx,

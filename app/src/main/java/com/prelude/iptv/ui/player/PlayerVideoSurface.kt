@@ -53,7 +53,12 @@ fun PlayerVideoSurface(
     // αλλάζουν σε τίποτα — δες [PlayerVlcSurface].
     val renderer by engine.renderer.collectAsState()
     if (renderer == PlaybackBackend.VLC) {
-        PlayerVlcSurface(engine = engine, keepScreenOn = keepScreenOn, modifier = modifier)
+        PlayerVlcSurface(
+            engine = engine,
+            keepScreenOn = keepScreenOn,
+            modifier = modifier,
+            frameCapture = frameCapture,
+        )
         return
     }
 

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Prelude+ — Β+Γ: τέλος στο δεύτερο πέρασμα, σελίδες κατ' απαίτηση</title>
+<style>
+  :root{
+    --text:#E9EAEC; --muted:#989CA5; --dim:#7D818A; --idle:#555861;
+    --green:#6BBF83; --blue:#5B9DD9; --track:#232529; --divider:#16171B;
+    --line:#2C2F35; --card:#141519;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0b0b0c;color:var(--text);
+       font-family:Roboto,"Segoe UI",system-ui,sans-serif;padding:26px 18px 70px}
+  h1{font-size:17px;margin:0 0 4px}
+  h2{font-size:14px;margin:34px 0 10px;padding-top:14px;border-top:1px solid #1b1c20}
+  .lede{color:var(--dim);font-size:12.5px;margin:0 0 6px;max-width:900px;line-height:1.6}
+  .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
+  .col{flex:1 1 320px;min-width:300px}
+  .tag{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);
+       margin:0 0 8px;font-weight:700}
+  .tag.now{color:#C96F6F} .tag.new{color:var(--green)}
+  .phone{background:#000;border:1px solid #202227;border-radius:24px;padding:20px;
+         min-height:430px}
+  .screen{max-width:440px}
+
+  /* loading screen bits — ίδια με την υπάρχουσα οθόνη */
+  .hdr{display:flex;align-items:center}
+  .back{width:30px;height:30px;display:grid;place-items:center;font-size:19px}
+  .title{font-size:18px;font-weight:700;margin-left:10px}
+  .pct{font-size:38px;font-weight:900;margin-top:24px}
+  .stage{font-size:13px;color:var(--muted)}
+  .bar{height:4px;background:var(--track);margin-top:14px;border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--text)}
+  .row{display:flex;align-items:center;gap:10px;padding:11px 0}
+  .dot{width:10px;font-weight:700;font-size:15px}
+  .nm{width:110px;font-size:14px;font-weight:600}
+  .st{font-size:12px}
+  .hr{height:1px;background:var(--divider)}
+
+  /* λίστα κατηγορίας */
+  .catbar{display:flex;justify-content:space-between;align-items:baseline;
+          padding:2px 0 12px}
+  .catbar b{font-size:16px}
+  .catbar span{font-size:12px;color:var(--dim)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .tile{background:var(--card);border-radius:7px;aspect-ratio:2/3;
+        display:grid;place-items:center;color:#3A3D44;font-size:10px}
+  .tile.ghost{background:#0F1013;border:1px dashed #24262b}
+
+  /* ΤΟ ΜΟΝΟ ΝΕΟ ΣΤΟΙΧΕΙΟ */
+  .more{margin-top:12px;display:flex;align-items:center;justify-content:center;
+        gap:9px;padding:13px;border-top:1px solid var(--divider);
+        color:var(--dim);font-size:12px}
+  .spin{width:13px;height:13px;border:2px solid #2C2F35;border-top-color:var(--muted);
+        border-radius:99px;animation:s .9s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+
+  table{border-collapse:collapse;margin-top:10px;font-size:12.5px;width:100%;max-width:760px}
+  th,td{border:1px solid #24262b;padding:6px 9px;text-align:left;vertical-align:top}
+  th{color:var(--dim);font-weight:600}
+  code{background:#17181c;padding:1px 5px;border-radius:4px;font-size:11.5px}
+  ul{margin:8px 0;padding-left:18px} li{font-size:12.5px;color:#B9BCC2;line-height:1.65}
+  .keep{border-left:2px solid var(--green);padding-left:12px}
+  .warn{border-left:2px solid #C99A5B;padding-left:12px}
+  .ask{border-left:2px solid var(--blue);padding-left:12px;margin-top:10px}
+  p{font-size:12.5px;color:#B9BCC2;line-height:1.65;max-width:900px}
+</style>
+</head>
+<body>
+
+<h1>Β + Γ — ο κατάλογος σταματά να κατεβαίνει ολόκληρος</h1>
+<p class="lede">
+  <b>Β:</b> το δεύτερο πέρασμα φεύγει από την εκκίνηση. <b>Γ:</b> οι υπόλοιπες σελίδες
+  μιας κατηγορίας κατεβαίνουν όταν την ανοίξεις. Μετρημένο: <b>5,5 λεπτά → ~19
+  δευτερόλεπτα</b> μέχρι να είναι όλα περιηγήσιμα.
+</p>
+
+<h2>1. Η οθόνη λήψης — τελειώνει, δεν αλλάζει</h2>
+<div class="wrap">
+  <div class="col">
+    <p class="tag now">Τώρα — 5,5 λεπτά</p>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div class="back">←</div><div class="title">Ενημέρωση περιεχομένου</div></div>
+      <div class="pct">51%</div>
+      <div class="stage">Λήψη ταινιών · κατηγορία 60/60</div>
+      <div class="bar"><i style="width:51%"></i></div>
+      <div style="margin-top:22px">
+        <div class="row"><div class="dot" style="color:var(--green)">✓</div>
+          <div class="nm">Ζωντανά</div><div class="st" style="color:var(--green)">4638 στοιχεία</div></div><div class="hr"></div>
+        <div class="row"><div class="dot" style="color:var(--idle)">•</div>
+          <div class="nm">Ταινίες</div><div class="st" style="color:var(--dim)">κατηγορία 60/60</div></div><div class="hr"></div>
+        <div class="row"><div class="dot" style="color:var(--idle)">•</div>
+          <div class="nm">Σειρές</div><div class="st" style="color:var(--dim)">σε αναμονή</div></div><div class="hr"></div>
+      </div>
+      <p style="color:var(--dim);font-size:11px;margin-top:18px">
+        …και μένει εδώ άλλα τέσσερα λεπτά.</p>
+    </div></div>
+  </div>
+  <div class="col">
+    <p class="tag new">Με Β+Γ — ~19 δευτερόλεπτα</p>
+    <div class="phone"><div class="screen">
+      <div class="hdr"><div class="back">←</div><div class="title">Ενημέρωση περιεχομένου</div></div>
+      <div class="pct">100%</div>
+      <div class="stage">Έτοιμο</div>
+      <div class="bar"><i style="width:100%"></i></div>
+      <div style="margin-top:22px">
+        <div class="row"><div class="dot" style="color:var(--green)">✓</div>
+          <div class="nm">Ζωντανά</div><div class="st" style="color:var(--green)">4638 στοιχεία</div></div><div class="hr"></div>
+        <div class="row"><div class="dot" style="color:var(--green)">✓</div>
+          <div class="nm">Ταινίες</div><div class="st" style="color:var(--green)">61210 στοιχεία</div></div><div class="hr"></div>
+        <div class="row"><div class="dot" style="color:var(--green)">✓</div>
+          <div class="nm">Σειρές</div><div class="st" style="color:var(--green)">10541 στοιχεία</div></div><div class="hr"></div>
+      </div>
+      <p style="color:var(--dim);font-size:11px;margin-top:18px">
+        Τα πλήθη είναι τα <b>πραγματικά</b> — έρχονται από το <code>total_items</code>
+        του παρόχου, που μπήκε στο 1.94.0.</p>
+    </div></div>
+  </div>
+</div>
+<p><b>Καμία αλλαγή στην οθόνη.</b> Ίδιο ποσοστό, ίδια μπάρα, ίδιες τρεις σειρές,
+ίδια λέξη «στοιχεία». Απλώς φτάνει στο 100% σε 19 δευτερόλεπτα.</p>
+
+<h2>2. Μέσα σε μια κατηγορία — εδώ είναι η μόνη νέα εικόνα</h2>
+<div class="wrap">
+  <div class="col">
+    <p class="tag now">Τώρα</p>
+    <div class="phone"><div class="screen">
+      <div class="catbar"><b>Δράση</b><span>4.282 ταινίες</span></div>
+      <div class="grid">
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+      </div>
+      <p style="color:var(--dim);font-size:11px;margin-top:14px">
+        Και οι 4.282 είναι ήδη στη μνήμη — γι' αυτό περίμενες 4,5 λεπτά.</p>
+    </div></div>
+  </div>
+  <div class="col">
+    <p class="tag new">Με Β+Γ — σκρολάρεις, φορτώνει</p>
+    <div class="phone"><div class="screen">
+      <div class="catbar"><b>Δράση</b><span>4.282 ταινίες</span></div>
+      <div class="grid">
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+        <div class="tile">αφίσα</div><div class="tile">αφίσα</div><div class="tile">αφίσα</div>
+        <div class="tile ghost">—</div><div class="tile ghost">—</div><div class="tile ghost">—</div>
+      </div>
+      <div class="more"><div class="spin"></div><span>Λήψη κι άλλων…</span></div>
+    </div></div>
+  </div>
+</div>
+<p>
+  Το <b>μοναδικό νέο στοιχείο σε όλη την πρόταση</b> είναι η γραμμή
+  «Λήψη κι άλλων…» στο τέλος της λίστας, με το ίδιο μικρό spinner που ήδη
+  χρησιμοποιεί η εφαρμογή. Ο τίτλος, το πλήθος, το πλέγμα, οι αφίσες:
+  <b>αμετάβλητα</b>. Μια σελίδα των 14 έρχεται σε ~0,15 δευτερόλεπτα, οπότε
+  στην πράξη η γραμμή μόλις που προλαβαίνει να φανεί.
+</p>
+
+<h2>3. Το πρόβλημα που βρήκα, και η λύση που προτείνω</h2>
+<p>
+  Η Αρχική δείχνει <code>RAIL_LIMIT = 20</code> στοιχεία ανά ράγα. Μια σελίδα του
+  portal δίνει <b>14</b>. Με μία σελίδα ανά κατηγορία, <b>κάθε ράγα θα έδειχνε 14
+  αντί 20</b> — ορατή υποβάθμιση.
+</p>
+<table>
+  <tr><th>Επιλογή</th><th>Χρόνος εκκίνησης</th><th>Ράγες Αρχικής</th></tr>
+  <tr><td>1 σελίδα ανά κατηγορία</td><td>~12 δευτ.</td>
+      <td style="color:#C99A5B">14 από 20 — κουτσές</td></tr>
+  <tr><td><b>2 σελίδες ανά κατηγορία</b> (προτείνεται)</td><td><b>~19 δευτ.</b></td>
+      <td style="color:var(--green)">28 φορτωμένα → 20 πλήρη</td></tr>
+</table>
+<p>Και με τις δύο, μιλάμε για δευτερόλεπτα αντί για λεπτά.</p>
+
+<h2>4. Τι υποβαθμίζεται μέχρι να γίνουν το Δ και το Ε</h2>
+<div class="warn">
+  <p>Δεν το κρύβω, γιατί ο πελάτης θα το δει:</p>
+  <ul>
+    <li><b>«Νέα» και «Κορυφαία»</b> θα χτίζονται από ~2.500 φορτωμένα στοιχεία
+        αντί για 71.000. Οι ράγες θα είναι γεμάτες, αλλά όχι πραγματικά «τα
+        νεότερα του καταλόγου». <b>Το Δ το λύνει με 2 αιτήματα</b>
+        (<code>sortby=added</code>, <code>sortby=rating</code>).</li>
+    <li><b>Η αναζήτηση</b> ψάχνει σήμερα στη μνήμη. Θα βρίσκει μόνο ό,τι έχει
+        φορτωθεί. <b>Το Ε το λύνει</b> με αναζήτηση στο portal — αλλά
+        <b>δεν έχω επιβεβαιώσει ότι το portal σου τη στηρίζει</b>. Πρέπει να
+        μετρηθεί πριν υποσχεθεί.</li>
+  </ul>
+</div>
+
+<h2>5. Τι δεν αγγίζεται</h2>
+<div class="keep"><ul>
+  <li>Κεφαλίδες, ράγες, chips, πλοήγηση, χειρονομίες, εικονίδια, focus.</li>
+  <li>Η οθόνη λήψης: ποσοστό, μπάρα, τίτλος, τρεις σειρές, βελάκι, «Περιήγηση τώρα».</li>
+  <li>Ζωντανά: ένα αίτημα, καμία αλλαγή.</li>
+  <li>Xtream και M3U: δεν σελιδοποιούν έτσι — μένουν ακριβώς ως έχουν.</li>
+</ul></div>
+
+<h2>6. Τι χρειάζομαι από σένα</h2>
+<div class="ask"><ul>
+  <li><b>OK στη γραμμή «Λήψη κι άλλων…»</b> — το μόνο νέο ορατό στοιχείο.</li>
+  <li><b>1 ή 2 σελίδες</b> στο πρώτο πέρασμα (12 δευτ. με κουτσές ράγες, ή 19 με πλήρεις).</li>
+  <li><b>Να μπει το Δ μαζί;</b> Είναι 2 αιτήματα και σώζει τις «Νέα»/«Κορυφαία».
+      Χωρίς αυτό, οι δύο ράγες γίνονται φτωχότερες την ίδια μέρα που ο κατάλογος
+      γίνεται γρήγορος.</li>
+  <li><b>Τηλεόραση:</b> το φόρτωμα επόμενης σελίδας ενώ ο χρήστης κινείται με DPAD
+      θέλει ρητό έλεγχο focus σε συσκευή. Δεν μπορώ να το επιβεβαιώσω εγώ.</li>
+</ul></div>
+
+</body>
+</html>

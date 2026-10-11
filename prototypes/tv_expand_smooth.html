@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Τηλεόραση — ομαλή μετάβαση από προεπισκόπηση σε πλήρη οθόνη</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#171717;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;gap:24px;align-items:flex-start;justify-content:center;min-height:100vh;padding:22px}
+  .note{width:340px;color:#b8b8b8;font-size:12.5px;line-height:1.5}
+  .note h3{color:#fff;font-size:14px;margin:0 0 8px}
+  .note h4{color:#fff;font-size:12.5px;margin:15px 0 6px}
+  .note ul{margin:6px 0 12px;padding-left:17px}.note li{margin-bottom:6px}
+  .note b{color:#fff}
+  .note code{background:#232323;padding:1px 4px;border-radius:4px;font-size:11px;color:#d7d7d7}
+  .warn{background:#2a1c12;border:1px solid #7a4a1e;color:#e8c9a4;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45;margin-bottom:11px}
+  .ok{background:#122a18;border:1px solid #2c6b3d;color:#a9dcb8;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45}
+
+  .col{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .lab{font-size:12px;font-weight:700;letter-spacing:.3px}
+  .lab.bad{color:#ff9d9d}.lab.good{color:#8fe0a6}
+  .sub{font-size:10.5px;color:#8a8a8a;margin-top:-6px;text-align:center;height:26px;line-height:1.3}
+
+  .tv{width:392px;height:245px;background:#0a0a0c;border-radius:9px;position:relative;overflow:hidden;box-shadow:0 14px 44px #000;border:1px solid #232323}
+  .rail{position:absolute;left:0;top:0;bottom:0;width:118px;padding:9px 7px;display:flex;flex-direction:column;gap:5px;background:#101014}
+  .rail i{display:block;height:19px;border-radius:4px;background:#1e1e24;font-style:normal;font-size:8px;color:#7c7c86;line-height:19px;padding-left:7px}
+  .rail i.sel{background:#2b2b34;color:#fff}
+  .cap{position:absolute;left:126px;top:158px;right:14px;font-size:9px;color:#8e8e96;line-height:1.5}
+  .cap b{color:#dcdce2;display:block;font-size:10.5px;margin-bottom:3px}
+
+  /* το κάδρο που κινείται */
+  .frame{position:absolute;background:#000;overflow:hidden}
+  /* η εικόνα μέσα στο κάδρο */
+  .pic{position:absolute;inset:0;background:
+      repeating-linear-gradient(90deg,#12324f 0 14px,#17406a 14px 28px),
+      linear-gradient(135deg,#1d3b5c,#7a4a63);
+      background-blend-mode:soft-light;display:grid;place-items:center}
+  .pic span{font-size:9px;letter-spacing:1.2px;color:#ffffffc0;text-align:center;line-height:1.5}
+  .pic.still span{color:#a9dcb8}
+  .badge{position:absolute;left:6px;top:6px;font-size:7.5px;letter-spacing:.4px;padding:2px 5px;border-radius:3px;background:#000000b0;color:#c9c9c9}
+
+  .keys{display:flex;gap:9px;justify-content:center;margin-top:2px}
+  .keys button{background:#242424;color:#fff;border:1px solid #383838;border-radius:9px;padding:9px 15px;font-size:12px;font-weight:700;cursor:pointer}
+  .keys button:hover{background:#303030}
+  .keys button.pri{background:#2f4d38;border-color:#456b50}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h3>Η μετάβαση σταματά να σκαλοπατάει</h3>
+
+  <div class="warn"><b>Καμία αλλαγή σε εμφάνιση, διάταξη, focus ή χειριστήρια.</b> Ίδια διάρκεια 360ms, ίδιο easing, ίδιες θέσεις αρχής και τέλους, ίδιες γωνίες. Αλλάζει μόνο <b>τι ζωγραφίζεται κατά τη διάρκεια</b> της κίνησης.</div>
+
+  <h4>Τι φταίει σήμερα</h4>
+  <ul>
+    <li>Μόλις πατήσεις OK, το <code>preferSmoothResize = !fullscreen</code> γυρίζει την επιφάνεια σε <code>SurfaceView</code> <b>στην αρχή</b>. Τα 360ms τρέχουν πάνω της.</li>
+    <li>Το <code>SurfaceView</code> ζει σε δικό του system layer. Ο compositor δεν παρακολουθεί ομαλά αλλαγή μεγέθους — την πετάει σε βήματα.</li>
+    <li>Στα <b>ζωντανά</b> είναι χειρότερο: το libVLC βγαίνει από το <code>PlayerVideoSurface</code> πριν συνδεθεί το <code>frameCapture</code>, οπότε δεν υπάρχει καν παγωμένο καρέ να καλύψει τη μετάβαση.</li>
+  </ul>
+
+  <h4>Ταινίες και σειρές (ExoPlayer)</h4>
+  <ul>
+    <li>Το <code>TextureView</code> αλλάζει μέγεθος ομαλά, γιατί συντίθεται μαζί με το Compose.</li>
+    <li>Μένει <code>TextureView</code> για <b>όλη</b> την κίνηση· η εναλλαγή σε <code>SurfaceView</code> γίνεται <b>στο τέλος</b>, και το αναβόσβημα το καλύπτει το παγωμένο καρέ που <b>ήδη υπάρχει</b>.</li>
+    <li>Το <code>SurfaceView</code> παραμένει στην πλήρη οθόνη, όπου χρειάζεται για σωστό pacing. Δεν αλλάζει αυτό.</li>
+  </ul>
+
+  <h4>Ζωντανά (libVLC)</h4>
+  <ul>
+    <li><code>TextureView</code> απαγορεύεται — το 1.80.0 το είχε δοκιμάσει και έσπασε την τηλεόραση.</li>
+    <li>Άρα η επιφάνεια πάει <b>κατευθείαν στο τελικό μέγεθος</b>, κρυμμένη, και δεν αλλάζει μέγεθος ούτε μία φορά κατά την κίνηση.</li>
+    <li>Μπροστά ταξιδεύει ένα <b>ακίνητο καρέ</b>, τραβηγμένο με <code>PixelCopy</code>. Το <code>PlayerVideoFrameCapture</code> ήδη ξέρει να το κάνει σε <code>SurfaceView</code>· λείπει μόνο η σύνδεσή του στο μονοπάτι του libVLC.</li>
+    <li>Στο τέλος ξεθωριάζει πάνω στη ζωντανή, σε 120ms.</li>
+  </ul>
+
+  <div class="ok"><b>Το βίντεο «παγώνει» για 360ms στα ζωντανά.</b> Είναι το ίδιο κόλπο που ήδη χρησιμοποιεί η εναλλαγή καναλιού. Στην πράξη δεν φαίνεται, γιατί το μάτι παρακολουθεί την κίνηση, όχι το περιεχόμενο.</div>
+
+  <div class="warn"><b>Αν αποτύχει η λήψη του καρέ</b> (σφάλμα ροής, άκυρη επιφάνεια), η συμπεριφορά πέφτει πίσω σε ό,τι κάνει σήμερα. Καμία νέα περίπτωση μαύρης οθόνης.</div>
+
+  <div class="warn"><b>Το preview εγκρίνει μόνο ό,τι δείχνει:</b> ότι η εικόνα ταξιδεύει ομαλά αντί για σκαλοπάτια, με ίδια διάρκεια και ίδιες θέσεις.</div>
+</div>
+
+<div class="col">
+  <div class="lab bad">ΣΗΜΕΡΑ</div>
+  <div class="sub">SurfaceView αλλάζει μέγεθος 60 φορές<br>μέσα στα 360ms</div>
+  <div class="tv" id="tvBad">
+    <div class="rail"><i class="sel">ERT1 HD</i><i>ERT2</i><i>ERT3</i><i>Mega</i><i>ANT1</i><i>Star</i></div>
+    <div class="cap"><b>ERT1 HD</b>Τώρα: Κεντρικό δελτίο ειδήσεων</div>
+    <div class="frame" id="fBad"><div class="pic"><span id="picBad">ΖΩΝΤΑΝΗ ΕΠΙΦΑΝΕΙΑ</span></div><div class="badge" id="bBad">SurfaceView</div></div>
+  </div>
+</div>
+
+<div class="col">
+  <div class="lab good">ΠΡΟΤΑΣΗ</div>
+  <div class="sub">η επιφάνεια δεν αλλάζει μέγεθος·<br>ταξιδεύει ακίνητο καρέ, μετά crossfade</div>
+  <div class="tv" id="tvGood">
+    <div class="rail"><i class="sel">ERT1 HD</i><i>ERT2</i><i>ERT3</i><i>Mega</i><i>ANT1</i><i>Star</i></div>
+    <div class="cap"><b>ERT1 HD</b>Τώρα: Κεντρικό δελτίο ειδήσεων</div>
+    <div class="frame" id="fGood"><div class="pic" id="picGoodBox"><span id="picGood">ΖΩΝΤΑΝΗ ΕΠΙΦΑΝΕΙΑ</span></div><div class="badge" id="bGood">SurfaceView</div></div>
+  </div>
+  <div class="keys">
+    <button class="pri" id="bOk">OK — μεγάλωσε</button>
+    <button id="bBack">BACK — μίκρυνε</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Γεωμετρία, ίδια και στα δύο. Μικρό = η «φωλιά» δεξιά από τη λίστα.
+  var SMALL={x:126,y:14,w:252,h:141}, FULL={x:0,y:0,w:392,h:245};
+  var DUR=360, FADE=120;
+
+  var fBad=document.getElementById('fBad'), fGood=document.getElementById('fGood');
+  var picGoodBox=document.getElementById('picGoodBox');
+  var picBad=document.getElementById('picBad'), picGood=document.getElementById('picGood');
+  var bBad=document.getElementById('bBad'), bGood=document.getElementById('bGood');
+  var full=false, raf=null;
+
+  function put(el,r){el.style.left=r.x+'px';el.style.top=r.y+'px';el.style.width=r.w+'px';el.style.height=r.h+'px';
+    el.style.borderRadius=(12*(1-(r.w-SMALL.w)/(FULL.w-SMALL.w))).toFixed(1)+'px';}
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function ease(t){return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;} // FastOutSlowIn-ish
+  function rect(t){var A=full?SMALL:FULL,B=full?FULL:SMALL;
+    return {x:lerp(A.x,B.x,t),y:lerp(A.y,B.y,t),w:lerp(A.w,B.w,t),h:lerp(A.h,B.h,t)};}
+
+  put(fBad,SMALL); put(fGood,SMALL);
+
+  function run(){
+    if(raf) cancelAnimationFrame(raf);
+    var t0=performance.now();
+    // ΠΡΟΤΑΣΗ: το καρέ παγώνει με το που ξεκινά η κίνηση
+    picGood.textContent='ΑΚΙΝΗΤΟ ΚΑΡΕ (PixelCopy)';
+    picGoodBox.classList.add('still');
+    bGood.textContent='επιφάνεια ήδη στο τελικό μέγεθος';
+    picBad.textContent='ΖΩΝΤΑΝΗ ΕΠΙΦΑΝΕΙΑ';
+    bBad.textContent='SurfaceView · resize ×60';
+
+    function step(now){
+      var t=Math.min(1,(now-t0)/DUR), e=ease(t);
+      var r=rect(e);
+      // ΠΡΟΤΑΣΗ: συνεχής κίνηση, ένα Compose layer
+      put(fGood,r);
+      // ΣΗΜΕΡΑ: το κάδρο κινείται συνεχώς αλλά η ΕΙΚΟΝΑ κουμπώνει σε βήματα,
+      // όπως κάνει ο compositor με SurfaceView που αλλάζει μέγεθος.
+      var steps=6, q=Math.round(e*steps)/steps;
+      put(fBad,rect(q));
+      if(t<1){raf=requestAnimationFrame(step);}
+      else{
+        raf=null;
+        // crossfade στη ζωντανή
+        setTimeout(function(){
+          picGood.textContent='ΖΩΝΤΑΝΗ ΕΠΙΦΑΝΕΙΑ';
+          picGoodBox.classList.remove('still');
+          bGood.textContent='SurfaceView · resize ×1';
+        },FADE);
+      }
+    }
+    raf=requestAnimationFrame(step);
+  }
+
+  document.getElementById('bOk').onclick=function(){ if(full)return; full=true; run(); };
+  document.getElementById('bBack').onclick=function(){ if(!full)return; full=false; run(); };
+})();
+</script>
+</body>
+</html>

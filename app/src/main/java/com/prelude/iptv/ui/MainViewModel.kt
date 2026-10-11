@@ -228,7 +228,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         channels: List<Channel>,
         groups: List<String>,
         categories: List<Pair<String, String>>,
-        seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>>
+        seriesEpisodes: Map<String, List<Pair<String, List<Channel>>>>,
+        categoryTotals: Map<String, Int> = emptyMap(),
+        categoryPageSize: Int = 0,
     ) {
         catalogSession.putCatalog(
             cacheKey(pl, type),
@@ -237,6 +239,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 groups = groups,
                 categories = categories,
                 seriesEpisodes = seriesEpisodes,
+                categoryTotals = categoryTotals,
+                categoryPageSize = categoryPageSize,
                 epgUrl = if (pl.type == com.prelude.iptv.data.PlaylistType.M3U) m3uEpgUrl else ""
             )
         )
@@ -731,6 +735,83 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // Τα confirmLoadType/cancelLoadType αφαιρέθηκαν μαζί με το ενδιάμεσο
     // dialog «Φόρτωση Χ;» — το setContentType πάει πλέον κατευθείαν στη ροή.
 
+    /**
+     * ΥΠΑΡΧΟΥΝ ΚΙ ΑΛΛΑ ΣΕ ΑΥΤΗ ΤΗΝ ΟΜΑΔΑ ΠΟΥ ΔΕΝ ΕΧΟΥΝ ΚΑΤΕΒΕΙ;
+     *
+     * Συγκρίνει το δηλωμένο `total_items` της κατηγορίας με όσα υπάρχουν ήδη.
+     * `false` όταν ο πάροχος δεν δηλώνει σύνολα (Xtream, M3U) — τότε ό,τι
+     * φορτώθηκε είναι όλα, όπως πάντα.
+     */
+    fun hasMoreInGroup(group: String): Boolean {
+        if (group == UiState.ALL_GROUP || group.isBlank()) return false
+        val pl = currentPlaylist() ?: return false
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, _state.value.contentType)) ?: return false
+        if (snapshot.categoryPageSize <= 0) return false
+        val categoryId = snapshot.categories.firstOrNull { it.second == group }?.first ?: return false
+        val total = snapshot.categoryTotals[categoryId] ?: return false
+        return snapshot.channels.count { it.group == group } < total
+    }
+
+    /**
+     * Η ΕΠΟΜΕΝΗ ΣΕΛΙΔΑ ΜΙΑΣ ΟΜΑΔΑΣ, ΟΤΑΝ Ο ΧΡΗΣΤΗΣ ΦΤΑΣΕΙ ΣΤΟ ΤΕΛΟΣ ΤΗΣ.
+     *
+     * ΤΙ ΑΝΤΙΚΑΘΙΣΤΑ: μέχρι το 1.95.0 όλες οι σελίδες κάθε κατηγορίας κατέβαιναν
+     * στην εκκίνηση — 4.403 αιτήματα και 270 δευτερόλεπτα για 61.210 ταινίες,
+     * μετρημένα. Τώρα κατεβαίνει η σελίδα που κοιτάζει ο χρήστης: ένα αίτημα.
+     *
+     * ΠΟΙΑ ΣΕΛΙΔΑ: βγαίνει από όσα υπάρχουν ήδη διά το μέγεθος σελίδας του
+     * παρόχου, όχι από μετρητή. Ένας μετρητής θα ξεσυγχρονιζόταν με το cache
+     * μόλις άλλαζε ενότητα ή πηγή· η διαίρεση δεν μπορεί.
+     */
+    fun loadMoreInGroup(group: String) {
+        val pl = currentPlaylist() ?: return
+        if (_state.value.loadingMoreGroup != null) return
+        if (!hasMoreInGroup(group)) return
+        val type = _state.value.contentType
+        val snapshot = catalogSession.getCatalog(cacheKey(pl, type)) ?: return
+        val categoryId = snapshot.categories.firstOrNull { it.second == group }?.first ?: return
+        val already = snapshot.channels.count { it.group == group }
+        val nextPage = already / snapshot.categoryPageSize + 1
+
+        _state.value = _state.value.copy(loadingMoreGroup = group)
+        viewModelScope.launch {
+            val fetched = try {
+                catalogLoader.categoryPage(pl, type, categoryId, group, nextPage)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                emptyList()
+            }
+            // Η ενότητα μπορεί να άλλαξε όσο περιμέναμε· τότε τα δεδομένα αυτά
+            // δεν ανήκουν πουθενά και πετιούνται αντί να μπουν σε λάθος λίστα.
+            if (_state.value.contentType != type) {
+                _state.value = _state.value.copy(loadingMoreGroup = null)
+                return@launch
+            }
+            val current = catalogSession.getCatalog(cacheKey(pl, type))
+            if (fetched.isEmpty() || current == null) {
+                _state.value = _state.value.copy(loadingMoreGroup = null)
+                return@launch
+            }
+            // ΑΠΑΡΑΙΤΗΤΟ ΤΟ ΞΕΔΙΠΛΩΜΑ: μια σελίδα μπορεί να ξαναφέρει γραμμές που
+            // ήρθαν στο κεφάλι, αν ο πάροχος ανακατέψει τη σειρά ανάμεσα σε δύο
+            // αιτήματα. Χωρίς αυτό ο χρήστης βλέπει διπλές ταινίες.
+            val seen = current.channels.mapTo(HashSet()) { it.streamId.ifBlank { it.name } }
+            val fresh = fetched.filter { seen.add(it.streamId.ifBlank { it.name }) }
+            val merged = current.channels + fresh
+            cacheCatalog(
+                pl, type, merged,
+                buildGroups(merged, _state.value.favorites.isNotEmpty(), type),
+                current.categories, current.seriesEpisodes,
+                current.categoryTotals, current.categoryPageSize,
+            )
+            _state.value = _state.value.copy(
+                channels = merged,
+                loadingMoreGroup = null,
+            )
+        }
+    }
+
     /** Restores the complete section snapshot or restarts the complete source load. */
     fun loadCurrent(forceNetwork: Boolean = false) {
         val pl = currentPlaylist() ?: return
@@ -812,6 +893,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         )
                     }
                 }
+                // ΜΗΝ ΚΑΛΩΔΙΩΣΕΙΣ ΕΔΩ ΤΟ `onPartial` ΤΟΥ [CatalogLoadCoordinator].
+                //
+                // Δοκιμάστηκε και γυρίστηκε πίσω. Το «προοδευτικό» μοντέλο —
+                // δημοσίευση μερικού καταλόγου όσο κατεβαίνει — ΑΠΟΡΡΙΦΘΗΚΕ ρητά
+                // από τον ιδιοκτήτη: άδειες ράγες, ενότητες που έλειπαν, η ένωση
+                // της Αρχικής, η σιωπηλή συμπλήρωση και «τα ζωντανά κάτω από τις
+                // Ταινίες» ήταν ΟΛΑ η ίδια αιτία, ότι η οθόνη ζωγράφιζε πριν
+                // υπάρξουν τα δεδομένα.
+                //
+                // Ο κανόνας δεν είναι «περίμενε ένα λεπτό», είναι **ΠΟΤΕ ΜΙΣΗ
+                // ΕΝΟΤΗΤΑ**. Τα `architecture_audit.py` και
+                // `compatibility_contracts.py` το επιβάλλουν και τα δύο.
+                //
+                // Αν κάποτε χρειαστεί ταινίες νωρίτερα, ο δρόμος είναι το cache
+                // στον δίσκο (ταινίες/σειρές, ΠΟΤΕ ζωντανά), όχι μισός κατάλογος
+                // στην οθόνη.
                 try {
                     val loaded = catalogLoader.section(pl, type, null, progress)
                     if (!sourceGeneration.isCurrentLoad(gen)) return@launch
@@ -827,7 +924,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     val favoriteKeys = store.loadFavorites(sourceId)
                     val fullGroups = buildGroups(channels, favoriteKeys.isNotEmpty(), type)
                     cacheCatalog(
-                        pl, type, channels, fullGroups, loaded.categories, loaded.seriesEpisodes
+                        pl, type, channels, fullGroups, loaded.categories, loaded.seriesEpisodes,
+                        loaded.categoryTotals, loaded.categoryPageSize,
                     )
                     persistCatalogCount(sourceId, type, channels.size)
                     if (type == "live") catalogSession.liveChannels = channels
@@ -921,7 +1019,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             val (hasChoice, rememberedIds) = categoryChoice(pl, sectionType)
             sectionType to CategoryPickerSection(
                 categories = snapshot.categories,
-                counts = CatalogCategoryVisibilityPolicy.counts(snapshot.categories, snapshot.channels),
+                counts = CatalogCategoryVisibilityPolicy.counts(
+                    snapshot.categories, snapshot.channels, snapshot.categoryTotals,
+                ),
                 selectedIds = CatalogCategoryVisibilityPolicy.initialSelection(
                     snapshot.categories,
                     hasChoice,

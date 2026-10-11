@@ -22,6 +22,290 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.95.0 - versionCode 167
+
+- **The catalog is ready in about 19 seconds instead of five and a half minutes.**
+  Measured on the owner's portal: 61,210 movies, 10,541 series and 4,638 live
+  channels. The old load spent 270 seconds on movies and 44 on series purely to
+  fetch pages nobody had asked to see.
+- **The full download no longer runs at startup.** Startup now fetches the
+  category list plus the first two pages of every category - 93 requests instead
+  of 5,170 - and every group is immediately visible with its real item count.
+- **The remaining pages arrive when you open a group and scroll.** One page is
+  one request and takes about 0.15 seconds, so the list keeps up with a finger.
+  A "Loading more…" row appears at the end of the list while a page is on its
+  way, and only when the group actually has more to fetch, so a completed list
+  never ends in a spinner that will not stop.
+- **Two pages per category, not one, and the reason is arithmetic.** A home rail
+  shows 20 items and the portal returns 14 per page. One page would have left
+  every rail showing 14 of 20. Two pages cost about seven extra seconds and keep
+  the rails full.
+- The counts shown against each category come from the provider's own
+  `total_items`, added in 1.94.0, so a category reports 4,282 films from the
+  moment fourteen of them have arrived.
+- **Known limits, stated plainly.** The "New" and "Top" rails and search still
+  work on what has been loaded, which is now the first pages rather than the
+  whole catalog. Both need their own provider requests to be complete again.
+  Xtream and M3U sources do not paginate this way and are unchanged.
+
+## 1.94.0 - versionCode 166
+
+- **Category counts now come from the provider instead of from whatever has been
+  downloaded so far.** A Stalker portal states `total_items` inside the first
+  page of every category, so a category with 4,282 films is known to hold 4,282
+  after fourteen items have arrived, not after all of them.
+- The app already read that number - it used it to work out how many pages were
+  still missing, and then threw it away. Counts and rail order were computed by
+  counting what happened to be in memory, which is only correct once everything
+  has finished.
+- Nothing visible changes today, because today the catalog is always downloaded
+  in full before anything is shown. What changes is that the count is now correct
+  *while* it downloads, which is the precondition for showing a catalog before it
+  has finished.
+- Providers that do not state totals - Xtream and M3U - are unaffected and still
+  count what is loaded.
+- Groundwork only. No change to the download, the screens, or what the user sees.
+
+## 1.93.0 - versionCode 165
+
+- **The loading screen now says you can leave it.** Live finishes in under four
+  seconds on the owner's portal, and completed sections have always been
+  browsable — but the only way out was a 30dp back arrow in the corner with
+  nothing explaining it, so the natural thing to do was sit and watch a bar for
+  four and a half minutes.
+- A **Browse now** row appears as soon as the first section is complete. It calls
+  exactly the same action the back arrow already did; no new route, no new
+  behavior. On Android TV it takes focus the moment it appears, and the back
+  arrow keeps initial focus until then.
+- **What was tried and rejected:** publishing movies while they were still
+  downloading, so the screen could offer them at second 35 instead of minute
+  four and a half. `CatalogLoadCoordinator` has an unused `onPartial` hook that
+  makes this easy, and it is unused on purpose. Progressive publication was
+  removed deliberately after it caused empty rails, missing sections and live
+  channels appearing under Movies; the rule is *never half a section*, and two
+  contract checks enforce it. A comment at the call site now records this so the
+  hook is not wired again by accident.
+- The footnote drops the sentence the new row replaces.
+- Percentage, progress bar, title, back arrow, section names, section order and
+  the download itself are unchanged.
+
+## 1.92.0 - versionCode 164
+
+- **Live channels are back on the code that was measured working.** 1.90.0
+  rewrote the single `get_all_channels` request to download to a temporary file
+  and parse it one channel at a time, to stop the catalog living in memory twice.
+  That rewrite was never confirmed on a device, and live stopped loading on the
+  first build that shipped it. It is reverted in full.
+- **The reason it was written turned out not to be the problem.** It was aimed at
+  an `OutOfMemoryError`. The measurement that followed found none: an 80,000-line
+  capture over a stalled load contained no `OutOfMemoryError`, no fatal
+  exception, no ANR and no kill, with the Java heap at 94 MB of a 121 MB limit.
+  A comment at the call site now records this, so the same rewrite is not
+  attempted again without a measurement first.
+- Everything 1.91.0 added is kept: the category list is retried once on a
+  transient failure and says so loudly when it still fails, and the load reports
+  the portal's `total_items`, warns when a category has to be downloaded
+  serially, and prints one line per category during the second pass.
+- No user-visible behavior, layout, wording or navigation changes.
+
+## 1.91.0 - versionCode 163
+
+- **A failed category request no longer looks like a portal with no movies.**
+  Measured on the owner's phone: live loaded 4638 channels in 7.4 seconds with a
+  single request and zero failures, while movies and series reported *zero
+  categories* and finished in one millisecond. Nothing hung - nothing started.
+- The cause was one `catch` that returned an empty list. It returned the same
+  empty list whether the portal answered "no categories" or the request failed
+  outright, so an empty Movies screen was indistinguishable from a broken one and
+  nothing anywhere said which had happened. The page loader had learned this
+  lesson already; the category request never had.
+- The category list is now **retried once** when the failure is transient, the
+  same treatment a category's first page already gets - losing this request loses
+  an entire section, not fourteen items.
+- When it still fails, or the response cannot be understood, the log says so
+  explicitly and prints the first 400 characters of the raw reply. A portal that
+  answers with a different shape and a portal that does not answer are now
+  different lines. **Behavior on screen is unchanged** - the section is still
+  empty, it is just no longer silent.
+- **The load now reports where its time goes.** Three additions, all log-only:
+  the first category of each section prints the portal's `total_items` and
+  `max_page_items`; the second pass prints one line per category with how long it
+  waited; and a category that has to be downloaded serially - which happens
+  whenever the portal omits `total_items`, and which uses none of the six page
+  threads - now says so instead of quietly taking minutes.
+- No user-visible behavior, layout, wording or navigation changes.
+
+## 1.90.0 - versionCode 162
+
+- **Live channels no longer run the app out of memory on large portals.** The
+  crash that was fixed for movies in 1.87.0 was still present on the live path,
+  in a different shape, and it was written down at the time as a known risk.
+- Since 1.88.0 the whole live catalog - 15538 channels on the owner's portal -
+  arrives in **one** request. That is still true and still takes 4.4 seconds.
+  What was wrong is what happened to the response after it arrived: it was built
+  into a single text string, and Java stores two bytes per character, so roughly
+  fifteen megabytes of JSON became about thirty in memory. That string was then
+  parsed into a complete object tree **beside it**, and the channel list was
+  built from the tree while both were still held. The whole catalog was resident
+  two and three times over, at the moment the movie catalog was already loaded.
+- The movie fix does not apply here. Movies were repaired with a sliding window
+  over categories; live has no categories to put in a window, because it is a
+  single request.
+- The response is now **downloaded to a temporary file** at network speed, so the
+  connection closes immediately, and then read back **one channel at a time**.
+  Only one channel is ever held as JSON. The temporary file is deleted whether
+  the read succeeds or fails.
+- **Nothing else changes.** Same single request, same channels, same categories,
+  same category filtering when only some are selected, same progress bar. What
+  changed is where the bytes live while they are being read.
+- Cancelling a live load now stops it instead of quietly starting the download
+  again. The file download retries a connection that breaks, and a connection
+  the user cancelled looks exactly like a broken one to it.
+
+## 1.89.0 - versionCode 161
+
+- **Movies and series become browsable in about 16 seconds instead of 264.** The
+  same 43057 movies still arrive; what changed is the order they arrive in.
+- The catalog used to finish one category at a time, every page of it, before
+  starting the next. So at second 16 the user had fifteen complete categories and
+  a hundred and thirty empty ones - a screen that was no use to anyone. The load
+  now takes two passes: the **first page of every category** first, then all the
+  remaining pages.
+- After the first pass every one of the 145 categories holds fourteen items, and
+  a home rail shows at most twenty. So the home screen is genuinely full and
+  navigable while the rest is still downloading in the background.
+- **Nothing on screen ends up different.** Rail order, the "New" and "Top" rails
+  and every "see all" list are built from what is in memory, and the second pass
+  still brings everything, so the final catalog is identical to before. This is a
+  change of sequence, not of content.
+- The progress bar gives the first pass nearly half its length for four percent of
+  the requests, on purpose: that is where the waiting the user actually feels
+  ends. During the second pass the category count holds at its final value rather
+  than restarting, because no new category appears and a bar that counts backwards
+  reads as a fault.
+
+## 1.88.0 - versionCode 160
+
+- Live channels now load in **4.4 seconds instead of 132**, measured on the
+  owner's portal: 15538 channels, **one** request instead of 1345. The single
+  request added in 1.87.0 is confirmed.
+- Movies and series did not improve, and the same measurement showed why: the
+  portal answered `HTTP 503` within the first second of the movie load. It caps
+  concurrent connections, and 1.87.0 had raised the request threads from 9 to 16.
+- Concurrency is back to 6 page and 3 category threads. The measurement that
+  justified raising it - zero failures across 1345 requests - came from the live
+  path, which after 1.87.0 sends a single request and therefore stresses nothing.
+  A measurement is only valid for the path it measured. Nine concurrent requests
+  is the only figure this portal has ever completed without a failure.
+- **Pages that fail transiently are no longer lost.** Until now a page answering
+  `503` was dropped in silence: fewer movies on screen, no error anywhere, no way
+  for anyone to notice. Failed pages are now retried once in a second pass that
+  runs after the parallel window has drained, so the retry reaches the portal one
+  request at a time - the same relief a backoff would give, without waiting.
+- A category's first page is retried immediately when it fails transiently.
+  Losing that page loses the whole category rather than fourteen items.
+- The load summary in the log now reports how many pages were recovered. A large
+  figure there means the portal is buckling and the thread counts must come down.
+
+## 1.87.0 - versionCode 159
+
+- Stalker catalogs no longer kill the app. Loading a large movie catalog crashed
+  with `OutOfMemoryError` roughly halfway through, after minutes of steadily
+  worsening stalls; on Android TV the process was then killed outright with an
+  ANR. The catalog now loads to the end.
+- The cause was not the size of the catalog and not the speed of the portal. All
+  categories were requested at once but delivered in order, so every category
+  that finished early kept its raw JSON rows alive inside its `Future` waiting
+  for its turn. With 456 categories that is the **entire catalog held twice** -
+  once as raw JSON and once as the list being built from it. The measured heap
+  climbed 19MB to 191MB against a 192MB limit, garbage collection pauses reached
+  a full second, and the allocation that did not fit was the one that crashed.
+- Categories are now fetched through a sliding window of twelve, twice the number
+  of worker threads, so the queue stays full and no thread ever idles. Peak
+  memory is bounded by the window instead of by the size of the catalog. Nothing
+  about the order, the progress reporting or the on-screen result changes.
+- Rows are released the moment they have been turned into catalog items, one
+  category at a time, instead of staying reachable while the next request is
+  already being submitted.
+- The app also declares `largeHeap`. Holding the whole catalog in memory is a
+  deliberate choice that makes search and the home rows instant, and on a
+  television the default heap ceiling is too low for a real provider's movie
+  library. This is headroom, not the fix - the sliding window is the fix.
+- Live channels: the portal is now asked for every channel in **one** request
+  instead of one request per category. Measured on a real portal, the old path
+  spent 132 seconds on 1345 requests to deliver 15838 channels - fourteen
+  channels per round trip. The category of each channel was already inside every
+  row that came back, so those 1345 requests were paying network latency for
+  information they had already been given. Portals that do not implement the
+  single request fall back to the old path unchanged.
+- Concurrency raised from 3 category and 6 page threads to 6 and 10, which
+  together stay within the 16 requests per host the HTTP client allows. The same
+  measurement recorded **zero failures across 1345 requests**, so the portal was
+  never the limit the old numbers assumed it was.
+
+## 1.86.0 - versionCode 158
+
+- The Android TV player now keeps **one** video surface for its whole life, and
+  the enlargement between preview and full screen is finally clean.
+- 1.85.0 moved the `TextureView` to `SurfaceView` swap from the start of the
+  motion to its end. The motion did become smooth, but a black gap of roughly a
+  second appeared instead, exactly where the picture settles. Swapping the
+  surface costs a decoder reconfigure, and the frozen frame cannot outlast it.
+- The mistake was the same trap the mobile strip taught us: the question is not
+  *when* the surface changes, it is *that* it changes. There is no correct
+  moment. So the swap is gone. Android TV renders into a `SurfaceView` from the
+  first frame to the last, which is also what gives it the accurate pacing that
+  full screen needs.
+- Because a `SurfaceView` steps while it is resized, the motion is now covered by
+  a still frame for **both** engines rather than only for live. One `PixelCopy`
+  at the start of each transition, held for the full 360 ms over the surface,
+  sharing the video's own modifier so it covers exactly the same rectangle and
+  grows as an ordinary Compose layer.
+- The geometry no longer starts before that frame exists, so the first two frames
+  of the enlargement are covered too. The capture is bounded at 120 ms: if it
+  fails, the motion starts uncovered but it always starts. The button press
+  itself never waits - only the geometry does.
+- The cost is the judder described in the code, in the small preview where a
+  `TextureView` used to play. It is a small picture and it does not read; a black
+  second on every transition plainly does. `PlayerFrameRateSync` already exists
+  for the rest.
+- Mobile is untouched and still passes `preferSmoothResize = true`.
+- Gradle was not run; the owner QA build is pending.
+
+## 1.85.0 - versionCode 157
+
+- The Android TV transition between the preview player and full screen no longer
+  steps. The frame moved smoothly while the picture inside it jumped, on live
+  channels and on movies and series alike, because both were animating a
+  `SurfaceView` - a surface the system compositor does not follow smoothly while
+  it changes size.
+- Movies and series: the enlargement now runs entirely on a `TextureView`, which
+  resizes smoothly because it is composited together with Compose, and the swap
+  to `SurfaceView` happens when the motion stops instead of when it starts. The
+  momentary gap of that swap is covered by the frozen frame that already
+  existed. The earlier order was chosen before that cover existed. Full screen
+  still uses `SurfaceView`, where accurate pacing matters; that is unchanged.
+- Live channels: libVLC cannot render into a `TextureView` - 1.80.0 tried and
+  Android TV showed black in front of the picture - so its surface will step
+  whatever we do. It is therefore no longer watched: one frame is taken with
+  `PixelCopy` as the motion begins and held over the surface for the full 360 ms.
+  The still shares the video's own modifier, so it covers exactly the same
+  rectangle and grows smoothly with the frame as an ordinary Compose layer.
+- The libVLC path had never been given a frame-capture handle at all:
+  `PlayerVideoSurface` returned early before reaching it, so live transitions had
+  no frozen frame to hide behind. `PlayerVlcSurface` now finds the video
+  `SurfaceView` inside `VLCVideoLayout` and offers it for capture. If a future
+  libVLC changes that hierarchy the handle is simply absent, which costs
+  smoothness, never the picture.
+- The Android TV live channel screen never passed a capture handle to its player
+  and now does.
+- Live video freezes for 360 ms during the transition. This is the same
+  technique the channel switch already uses, and it is not perceptible: the eye
+  follows the motion, not the content.
+- Duration, easing, start and end positions, corner radii, controls, wording and
+  focus are all unchanged. Only what is drawn during the motion changed.
+- Gradle was not run; the owner QA build is pending.
+
 ## 1.84.0 - versionCode 156
 
 - The mobile strip now shows live picture, because the video surface is no longer
