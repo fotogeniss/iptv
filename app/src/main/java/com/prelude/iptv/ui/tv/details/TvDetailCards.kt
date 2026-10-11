@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.tv.details
 
+import com.prelude.iptv.ui.design.horizonBelow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -88,10 +89,17 @@ internal fun TvEpisodeCard(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "episodeFocusScale"
     )
+    // Horizon: γραμμή-ορίζοντας κάτω από την κάρτα με focus.
+    val horizonAlpha by animateFloatAsState(
+        if (focused) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
+        label = "episodeHorizon"
+    )
     val shape = RoundedCornerShape(11.dp)
     Box(
         Modifier.width(245.dp).height(138.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
+            .horizonBelow(horizonAlpha)
             .shadow(if (focused) 24.dp else 8.dp, shape, clip = false)
             .clip(shape)
             .background(IptvColors.Surface)
@@ -227,10 +235,17 @@ internal fun TvRelatedCard(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "relatedScale"
     )
+    // Horizon: γραμμή-ορίζοντας κάτω από την κάρτα με focus.
+    val horizonAlpha by animateFloatAsState(
+        if (focused) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
+        label = "relatedHorizon"
+    )
     val shape = RoundedCornerShape(12.dp)
     Box(
         Modifier.width(150.dp).aspectRatio(2f / 3f)
             .graphicsLayer { scaleX = scale; scaleY = scale }
+            .horizonBelow(horizonAlpha)
             .shadow(if (focused) 24.dp else 7.dp, shape, clip = false)
             .clip(shape)
             .background(IptvColors.Surface)

@@ -361,7 +361,8 @@ fun MobilePremiumHomeScreen(
             // η επόμενη ενότητα ξεκινά από την κορυφή και μπαίνει από κάτω της:
             // τότε χρειάζεται κανονικό περιθώριο.
             contentPadding = PaddingValues(
-                top = if (heroVisible) 0.dp else 56.dp,
+                // Horizon: το hero είναι κάρτα κάτω από την κεφαλίδα, όχι πίσω της.
+                top = 64.dp,
                 bottom = premiumMobileNavigationContentPadding()
             )
         ) {

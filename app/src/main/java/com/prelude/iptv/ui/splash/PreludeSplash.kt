@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.ui.IptvColors
 
-private val BRAND_RED = Color(0xFFE50914)
+private val BRAND_RED = IptvColors.Primary
 
 /**
  * Η εισαγωγή που βλέπει ο χρήστης ενώ ανοίγει η εφαρμογή.
@@ -121,7 +121,7 @@ fun PreludeSplash(
     }
 
     Box(
-        modifier.fillMaxSize().background(Color(0xFF050505)),
+        modifier.fillMaxSize().background(IptvColors.Background),
         contentAlignment = Alignment.Center
     ) {
         Canvas(Modifier.fillMaxSize().scale(glow)) {

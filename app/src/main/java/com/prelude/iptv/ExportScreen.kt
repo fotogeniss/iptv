@@ -1,5 +1,7 @@
 package com.prelude.iptv
 
+import com.prelude.iptv.ui.IptvColors
+
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -36,7 +38,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 private val Bg = Color(0xFF121216)
 private val Surf1 = Color(0xFF1C1C22)
 private val Surf2 = Color(0xFF26262E)
-private val Acc = Color(0xFFE11D2A)
+private val Acc = IptvColors.Primary
 private val AccSoft = Color(0xFFFF6B6B)
 
 @Composable

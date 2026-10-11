@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.player
 
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
@@ -208,6 +209,14 @@ internal fun PlayerControlsBar(
                         )
                         val playedWidth = size.width * fraction
                         if (playedWidth > 0f) {
+                            // Horizon: λάμψη κάτω από το παιγμένο τμήμα.
+                            drawLine(
+                                color = IptvColors.Glow.copy(alpha = .4f),
+                                start = Offset(0f, size.height / 2f),
+                                end = Offset(playedWidth, size.height / 2f),
+                                strokeWidth = lineHeight * 3.5f,
+                                cap = StrokeCap.Round,
+                            )
                             drawRoundRect(
                                 color = IptvColors.Primary,
                                 topLeft = Offset(0f, lineTop),
@@ -217,6 +226,14 @@ internal fun PlayerControlsBar(
                         }
                         val thumbRadius = (if (scrubFocused) 4.dp else 3.dp).toPx()
                         val maxThumbX = (size.width - thumbRadius).coerceAtLeast(thumbRadius)
+                        drawCircle(
+                            color = IptvColors.Primary.copy(alpha = .32f),
+                            radius = thumbRadius * 2.2f,
+                            center = Offset(
+                                x = playedWidth.coerceIn(thumbRadius, maxThumbX),
+                                y = size.height / 2f,
+                            ),
+                        )
                         drawCircle(
                             color = Color.White,
                             radius = thumbRadius,

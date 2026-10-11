@@ -1,6 +1,11 @@
 package com.prelude.iptv.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -81,11 +86,12 @@ fun StreamingButton(
     enabled: Boolean = true
 ) {
     val background = when (style) {
-        StreamingButtonStyle.Primary -> Color.White
+        // Horizon: η κύρια ενέργεια (π.χ. Αναπαραγωγή) παίρνει το accent.
+        StreamingButtonStyle.Primary -> IptvColors.Primary
         StreamingButtonStyle.Secondary -> IptvColors.SurfaceRaised
         StreamingButtonStyle.Ghost -> Color.Transparent
     }
-    val foreground = if (style == StreamingButtonStyle.Primary) Color.Black else Color.White
+    val foreground = Color.White
     val border = if (style == StreamingButtonStyle.Ghost) StreamingBorders.Strong else null
 
     Row(
@@ -136,19 +142,39 @@ fun StreamingProgress(
     accent: Color = IptvColors.Primary
 ) {
     val safe = progress.coerceIn(0f, 1f)
-    Box(
+    // Horizon: λεπτή μπάρα που «φωτίζει» μέχρι το σημείο όπου βρίσκεσαι,
+    // με λευκή κουκκίδα στο άκρο. Η λάμψη ζωγραφίζεται έξω από τα όρια,
+    // οπότε το ύψος στο layout μένει 4dp όπως πριν.
+    Canvas(
         modifier
             .fillMaxWidth()
             .height(4.dp)
-            .clip(RoundedCornerShape(StreamingRadius.Pill))
-            .background(Color.White.copy(alpha = 0.24f))
     ) {
-        Box(
-            Modifier
-                .fillMaxWidth(safe)
-                .height(4.dp)
-                .background(accent)
+        val r = size.height / 2f
+        drawRoundRect(
+            color = Color.White.copy(alpha = 0.20f),
+            cornerRadius = CornerRadius(r, r)
         )
+        if (safe > 0f) {
+            val end = size.width * safe
+            drawLine(
+                color = accent.copy(alpha = 0.35f),
+                start = Offset(0f, r),
+                end = Offset(end, r),
+                strokeWidth = size.height * 2.6f,
+                cap = StrokeCap.Round
+            )
+            drawRoundRect(
+                color = accent,
+                size = Size(end, size.height),
+                cornerRadius = CornerRadius(r, r)
+            )
+            drawCircle(
+                color = Color.White,
+                radius = size.height * 0.75f,
+                center = Offset(end.coerceAtLeast(r), r)
+            )
+        }
     }
 }
 

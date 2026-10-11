@@ -1,5 +1,10 @@
 package com.prelude.iptv.ui.player
 
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import com.prelude.iptv.ui.IptvColors
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -34,7 +39,7 @@ import com.prelude.iptv.R
 import com.prelude.iptv.ui.localization.badgeLabelRes
 
 /** Το κόκκινο της μπάρας. Ίδιο με το λογότυπο — δεν είναι δεύτερο κόκκινο. */
-private val SCRUB_RED = Color(0xFFE50914)
+private val SCRUB_RED = IptvColors.Primary
 
 /**
  * Τα χειριστήρια του player στο κινητό, στη διάταξη του YouTube.
@@ -329,6 +334,16 @@ private fun Scrubber(
             Modifier
                 .width(width * fraction)
                 .height(trackHeight)
+                // Horizon: το παιγμένο τμήμα «φωτίζει».
+                .drawBehind {
+                    drawLine(
+                        color = IptvColors.Glow.copy(alpha = .45f),
+                        start = Offset(0f, size.height / 2f),
+                        end = Offset(size.width, size.height / 2f),
+                        strokeWidth = size.height * 3.5f,
+                        cap = StrokeCap.Round
+                    )
+                }
                 .background(SCRUB_RED)
         )
         // Λαβή. Το offset είναι η θέση μείον η μισή λαβή, ώστε το κέντρο του
@@ -339,8 +354,15 @@ private fun Scrubber(
             Modifier
                 .offset(x = width * fraction - thumbSize / 2)
                 .size(thumbSize)
+                // Horizon: λευκή λαβή με κόκκινο φωτοστέφανο.
+                .drawBehind {
+                    drawCircle(
+                        color = IptvColors.Primary.copy(alpha = .32f),
+                        radius = size.minDimension * .95f
+                    )
+                }
                 .clip(CircleShape)
-                .background(SCRUB_RED)
+                .background(Color.White)
         )
     }
 }

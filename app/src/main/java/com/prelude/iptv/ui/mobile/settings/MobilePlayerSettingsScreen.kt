@@ -66,7 +66,7 @@ internal fun MobilePlayerSettingsScreen(
     BackHandler(onBack = onBack)
     var picker by remember { mutableStateOf<PlayerPicker?>(null) }
 
-    Column(modifier.fillMaxSize().background(Color(0xFF050505))) {
+    Column(modifier.fillMaxSize().background(IptvColors.Background)) {
         MobileSettingsFlowHeader(stringResource(R.string.settings_player_title), onBack)
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp)) {
             PlayerGroupTitle(stringResource(R.string.settings_player_general))
@@ -132,7 +132,7 @@ internal fun MobilePlayerSettingsScreen(
         }
         ModalBottomSheet(
             onDismissRequest = { picker = null },
-            containerColor = Color(0xFF080808),
+            containerColor = IptvColors.BackgroundRaised,
             contentColor = Color.White
         ) {
             Text(stringResource(selectedPicker.titleRes()), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))

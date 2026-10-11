@@ -51,6 +51,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import com.prelude.iptv.ui.design.horizonBelow
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
@@ -86,9 +87,17 @@ private val ShLo      = IptvColors.TextTertiary
 fun Modifier.tvFocus(
     shape: Shape = RoundedCornerShape(12.dp),
     tint: Boolean = true,
-    scale: Boolean = true
+    scale: Boolean = true,
+    horizon: Boolean = true
 ): Modifier {
     var focused by remember { mutableStateOf(false) }
+    // Horizon: κάτω από ό,τι έχει focus εμφανίζεται η γραμμή-ορίζοντας,
+    // ίδια σε όλη την TV (βλ. ui/design/Horizon.kt).
+    val horizonAlpha by androidx.compose.animation.core.animateFloatAsState(
+        if (focused && horizon) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
+        label = "focusHorizon"
+    )
     val focusScale by androidx.compose.animation.core.animateFloatAsState(
         if (focused && scale) motionScale(Motion.TvFocusScale) else 1f,
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
@@ -112,6 +121,7 @@ fun Modifier.tvFocus(
         }
         .background(fillColor, shape)
         .border(width = 2.dp, color = borderColor, shape = shape)
+        .horizonBelow(horizonAlpha, gap = 5.dp)
 }
 
 /**

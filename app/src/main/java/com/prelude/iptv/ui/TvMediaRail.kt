@@ -91,11 +91,14 @@ private fun TvMediaCard(
     var focused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(10.dp)
     Box(
-        Modifier.width(238.dp).height(136.dp).clip(shape)
-            .background(IptvColors.Surface)
-            .border(1.dp, IptvColors.Divider, shape)
+        // Horizon: το tvFocus μπαίνει πριν το clip, ώστε η γραμμή-ορίζοντας
+        // κάτω από την κάρτα να μην κόβεται.
+        Modifier.width(238.dp).height(136.dp)
             .onFocusChanged { focused = it.isFocused }
             .tvFocus(shape, tint = false)
+            .clip(shape)
+            .background(IptvColors.Surface)
+            .border(1.dp, IptvColors.Divider, shape)
             .clickable(onClick = onClick)
     ) {
         if (channel.logo.isNotBlank()) {

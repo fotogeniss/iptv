@@ -1,5 +1,9 @@
 package com.prelude.iptv.ui.mobile.home
 
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
+import com.prelude.iptv.ui.AppFonts
+import com.prelude.iptv.ui.design.HorizonLine
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -95,12 +99,58 @@ internal fun MobilePremiumHomeHero(
             pager.animateScrollToPage((pager.currentPage + 1) % heroes.size)
         }
     }
-    Box(Modifier.fillMaxWidth().height(515.dp)) {
+    // HORIZON: το hero είναι πλέον ΚΑΡΤΑ 228dp μέσα στα περιθώρια, όχι εικόνα
+    // ολόκληρης οθόνης. Έτσι το «Συνέχισε να βλέπεις» και το Live φαίνονται
+    // στην πρώτη οθόνη χωρίς scroll (prototypes/redesign_horizon.html).
+    Column(Modifier.fillMaxWidth()) {
+        if (showChrome) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "PRELUDE+",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontFamily = AppFonts.Display,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 3.5.sp
+                    )
+                    HorizonLine(Modifier.width(96.dp).padding(top = 4.dp))
+                }
+                Spacer(Modifier.weight(1f))
+                MobileHeroRoundButton(Icons.Default.Search, stringResource(R.string.home_search), onSearch)
+                Spacer(Modifier.width(10.dp))
+                Box(
+                    Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.linearGradient(listOf(Color(0xFF5B2A3A), Color(0xFF2A1D3D)))),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        profileName.trim().firstOrNull()?.uppercase() ?: "K",
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(22.dp)
+            ) {
+                MobileHeroTab(stringResource(R.string.home_section_series), selectedDestination == "series", onOpenSeries)
+                MobileHeroTab(stringResource(R.string.home_section_movies), selectedDestination == "movies" || selectedDestination == "home", onOpenMovies)
+                MobileHeroTab(stringResource(R.string.home_categories_dropdown), false, onOpenCategories)
+            }
+        }
         HorizontalPager(
             state = pager,
-            contentPadding = PaddingValues(0.dp),
-            pageSpacing = 0.dp,
-            modifier = Modifier.fillMaxSize()
+            contentPadding = PaddingValues(horizontal = 18.dp),
+            pageSpacing = 10.dp,
+            modifier = Modifier.fillMaxWidth().height(228.dp)
         ) { page ->
             val channel = heroes[page]
             val meta by rememberHomeMeta(channel, tmdbFor)
@@ -113,40 +163,9 @@ internal fun MobilePremiumHomeHero(
                 onToggleFavorite = { onToggleFavorite(channel) }
             )
         }
-        if (showChrome) Column(Modifier.fillMaxWidth()) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("PRELUDE", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Black)
-                Text("+", color = IptvColors.Primary, fontSize = 20.sp, fontWeight = FontWeight.Black)
-                Spacer(Modifier.weight(1f))
-                MobileHeroRoundButton(Icons.Default.Search, stringResource(R.string.home_search), onSearch)
-                Spacer(Modifier.width(10.dp))
-                Box(
-                    Modifier.size(34.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xAA2D3035)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        profileName.trim().firstOrNull()?.uppercase() ?: "K",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
-            Row(
-                Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, bottom = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(22.dp)
-            ) {
-                MobileHeroTab(stringResource(R.string.home_section_series), selectedDestination == "series", onOpenSeries)
-                MobileHeroTab(stringResource(R.string.home_section_movies), selectedDestination == "movies" || selectedDestination == "home", onOpenMovies)
-                MobileHeroTab(stringResource(R.string.home_categories_dropdown), false, onOpenCategories)
-            }
-        }
         Row(
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
         ) {
             heroes.indices.forEach { index ->
                 Box(
@@ -154,7 +173,7 @@ internal fun MobilePremiumHomeHero(
                         .width(if (index == pager.currentPage) 18.dp else 5.dp)
                         .height(5.dp)
                         .clip(CircleShape)
-                        .background(if (index == pager.currentPage) Color.White else Color.White.copy(alpha = .28f))
+                        .background(if (index == pager.currentPage) IptvColors.TextPrimary else IptvColors.SurfaceSelected)
                 )
             }
         }
@@ -177,85 +196,97 @@ private fun MobileHeroPage(
     val year = ProviderMetadataPolicy.displayYear(
         meta?.year?.takeIf(String::isNotBlank) ?: channel.year
     )
-    val overview = meta?.overview?.takeIf(String::isNotBlank) ?: channel.plot
     val genre = meta?.genres?.takeIf(String::isNotBlank) ?: channel.genre
-    Box(Modifier.fillMaxSize().clickable(onClick = onDetails)) {
+    val shape = RoundedCornerShape(24.dp)
+    Box(
+        Modifier
+            .fillMaxSize()
+            .clip(shape)
+            .background(IptvColors.Surface)
+            .clickable(onClick = onDetails)
+    ) {
         HomeCinematicBackdrop(channel, meta, mobile = true, modifier = Modifier.fillMaxSize())
+        // Σκούρο κάτω μέρος ώστε τίτλος και κουμπιά να διαβάζονται σε κάθε εικόνα.
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    0f to Color.Transparent,
+                    0.35f to Color.Transparent,
+                    1f to IptvColors.Background.copy(alpha = .94f)
+                )
+            )
+        )
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 19.dp, vertical = 31.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 stringResource(R.string.home_top_choice),
-                color = Color.White,
-                fontSize = 9.sp,
-                letterSpacing = 1.8.sp,
-                fontWeight = FontWeight.Black
+                color = IptvColors.TextPrimary,
+                fontSize = 10.sp,
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .border(1.dp, IptvColors.DividerStrong, RoundedCornerShape(6.dp))
+                    .padding(horizontal = 6.dp, vertical = 1.dp)
             )
-            Spacer(Modifier.height(9.dp))
             Text(
                 title,
                 color = Color.White,
-                fontSize = 34.sp,
-                lineHeight = 34.sp,
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center,
+                fontSize = 30.sp,
+                lineHeight = 30.sp,
+                fontFamily = AppFonts.Display,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            val genreTags = genre.split(",", "/", "·", "|", "&").map { it.trim() }.filter { it.isNotBlank() }.take(3)
-            if (genreTags.isNotEmpty()) {
-                Spacer(Modifier.height(9.dp))
+            val genreTag = genre.split(",", "/", "·", "|", "&").map { it.trim() }.firstOrNull { it.isNotBlank() }
+            val metaParts = buildList {
+                if (year.isNotBlank()) add(year)
+                if (genreTag != null) add(genreTag)
+                meta?.rating?.takeIf(String::isNotBlank)?.let { add("★ $it") }
+            }
+            if (metaParts.isNotEmpty()) {
                 Text(
-                    genreTags.joinToString("   ·   "),
-                    color = Color.White,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
+                    metaParts.joinToString("  ·  "),
+                    color = IptvColors.TextSecondary,
+                    fontSize = 12.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Spacer(Modifier.height(9.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                meta?.rating?.takeIf(String::isNotBlank)?.let {
-                    Text(stringResource(R.string.home_rating_match, it), color = IptvColors.Success, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text(" · ", color = IptvColors.TextSecondary, fontSize = 11.sp)
-                }
-                if (year.isNotBlank()) Text(year, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-            }
-            if (overview.isNotBlank()) {
-                Spacer(Modifier.height(9.dp))
-                Text(
-                    overview,
-                    color = Color(0xFFCDD0D4),
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Spacer(Modifier.height(16.dp))
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 22.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
-                    Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(8.dp)).background(Color.White).clickable(onClick = onPlay),
-                    horizontalArrangement = Arrangement.Center,
+                    Modifier
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(IptvColors.Primary)
+                        .clickable(onClick = onPlay)
+                        .padding(start = 14.dp, end = 18.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.PlayArrow, null, tint = Color.Black)
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.home_play), color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    Icon(Icons.Default.PlayArrow, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.home_play), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
-                MobileHeroSquareButton(
-                    icon = if (favorite) Icons.Default.Check else Icons.Default.Add,
-                    contentDescription = stringResource(R.string.home_section_my_list),
-                    onClick = onToggleFavorite
-                )
-                MobileHeroSquareButton(Icons.Default.Info, stringResource(R.string.home_information), onDetails)
+                Row(
+                    Modifier
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = .10f))
+                        .clickable(onClick = onToggleFavorite)
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        if (favorite) Icons.Default.Check else Icons.Default.Add,
+                        null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.home_section_my_list), color = Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                }
             }
         }
     }

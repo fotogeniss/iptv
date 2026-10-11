@@ -77,7 +77,7 @@ internal fun MobileEpgSettingsScreen(
         if (discoverRequested && discoveredSources.isNotEmpty()) sourcePickerOpen = true
     }
 
-    Column(modifier.fillMaxSize().background(Color(0xFF050505))) {
+    Column(modifier.fillMaxSize().background(IptvColors.Background)) {
         MobileSettingsFlowHeader("EPG", onBack = { onCloseDiscovery(); onBack() })
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp)) {
             Text(stringResource(R.string.epg_settings_details), color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
@@ -142,7 +142,7 @@ internal fun MobileEpgSettingsScreen(
     if (sourcePickerOpen) {
         ModalBottomSheet(
             onDismissRequest = { sourcePickerOpen = false },
-            containerColor = Color(0xFF080808),
+            containerColor = IptvColors.BackgroundRaised,
             contentColor = Color.White
         ) {
             Text(stringResource(R.string.epg_settings_sources_title), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))

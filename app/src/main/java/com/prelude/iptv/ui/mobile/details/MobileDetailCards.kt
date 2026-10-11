@@ -106,11 +106,14 @@ internal fun MobileEpisodeCard(
                 )
             )
             Box(
+                // Horizon: σκούρο ημιδιάφανο κουμπί με λεπτό περίγραμμα, ώστε το
+                // still του επεισοδίου να φαίνεται από πίσω.
                 Modifier.align(Alignment.Center).size(34.dp).clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.92f)),
+                    .background(IptvColors.Background.copy(alpha = 0.55f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.PlayArrow, null, tint = Color.White, modifier = Modifier.size(18.dp))
             }
             Text(
                 stringResource(R.string.details_episode_badge, number),

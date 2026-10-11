@@ -65,7 +65,7 @@ internal fun MobileEditPlaylistScreen(
     val defaultName = stringResource(R.string.sources_default_playlist_name)
     val valid = if (credentialsMode) domain.isNotBlank() && username.isNotBlank() && password.isNotBlank() else url.isNotBlank()
 
-    Column(Modifier.fillMaxSize().background(Color(0xFF050505))) {
+    Column(Modifier.fillMaxSize().background(IptvColors.Background)) {
         Row(
             Modifier.fillMaxWidth().height(76.dp).border(0.5.dp, IptvColors.Divider).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically

@@ -1,5 +1,10 @@
 package com.prelude.iptv.ui.mobile.live
 
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,16 +61,21 @@ internal fun MobileLiveFilterRow(
     ) {
         items(filters, key = { it.id }) { item ->
             val selected = item.id == selectedId
+            // Horizon: το επιλεγμένο chip είναι λευκό· το κόκκινο μένει για
+            // ό,τι παίζει (βλ. MobileQuickGuideRow).
+            val shape = RoundedCornerShape(12.dp)
             Text(
                 item.localizedLabel(),
-                color = if (selected) Color.White else IptvColors.TextSecondary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Black,
+                color = if (selected) IptvColors.Background else IptvColors.TextSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 modifier = Modifier
-                    .background(if (selected) IptvColors.Primary else IptvColors.Surface, RoundedCornerShape(99.dp))
+                    .clip(shape)
+                    .background(if (selected) IptvColors.TextPrimary else IptvColors.Surface)
+                    .border(1.dp, if (selected) IptvColors.TextPrimary else IptvColors.Divider, shape)
                     .clickable { onSelect(item.id) }
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .padding(horizontal = 13.dp, vertical = 8.dp)
             )
         }
     }
@@ -254,7 +264,34 @@ internal fun MobileQuickGuideRow(
         modifier
             .fillMaxWidth()
             .clip(rowShape)
-            .background(if (selected) Color.White.copy(alpha = .055f) else IptvColors.Surface)
+            .background(IptvColors.Surface)
+            // Horizon: το κανάλι που παίζει παίρνει κόκκινη απόχρωση από αριστερά
+            // και φωτεινή κάθετη γραμμή στην άκρη.
+            .drawBehind {
+                if (selected) {
+                    drawRect(
+                        Brush.horizontalGradient(
+                            0f to IptvColors.Primary.copy(alpha = .14f),
+                            0.7f to Color.Transparent
+                        )
+                    )
+                    val inset = 10.dp.toPx()
+                    drawLine(
+                        color = IptvColors.Glow.copy(alpha = .45f),
+                        start = Offset(0f, inset),
+                        end = Offset(0f, size.height - inset),
+                        strokeWidth = 7.dp.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        color = IptvColors.Primary,
+                        start = Offset(0f, inset),
+                        end = Offset(0f, size.height - inset),
+                        strokeWidth = 2.dp.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                }
+            }
             .clickable(onClick = onSelect)
             .padding(horizontal = 13.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -270,15 +307,15 @@ internal fun MobileQuickGuideRow(
             Text(
                 channel.name,
                 color = Color.White,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 now?.title ?: stringResource(R.string.live_broadcast),
-                color = IptvColors.TextTertiary,
-                fontSize = 9.5.sp,
+                color = IptvColors.TextSecondary,
+                fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -288,13 +325,13 @@ internal fun MobileQuickGuideRow(
             }
         }
         Spacer(Modifier.width(10.dp))
-        Text(now?.let { liveTime(it.startMs) }.orEmpty(), color = IptvColors.TextSecondary, fontSize = 9.5.sp)
+        Text(now?.let { liveTime(it.startMs) }.orEmpty(), color = IptvColors.TextTertiary, fontSize = 11.5.sp)
         Spacer(Modifier.width(5.dp))
         Icon(
             Icons.Default.PlayArrow,
             stringResource(R.string.live_watch_channel, channel.name),
-            tint = IptvColors.TextTertiary,
-            modifier = Modifier.size(15.dp)
+            tint = if (selected) IptvColors.Primary else IptvColors.TextTertiary,
+            modifier = Modifier.size(18.dp)
         )
     }
 }

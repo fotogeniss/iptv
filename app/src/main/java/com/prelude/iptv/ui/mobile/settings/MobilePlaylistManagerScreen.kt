@@ -67,7 +67,7 @@ internal fun MobilePlaylistManagerScreen(
     val displayEndpoint = source.endpoint.ifBlank {
         stringResource(if (source.local) R.string.sources_local_file else R.string.sources_local_source)
     }
-    Column(modifier.fillMaxSize().background(Color(0xFF050505))) {
+    Column(modifier.fillMaxSize().background(IptvColors.Background)) {
         MobileSettingsFlowHeader(displayName, onBack)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 24.dp)) {
             Text(stringResource(R.string.sources_active_playlist), color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)

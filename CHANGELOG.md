@@ -22,6 +22,34 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.97.0 - versionCode 169
+
+Horizon redesign, approved in `prototypes/redesign_horizon.html` (2026-10-12).
+
+- **One accent, one indicator.** The red light line from the logo now marks
+  what is selected, playing or focused: the active bottom-bar tab, the focused
+  card and rail item on TV, the channel that is playing, progress bars and the
+  player scrubber. Shared code lives in `ui/design/Horizon.kt`.
+- **Palette.** Warm near-black instead of pure black, three surface levels and a
+  softer red (`#E5303A`). All in `IptvColors`; the few screens that hard-coded
+  the old background or red now use the tokens.
+- **Typography.** Commissioner for text and Advent Pro for titles, both with
+  full Greek, bundled in `res/font` (~430KB, OFL licences in `docs/licenses`).
+- **Primary buttons** (Play, Resume) are red with white text instead of white
+  with black.
+- **Mobile home.** The hero is a 228dp card under the header instead of a
+  515dp full-screen image, so the first rails are visible without scrolling.
+  The logo is the PRELUDE+ wordmark with the light line under it.
+- **Mobile bottom bar.** Warm translucent surface with a hairline border; the
+  active tab loses its white pill and gets the light line and a soft glow.
+- **Mobile Live.** White chip for the selected filter; the playing channel row
+  gets a red wash and a glowing edge; larger channel and programme text.
+- **TV.** Focused cards keep scale and white outline and gain the light line
+  underneath. Rail: the focused item fills white, the active section is marked
+  by the light line, and the brand mark is the P+ wordmark.
+- **Player.** The played part of the scrubber glows; the handle is white with a
+  red halo. Episode play buttons on mobile details are dark and translucent.
+
 ## 1.96.0 - versionCode 168
 
 - **Faster builds, no visible change.** Every build used to package four APKs,

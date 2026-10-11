@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.tv.live
 
+import com.prelude.iptv.ui.design.horizonBelow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -180,6 +181,12 @@ private fun TvLiveChannelCard(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "channelScale"
     )
+    // Horizon: γραμμή-ορίζοντας κάτω από την κάρτα με focus.
+    val horizonAlpha by animateFloatAsState(
+        if (focused) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
+        label = "channelHorizon"
+    )
     Box(
         modifier
             .width(235.dp).fillMaxHeight()
@@ -193,6 +200,7 @@ private fun TvLiveChannelCard(
                     dpadLongPressTriggered = false
                 }
             }
+            .horizonBelow(horizonAlpha, gap = 10.dp)
             .graphicsLayer {
                 scaleX = scale; scaleY = scale
                 shadowElevation = if (focused) 28.dp.toPx() else 7.dp.toPx()

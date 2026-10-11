@@ -1,5 +1,8 @@
 package com.prelude.iptv.ui
 
+import androidx.compose.ui.draw.drawBehind
+import com.prelude.iptv.ui.design.HorizonLine
+import com.prelude.iptv.ui.design.drawHorizon
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,7 +52,7 @@ import com.prelude.iptv.ui.localization.labelRes
 import com.prelude.iptv.R
 
 private val NavRed = IptvColors.Primary
-private val NavMuted = Color(0xFF8E8E96)
+private val NavMuted = IptvColors.TextTertiary
 
 /**
  * TV rail for the five primary content destinations. Favorites, Continue and
@@ -137,11 +140,18 @@ fun PremiumTvNavigationRail(
         // Brand — μικρό κόκκινο "P" όπως το N του Figma. Σε κουτί 40dp, ίδιο με
         // τα εικονίδια, ώστε να είναι στοιχισμένο μαζί τους και να μη μετακινείται.
         Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-            Box(
-                Modifier.size(30.dp).clip(RoundedCornerShape(6.dp)).background(NavRed),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("P", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black)
+            // Horizon: λεκτικό σήμα «P+» με τη γραμμή-ορίζοντα από κάτω,
+            // όπως το λογότυπο, αντί για κόκκινο κουτί.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "P+",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontFamily = AppFonts.Display,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 2.sp
+                )
+                HorizonLine(Modifier.width(24.dp).padding(top = 3.dp))
             }
         }
         Spacer(Modifier.height(14.dp))
@@ -259,7 +269,8 @@ private fun TvNavIcon(
                 .fillMaxWidth()
                 .height(40.dp)
                 .clip(RoundedCornerShape(if (expanded) 9.dp else 20.dp))
-                .background(if (focused) Color.White.copy(alpha = 0.14f) else Color.Transparent)
+                // Horizon: το στοιχείο με focus γεμίζει λευκό — φαίνεται από τον καναπέ.
+                .background(if (focused) IptvColors.TextPrimary else Color.Transparent)
                 .clickable(
                     interactionSource = interaction,
                     indication = null,
@@ -273,7 +284,11 @@ private fun TvNavIcon(
                 Icon(
                     icon,
                     contentDescription,
-                    tint = if (focused || selected) Color.White else NavMuted,
+                    tint = when {
+                        focused -> IptvColors.Background
+                        selected -> Color.White
+                        else -> NavMuted
+                    },
                     modifier = Modifier.size(21.dp)
                 )
             }
@@ -283,7 +298,11 @@ private fun TvNavIcon(
                 Spacer(Modifier.width(6.dp))
                 Text(
                     contentDescription,
-                    color = if (focused || selected) Color.White else NavMuted,
+                    color = when {
+                        focused -> IptvColors.Background
+                        selected -> Color.White
+                        else -> NavMuted
+                    },
                     fontSize = 13.sp,
                     fontWeight = if (selected || focused) FontWeight.Black else FontWeight.Medium,
                     maxLines = 1,
@@ -291,14 +310,16 @@ private fun TvNavIcon(
                 )
             }
         }
-        // Κόκκινη υπογράμμιση ενεργού — όπως στο Figma. Πάντα δεσμευμένο ύψος
-        // ώστε το επιλεγμένο/μη να μην αλλάζει το κατακόρυφο layout.
+        // Horizon: η ενεργή ενότητα σημαδεύεται με τη γραμμή-ορίζοντα. Πάντα
+        // δεσμευμένο ύψος ώστε το επιλεγμένο/μη να μην αλλάζει το κατακόρυφο layout.
         Box(
             Modifier
                 .padding(top = 2.dp)
-                .width(20.dp)
+                .width(36.dp)
                 .height(2.5.dp)
-                .background(if (selected) NavRed else Color.Transparent, RoundedCornerShape(99.dp))
+                .drawBehind {
+                    if (selected) drawHorizon(0f, size.width, size.height / 2f)
+                }
         )
     }
 }

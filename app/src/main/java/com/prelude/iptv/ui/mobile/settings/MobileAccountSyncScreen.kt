@@ -72,7 +72,7 @@ internal fun MobileAccountSyncScreen(
     }
 
     Column(
-        modifier.fillMaxSize().background(Color(0xFF050505)).padding(horizontal = 20.dp),
+        modifier.fillMaxSize().background(IptvColors.Background).padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(Modifier.fillMaxWidth().height(76.dp), verticalAlignment = Alignment.CenterVertically) {

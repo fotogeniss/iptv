@@ -1,5 +1,14 @@
 package com.prelude.iptv.ui.mobile.navigation
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import com.prelude.iptv.ui.design.horizonAbove
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -194,8 +203,10 @@ private fun FullNavigation(
             )
     ) {
         Surface(
-            color = Color.Black.copy(alpha = .84f),
+            // Horizon: ημιδιάφανη ζεστή επιφάνεια με λεπτό περίγραμμα.
+            color = IptvColors.Surface.copy(alpha = .92f),
             contentColor = IptvColors.TextPrimary,
+            border = BorderStroke(1.dp, IptvColors.Divider),
             shape = RoundedCornerShape(
                 topStart = if (dockedTop) 0.dp else 22.dp,
                 topEnd = if (dockedTop) 0.dp else 22.dp,
@@ -245,13 +256,32 @@ private fun PremiumMobileNavItem(
 ) {
     val selected = destination.route == selectedRoute
     val label = stringResource(destination.labelRes())
+    // Horizon: η ενεργή καρτέλα δεν έχει πια λευκό «χάπι». Τη σημαδεύει η
+    // γραμμή-ορίζοντας στην πάνω ακμή της μπάρας, με απαλή κόκκινη λάμψη.
+    val horizonAlpha by animateFloatAsState(
+        if (selected) 1f else 0f,
+        tween(220),
+        label = "navHorizon"
+    )
     Column(
         modifier
+            .fillMaxHeight()
             .padding(horizontal = 2.dp)
-            .background(
-                if (selected) IptvColors.TextPrimary else Color.Transparent,
-                RoundedCornerShape(18.dp)
-            )
+            .drawBehind {
+                if (horizonAlpha > 0f) {
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                IptvColors.Primary.copy(alpha = .26f * horizonAlpha),
+                                Color.Transparent
+                            ),
+                            center = Offset(size.width / 2f, -5.dp.toPx()),
+                            radius = size.height * .62f
+                        )
+                    )
+                }
+            }
+            .horizonAbove(horizonAlpha, width = 34.dp, inset = (-4).dp)
             .clickable(onClick = onClick)
             .padding(horizontal = 3.dp, vertical = 7.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -260,15 +290,15 @@ private fun PremiumMobileNavItem(
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
+            tint = if (selected) IptvColors.TextPrimary else IptvColors.TextTertiary,
             modifier = Modifier.size(22.dp)
         )
-        Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(3.dp))
         Text(
             text = label,
-            color = if (selected) IptvColors.Primary else IptvColors.TextSecondary,
-            fontSize = 9.sp,
-            fontWeight = if (selected) FontWeight.Black else FontWeight.SemiBold,
+            color = if (selected) IptvColors.TextPrimary else IptvColors.TextTertiary,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Clip
         )

@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.tv.home
 
+import com.prelude.iptv.ui.design.horizonBelow
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -247,6 +248,8 @@ private fun TvPosterCard(
             .width(109.dp)
             .height(155.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
+            // Horizon: η γραμμή-ορίζοντας ζωγραφίζεται πριν το clip, άρα φαίνεται.
+            .horizonBelow(borderAlpha)
             .shadow(elevation, shape)
             .clip(shape)
             .background(IptvColors.Surface)

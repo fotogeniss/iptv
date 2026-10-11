@@ -1,5 +1,8 @@
 package com.prelude.iptv.ui.mobile.home
 
+import androidx.compose.foundation.layout.Column
+import com.prelude.iptv.ui.AppFonts
+import com.prelude.iptv.ui.design.HorizonLine
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -77,24 +80,17 @@ internal fun MobileHomeHeader(
             letterSpacing = 1.4.sp,
             modifier = Modifier.weight(1f)
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(5.dp).clip(CircleShape).background(IptvColors.Primary)
-            )
-            Spacer(Modifier.width(5.dp))
-            Icon(
-                Icons.Default.PlayArrow, null,
-                tint = IptvColors.Primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(3.dp))
+        // Horizon: λεκτικό σήμα με τη γραμμή-ορίζοντα από κάτω, όπως το λογότυπο.
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 "PRELUDE+",
                 color = IptvColors.TextPrimary,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = .5.sp
+                fontSize = 16.sp,
+                fontFamily = AppFonts.Display,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 3.5.sp
             )
+            HorizonLine(Modifier.width(96.dp).padding(top = 4.dp))
         }
         Row(
             Modifier.weight(1f),

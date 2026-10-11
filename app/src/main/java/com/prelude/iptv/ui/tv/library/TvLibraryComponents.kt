@@ -1,5 +1,6 @@
 package com.prelude.iptv.ui.tv.library
 
+import com.prelude.iptv.ui.design.horizonBelow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -81,6 +82,12 @@ internal fun TvLibraryCard(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "libraryCardScale"
     )
+    // Horizon: γραμμή-ορίζοντας κάτω από την κάρτα με focus.
+    val horizonAlpha by animateFloatAsState(
+        if (focused) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
+        label = "libraryHorizon"
+    )
     val focusRequester = rememberInitialFocus(enabled = initialFocus, key = channel)
     val shape = RoundedCornerShape(12.dp)
 
@@ -99,6 +106,7 @@ internal fun TvLibraryCard(
                 clip = false
                 alpha = if (focused) 1f else .90f
             }
+            .horizonBelow(horizonAlpha)
             .combinedClickable(
                 onClick = { if (managementMode) onRemove() else onOpen() },
                 onLongClick = onRemove

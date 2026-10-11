@@ -1,5 +1,7 @@
 package com.prelude.iptv
 
+import com.prelude.iptv.ui.IptvColors
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -176,7 +178,7 @@ private fun Field(label: String, value: String, isPassword: Boolean = false, onC
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-            focusedBorderColor = Color(0xFFE11D2A), unfocusedBorderColor = Color(0xFF262630),
+            focusedBorderColor = IptvColors.Primary, unfocusedBorderColor = Color(0xFF262630),
             focusedLabelColor = Color(0xFFFF6B6B), unfocusedLabelColor = Color(0xFF6B6B76)
         ),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
