@@ -219,4 +219,13 @@
     <string name="settings_category_move">Μετακίνηση</string>
     <string name="settings_category_add_group">Προσθήκη ομάδας</string>
     <string name="settings_category_load_failed">Αποτυχία φόρτωσης κατηγοριών.</string>
+    <!-- Horizon: επισκόπηση ρυθμίσεων -->
+    <string name="settings_group_playback">Αναπαραγωγή &amp; εμφάνιση</string>
+    <string name="settings_group_content">Περιεχόμενο</string>
+    <string name="settings_group_app">Εφαρμογή</string>
+    <string name="settings_search_hint">Αναζήτηση ρύθμισης…</string>
+    <string name="settings_search_clear">Καθαρισμός</string>
+    <string name="settings_search_empty">Καμία ρύθμιση για «%1$s»</string>
+    <string name="settings_profile_source">Πηγή: %1$s</string>
+    <string name="settings_subtitle_preview">Έτσι θα φαίνονται οι υπότιτλοι</string>
 </resources>

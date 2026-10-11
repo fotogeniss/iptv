@@ -5,10 +5,12 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prelude.iptv.data.PlaylistStore
@@ -57,6 +58,7 @@ import com.prelude.iptv.R
 import com.prelude.iptv.localization.AppLanguageController
 import com.prelude.iptv.localization.LocalizationRolloutPolicy
 import com.prelude.iptv.ui.IptvColors
+import com.prelude.iptv.ui.design.HorizonSearchField
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
 import com.prelude.iptv.category.CategoryEditorState
@@ -122,6 +124,7 @@ fun MobilePremiumSettingsScreen(
     var legalPrivacyOpen by remember { mutableStateOf(false) }
     var diagnosticsOpen by remember { mutableStateOf(false) }
     var languagePickerOpen by remember { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
     var autoOpenPlaylist by remember { mutableStateOf(store.autoOpenPlaylist) }
     var playlistRefreshDays by remember { mutableStateOf(store.playlistRefreshDays) }
     var mobileBufferProfile by remember { mutableStateOf(store.bufferProfile) }
@@ -305,202 +308,138 @@ fun MobilePremiumSettingsScreen(
         }
     }
 
+    val activeSource = sources.firstOrNull { it.current }
+    val groupPlayback = stringResource(R.string.settings_group_playback)
+    val groupContent = stringResource(R.string.settings_group_content)
+    val groupAccount = stringResource(R.string.settings_group_account_security)
+    val groupApp = stringResource(R.string.settings_group_app)
+    val ready = stringResource(R.string.settings_ready)
+    val configure = stringResource(R.string.settings_configure)
+    val enabledLabel = stringResource(R.string.settings_enabled)
+    val disabledLabel = stringResource(R.string.settings_disabled)
+    val sourcesValue = sourceSummary(sources)
+    val languageValue = stringResource(selectedAppLanguage.labelRes())
+
+    // Όλες οι ρυθμίσεις ως μία λίστα: η ίδια πηγή τροφοδοτεί και τις ομάδες
+    // και την αναζήτηση, ώστε να μην ξεχνιέται κάποια γραμμή στο ένα από τα δύο.
+    val entries = buildList {
+        add(SettingsEntry(groupPlayback, stringResource(R.string.settings_player), Icons.Default.PlayCircle,
+            stringResource(R.string.settings_player_subtitle), value = playerLabel) { playerSettingsOpen = true })
+        add(SettingsEntry(groupPlayback, stringResource(R.string.settings_subtitles), Icons.Default.Subtitles,
+            stringResource(R.string.settings_subtitles_subtitle),
+            value = if (subtitlesConfigured) ready else configure) { onDialog("subs") })
+        add(SettingsEntry(groupPlayback, stringResource(R.string.settings_appearance_title), Icons.Default.FormatSize,
+            stringResource(R.string.settings_appearance_subtitle), value = "${(fontScale * 100).toInt()}%") { onDialog("font") })
+        if (languagePickerVisible) {
+            add(SettingsEntry(groupPlayback, stringResource(R.string.settings_app_language), Icons.Default.Language,
+                stringResource(R.string.settings_app_language_subtitle), value = languageValue) { languagePickerOpen = true })
+        }
+        add(SettingsEntry(groupContent, stringResource(R.string.settings_my_sources), Icons.Default.Storage,
+            stringResource(R.string.settings_my_sources_subtitle), value = sourcesValue) {
+            val active = sources.firstOrNull { it.current } ?: sources.firstOrNull()
+            if (active != null) managerSourceIndex = active.index else addPicker = true
+        })
+        add(SettingsEntry(groupContent, stringResource(R.string.settings_edit_categories), Icons.Default.Category,
+            stringResource(R.string.settings_edit_categories_subtitle)) { onEditCategories(); editingCategories = true })
+        add(SettingsEntry(groupContent, stringResource(R.string.settings_edit_home), Icons.Default.Tune,
+            stringResource(R.string.settings_edit_home_subtitle)) { onEditCategories(); editingHome = true })
+        add(SettingsEntry(groupContent, stringResource(R.string.epg_settings_programme_guide), Icons.Default.CalendarMonth,
+            stringResource(R.string.settings_epg_subtitle),
+            value = if (epgEnabled) enabledLabel else disabledLabel) { epgSettingsOpen = true })
+        add(SettingsEntry(groupContent, stringResource(R.string.settings_content_info), Icons.Default.Movie,
+            stringResource(R.string.settings_content_info_subtitle),
+            value = if (tmdbConfigured) ready else configure) { onDialog("tmdb") })
+        add(SettingsEntry(groupAccount, stringResource(R.string.settings_profile), Icons.Default.AccountCircle,
+            stringResource(R.string.settings_profile_subtitle), value = profileName) { onDialog("profiles") })
+        add(SettingsEntry(groupAccount, stringResource(R.string.settings_parental_control), Icons.Default.Lock,
+            stringResource(R.string.settings_parental_control_subtitle)) { onDialog("pin") })
+        add(SettingsEntry(groupAccount, stringResource(R.string.settings_backup_restore), Icons.Default.Backup,
+            stringResource(R.string.settings_backup_restore_subtitle)) { onDialog("backup") })
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_diagnostics), Icons.Default.BugReport,
+            stringResource(R.string.settings_diagnostics_subtitle)) { diagnosticsOpen = true })
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_clear_metadata_cache), Icons.Default.CleaningServices,
+            stringResource(R.string.settings_clear_metadata_cache_subtitle), showSubtitle = true, chevron = false,
+            onClick = onClearTmdbCache))
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_help_center), Icons.Default.Info,
+            stringResource(R.string.settings_help_center_subtitle)) { infoSheet = MobileSettingsInfo.Help })
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_rate_app), Icons.Default.Star,
+            stringResource(R.string.settings_rate_app_subtitle)) { openStoreReview(context) })
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_share_app), Icons.Default.Share,
+            stringResource(R.string.settings_share_app_subtitle), onClick = onShare))
+        add(SettingsEntry(groupApp, stringResource(R.string.settings_legal_privacy), Icons.Default.Description,
+            stringResource(R.string.settings_legal_privacy_subtitle)) { legalPrivacyOpen = true })
+    }
+    val needle = searchKey(query.trim())
+    val matches = if (needle.isEmpty()) emptyList() else entries.filter {
+        searchKey("${it.title} ${it.subtitle} ${it.group}").contains(needle)
+    }
+
+    BackHandler(enabled = query.isNotEmpty()) { query = "" }
+
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize().background(IptvColors.Background),
         contentPadding = PaddingValues(bottom = premiumMobileNavigationContentPadding())
     ) {
-        item(key = "settings-top") {
-            MobileSettingsTopBar {
-                Toast.makeText(context, context.getString(R.string.settings_no_new_notifications), Toast.LENGTH_SHORT).show()
-            }
+        item(key = "settings-title") {
+            HorizonSettingsTitle(stringResource(R.string.settings_title))
         }
-        item(key = "settings-account") {
-            MobileSettingsAccountHero(profileName) { accountFlow = true }
+        item(key = "settings-profile") {
+            HorizonProfileCard(
+                profileName = profileName,
+                sourceName = activeSource?.name,
+                onProfile = { accountFlow = true },
+                onPremium = { premiumSheet = true },
+            )
         }
-        item(key = "settings-premium") {
-            MobileSettingsPremiumCard { premiumSheet = true }
+        item(key = "settings-search") {
+            HorizonSearchField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = stringResource(R.string.settings_search_hint),
+                clearLabel = stringResource(R.string.settings_search_clear),
+                modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 14.dp),
+            )
         }
-
-        item(key = "settings-general") {
-            MobileSettingsGroupTitle(stringResource(R.string.settings_group_general))
-            MobileSettingsRows {
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_my_sources),
-                    subtitle = stringResource(R.string.settings_my_sources_subtitle),
-                    icon = Icons.Default.Storage,
-                    value = sourceSummary(sources),
-                    primary = true,
-                    onClick = {
-                        val active = sources.firstOrNull { it.current } ?: sources.firstOrNull()
-                        if (active != null) managerSourceIndex = active.index else addPicker = true
+        if (needle.isEmpty()) {
+            entries.groupBy { it.group }.forEach { (group, rows) ->
+                item(key = "settings-group-$group") {
+                    HorizonGroupLabel(group)
+                    HorizonSettingsCard {
+                        rows.forEach { SettingsEntryRow(it) }
                     }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_player),
-                    subtitle = stringResource(R.string.settings_player_subtitle),
-                    icon = Icons.Default.PlayCircle,
-                    value = playerLabel,
-                    onClick = { playerSettingsOpen = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.epg_settings_programme_guide),
-                    subtitle = stringResource(R.string.settings_epg_subtitle),
-                    icon = Icons.Default.CalendarMonth,
-                    value = stringResource(if (epgEnabled) R.string.settings_enabled else R.string.settings_disabled),
-                    onClick = { epgSettingsOpen = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_subtitles),
-                    subtitle = stringResource(R.string.settings_subtitles_subtitle),
-                    icon = Icons.Default.Subtitles,
-                    value = stringResource(if (subtitlesConfigured) R.string.settings_ready else R.string.settings_configure),
-                    onClick = { onDialog("subs") }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_content_info),
-                    subtitle = stringResource(R.string.settings_content_info_subtitle),
-                    icon = Icons.Default.Movie,
-                    value = stringResource(if (tmdbConfigured) R.string.settings_ready else R.string.settings_configure),
-                    onClick = { onDialog("tmdb") }
-                )
-            }
-        }
-
-        item(key = "settings-customize") {
-            MobileSettingsGroupTitle(stringResource(R.string.settings_group_personalization))
-            MobileSettingsRows {
-                if (languagePickerVisible) {
-                    MobileOverviewRow(
-                        title = stringResource(R.string.settings_app_language),
-                        subtitle = stringResource(R.string.settings_app_language_subtitle),
-                        icon = Icons.Default.Language,
-                        value = stringResource(selectedAppLanguage.labelRes()),
-                        onClick = { languagePickerOpen = true },
-                    )
                 }
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_edit_home),
-                    subtitle = stringResource(R.string.settings_edit_home_subtitle),
-                    icon = Icons.Default.Tune,
-                    onClick = { onEditCategories(); editingHome = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_edit_categories),
-                    subtitle = stringResource(R.string.settings_edit_categories_subtitle),
-                    icon = Icons.Default.Category,
-                    onClick = { onEditCategories(); editingCategories = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_appearance_title),
-                    subtitle = stringResource(R.string.settings_appearance_subtitle),
-                    icon = Icons.Default.FormatSize,
-                    value = "${(fontScale * 100).toInt()}%",
-                    onClick = { onDialog("font") }
+            }
+        } else if (matches.isEmpty()) {
+            item(key = "settings-search-empty") {
+                Text(
+                    stringResource(R.string.settings_search_empty, query.trim()),
+                    color = IptvColors.TextTertiary,
+                    fontSize = 14.sp,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 28.dp),
                 )
             }
-        }
-
-        item(key = "settings-security") {
-            MobileSettingsGroupTitle(stringResource(R.string.settings_group_account_security))
-            MobileSettingsRows {
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_profile),
-                    subtitle = stringResource(R.string.settings_profile_subtitle),
-                    icon = Icons.Default.AccountCircle,
-                    value = profileName,
-                    onClick = { onDialog("profiles") }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_parental_control),
-                    subtitle = stringResource(R.string.settings_parental_control_subtitle),
-                    icon = Icons.Default.Lock,
-                    onClick = { onDialog("pin") }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_backup_restore),
-                    subtitle = stringResource(R.string.settings_backup_restore_subtitle),
-                    icon = Icons.Default.Backup,
-                    onClick = { onDialog("backup") }
-                )
-            }
-        }
-
-        item(key = "settings-support") {
-            MobileSettingsGroupTitle(stringResource(R.string.settings_group_support))
-            MobileSettingsRows {
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_help_center),
-                    subtitle = stringResource(R.string.settings_help_center_subtitle),
-                    icon = Icons.Default.Info,
-                    onClick = { infoSheet = MobileSettingsInfo.Help }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_rate_app),
-                    subtitle = stringResource(R.string.settings_rate_app_subtitle),
-                    icon = Icons.Default.Star,
-                    onClick = { openStoreReview(context) }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_diagnostics),
-                    subtitle = stringResource(R.string.settings_diagnostics_subtitle),
-                    icon = Icons.Default.BugReport,
-                    onClick = { diagnosticsOpen = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_legal_privacy),
-                    subtitle = stringResource(R.string.settings_legal_privacy_subtitle),
-                    icon = Icons.Default.Description,
-                    onClick = { legalPrivacyOpen = true }
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_share_app),
-                    subtitle = stringResource(R.string.settings_share_app_subtitle),
-                    icon = Icons.Default.Share,
-                    onClick = onShare
-                )
-                MobileOverviewRow(
-                    title = stringResource(R.string.settings_clear_metadata_cache),
-                    subtitle = stringResource(R.string.settings_clear_metadata_cache_subtitle),
-                    icon = Icons.Default.CleaningServices,
-                    onClick = onClearTmdbCache
-                )
-            }
-        }
-
-        item(key = "settings-health") {
-            MobileSettingsGroupTitle(stringResource(R.string.settings_group_app_status))
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                    MobileSettingsStatusCard(
-                        stringResource(R.string.settings_source_status),
-                        stringResource(if (sources.any { it.current }) R.string.settings_connected_feminine else R.string.settings_no_source),
-                        sources.any { it.current },
-                        Modifier.weight(1f)
-                    )
-                    MobileSettingsStatusCard("EPG", stringResource(if (epgEnabled) R.string.settings_enabled else R.string.settings_disabled), epgEnabled, Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(9.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                    MobileSettingsStatusCard("Player", playerLabel, true, Modifier.weight(1f))
-                    MobileSettingsStatusCard(stringResource(R.string.settings_version), version.ifBlank { "—" }, false, Modifier.weight(1f))
+        } else {
+            item(key = "settings-search-results") {
+                Spacer(Modifier.height(14.dp))
+                HorizonSettingsCard {
+                    matches.forEach { SettingsEntryRow(it, showGroup = true) }
                 }
             }
         }
 
         item(key = "settings-footer") {
-            Column(Modifier.fillMaxWidth().padding(top = 31.dp, bottom = 12.dp)) {
+            Column(
+                Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Text(
                     stringResource(R.string.settings_using_version, version.ifBlank { "—" }),
                     color = IptvColors.TextTertiary,
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    fontSize = 12.sp,
                 )
-                TextButton(
-                    onClick = { premiumSheet = true },
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    Text(stringResource(R.string.settings_restore_purchases), color = IptvColors.TextSecondary, fontSize = 11.sp)
+                TextButton(onClick = { premiumSheet = true }) {
+                    Text(stringResource(R.string.settings_restore_purchases), color = IptvColors.TextSecondary, fontSize = 12.5.sp)
                 }
             }
         }
@@ -561,4 +500,35 @@ private fun openStoreReview(context: Context) {
     ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     runCatching { context.startActivity(marketIntent) }
         .onFailure { runCatching { context.startActivity(webIntent) } }
+}
+
+/** Γραμμή χωρίς βελάκι: η ενέργεια γίνεται επιτόπου. */
+private val NoTrailing: @Composable () -> Unit = {}
+
+/** Μία ρύθμιση της επισκόπησης· [subtitle] χρησιμοποιείται και για την αναζήτηση. */
+private class SettingsEntry(
+    val group: String,
+    val title: String,
+    val icon: ImageVector,
+    val subtitle: String,
+    val value: String? = null,
+    val showSubtitle: Boolean = false,
+    val chevron: Boolean = true,
+    val onClick: () -> Unit,
+)
+
+@Composable
+private fun SettingsEntryRow(entry: SettingsEntry, showGroup: Boolean = false) {
+    HorizonSettingsRow(
+        title = entry.title,
+        icon = entry.icon,
+        subtitle = when {
+            showGroup -> entry.group
+            entry.showSubtitle -> entry.subtitle
+            else -> null
+        },
+        value = entry.value,
+        onClick = entry.onClick,
+        trailing = if (entry.chevron) null else NoTrailing,
+    )
 }

@@ -35,6 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.design.horizonBelow
+import com.prelude.iptv.ui.AppFonts
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.StreamingRadius
 import com.prelude.iptv.ui.design.Motion
@@ -58,17 +60,25 @@ fun PremiumSettingsRow(
         if (focused && television) motionScale(1.018f) else 1f,
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing), label = "settingsRowScale"
     )
-    val background = if (focused && television) Color.White else IptvColors.Surface
-    val foreground = if (focused && television) Color.Black else IptvColors.TextPrimary
-    val secondary = if (focused && television) Color(0xFF55555D) else IptvColors.TextTertiary
+    // Horizon: στην TV το focus δεν «ασπρίζει» τη γραμμή· ανεβαίνει η επιφάνεια
+    // και εμφανίζεται από κάτω η γραμμή-ορίζοντας.
+    val tvFocused = focused && television
+    val horizonAlpha by animateFloatAsState(
+        if (tvFocused) 1f else 0f,
+        tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing), label = "settingsRowHorizon"
+    )
+    val background = if (tvFocused) IptvColors.SurfaceSelected else IptvColors.Surface
+    val foreground = IptvColors.TextPrimary
+    val secondary = if (tvFocused) IptvColors.TextSecondary else IptvColors.TextTertiary
 
     Row(
         modifier
+            .horizonBelow(horizonAlpha, gap = 4.dp)
             .scale(scale)
             .fillMaxWidth()
             .clip(RoundedCornerShape(StreamingRadius.Card))
             .background(background)
-            .border(1.dp, if (focused && television) Color.Transparent else IptvColors.Divider, RoundedCornerShape(StreamingRadius.Card))
+            .border(1.dp, if (tvFocused) IptvColors.DividerStrong else IptvColors.Divider, RoundedCornerShape(StreamingRadius.Card))
             // ΣΗΜΑΝΤΙΚΟ: μόνο .clickable — είναι ήδη focusable και μετατρέπει το
             // OK/DPAD-center σε click. Ένα επιπλέον .focusable() εδώ «έκλεβε» το
             // focus σε κόμβο χωρίς click, οπότε σε TV το πάτημα δεν ενεργοποιούσε
@@ -80,14 +90,14 @@ fun PremiumSettingsRow(
         Box(
             Modifier.size(if (television) 42.dp else 38.dp)
                 .clip(RoundedCornerShape(11.dp))
-                .background(if (focused && television) Color.Black.copy(alpha = 0.08f) else IptvColors.SurfaceRaised),
+                .background(if (tvFocused) IptvColors.SurfacePressed else IptvColors.SurfaceRaised),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, null, tint = foreground, modifier = Modifier.size(if (television) 22.dp else 20.dp))
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, color = foreground, fontSize = if (television) 15.sp else 14.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = foreground, fontSize = if (television) 15.sp else 14.sp, fontWeight = FontWeight.SemiBold)
             if (subtitle.isNotBlank()) {
                 Spacer(Modifier.height(3.dp))
                 Text(subtitle, color = secondary, fontSize = if (television) 11.sp else 10.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -100,12 +110,14 @@ fun PremiumSettingsRow(
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = IptvColors.Primary,
+                    checkedBorderColor = IptvColors.Primary,
                     uncheckedThumbColor = IptvColors.TextSecondary,
-                    uncheckedTrackColor = IptvColors.SurfaceRaised
+                    uncheckedTrackColor = IptvColors.SurfaceRaised,
+                    uncheckedBorderColor = IptvColors.SurfaceRaised
                 )
             )
         } else if (value.isNotBlank()) {
-            Text(value, color = if (focused && television) Color.Black else IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Text(value, color = IptvColors.TextSecondary, fontSize = if (television) 13.sp else 12.sp, fontWeight = FontWeight.Medium, maxLines = 1)
         }
     }
 }
@@ -113,7 +125,7 @@ fun PremiumSettingsRow(
 @Composable
 fun SettingsSectionHeader(title: String, subtitle: String = "", modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
-        Text(title, color = IptvColors.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+        Text(title, color = IptvColors.TextPrimary, fontFamily = AppFonts.Display, fontSize = 28.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
         if (subtitle.isNotBlank()) {
             Spacer(Modifier.height(4.dp))
             Text(subtitle, color = IptvColors.TextTertiary, fontSize = 12.sp)
@@ -131,7 +143,7 @@ fun SettingsHealthCard(label: String, value: String, modifier: Modifier = Modifi
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Text(value, color = IptvColors.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+        Text(value, color = IptvColors.TextPrimary, fontFamily = AppFonts.Display, fontSize = 26.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
         Text(label, color = IptvColors.TextTertiary, fontSize = 10.sp)
     }
 }

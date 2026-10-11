@@ -42,6 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.AppFonts
+import com.prelude.iptv.ui.design.horizonBelow
+import androidx.compose.foundation.border
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.prelude.iptv.R
@@ -89,24 +92,25 @@ internal fun TvSearchFeatured(
                     R.string.search_featured,
                     localizedUppercase(localizedSearchCategory(SearchUiPolicy.category(channel))),
                 ),
-                color = IptvColors.Success,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black
+                color = IptvColors.Glow,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp
             )
             Spacer(Modifier.height(5.dp))
-            Text(channel.name, color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(channel.name, color = Color.White, fontFamily = AppFonts.Display, fontSize = 34.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val line = SearchUiPolicy.metaLine(channel, meta)
             if (line.isNotBlank()) {
                 Spacer(Modifier.height(5.dp))
-                Text(line, color = Color.White.copy(alpha = .82f), fontSize = 10.sp, maxLines = 1)
+                Text(line, color = Color.White.copy(alpha = .82f), fontSize = 12.sp, maxLines = 1)
             }
             Spacer(Modifier.height(6.dp))
             Text(
                 SearchUiPolicy.description(channel, meta)
                     ?: stringResource(R.string.search_discover_more, channel.name),
                 color = IptvColors.TextSecondary,
-                fontSize = 11.sp,
-                lineHeight = 15.sp,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -135,27 +139,37 @@ private fun TvHeroAction(
         label = "tvSearchHeroAction"
     )
     Row(
-        Modifier.height(38.dp).graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (primary || focused) Color.White else Color.Black.copy(alpha = .62f))
+        Modifier.height(42.dp)
+            .horizonBelow(if (focused) 1f else 0f, gap = 4.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                when {
+                    primary -> IptvColors.Primary
+                    focused -> IptvColors.SurfaceSelected
+                    else -> Color.Black.copy(alpha = .62f)
+                }
+            )
+            .border(1.dp, if (focused) Color.White.copy(alpha = .6f) else Color.Transparent, RoundedCornerShape(14.dp))
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, null, tint = if (primary || focused) Color.Black else Color.White, modifier = Modifier.size(18.dp))
+        Icon(icon, null, tint = Color.White, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(5.dp))
-        Text(label, color = if (primary || focused) Color.Black else Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+        Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
 internal fun TvSearchFilterRow(
     selected: PremiumSearchFilter,
+    counts: Map<PremiumSearchFilter, Int> = emptyMap(),
     onSelect: (PremiumSearchFilter) -> Unit
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         PremiumSearchFilter.entries.forEach { filter ->
-            TvSearchFilterChip(filter, selected == filter) { onSelect(filter) }
+            TvSearchFilterChip(filter, counts[filter], selected == filter) { onSelect(filter) }
         }
     }
 }
@@ -163,6 +177,7 @@ internal fun TvSearchFilterRow(
 @Composable
 private fun TvSearchFilterChip(
     filter: PremiumSearchFilter,
+    count: Int?,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -172,22 +187,26 @@ private fun TvSearchFilterChip(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "tvSearchFilterScale"
     )
+    val label = stringResource(filter.labelRes())
     Text(
-        stringResource(filter.labelRes()),
-        color = if (focused) Color.Black else if (selected) Color.White else IptvColors.TextSecondary,
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Black,
-        modifier = Modifier.height(34.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+        if (count != null) "$label · $count" else label,
+        color = if (selected) IptvColors.Background else if (focused) IptvColors.TextPrimary else IptvColors.TextSecondary,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.height(36.dp)
+            .horizonBelow(if (focused) 1f else 0f, gap = 4.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(CircleShape)
             .background(
                 when {
-                    focused -> Color.White
-                    selected -> Color.White.copy(alpha = .14f)
-                    else -> IptvColors.Surface.copy(alpha = .78f)
+                    selected -> IptvColors.TextPrimary
+                    focused -> IptvColors.SurfaceSelected
+                    else -> IptvColors.Surface
                 }
             )
+            .border(1.dp, if (focused && !selected) IptvColors.DividerStrong else Color.Transparent, CircleShape)
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick)
-            .padding(horizontal = 13.dp, vertical = 9.dp)
+            .padding(horizontal = 15.dp, vertical = 8.dp)
     )
 }
 
@@ -209,6 +228,7 @@ internal fun TvSearchResultCard(
     )
     Box(
         modifier.height(182.dp).zIndex(if (focused) 3f else 0f)
+            .horizonBelow(if (focused) 1f else 0f, gap = 6.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .shadow(if (focused) 24.dp else 5.dp, RoundedCornerShape(9.dp))
             .clip(RoundedCornerShape(9.dp)).background(IptvColors.SurfaceRaised)
@@ -243,13 +263,13 @@ internal fun TvSearchResultCard(
         }
         if (focused) {
             Box(
-                Modifier.align(Alignment.TopEnd).padding(9.dp).size(30.dp).clip(CircleShape).background(Color.White),
+                Modifier.align(Alignment.TopEnd).padding(9.dp).size(30.dp).clip(CircleShape).background(IptvColors.Primary),
                 contentAlignment = Alignment.Center
-            ) { Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(18.dp)) }
+            ) { Icon(Icons.Default.PlayArrow, null, tint = Color.White, modifier = Modifier.size(18.dp)) }
         }
         Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(9.dp)) {
-            Text(channel.name, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(SearchUiPolicy.metaLine(channel), color = IptvColors.TextSecondary, fontSize = 8.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(channel.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(SearchUiPolicy.metaLine(channel), color = IptvColors.TextSecondary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             progress?.let {
                 Spacer(Modifier.height(6.dp))
                 StreamingProgress(it, Modifier.fillMaxWidth())

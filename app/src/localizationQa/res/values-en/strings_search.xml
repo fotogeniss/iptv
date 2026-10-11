@@ -46,4 +46,9 @@
         <item quantity="one">%1$d title</item>
         <item quantity="other">%1$d titles</item>
     </plurals>
+
+    <!-- Horizon search -->
+    <string name="search_quick_access">Quick access</string>
+    <string name="search_see_all">All %1$d</string>
+    <string name="search_remove_recent">Remove from recent</string>
 </resources>

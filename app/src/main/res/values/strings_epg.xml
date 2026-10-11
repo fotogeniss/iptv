@@ -86,4 +86,13 @@
         <item quantity="other">✓ Αποθηκεύτηκε και ταιριάζει σε %1$d κανάλια</item>
     </plurals>
     <string name="epg_status_saved_no_matches">⚠ Αποθηκεύτηκε, αλλά δεν ταιριάζει με τα tvg-id της λίστας.</string>
+
+    <!-- Horizon EPG -->
+    <string name="epg_yesterday">Χθες</string>
+    <string name="epg_all_channels">Όλα τα κανάλια</string>
+    <string name="epg_then">Μετά %1$s · %2$s</string>
+    <string name="epg_full_day">Όλη η μέρα</string>
+    <string name="epg_no_guide">Χωρίς πρόγραμμα</string>
+    <string name="epg_now_range">Τώρα · %1$s</string>
+    <string name="epg_now_marker">ΤΩΡΑ %1$s</string>
 </resources>

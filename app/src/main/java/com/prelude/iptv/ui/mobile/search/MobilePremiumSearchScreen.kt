@@ -21,17 +21,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import com.prelude.iptv.ui.icons.automirrored.filled.ArrowBack
-import com.prelude.iptv.ui.icons.filled.Close
 import com.prelude.iptv.ui.icons.filled.Mic
-import com.prelude.iptv.ui.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,9 +42,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.components.epg.rememberEpgNow
+import com.prelude.iptv.ui.design.HorizonSearchField
+import androidx.compose.foundation.border
 import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
@@ -92,123 +88,211 @@ fun MobilePremiumSearchScreen(
     val recents = remember { mutableStateListOf<String>() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val source = remember(allItems, results, query) { if (query.isBlank()) allItems else results }
+    val typing = query.isNotBlank()
+    val source = remember(allItems, results, query) { if (typing) results else allItems }
     val filtered = remember(source, filter, query) {
         val matched = SearchUiPolicy.filter(source, filter)
-        if (query.isBlank()) SearchUiPolicy.discovery(matched, 60) else matched
+        if (typing) matched else SearchUiPolicy.discovery(matched, 60)
     }
+    // Μετρητές ανά φίλτρο: φαίνονται πάνω στα chips όσο γράφεις.
+    val counts = remember(results, typing) {
+        if (!typing) emptyMap() else PremiumSearchFilter.entries.associateWith { SearchUiPolicy.filter(results, it).size }
+    }
+    val groups = remember(results, typing) { if (typing) SearchUiPolicy.group(results) else null }
+    val libraryGroups = remember(allItems) { SearchUiPolicy.group(allItems) }
     var selected by remember { mutableStateOf(filtered.firstOrNull()) }
     LaunchedEffect(filtered) {
         val key = selected?.let(PlaybackQueue::favKey)
         selected = filtered.firstOrNull { PlaybackQueue.favKey(it) == key } ?: filtered.firstOrNull()
     }
-    val meta by rememberSearchMeta(selected, tmdbFor)
+    val meta by rememberSearchMeta(if (typing) null else selected, tmdbFor)
     val suggestions = remember(allItems) { SearchUiPolicy.suggestions(allItems, 8) }
     val navigationContentPadding = premiumMobileNavigationContentPadding()
+    val nowMs = rememberEpgNow()
+
+    fun rememberTerm(term: String) {
+        term.trim().takeIf(String::isNotBlank)?.let {
+            recents.remove(it); recents.add(0, it)
+            while (recents.size > 6) recents.removeAt(recents.lastIndex)
+        }
+    }
+    val openChannel: (Channel) -> Unit = { channel -> rememberTerm(query); onOpen(channel) }
 
     Box(modifier.fillMaxSize().background(IptvColors.Background)) {
     Column(Modifier.fillMaxSize()) {
-        MobileSearchTopBar(
-            query = query,
-            onQueryChange = onQueryChange,
-            onBack = onBack,
-            onVoiceSearch = onVoiceSearch,
-            onSettings = onOpenSettings,
-            onCommit = {
-                query.trim().takeIf(String::isNotBlank)?.let {
-                    recents.remove(it); recents.add(0, it)
-                    while (recents.size > 5) recents.removeAt(recents.lastIndex)
-                }
+        Row(
+            Modifier.fillMaxWidth().padding(start = 6.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.search_back), tint = IptvColors.TextPrimary)
             }
-        )
+            HorizonSearchField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = stringResource(R.string.search_field_hint),
+                clearLabel = stringResource(R.string.search_clear),
+                onSearch = { rememberTerm(query) },
+                modifier = Modifier.weight(1f),
+                trailing = {
+                    IconButton(onClick = onVoiceSearch) {
+                        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = IptvColors.TextSecondary)
+                    }
+                }
+            )
+            Spacer(Modifier.width(6.dp))
+            MobileSettingsAction(onClick = onOpenSettings)
+        }
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 15.dp, vertical = 7.dp),
+            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(PremiumSearchFilter.entries) { item ->
-                MobileSearchFilterChip(item, selected = filter == item) { filter = item }
+                MobileSearchFilterChip(item, counts[item], selected = filter == item) { filter = item }
             }
         }
 
-        if (filtered.isEmpty()) {
+        if (typing && filtered.isEmpty()) {
             PremiumSearchEmpty(query, Modifier.fillMaxSize())
             return@Column
         }
 
-        val showRecent = query.isBlank() && (recents.isNotEmpty() || suggestions.isNotEmpty())
         LazyColumn(
             state = listState,
-            contentPadding = PaddingValues(start = 15.dp, end = 15.dp, top = 9.dp, bottom = navigationContentPadding),
-            verticalArrangement = Arrangement.spacedBy(15.dp),
+            contentPadding = PaddingValues(top = 6.dp, bottom = navigationContentPadding),
             modifier = Modifier.fillMaxSize()
         ) {
-            if (showRecent) {
-                item {
-                    MobileRecentSearches(
-                        labels = if (recents.isNotEmpty()) recents else suggestions.take(5),
-                        title = if (recents.isNotEmpty()) {
-                            stringResource(R.string.search_recent)
-                        } else {
-                            stringResource(R.string.search_popular)
-                        },
-                        onSelect = onQueryChange,
-                        showClear = recents.isNotEmpty(),
-                        onClear = { recents.clear() }
+            if (typing && filter == PremiumSearchFilter.ALL && groups != null) {
+                // Αποτελέσματα ομαδοποιημένα ανά τύπο: λίγα από το καθένα, «Όλα» για τα υπόλοιπα.
+                val sections = listOf(
+                    Triple(PremiumSearchFilter.LIVE, groups.live, R.string.search_filter_live),
+                    Triple(PremiumSearchFilter.MOVIES, groups.movies, R.string.search_filter_movies),
+                    Triple(PremiumSearchFilter.SERIES, groups.series, R.string.search_filter_series),
+                    Triple(null, groups.other, R.string.search_category_content),
+                )
+                sections.filter { it.second.isNotEmpty() }.forEach { (sectionFilter, items, titleRes) ->
+                    item(key = "search-section:$titleRes") {
+                        MobileSearchSectionHeader(
+                            title = stringResource(titleRes),
+                            seeAll = if (sectionFilter != null && items.size > SECTION_PREVIEW) items.size else null,
+                            onSeeAll = { sectionFilter?.let { filter = it } }
+                        )
+                    }
+                    items(
+                        items.take(if (sectionFilter == null) items.size else SECTION_PREVIEW),
+                        key = { "search-result:${titleRes}:${PlaybackQueue.favKey(it)}" }
+                    ) { channel ->
+                        MobileSearchResultRow(
+                            channel = channel,
+                            query = query,
+                            nowMs = nowMs,
+                            favorite = PlaybackQueue.favKey(channel) in favoriteKeys,
+                            progress = progress[PlaybackQueue.favKey(channel)],
+                            onOpen = { openChannel(channel) },
+                            onToggleFavorite = { onToggleFavorite(channel) }
+                        )
+                    }
+                }
+            } else if (typing) {
+                item(key = "search-filter-header") {
+                    MobileSearchSectionHeader(
+                        title = stringResource(filter.labelRes()),
+                        count = filtered.size,
                     )
                 }
-            }
-            selected?.let { channel ->
-                item {
-                    MobileSearchFeatured(
+                items(filtered, key = { "search-result:${PlaybackQueue.favKey(it)}" }) { channel ->
+                    MobileSearchResultRow(
                         channel = channel,
-                        meta = meta,
+                        query = query,
+                        nowMs = nowMs,
                         favorite = PlaybackQueue.favKey(channel) in favoriteKeys,
                         progress = progress[PlaybackQueue.favKey(channel)],
-                        onOpen = {
-                            query.trim().takeIf(String::isNotBlank)?.let {
-                                recents.remove(it); recents.add(0, it)
-                            }
-                            onOpen(channel)
-                        },
+                        onOpen = { openChannel(channel) },
                         onToggleFavorite = { onToggleFavorite(channel) }
                     )
                 }
-            }
-            item {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        localizedSearchHeading(SearchUiPolicy.heading(query, filter)),
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        pluralStringResource(R.plurals.search_title_count, filtered.size, filtered.size),
-                        color = IptvColors.TextTertiary,
-                        fontSize = 11.sp,
-                    )
-                }
-            }
-            itemsIndexed(
-                filtered.chunked(2),
-                key = { index, _ -> "search-row:$index" }
-            ) { _, row ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(11.dp)) {
-                    row.forEach { channel ->
-                        MobileSearchResultCard(
-                            channel = channel,
-                            favorite = PlaybackQueue.favKey(channel) in favoriteKeys,
-                            progress = progress[PlaybackQueue.favKey(channel)],
-                            onSelect = {
-                                selected = channel
-                                scope.launch { listState.animateScrollToItem(if (showRecent) 1 else 0) }
-                            },
-                            onToggleFavorite = { onToggleFavorite(channel) },
-                            modifier = Modifier.weight(1f)
+            } else {
+                // Πριν γράψεις: πρόσφατες (ή δημοφιλείς), γρήγορη πρόσβαση, προτάσεις.
+                val labels = if (recents.isNotEmpty()) recents.toList() else suggestions.take(5)
+                if (labels.isNotEmpty() && filter == PremiumSearchFilter.ALL) {
+                    item(key = "search-recents-header") {
+                        MobileSearchSectionHeader(
+                            title = stringResource(if (recents.isNotEmpty()) R.string.search_recent else R.string.search_popular),
+                            actionLabel = if (recents.isNotEmpty()) stringResource(R.string.search_clear) else null,
+                            onAction = { recents.clear() }
                         )
                     }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                    items(labels, key = { "search-recent:$it" }) { label ->
+                        MobileRecentSearchRow(
+                            label = label,
+                            recent = recents.isNotEmpty(),
+                            onSelect = { onQueryChange(label) },
+                            onRemove = { recents.remove(label) }
+                        )
+                    }
+                }
+                if (filter == PremiumSearchFilter.ALL) {
+                    item(key = "search-quick-access") {
+                        MobileSearchSectionHeader(title = stringResource(R.string.search_quick_access))
+                        MobileQuickAccessGrid(
+                            liveCount = libraryGroups.live.size,
+                            movieCount = libraryGroups.movies.size,
+                            seriesCount = libraryGroups.series.size,
+                            myListCount = favoriteKeys.size,
+                            onLive = onOpenLive,
+                            onMovies = onOpenMovies,
+                            onSeries = onOpenSeries,
+                            onMyList = onOpenMyList,
+                        )
+                    }
+                }
+                selected?.let { channel ->
+                    item(key = "search-featured") {
+                        Spacer(Modifier.height(22.dp))
+                        MobileSearchFeatured(
+                            channel = channel,
+                            meta = meta,
+                            favorite = PlaybackQueue.favKey(channel) in favoriteKeys,
+                            progress = progress[PlaybackQueue.favKey(channel)],
+                            onOpen = { openChannel(channel) },
+                            onToggleFavorite = { onToggleFavorite(channel) },
+                            modifier = Modifier.padding(horizontal = 18.dp)
+                        )
+                    }
+                }
+                item(key = "search-discover-header") {
+                    MobileSearchSectionHeader(
+                        title = localizedSearchHeading(SearchUiPolicy.heading(query, filter)),
+                        count = filtered.size,
+                    )
+                }
+                itemsIndexed(
+                    filtered.chunked(2),
+                    key = { index, _ -> "search-row:$index" }
+                ) { _, row ->
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(11.dp)
+                    ) {
+                        row.forEach { channel ->
+                            MobileSearchResultCard(
+                                channel = channel,
+                                favorite = PlaybackQueue.favKey(channel) in favoriteKeys,
+                                progress = progress[PlaybackQueue.favKey(channel)],
+                                onSelect = {
+                                    selected = channel
+                                    // Η κάρτα «προτεινόμενο» είναι μετά τις πρόσφατες και τη γρήγορη πρόσβαση.
+                                    val featuredIndex = if (filter == PremiumSearchFilter.ALL) {
+                                        (if (labels.isNotEmpty()) 1 + labels.size else 0) + 1
+                                    } else 0
+                                    scope.launch { listState.animateScrollToItem(featuredIndex) }
+                                },
+                                onToggleFavorite = { onToggleFavorite(channel) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -229,109 +313,26 @@ fun MobilePremiumSearchScreen(
     }
 }
 
-@Composable
-private fun MobileSearchTopBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onBack: () -> Unit,
-    onVoiceSearch: () -> Unit,
-    onSettings: () -> Unit,
-    onCommit: () -> Unit
-) {
-    Row(
-        Modifier.fillMaxWidth().background(IptvColors.Background.copy(alpha = .96f))
-            .padding(start = 8.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.search_back), tint = Color.White)
-        }
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Search, null, tint = IptvColors.TextSecondary) },
-            trailingIcon = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (query.isNotBlank()) IconButton(onClick = { onQueryChange("") }) {
-                        Icon(Icons.Default.Close, stringResource(R.string.search_clear), tint = Color.White)
-                    }
-                    IconButton(onClick = onVoiceSearch) {
-                        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = Color.White)
-                    }
-                }
-            },
-            placeholder = { Text(stringResource(R.string.search_field_hint), color = IptvColors.TextTertiary) },
-            shape = RoundedCornerShape(14.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { onCommit() }),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedBorderColor = Color.White.copy(alpha = .78f),
-                unfocusedBorderColor = IptvColors.DividerStrong,
-                focusedContainerColor = IptvColors.Surface,
-                unfocusedContainerColor = IptvColors.Surface,
-                cursorColor = Color.White
-            ),
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(Modifier.width(6.dp))
-        MobileSettingsAction(onClick = onSettings)
-    }
-}
+/** Πόσα αποτελέσματα δείχνει κάθε ομάδα πριν το «Όλα». */
+private const val SECTION_PREVIEW = 4
 
 @Composable
 private fun MobileSearchFilterChip(
     filter: PremiumSearchFilter,
+    count: Int?,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val label = stringResource(filter.labelRes())
     Text(
-        stringResource(filter.labelRes()),
-        color = if (selected) Color.Black else IptvColors.TextSecondary,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Bold,
+        if (count != null) "$label · $count" else label,
+        color = if (selected) IptvColors.Background else IptvColors.TextSecondary,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
         modifier = Modifier.clip(CircleShape)
-            .background(if (selected) Color.White else IptvColors.Surface)
+            .background(if (selected) IptvColors.TextPrimary else IptvColors.Surface)
+            .border(1.dp, if (selected) IptvColors.TextPrimary else IptvColors.Divider, CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
     )
-}
-
-@Composable
-private fun MobileRecentSearches(
-    labels: List<String>,
-    title: String,
-    onSelect: (String) -> Unit,
-    showClear: Boolean,
-    onClear: () -> Unit
-) {
-    Column {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-            if (showClear) {
-                Text(
-                    stringResource(R.string.search_clear),
-                    color = IptvColors.TextTertiary,
-                    fontSize = 11.sp,
-                    modifier = Modifier.clickable(onClick = onClear).padding(8.dp)
-                )
-            }
-        }
-        Spacer(Modifier.height(7.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(labels) { label ->
-                Row(
-                    Modifier.clip(CircleShape).background(IptvColors.SurfaceRaised)
-                        .clickable { onSelect(label) }.padding(horizontal = 12.dp, vertical = 9.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.Search, null, tint = IptvColors.TextTertiary, modifier = Modifier.size(15.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(label, color = IptvColors.TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                }
-            }
-        }
-    }
 }

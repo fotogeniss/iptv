@@ -37,6 +37,7 @@ import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
 import com.prelude.iptv.data.TmdbClient
+import com.prelude.iptv.ui.AppFonts
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.ui.PremiumSearchFilter
 import com.prelude.iptv.ui.SearchUiPolicy
@@ -78,6 +79,11 @@ fun TvPremiumSearchScreen(
         selected = filtered.firstOrNull { PlaybackQueue.favKey(it) == selectedKey } ?: filtered.firstOrNull()
     }
     val meta by rememberSearchMeta(selected, tmdbFor)
+    // Όσο γράφεις, κάθε φίλτρο δείχνει πόσα αποτελέσματα έχει.
+    val counts = remember(results, query) {
+        if (query.isBlank()) emptyMap()
+        else PremiumSearchFilter.entries.associateWith { SearchUiPolicy.filter(results, it).size }
+    }
     val searchFocus = rememberInitialFocus(key = Unit)
 
     Box(modifier.fillMaxSize().background(IptvColors.Background)) {
@@ -87,8 +93,8 @@ fun TvPremiumSearchScreen(
                 TvIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.search_back), onClick = onBack)
                 Spacer(Modifier.width(13.dp))
                 Column {
-                    Text(stringResource(R.string.search_brand_title), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
-                    Text(stringResource(R.string.search_library_hint), color = IptvColors.TextTertiary, fontSize = 10.sp)
+                    Text(stringResource(R.string.search_title), color = IptvColors.TextPrimary, fontFamily = AppFonts.Display, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.search_library_hint), color = IptvColors.TextTertiary, fontSize = 12.sp)
                 }
             }
             Spacer(Modifier.height(15.dp))
@@ -126,20 +132,21 @@ fun TvPremiumSearchScreen(
                         )
                     }
                     Spacer(Modifier.height(13.dp))
-                    TvSearchFilterRow(filter) { filter = it }
+                    TvSearchFilterRow(filter, counts) { filter = it }
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.fillMaxWidth()) {
                         Text(
                             localizedSearchHeading(SearchUiPolicy.heading(query, filter)),
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
+                            color = IptvColors.TextPrimary,
+                            fontFamily = AppFonts.Display,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             pluralStringResource(R.plurals.search_title_count, filtered.size, filtered.size),
                             color = IptvColors.TextTertiary,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                         )
                     }
                     Spacer(Modifier.height(8.dp))

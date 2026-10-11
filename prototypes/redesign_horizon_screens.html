@@ -1,0 +1,438 @@
+<title>Prelude+ Horizon: Ρυθμίσεις, Αναζήτηση, EPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Commissioner:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#0B0A0D;--s1:#141217;--s2:#1C1A20;--s3:#27242B;--line:rgba(255,236,236,.08);--line2:rgba(255,236,236,.16);--tx:#F4EFEF;--tx2:#ABA3A9;--tx3:#6F686E;--red:#E5303A;--glow:#FF5A5A;--ok:#4FD18B;--page:#070609;
+--display:"Advent Pro","Commissioner",system-ui,sans-serif;--body:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--page);color:var(--tx)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.intro{padding-block:44px 24px;display:grid;gap:14px}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.32em;text-transform:uppercase;font-size:15px}
+.horizon{display:block;height:2px;width:100%;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 22%,#fff 50%,var(--red) 78%,transparent);box-shadow:0 0 12px 1px rgba(229,48,58,.65)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.04;margin:0;text-wrap:balance}
+.lede{color:var(--tx2);max-width:64ch;margin:0}
+.sec{margin-top:56px}
+.sec>h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 4px}
+.sec>p{color:var(--tx2);margin:0 0 22px;max-width:70ch}
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px 28px;justify-items:center;margin-bottom:36px}
+.shot{display:grid;gap:14px;width:100%;max-width:348px;min-width:0;align-content:start}
+.phone{width:100%;max-width:348px;height:740px;border-radius:44px;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 7px #111014,0 0 0 8px var(--line2),0 40px 80px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;font-size:14px}
+.sbar{height:40px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:13px;font-weight:600}
+.screen{position:absolute;inset:40px 0 0;overflow:hidden auto;scrollbar-width:none;padding-bottom:110px}
+.screen::-webkit-scrollbar{display:none}
+.pad{padding-inline:18px}
+.note h3{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 6px}
+.note ul{margin:0;padding-left:18px;color:var(--tx2);font-size:13.5px;display:grid;gap:4px}
+.bnav{position:absolute;left:12px;right:12px;bottom:14px;height:64px;border-radius:22px;background:rgba(22,20,26,.9);backdrop-filter:blur(18px);border:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:6}
+.bnav span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:10.5px;font-weight:600;position:relative}
+.bnav span.on{color:var(--tx)}
+.bnav span.on::before{content:"";position:absolute;top:-1px;left:50%;translate:-50% 0;width:34px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.7)}
+/* κοινά */
+.ttl{font-family:var(--display);font-weight:600;font-size:32px;line-height:1;margin:6px 0 14px}
+.icbtn{width:40px;height:40px;border-radius:14px;display:grid;place-items:center}
+.top{display:flex;align-items:center;gap:6px;padding:4px 10px 0 10px}
+.top .ttl2{font-family:var(--display);font-weight:600;font-size:24px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--s1);border:1px solid var(--line);color:var(--tx2);font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--tx);color:var(--ink);border-color:var(--tx)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-inline:18px}
+.chips::-webkit-scrollbar{display:none}
+.field{display:flex;align-items:center;gap:10px;height:50px;border-radius:16px;background:var(--s1);border:1px solid var(--line2);padding:0 14px;color:var(--tx2);position:relative}
+.field.focus{border-color:transparent;background:var(--s2)}
+.field.focus::after{content:"";position:absolute;left:10%;right:10%;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.7)}
+.field b{color:var(--tx);font-weight:500;font-size:15px;flex:1}
+.field em{flex:1;font-style:normal;font-size:14.5px}
+.caret{display:inline-block;width:1.5px;height:18px;background:var(--glow);vertical-align:-3px;margin-left:1px}
+.grp{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:22px 18px 8px}
+.list{margin-inline:18px;border-radius:18px;background:var(--s1);border:1px solid var(--line);overflow:hidden}
+.row{display:flex;align-items:center;gap:13px;padding:0 14px;min-height:58px;border-top:1px solid var(--line);cursor:pointer}
+.row:first-child{border-top:0}
+.row .ic{width:36px;height:36px;border-radius:11px;background:var(--s3);display:grid;place-items:center;color:var(--tx);flex:none}
+.row .ic svg.i{width:19px;height:19px}
+.row .t{flex:1;min-width:0;display:grid}
+.row .t b{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t small{color:var(--tx3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .v{color:var(--tx2);font-size:13px;white-space:nowrap}
+.row>svg.chev{width:16px;height:16px;color:var(--tx3);stroke-width:2}
+.tg{width:44px;height:26px;border-radius:99px;background:var(--s3);position:relative;flex:none;transition:.2s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--tx2);transition:.2s}
+.tg.on{background:var(--red);box-shadow:0 0 12px -2px var(--glow)}
+.tg.on::after{left:21px;background:#fff}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--s3);border-radius:12px;padding:3px;gap:3px;min-width:150px}
+.seg span{text-align:center;padding:6px 8px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--tx2);cursor:pointer}
+.seg span.on{background:var(--tx);color:var(--ink)}
+.profile{margin:8px 18px 0;border-radius:22px;background:linear-gradient(135deg,#2a1520,var(--s1) 70%);border:1px solid var(--line2);padding:16px;display:flex;gap:14px;align-items:center}
+.profile .av{width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,#7a2c40,#2a1d3d);display:grid;place-items:center;font-weight:700;font-size:20px;flex:none}
+.profile b{font-size:17px;display:block}
+.profile small{color:var(--tx2);font-size:12.5px;display:flex;align-items:center;gap:6px}
+.profile small i{width:6px;height:6px;border-radius:50%;background:var(--ok);display:block}
+.prem{margin-left:auto;font-size:10.5px;font-weight:800;letter-spacing:.08em;border:1px solid var(--line2);border-radius:8px;padding:3px 8px;color:var(--glow)}
+.live{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--glow);display:inline-flex;align-items:center;gap:5px}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.prog{height:3px;border-radius:2px;background:rgba(255,255,255,.14);position:relative}
+.prog i{display:block;height:100%;border-radius:2px;background:var(--red);box-shadow:0 0 8px rgba(255,90,90,.9)}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--s3);display:grid;place-items:center;font-weight:800;font-size:11px;flex:none}
+.art{position:relative;overflow:hidden;background:radial-gradient(90% 70% at 72% 18%,var(--b,#d1495b),transparent 62%),linear-gradient(165deg,var(--a,#2a1838),#0b0a0d 85%)}
+mark{background:none;color:var(--glow);font-weight:700}
+.slider{height:4px;border-radius:2px;background:var(--s3);position:relative;margin:14px 0 4px}
+.slider i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--red);box-shadow:0 0 8px rgba(255,90,90,.9)}
+.slider i::after{content:"";position:absolute;right:-7px;top:-5px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px 1px var(--glow)}
+/* Search */
+.rec{display:flex;align-items:center;gap:12px;padding:12px 18px;color:var(--tx);font-size:14.5px;cursor:pointer}
+.rec svg.i{color:var(--tx3);width:18px;height:18px}.rec span{flex:1}
+.res{display:flex;gap:12px;padding:8px 18px;align-items:center;cursor:pointer}
+.res .poster{width:56px;height:80px;border-radius:12px;flex:none}
+.res .t b{font-size:14.5px;font-weight:600;display:block}.res .t small{color:var(--tx3);font-size:12px}
+.res.ch .poster{width:48px;height:48px;border-radius:13px}
+.cat{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-inline:18px}
+.cat div{height:72px;border-radius:16px;padding:12px;font-weight:700;font-size:14px;display:flex;align-items:flex-end;position:relative}
+.cat small{font-weight:500;color:rgba(255,255,255,.7);display:block;font-size:11.5px}
+/* EPG mobile */
+.days{display:flex;gap:8px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.day{flex:none;width:54px;text-align:center;padding:8px 0;border-radius:15px;background:var(--s1);border:1px solid var(--line);cursor:pointer}
+.day small{display:block;font-size:10.5px;color:var(--tx3);font-weight:600;text-transform:uppercase}.day b{font-size:17px}
+.day.on{background:var(--tx);color:var(--ink)}.day.on small{color:#555}
+.nowcard{margin:14px 18px 0;border-radius:22px;padding:16px;display:grid;gap:10px;height:190px;align-content:end}
+.nowcard::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(11,10,13,.93))}
+.nowcard>*{position:relative;min-width:0}
+.nowcard h3{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.02;margin:0;text-wrap:balance}
+.nowcard small{color:var(--tx2);font-size:12.5px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 12px;border-radius:13px;background:var(--red);color:#fff;font-weight:700;font-size:13.5px;box-shadow:0 8px 24px -8px rgba(229,48,58,.8);white-space:nowrap}
+.btn.g{background:rgba(255,255,255,.1);box-shadow:none;font-weight:600}
+.btn svg.i{width:17px;height:17px}
+.erow{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:12px 18px;border-top:1px solid var(--line);cursor:pointer}
+.erow:first-child{border-top:0}
+.erow .b{display:grid;gap:3px;min-width:0}
+.erow .n{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--tx3)}
+.erow .p{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:8px;align-items:center}
+.erow .nx{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.erow.sel{background:linear-gradient(90deg,rgba(229,48,58,.1),transparent);position:relative}
+.erow.sel::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;border-radius:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.tl{display:flex;gap:2px;margin-top:6px;height:6px}
+.tl i{display:block;border-radius:2px;background:var(--s3)}.tl i.n{background:var(--red);box-shadow:0 0 6px var(--glow)}
+/* TV */
+.tvwrap{container-type:inline-size;max-width:1100px;margin:0 auto 14px}
+.tvf{width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw;position:relative;display:flex}
+.tvf *{min-width:0}
+.tvf svg.i{width:1.7em;height:1.7em}
+.side{width:19%;padding:2.4em 1.4em;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:.35em;background:var(--s1)}
+.side .wm{font-family:var(--display);font-weight:600;letter-spacing:.3em;font-size:1.25em;margin-bottom:1.4em}
+.nv{display:flex;align-items:center;gap:.9em;padding:.8em 1em;border-radius:.9em;color:var(--tx2);font-weight:600;font-size:1.05em;position:relative;cursor:pointer}
+.nv.on{color:var(--tx);background:var(--s2)}
+.nv.foc{color:var(--tx);background:var(--s3)}
+.nv.foc::after,.fo::after{content:"";position:absolute;left:12%;right:12%;bottom:-.35em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.main{flex:1;padding:2.4em 2.6em;display:flex;flex-direction:column;gap:1.2em;overflow:hidden}
+.main h2{font-family:var(--display);font-weight:600;font-size:2.6em;margin:0;line-height:1}
+.fo{position:relative}
+.keys{display:grid;grid-template-columns:repeat(7,1fr);gap:.5em}
+.key{height:2.9em;border-radius:.8em;background:var(--s1);border:1px solid var(--line);display:grid;place-items:center;font-weight:600;font-size:1.1em;position:relative;cursor:pointer}
+.key.foc{background:var(--s3);border-color:var(--line2)}
+.key.foc::after{content:"";position:absolute;left:14%;right:14%;bottom:-.3em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.two{display:grid;grid-template-columns:36% 1fr;gap:2.4em;flex:1;min-height:0}
+.trail{display:flex;gap:.9em;overflow:hidden}
+.tc{flex:none;width:11em;display:grid;gap:.5em}
+.tc .art{height:15.5em;border-radius:1em}
+.tc b{font-size:1em;font-weight:600}.tc small{color:var(--tx3);font-size:.85em}
+.rh{font-size:.95em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin:0 0 .6em}
+.srow{display:flex;align-items:center;gap:1em;padding:.9em 1.1em;border-radius:1em;background:var(--s1);border:1px solid var(--line);margin-bottom:.55em;font-weight:600;position:relative;cursor:pointer}
+.srow small{margin-left:auto;color:var(--tx2);font-weight:500}
+.srow .t{display:grid}.srow .t small{margin:0;color:var(--tx3);font-size:.8em}
+.srow.foc{background:var(--s3);border-color:var(--line2)}
+.srow.foc::after{content:"";position:absolute;left:8%;right:8%;bottom:-.3em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:1.3em;padding:1.4em 1.6em;display:grid;gap:.4em;align-content:start}
+/* EPG TV */
+.dock{display:grid;grid-template-columns:9em 1fr auto;gap:1.6em;align-items:center;padding:1.3em 1.6em;border-radius:1.4em;position:relative;overflow:hidden}
+.dock::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,13,.35),rgba(11,10,13,.92))}
+.dock>*{position:relative}
+.dock h3{font-family:var(--display);font-weight:600;font-size:2em;margin:0;line-height:1}
+.dock small{color:var(--tx2)}
+.grid{flex:1;display:grid;grid-template-columns:12em 1fr;border:1px solid var(--line);border-radius:1.2em;overflow:hidden;background:var(--s1);position:relative;min-height:0}
+.chs{border-right:1px solid var(--line)}
+.chs div,.rowp{height:3.3em}
+.chs div{display:flex;align-items:center;gap:.7em;padding:0 1em;font-weight:600;font-size:.95em;border-top:1px solid var(--line)}
+.chs div.hd,.ruler{height:2.4em;border-top:0}
+.chs .logo{width:2.1em;height:2.1em;font-size:.7em;border-radius:.6em}
+.ruler{display:grid;grid-template-columns:repeat(6,1fr);font-size:.85em;color:var(--tx3);font-weight:600;align-items:center}
+.ruler span{padding-left:.8em;border-left:1px solid var(--line);height:100%;display:flex;align-items:center}
+.rowp{display:flex;gap:.3em;padding:.35em 0;border-top:1px solid var(--line);margin-left:0}
+.pc{border-radius:.7em;background:var(--s2);padding:0 .9em;display:flex;align-items:center;font-size:.9em;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;position:relative}
+.pc.now{background:#2a1a20}
+.pc.foc{background:var(--s3);outline:0;border:1px solid var(--line2)}
+.pc.foc::after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.nowline{position:absolute;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,var(--red) 8%,var(--red) 92%,transparent);box-shadow:0 0 12px 1px var(--glow);z-index:2}
+.nowline::before{content:"ΤΩΡΑ 21:14";position:absolute;top:.15em;left:50%;translate:-50% 0;font-size:.75em;font-weight:800;letter-spacing:.06em;background:var(--red);color:#fff;padding:.1em .5em;border-radius:.5em;white-space:nowrap}
+.hint{display:flex;gap:1.4em;color:var(--tx3);font-size:.9em}
+.hint b{color:var(--tx2)}
+</style>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></symbol>
+<symbol id="sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></symbol>
+<symbol id="db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.7-4 3-9 3s-9-1.3-9-3M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10H3z"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+<symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></symbol>
+<symbol id="cloud" viewBox="0 0 24 24"><path d="M18 10h-1.3A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
+<symbol id="pulse" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V3h6v3"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z"/></symbol>
+<symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3"/></symbol>
+<symbol id="x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="tv" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 12h18"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="more" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></symbol>
+<symbol id="player" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3zM8 21h8"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+<header class="intro">
+  <div><span class="wordmark">Prelude+</span><span class="horizon" style="width:150px;margin-top:8px"></span></div>
+  <h1>Horizon: Ρυθμίσεις, Αναζήτηση, EPG</h1>
+  <p class="lede">Συνέχεια του εγκεκριμένου Horizon. Ίδια παλέτα, ίδια γραμμή-ορίζοντας ως ο μοναδικός δείκτης επιλογής/focus/προόδου. Εδώ η έμφαση είναι στη χρηστικότητα: λιγότερα βήματα, ό,τι ψάχνεις πάντα στο ίδιο σημείο, μεγάλοι στόχοι αφής και καθαρό focus στο τηλεχειριστήριο. Πρωτότυπο, τα δεδομένα είναι ενδεικτικά.</p>
+</header>
+
+<!-- ============ ΡΥΘΜΙΣΕΙΣ ============ -->
+<section class="sec">
+<h2>1 · Ρυθμίσεις</h2>
+<p>Σήμερα: μακρά λίστα με 5 ομάδες και υπότιτλους παντού. Τώρα: κάρτα προφίλ/πηγής στην κορυφή, αναζήτηση μέσα στις ρυθμίσεις, ομάδες με σαφή σειρά (πρώτα ό,τι αγγίζεις συχνά) και η τρέχουσα τιμή δεξιά, ώστε να μη χρειάζεται να μπεις για να δεις τι έχεις επιλέξει.</p>
+<div class="phones">
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="pad"><div class="ttl">Ρυθμίσεις</div></div>
+      <div class="profile"><div class="av">K</div><div><b>Konstantinos</b><small><i></i>Πηγή: Prelude Main · συνδεδεμένη</small></div><span class="prem">PREMIUM</span></div>
+      <div class="pad" style="margin-top:14px"><div class="field"><svg class="i"><use href="#search"/></svg><em>Αναζήτηση ρύθμισης…</em></div></div>
+      <div class="grp">Αναπαραγωγή & εμφάνιση</div>
+      <div class="list">
+        <div class="row"><span class="ic"><svg class="i"><use href="#player"/></svg></span><span class="t"><b>Player</b></span><span class="v">VLC · Αυτόματο</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#sun"/></svg></span><span class="t"><b>Εμφάνιση</b></span><span class="v">Σκούρο</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#globe"/></svg></span><span class="t"><b>Γλώσσα εφαρμογής</b></span><span class="v">Ελληνικά</span><svg class="i chev"><use href="#chev"/></svg></div>
+      </div>
+      <div class="grp">Περιεχόμενο</div>
+      <div class="list">
+        <div class="row"><span class="ic"><svg class="i"><use href="#db"/></svg></span><span class="t"><b>Οι πηγές μου</b></span><span class="v">2 ενεργές</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#list"/></svg></span><span class="t"><b>Κατηγορίες</b></span><span class="v">Επεξεργασία</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#home"/></svg></span><span class="t"><b>Αρχική οθόνη</b></span><span class="v">Προσαρμογή</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#cal"/></svg></span><span class="t"><b>Πρόγραμμα (EPG)</b></span><span class="v">Ενεργό</span><svg class="i chev"><use href="#chev"/></svg></div>
+      </div>
+      <div class="grp">Λογαριασμός & ασφάλεια</div>
+      <div class="list">
+        <div class="row"><span class="ic"><svg class="i"><use href="#user"/></svg></span><span class="t"><b>Προφίλ</b></span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#lock"/></svg></span><span class="t"><b>Γονικός έλεγχος</b></span><span class="v">Ανενεργός</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#cloud"/></svg></span><span class="t"><b>Αντίγραφο ασφαλείας</b></span><svg class="i chev"><use href="#chev"/></svg></div>
+      </div>
+      <div class="grp">Εφαρμογή</div>
+      <div class="list">
+        <div class="row"><span class="ic"><svg class="i"><use href="#pulse"/></svg></span><span class="t"><b>Διαγνωστικά</b></span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#trash"/></svg></span><span class="t"><b>Καθαρισμός cache</b><small>Εικόνες & περιγραφές</small></span><span class="v">212 MB</span></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#help"/></svg></span><span class="t"><b>Βοήθεια</b></span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row"><span class="ic"><svg class="i"><use href="#shield"/></svg></span><span class="t"><b>Νομικά & απόρρητο</b></span><svg class="i chev"><use href="#chev"/></svg></div>
+      </div>
+      <div style="text-align:center;color:var(--tx3);font-size:12px;padding:22px 0 6px">Prelude+ 1.97.0</div>
+    </div>
+    <div class="bnav"><span><svg class="i"><use href="#home"/></svg>Αρχική</span><span><svg class="i"><use href="#tv"/></svg>Live</span><span><svg class="i"><use href="#film"/></svg>Ταινίες</span><span><svg class="i"><use href="#layers"/></svg>Σειρές</span><span class="on"><svg class="i"><use href="#user"/></svg>Εγώ</span></div>
+  </div>
+  <div class="note"><h3>Επισκόπηση</h3><ul><li>Η τρέχουσα τιμή φαίνεται στη λίστα, χωρίς να μπεις.</li><li>Αναζήτηση ρυθμίσεων: γράφεις «υπότιτλοι» και πας κατευθείαν.</li><li>Ο καθαρισμός cache δείχνει μέγεθος και είναι ενέργεια, όχι μενού.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="icbtn"><svg class="i"><use href="#back"/></svg></span><span class="ttl2">Player</span></div>
+      <div class="grp" style="padding-top:14px">Μηχανή αναπαραγωγής</div>
+      <div style="padding-inline:18px"><div class="seg" style="width:100%"><span>Αυτόματο</span><span class="on">VLC</span><span>ExoPlayer</span></div>
+      <div style="color:var(--tx3);font-size:12.5px;padding:8px 2px 0">Το «Αυτόματο» διαλέγει την καλύτερη μηχανή ανά κανάλι.</div></div>
+      <div class="grp">Εικόνα & ήχος</div>
+      <div class="list">
+        <div class="row" style="display:block;padding:12px 14px"><b style="font-size:14.5px;display:block;margin-bottom:8px">Λόγος διαστάσεων</b><div class="seg"><span class="on">Αυτόματο</span><span>16:9</span><span>Γέμισμα</span></div></div>
+        <div class="row"><span class="t"><b>Αποκωδικοποίηση υλικού</b><small>Πιο ομαλή εικόνα, λιγότερη μπαταρία</small></span><span class="tg on"></span></div>
+        <div class="row"><span class="t"><b>Έλεγχος έντασης με σύρσιμο</b></span><span class="tg on"></span></div>
+        <div class="row"><span class="t"><b>Έλεγχος φωτεινότητας με σύρσιμο</b></span><span class="tg"></span></div>
+      </div>
+      <div class="grp">Υπότιτλοι</div>
+      <div class="list">
+        <div class="row"><span class="t"><b>Προτιμώμενη γλώσσα</b></span><span class="v">Ελληνικά</span><svg class="i chev"><use href="#chev"/></svg></div>
+        <div class="row" style="display:block;padding:14px"><div style="display:flex;justify-content:space-between"><b style="font-size:14.5px">Μέγεθος</b><span class="v">120%</span></div><div class="slider"><i style="width:62%"></i></div>
+          <div style="margin-top:14px;padding:14px;border-radius:12px;background:#000;text-align:center;font-weight:600;font-size:15px">Έτσι θα φαίνονται οι υπότιτλοι</div></div>
+      </div>
+      <div class="grp">Συνέχεια</div>
+      <div class="list">
+        <div class="row"><span class="t"><b>Αυτόματη συνέχεια επόμενου επεισοδίου</b></span><span class="tg on"></span></div>
+        <div class="row"><span class="t"><b>Συνέχισε από εκεί που έμεινα</b></span><span class="tg on"></span></div>
+      </div>
+    </div></div>
+  <div class="note"><h3>Υποοθόνη (Player)</h3><ul><li>Ο διακόπτης αλλάζει επιτόπου, χωρίς «Αποθήκευση».</li><li>Ζωντανή προεπισκόπηση για υπότιτλους.</li><li>Η επιλογή μηχανής είναι segmented με 3 κουμπιά, όχι διάλογος.</li></ul></div></div>
+</div>
+
+<div class="tvwrap"><div class="tvf">
+  <div class="side"><div class="wm">PRELUDE+</div>
+    <div class="nv"><svg class="i"><use href="#home"/></svg>Αρχική</div><div class="nv"><svg class="i"><use href="#tv"/></svg>Live</div><div class="nv"><svg class="i"><use href="#film"/></svg>Ταινίες</div><div class="nv"><svg class="i"><use href="#layers"/></svg>Σειρές</div><div class="nv"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα</div><div class="nv"><svg class="i"><use href="#search"/></svg>Αναζήτηση</div>
+    <div class="nv on" style="margin-top:auto"><svg class="i"><use href="#user"/></svg>Ρυθμίσεις</div></div>
+  <div class="main"><h2>Ρυθμίσεις</h2>
+    <div class="two" style="grid-template-columns:34% 1fr">
+      <div>
+        <div class="srow"><svg class="i"><use href="#player"/></svg>Player<small>VLC</small></div>
+        <div class="srow foc"><svg class="i"><use href="#db"/></svg>Πηγές<small>2 ενεργές</small></div>
+        <div class="srow"><svg class="i"><use href="#list"/></svg>Κατηγορίες & αρχική</div>
+        <div class="srow"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα EPG<small>Ενεργό</small></div>
+        <div class="srow"><svg class="i"><use href="#sun"/></svg>Εμφάνιση & γλώσσα</div>
+        <div class="srow"><svg class="i"><use href="#lock"/></svg>Γονικός έλεγχος</div>
+        <div class="srow"><svg class="i"><use href="#pulse"/></svg>Διαγνωστικά & βοήθεια</div>
+      </div>
+      <div class="panel" style="gap:.9em">
+        <div style="font-family:var(--display);font-weight:600;font-size:1.9em">Οι πηγές μου</div>
+        <div class="srow fo" style="margin:0"><span class="logo" style="width:2.6em;height:2.6em">PM</span><span class="t"><span>Prelude Main</span><small>1.248 κανάλια · ενημερώθηκε σήμερα 18:02</small></span><span class="live" style="margin-left:auto">ΕΝΕΡΓΗ</span></div>
+        <div class="srow" style="margin:0"><span class="logo" style="width:2.6em;height:2.6em">SP</span><span class="t"><span>Sports Pack</span><small>86 κανάλια · ενημερώθηκε χθες</small></span><small>Ενεργή</small></div>
+        <div style="display:flex;gap:.8em;margin-top:.4em"><span class="btn" style="font-size:1em;height:2.8em">Προσθήκη πηγής</span><span class="btn g" style="font-size:1em;height:2.8em">Ενημέρωση τώρα</span></div>
+        <div class="hint" style="margin-top:.6em"><span><b>OK</b> επιλογή</span><span><b>◀</b> πίσω στη λίστα</span><span><b>Μενού</b> επεξεργασία</span></div>
+      </div>
+    </div>
+  </div></div></div>
+<div class="note" style="max-width:1100px;margin:0 auto"><h3>TV · δύο στήλες</h3><ul><li>Αριστερά οι κατηγορίες, δεξιά το περιεχόμενο της επιλεγμένης: δεν μπαίνεις/βγαίνεις από οθόνες με το τηλεχειριστήριο.</li><li>Κάθε αλλαγή γίνεται με ένα OK. Το focus έχει πάντα τη γραμμή-ορίζοντα.</li></ul></div>
+</section>
+
+<!-- ============ ΑΝΑΖΗΤΗΣΗ ============ -->
+<section class="sec">
+<h2>2 · Αναζήτηση</h2>
+<p>Σήμερα: το πεδίο ανοίγει σε άδεια οθόνη. Τώρα: πριν γράψεις βλέπεις πρόσφατες αναζητήσεις και γρήγορες κατηγορίες· μόλις γράψεις, τα αποτελέσματα ομαδοποιούνται (Κανάλια / Ταινίες / Σειρές) με τονισμένο το κομμάτι που ταιριάζει, και φίλτρα τύπου με ένα άγγιγμα.</p>
+<div class="phones">
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top" style="padding-bottom:8px"><span class="icbtn"><svg class="i"><use href="#back"/></svg></span><div class="field focus" style="flex:1"><svg class="i"><use href="#search"/></svg><em><span class="caret"></span></em><svg class="i"><use href="#mic"/></svg></div></div>
+      <div class="chips" style="margin:10px 0 4px"><span class="chip on">Όλα</span><span class="chip">Live</span><span class="chip">Ταινίες</span><span class="chip">Σειρές</span></div>
+      <div class="grp" style="display:flex;justify-content:space-between"><span>Πρόσφατες</span><span style="letter-spacing:0;text-transform:none;font-weight:600">Καθαρισμός</span></div>
+      <div class="rec"><svg class="i"><use href="#clock"/></svg><span>ΕΡΤ Σπορ</span><svg class="i"><use href="#x"/></svg></div>
+      <div class="rec"><svg class="i"><use href="#clock"/></svg><span>Dune</span><svg class="i"><use href="#x"/></svg></div>
+      <div class="rec"><svg class="i"><use href="#clock"/></svg><span>Breaking Bad</span><svg class="i"><use href="#x"/></svg></div>
+      <div class="grp">Γρήγορη πρόσβαση</div>
+      <div class="cat">
+        <div style="background:linear-gradient(135deg,#6b1f2c,#1c1218)"><span>Αθλητικά<small>42 κανάλια</small></span></div>
+        <div style="background:linear-gradient(135deg,#1f3a6b,#12161c)"><span>Ειδήσεις<small>28 κανάλια</small></span></div>
+        <div style="background:linear-gradient(135deg,#5b3a1f,#1c1612)"><span>Ταινίες<small>3.214 τίτλοι</small></span></div>
+        <div style="background:linear-gradient(135deg,#2c1f6b,#14121c)"><span>Σειρές<small>612 τίτλοι</small></span></div>
+      </div>
+    </div></div>
+  <div class="note"><h3>Πριν γράψεις</h3><ul><li>Πρόσφατες με διαγραφή ανά γραμμή.</li><li>Το πληκτρολόγιο ανοίγει αμέσως, ο κέρσορας έχει τη γραμμή-ορίζοντα.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top" style="padding-bottom:8px"><span class="icbtn"><svg class="i"><use href="#back"/></svg></span><div class="field focus" style="flex:1"><svg class="i"><use href="#search"/></svg><b>σπορ</b><svg class="i"><use href="#x"/></svg></div></div>
+      <div class="chips" style="margin:10px 0 0"><span class="chip on">Όλα · 31</span><span class="chip">Live · 19</span><span class="chip">Ταινίες · 8</span><span class="chip">Σειρές · 4</span></div>
+      <div class="grp" style="display:flex;justify-content:space-between"><span>Κανάλια</span><span style="letter-spacing:0;text-transform:none;font-weight:600">Όλα 19</span></div>
+      <div class="res ch"><div class="logo poster">ΕΡΤ</div><div class="t" style="flex:1"><b>ΕΡΤ <mark>Σπορ</mark> 1 HD</b><small><span class="live">LIVE</span> · Ποδόσφαιρο: Super League</small><div class="prog" style="margin-top:6px;width:90%"><i style="width:64%"></i></div></div></div>
+      <div class="res ch"><div class="logo poster">NS</div><div class="t" style="flex:1"><b>Nova <mark>Σπορ</mark> Prime</b><small><span class="live">LIVE</span> · Μπάσκετ: Euroleague</small><div class="prog" style="margin-top:6px;width:90%"><i style="width:31%"></i></div></div></div>
+      <div class="res ch"><div class="logo poster">CS</div><div class="t" style="flex:1"><b>Cosmote <mark>Σπορ</mark> 3</b><small>Επόμενο 22:00 · Τένις</small></div></div>
+      <div class="grp" style="display:flex;justify-content:space-between"><span>Ταινίες</span><span style="letter-spacing:0;text-transform:none;font-weight:600">Όλες 8</span></div>
+      <div class="res"><div class="poster art" style="--a:#3a2b12;--b:#e0a030"></div><div class="t"><b>Ο Άνθρωπος των <mark>Σπορ</mark></b><small>2019 · Δράμα · 1ω 52λ</small></div></div>
+      <div class="res"><div class="poster art" style="--a:#12303a;--b:#3fb0c0"></div><div class="t"><b>Ημέρα <mark>Σπορ</mark></b><small>2021 · Κωμωδία · 1ω 38λ</small></div></div>
+    </div></div>
+  <div class="note"><h3>Αποτελέσματα</h3><ul><li>Ομαδοποίηση ανά τύπο, με μετρητές στα φίλτρα.</li><li>Στα κανάλια φαίνεται τι παίζει τώρα και πρόοδος: ανοίγεις κατευθείαν.</li><li>Ο όρος τονίζεται με το κόκκινο.</li></ul></div></div>
+</div>
+
+<div class="tvwrap"><div class="tvf">
+  <div class="side"><div class="wm">PRELUDE+</div>
+    <div class="nv"><svg class="i"><use href="#home"/></svg>Αρχική</div><div class="nv"><svg class="i"><use href="#tv"/></svg>Live</div><div class="nv"><svg class="i"><use href="#film"/></svg>Ταινίες</div><div class="nv"><svg class="i"><use href="#layers"/></svg>Σειρές</div><div class="nv"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα</div><div class="nv on"><svg class="i"><use href="#search"/></svg>Αναζήτηση</div>
+    <div class="nv" style="margin-top:auto"><svg class="i"><use href="#user"/></svg>Ρυθμίσεις</div></div>
+  <div class="main" style="padding-top:2em"><div class="field focus" style="height:3.2em;font-size:1.2em"><svg class="i"><use href="#search"/></svg><b>σπορ<span class="caret"></span></b><span class="chip" style="height:2em">Όλα</span></div>
+    <div class="two" style="grid-template-columns:30% 1fr;gap:2em">
+      <div><div class="keys" style="grid-template-columns:repeat(6,1fr)">
+        <div class="key">Α</div><div class="key">Β</div><div class="key">Γ</div><div class="key">Δ</div><div class="key">Ε</div><div class="key">Ζ</div>
+        <div class="key">Η</div><div class="key">Θ</div><div class="key">Ι</div><div class="key">Κ</div><div class="key">Λ</div><div class="key">Μ</div>
+        <div class="key">Ν</div><div class="key">Ξ</div><div class="key">Ο</div><div class="key">Π</div><div class="key foc">Ρ</div><div class="key">Σ</div>
+        <div class="key">Τ</div><div class="key">Υ</div><div class="key">Φ</div><div class="key">Χ</div><div class="key">Ψ</div><div class="key">Ω</div>
+        <div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div><div class="key">5</div><div class="key">⌫</div>
+        <div class="key" style="grid-column:span 3">Κενό</div><div class="key" style="grid-column:span 3">EN</div></div>
+        <div class="hint" style="margin-top:1.2em"><span><b>🎤</b> φωνητική</span><span><b>▶</b> άνοιγμα</span></div></div>
+      <div style="overflow:hidden"><p class="rh">Κανάλια · 19</p>
+        <div class="srow foc"><span class="logo" style="width:2.4em;height:2.4em">ΕΡΤ</span><span class="t"><span>ΕΡΤ Σπορ 1 HD</span><small>Ποδόσφαιρο: Super League</small></span><span class="live" style="margin-left:auto">LIVE</span></div>
+        <div class="srow"><span class="logo" style="width:2.4em;height:2.4em">NS</span><span class="t"><span>Nova Σπορ Prime</span><small>Μπάσκετ: Euroleague</small></span><span class="live" style="margin-left:auto">LIVE</span></div>
+        <p class="rh" style="margin-top:1em">Ταινίες · 8</p>
+        <div class="trail"><div class="tc"><div class="art" style="--a:#3a2b12;--b:#e0a030"></div><b>Ο Άνθρωπος των Σπορ</b></div><div class="tc"><div class="art" style="--a:#12303a;--b:#3fb0c0"></div><b>Ημέρα Σπορ</b></div><div class="tc"><div class="art" style="--a:#3a1236;--b:#c03f9a"></div><b>Στο Γήπεδο</b></div><div class="tc"><div class="art" style="--a:#1b3a12;--b:#6bc03f"></div><b>Μαραθώνιος</b></div></div>
+      </div></div></div></div></div>
+<div class="note" style="max-width:1100px;margin:0 auto"><h3>TV · πληκτρολόγιο αριστερά, αποτελέσματα δεξιά</h3><ul><li>Τα αποτελέσματα ανανεώνονται ενώ πληκτρολογείς: δεν χρειάζεται «Αναζήτηση».</li><li>Δεξιά βέλος από το πληκτρολόγιο πηγαίνει κατευθείαν στο πρώτο αποτέλεσμα.</li><li>Φωνητική αναζήτηση από το τηλεχειριστήριο όπου υπάρχει.</li></ul></div>
+</section>
+
+<!-- ============ EPG ============ -->
+<section class="sec">
+<h2>3 · EPG (Πρόγραμμα)</h2>
+<p>Σήμερα: πλέγμα που στο κινητό θέλει οριζόντιο scroll. Τώρα στο κινητό: κάθετη λίστα «Τώρα / Μετά» ανά κανάλι (χωρίς οριζόντιο σύρσιμο), με ημέρες και φίλτρα ώρας. Στην TV: κλασικό πλέγμα με κάθετη γραμμή «ΤΩΡΑ» και δεδομένα του επιλεγμένου προγράμματος πάνω.</p>
+<div class="phones">
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:center"><div class="ttl" style="margin-bottom:10px">Πρόγραμμα</div><span class="icbtn"><svg class="i"><use href="#search"/></svg></span></div>
+      <div class="days"><div class="day"><small>Χθες</small><b>11</b></div><div class="day on"><small>Σήμερα</small><b>12</b></div><div class="day"><small>Τρί</small><b>13</b></div><div class="day"><small>Τετ</small><b>14</b></div><div class="day"><small>Πεμ</small><b>15</b></div><div class="day"><small>Παρ</small><b>16</b></div></div>
+      <div class="chips" style="margin-top:12px"><span class="chip on">Τώρα</span><span class="chip">Βράδυ 21–24</span><span class="chip">Ταινίες</span><span class="chip">Αθλητικά</span><span class="chip">Αγαπημένα</span></div>
+      <div class="nowcard art" style="--a:#3a1220;--b:#e5303a"><div class="live">ΤΩΡΑ · 20:30 – 22:30</div><h3>Super League: ΠΑΟΚ – Ολυμπιακός</h3><small>ΕΡΤ Σπορ 1 HD · Ποδόσφαιρο</small>
+        <div class="prog"><i style="width:34%"></i></div>
+        <div style="display:flex;gap:8px"><span class="btn"><svg class="i"><use href="#play"/></svg>Παρακολούθηση</span><span class="btn g"><svg class="i"><use href="#bell"/></svg>Υπενθύμιση</span></div></div>
+      <div class="grp">Όλα τα κανάλια</div>
+      <div class="erow sel"><div class="logo">ΕΡΤ</div><div class="b"><div class="n"><span>ΕΡΤ Σπορ 1 HD</span><span>20:30–22:30</span></div><div class="p"><span class="live">LIVE</span>Super League</div><div class="prog"><i style="width:34%"></i></div><div class="nx">Μετά 22:30 · Αθλητική Επικαιρότητα</div></div></div>
+      <div class="erow"><div class="logo">ΑΝ</div><div class="b"><div class="n"><span>ΑΝΤ1</span><span>20:50–22:10</span></div><div class="p"><span class="live">LIVE</span>Τα Νέα του Βράδυ</div><div class="prog"><i style="width:58%"></i></div><div class="nx">Μετά 22:10 · Σειρά: Αγάπη</div></div></div>
+      <div class="erow"><div class="logo">ΣΚ</div><div class="b"><div class="n"><span>ΣΚΑΪ</span><span>21:00–23:15</span></div><div class="p"><span class="live">LIVE</span>Ταινία: Η Μεγάλη Απόδραση</div><div class="prog"><i style="width:9%"></i></div><div class="nx">Μετά 23:15 · Ειδήσεις</div></div></div>
+      <div class="erow"><div class="logo">ΑΛ</div><div class="b"><div class="n"><span>Alpha</span><span>20:55–22:00</span></div><div class="p"><span class="live">LIVE</span>Σειρά: Ο Γιατρός</div><div class="prog"><i style="width:27%"></i></div><div class="nx">Μετά 22:00 · Talk show</div></div></div>
+      <div class="erow"><div class="logo">ΕΡ1</div><div class="b"><div class="n"><span>ΕΡΤ1</span><span>20:00–22:00</span></div><div class="p"><span class="live">LIVE</span>Ντοκιμαντέρ: Αιγαίο</div><div class="prog"><i style="width:61%"></i></div><div class="nx">Μετά 22:00 · Μουσική βραδιά</div></div></div>
+    </div>
+    <div class="bnav"><span><svg class="i"><use href="#home"/></svg>Αρχική</span><span><svg class="i"><use href="#tv"/></svg>Live</span><span class="on"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα</span><span><svg class="i"><use href="#film"/></svg>Ταινίες</span><span><svg class="i"><use href="#user"/></svg>Εγώ</span></div>
+  </div>
+  <div class="note"><h3>Λίστα «Τώρα / Μετά»</h3><ul><li>Κάθε κανάλι: τι παίζει, πόσο έχει προχωρήσει, τι έρχεται.</li><li>Επιλεγμένο κανάλι ανεβαίνει στην κάρτα με κουμπιά Παρακολούθηση / Υπενθύμιση.</li><li>Ημέρες και φίλτρα ώρας/είδους στην κορυφή.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="icbtn"><svg class="i"><use href="#back"/></svg></span><span class="ttl2">ΕΡΤ Σπορ 1 HD</span></div>
+      <div class="days" style="margin-top:8px"><div class="day"><small>Χθες</small><b>11</b></div><div class="day on"><small>Σήμερα</small><b>12</b></div><div class="day"><small>Τρί</small><b>13</b></div><div class="day"><small>Τετ</small><b>14</b></div></div>
+      <div class="list" style="margin-top:16px">
+        <div class="erow" style="opacity:.55"><div class="n" style="font-size:12px;color:var(--tx3);font-weight:600;padding-top:2px">18:00</div><div class="b"><div class="p">Αθλητική Επικαιρότητα</div><div class="nx">18:00 – 19:30</div></div></div>
+        <div class="erow" style="opacity:.55"><div class="n" style="font-size:12px;color:var(--tx3);font-weight:600;padding-top:2px">19:30</div><div class="b"><div class="p">Ρεπορτάζ: Πριν τη σέντρα</div><div class="nx">19:30 – 20:30</div></div></div>
+        <div class="erow sel"><div class="n" style="font-size:12px;color:var(--glow);font-weight:800;padding-top:2px">20:30</div><div class="b"><div class="p"><span class="live">ΤΩΡΑ</span>Super League</div><div class="prog" style="margin-block:4px"><i style="width:34%"></i></div><div class="nx">ΠΑΟΚ – Ολυμπιακός · 20:30 – 22:30</div></div></div>
+        <div class="erow"><div class="n" style="font-size:12px;color:var(--tx3);font-weight:600;padding-top:2px">22:30</div><div class="b"><div class="p">Αθλητική Επικαιρότητα</div><div class="nx">22:30 – 23:30</div></div><span style="position:absolute"></span></div>
+        <div class="erow"><div class="n" style="font-size:12px;color:var(--tx3);font-weight:600;padding-top:2px">23:30</div><div class="b"><div class="p">Μπάσκετ: Επανάληψη</div><div class="nx">23:30 – 01:15</div></div></div>
+        <div class="erow"><div class="n" style="font-size:12px;color:var(--tx3);font-weight:600;padding-top:2px">01:15</div><div class="b"><div class="p">Τένις: Highlights</div><div class="nx">01:15 – 02:00</div></div></div>
+      </div>
+    </div></div>
+  <div class="note"><h3>Πρόγραμμα καναλιού</h3><ul><li>Πατώντας κανάλι βλέπεις όλη την ημέρα του, με τη γραμμή στο «Τώρα».</li><li>Τα περασμένα θαμπώνουν, για να βρίσκεις αμέσως πού είσαι.</li></ul></div></div>
+</div>
+
+<div class="tvwrap"><div class="tvf">
+  <div class="side"><div class="wm">PRELUDE+</div>
+    <div class="nv"><svg class="i"><use href="#home"/></svg>Αρχική</div><div class="nv"><svg class="i"><use href="#tv"/></svg>Live</div><div class="nv"><svg class="i"><use href="#film"/></svg>Ταινίες</div><div class="nv"><svg class="i"><use href="#layers"/></svg>Σειρές</div><div class="nv on"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα</div><div class="nv"><svg class="i"><use href="#search"/></svg>Αναζήτηση</div>
+    <div class="nv" style="margin-top:auto"><svg class="i"><use href="#user"/></svg>Ρυθμίσεις</div></div>
+  <div class="main" style="padding:1.6em 2em;gap:1em">
+    <div class="dock art" style="--a:#3a1220;--b:#e5303a"><div><div class="live">ΤΩΡΑ · 20:30 – 22:30</div><small>ΕΡΤ Σπορ 1 HD</small></div><div><h3>Super League: ΠΑΟΚ – Ολυμπιακός</h3><small>Ποδόσφαιρο · Αγωνιστική 8 · Μετά: Αθλητική Επικαιρότητα 22:30</small></div><div style="display:flex;gap:.7em"><span class="btn" style="font-size:1em;height:2.8em"><svg class="i"><use href="#play"/></svg>Παρακολούθηση</span><span class="btn g" style="font-size:1em;height:2.8em"><svg class="i"><use href="#bell"/></svg></span></div></div>
+    <div class="chips" style="padding:0;gap:.6em"><span class="chip on">Σήμερα</span><span class="chip">Αύριο</span><span class="chip">Όλα</span><span class="chip">Αθλητικά</span><span class="chip">Ταινίες</span><span class="chip">Αγαπημένα</span></div>
+    <div class="grid">
+      <div class="chs"><div class="hd"></div>
+        <div><span class="logo">ΕΡΤ</span>ΕΡΤ Σπορ 1</div><div><span class="logo">NS</span>Nova Prime</div><div><span class="logo">ΑΝ</span>ΑΝΤ1</div><div><span class="logo">ΣΚ</span>ΣΚΑΪ</div><div><span class="logo">ΑΛ</span>Alpha</div></div>
+      <div style="position:relative">
+        <div class="nowline" style="left:38%"></div>
+        <div class="ruler"><span>20:00</span><span>20:30</span><span>21:00</span><span>21:30</span><span>22:00</span><span>22:30</span></div>
+        <div class="rowp"><div class="pc" style="width:14%">Ρεπορτάζ</div><div class="pc now foc" style="width:66%">Super League: ΠΑΟΚ – Ολυμπιακός</div><div class="pc" style="width:20%">Αθλ. Επικ.</div></div>
+        <div class="rowp"><div class="pc" style="width:30%">Μπάσκετ: Πριν το τζάμπολ</div><div class="pc now" style="width:50%">Euroleague: Παναθηναϊκός</div><div class="pc" style="width:20%">Highlights</div></div>
+        <div class="rowp"><div class="pc" style="width:20%">Νέα</div><div class="pc now" style="width:62%">Τα Νέα του Βράδυ</div><div class="pc" style="width:18%">Αγάπη</div></div>
+        <div class="rowp"><div class="pc" style="width:10%">Μ</div><div class="pc now" style="width:76%">Ταινία: Η Μεγάλη Απόδραση</div><div class="pc" style="width:14%">Ειδ.</div></div>
+        <div class="rowp"><div class="pc" style="width:12%">Ε</div><div class="pc now" style="width:56%">Σειρά: Ο Γιατρός</div><div class="pc" style="width:32%">Talk show</div></div>
+      </div>
+    </div>
+    <div class="hint"><span><b>▲▼</b> κανάλι</span><span><b>◀▶</b> πρόγραμμα</span><span><b>OK</b> παρακολούθηση</span><span><b>Κόκκινο</b> υπενθύμιση</span><span><b>Κίτρινο</b> αύριο</span></div>
+  </div></div></div>
+<div class="note" style="max-width:1100px;margin:0 auto"><h3>TV · πλέγμα με γραμμή «ΤΩΡΑ»</h3><ul><li>Η κόκκινη γραμμή-ορίζοντας κάθετα δείχνει την τρέχουσα ώρα: το μάτι πάει εκεί αμέσως.</li><li>Το επιλεγμένο πρόγραμμα φαίνεται στη μπάνα επάνω, με ένα OK ξεκινάει.</li><li>Πρόσβαση με χρωματιστά κουμπιά στις κοινές ενέργειες.</li></ul></div>
+</section>
+</div>
+
+<script>
+document.querySelectorAll('.seg').forEach(s=>s.addEventListener('click',e=>{const t=e.target.closest('span');if(!t)return;s.querySelectorAll('span').forEach(x=>x.classList.remove('on'));t.classList.add('on')}));
+document.querySelectorAll('.tg').forEach(t=>t.addEventListener('click',e=>{e.stopPropagation();t.classList.toggle('on')}));
+document.querySelectorAll('.chips,.days').forEach(c=>c.addEventListener('click',e=>{const t=e.target.closest('.chip,.day');if(!t)return;c.querySelectorAll('.chip,.day').forEach(x=>x.classList.remove('on'));t.classList.add('on')}));
+</script>

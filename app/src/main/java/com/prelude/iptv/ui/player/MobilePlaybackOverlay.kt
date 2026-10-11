@@ -759,6 +759,12 @@ fun MobilePlaybackOverlay(
             }
 
             if (failed || state.error != null) {
+                // Αδιαφανές μαύρο πάνω από την επιφάνεια βίντεο. Όταν το νέο κανάλι
+                // αποτυγχάνει, το libVLC δεν ξαναστήνει το SurfaceView του: έμενε το
+                // τελευταίο καρέ του ΠΡΟΗΓΟΥΜΕΝΟΥ καναλιού, στο μέγεθος που είχε
+                // (π.χ. της μαζεμένης λωρίδας), σαν μικρογραφία πάνω αριστερά.
+                Box(Modifier.fillMaxSize().background(Color.Black))
+                // Κάτω από το κέντρο, ώστε να μην το σκεπάζει το κουμπί ▶ των χειριστηρίων.
                 Text(
                     stringResource(
                         if (failed) R.string.player_source_unavailable
@@ -767,7 +773,10 @@ fun MobilePlaybackOverlay(
                     color = IptvColors.TextSecondary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.align(Alignment.Center)
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(start = 24.dp, end = 24.dp, top = 104.dp)
                 )
             }
 

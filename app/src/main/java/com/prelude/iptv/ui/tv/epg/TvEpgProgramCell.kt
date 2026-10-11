@@ -37,6 +37,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.design.drawHorizon
+import com.prelude.iptv.ui.design.Horizon
+import com.prelude.iptv.ui.StreamingProgress
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.zIndex
 import com.prelude.iptv.data.EpgManager
 import com.prelude.iptv.R
@@ -69,10 +75,10 @@ internal fun TvProgramCell(
     )
     val background by animateColorAsState(
         when {
-            focused -> Color(0xFF4A4A50)
-            state == EpgProgramVisualState.Selected -> Color(0xFF353B37)
-            live -> Color(0xFF3A2427)
-            else -> Color(0xFF242428)
+            focused -> IptvColors.SurfacePressed
+            state == EpgProgramVisualState.Selected -> IptvColors.SurfaceSelected
+            live -> Color(0xFF2A1A20)
+            else -> IptvColors.SurfaceRaised
         },
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "epgCellColor"
@@ -86,9 +92,15 @@ internal fun TvProgramCell(
                 scaleY = scale
                 alpha = if (past && !focused) 0.52f else 1f
             }
-            .shadow(if (focused) 22.dp else 4.dp, RoundedCornerShape(10.dp), clip = false)
-            .clip(RoundedCornerShape(10.dp))
+            .shadow(if (focused) 22.dp else 0.dp, RoundedCornerShape(12.dp), clip = false)
+            .clip(RoundedCornerShape(12.dp))
             .background(background)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else IptvColors.Divider, RoundedCornerShape(12.dp))
+            // Horizon: το πρόγραμμα με focus παίρνει τη γραμμή-ορίζοντα στο κάτω μέρος.
+            .drawWithContent {
+                drawContent()
+                if (focused) drawHorizon(size.width * 0.08f, size.width * 0.92f, size.height - 2.dp.toPx())
+            }
             .clickable(onClick = onClick)
             .padding(horizontal = 13.dp, vertical = 10.dp)
     ) {
@@ -98,7 +110,7 @@ internal fun TvProgramCell(
                 .background(
                     Brush.radialGradient(
                         listOf(
-                            if (focused) Color.White.copy(alpha = 0.14f) else IptvColors.Primary.copy(alpha = if (live) 0.12f else 0f),
+                            IptvColors.Primary.copy(alpha = if (live) 0.14f else 0f),
                             Color.Transparent
                         ),
                         radius = 280f
@@ -109,8 +121,8 @@ internal fun TvProgramCell(
             Text(
                 programme.title,
                 color = Color.White,
-                fontSize = if (focused) 13.sp else 12.sp,
-                fontWeight = if (focused || live) FontWeight.ExtraBold else FontWeight.SemiBold,
+                fontSize = if (focused) 15.sp else 14.sp,
+                fontWeight = if (focused || live) FontWeight.Bold else FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -119,23 +131,16 @@ internal fun TvProgramCell(
                 Text(
                     epgTimeRange(programme),
                     color = Color.White.copy(alpha = 0.62f),
-                    fontSize = 9.sp
+                    fontSize = 11.sp
                 )
                 if (live) {
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.epg_live), color = IptvColors.Primary, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.epg_live), color = IptvColors.Glow, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
             if (live) {
                 Spacer(Modifier.height(7.dp))
-                Box(Modifier.fillMaxWidth().height(2.dp).background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(99.dp))) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth(epgProgress(programme, nowMs))
-                            .fillMaxHeight()
-                            .background(IptvColors.Primary, RoundedCornerShape(99.dp))
-                    )
-                }
+                StreamingProgress(epgProgress(programme, nowMs), Modifier.fillMaxWidth())
             }
         }
         if (state == EpgProgramVisualState.Selected) {
@@ -162,24 +167,18 @@ internal fun TvCurrentTimeIndicator(
     if (showLabel) {
         Box(
             Modifier
-                .absoluteOffset(x = lineX - 24.dp)
-                .width(50.dp)
+                .absoluteOffset(x = lineX - 45.dp)
+                .width(92.dp)
                 .height(height)
                 .zIndex(12f)
         ) {
-            Box(
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .width(2.dp)
-                    .fillMaxHeight()
-                    .shadow(10.dp, RoundedCornerShape(99.dp))
-                    .background(IptvColors.Primary)
-            )
+            NowLine(Modifier.align(Alignment.TopCenter).fillMaxHeight())
             Text(
-                epgTime(nowMs),
+                epgUpper(stringResource(R.string.epg_now_marker, epgTime(nowMs))),
                 color = Color.White,
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Black,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(4.dp))
@@ -188,14 +187,34 @@ internal fun TvCurrentTimeIndicator(
             )
         }
     } else {
-        Box(
+        NowLine(
             Modifier
-                .absoluteOffset(x = lineX)
-                .width(2.dp)
+                .absoluteOffset(x = lineX - 4.dp)
                 .height(height)
-                .shadow(10.dp, RoundedCornerShape(99.dp))
-                .background(IptvColors.Primary)
                 .zIndex(12f)
         )
     }
 }
+
+/** Η γραμμή-ορίζοντας κάθετα: η τρέχουσα ώρα, κόκκινη με λάμψη. */
+@Composable
+private fun NowLine(modifier: Modifier = Modifier) {
+    Canvas(modifier.width(10.dp)) {
+        val x = size.width / 2f
+        drawLine(
+            brush = Brush.verticalGradient(listOf(Color.Transparent, IptvColors.Primary.copy(alpha = 0.45f), Color.Transparent)),
+            start = androidx.compose.ui.geometry.Offset(x, 0f),
+            end = androidx.compose.ui.geometry.Offset(x, size.height),
+            strokeWidth = Horizon.Glow.toPx(),
+        )
+        drawLine(
+            brush = Brush.verticalGradient(listOf(IptvColors.Primary, IptvColors.Glow, IptvColors.Primary)),
+            start = androidx.compose.ui.geometry.Offset(x, 0f),
+            end = androidx.compose.ui.geometry.Offset(x, size.height),
+            strokeWidth = Horizon.Line.toPx(),
+        )
+    }
+}
+
+private fun epgUpper(text: String): String =
+    java.text.Normalizer.normalize(text.uppercase(), java.text.Normalizer.Form.NFD).replace("\u0301", "")

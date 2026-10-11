@@ -40,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.border
+import com.prelude.iptv.ui.AppFonts
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
 import com.prelude.iptv.R
@@ -125,8 +127,8 @@ private fun TvEpgDockHeader(
         verticalAlignment = Alignment.Top
     ) {
         Column {
-            Text(stringResource(R.string.epg_title), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
-            Text(stringResource(R.string.epg_dpad_instruction), color = IptvColors.TextTertiary, fontSize = 9.sp, letterSpacing = 0.7.sp)
+            Text(stringResource(R.string.epg_title), color = Color.White, fontFamily = AppFonts.Display, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.epg_dpad_instruction), color = IptvColors.TextTertiary, fontSize = 11.sp, letterSpacing = 0.5.sp)
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -136,7 +138,7 @@ private fun TvEpgDockHeader(
             TvDockTool(onClick = onJumpToNow) {
                 Icon(Icons.Default.MyLocation, stringResource(R.string.epg_tab_now), tint = IptvColors.Primary, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.epg_tab_now), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.epg_tab_now), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
             TvDockTool(onClick = { onShiftTimeline(30) }) {
                 Icon(Icons.Default.ChevronRight, stringResource(R.string.epg_shift_forward_30), tint = Color.White, modifier = Modifier.size(18.dp))
@@ -152,9 +154,10 @@ private fun TvDockTool(
 ) {
     Row(
         Modifier
-            .height(31.dp)
+            .height(34.dp)
             .clip(RoundedCornerShape(99.dp))
-            .background(Color.White.copy(alpha = 0.08f))
+            .background(IptvColors.SurfaceRaised)
+            .border(1.dp, IptvColors.Divider, RoundedCornerShape(99.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +188,7 @@ private fun TvTimelineHeader(
                             Text(
                                 epgTime(window.startMs + minute * 60_000L),
                                 color = if (major) Color.White.copy(alpha = 0.82f) else IptvColors.TextTertiary,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = if (major) FontWeight.Bold else FontWeight.Medium,
                                 modifier = Modifier.padding(start = 10.dp)
                             )
@@ -222,7 +225,10 @@ private fun TvEpgChannelRow(
         Modifier
             .fillMaxWidth()
             .height(TvRowHeight)
-            .background(if (selected) Color.White.copy(alpha = 0.035f) else Color.Transparent),
+            .background(
+                if (selected) Brush.horizontalGradient(listOf(IptvColors.Primary.copy(alpha = 0.10f), Color.Transparent))
+                else Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent))
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
@@ -233,20 +239,20 @@ private fun TvEpgChannelRow(
                 .padding(start = 36.dp, end = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            EpgChannelLogo(channel, Modifier.size(51.dp), selected = selected)
+            EpgChannelLogo(channel, Modifier.size(51.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     channel.name,
                     color = if (selected) Color.White else IptvColors.TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (channel.group.isNotBlank()) {
                     Spacer(Modifier.height(3.dp))
-                    Text(channel.group, color = IptvColors.TextTertiary, fontSize = 8.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(channel.group, color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }

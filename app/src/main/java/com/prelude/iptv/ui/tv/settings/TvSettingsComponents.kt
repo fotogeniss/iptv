@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.design.horizonBelow
 import com.prelude.iptv.data.PlaylistType
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
@@ -62,40 +63,60 @@ internal fun TvSettingsNavItem(
     page: SettingsPage,
     icon: ImageVector,
     selected: Boolean,
-    expanded: Boolean = true,
+    value: String? = null,
     focusRequester: FocusRequester? = null,
     onClick: () -> Unit
 ) {
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
-    val scale by animateFloatAsState(
-        if (focused) motionScale(1.025f) else 1f,
+    val horizonAlpha by animateFloatAsState(
+        if (focused) 1f else 0f,
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
-        label = "settingsNav"
+        label = "settingsNavHorizon"
     )
+    val shape = RoundedCornerShape(14.dp)
     val bg = when {
-        focused -> Color.White
-        selected -> Color.White.copy(alpha = 0.09f)
+        focused -> IptvColors.SurfaceSelected
+        selected -> IptvColors.SurfaceRaised
         else -> Color.Transparent
     }
-    val fg = if (focused) Color.Black else if (selected) Color.White else IptvColors.TextSecondary
+    val fg = if (focused || selected) IptvColors.TextPrimary else IptvColors.TextSecondary
 
+    // Horizon: η επιλεγμένη κατηγορία έχει ανοιχτή επιφάνεια, αυτή με το focus
+    // επιπλέον τη γραμμή-ορίζοντα από κάτω. Δίπλα φαίνεται η τρέχουσα τιμή.
     Row(
         Modifier.fillMaxWidth()
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            .scale(scale)
-            .clip(RoundedCornerShape(11.dp))
+            .horizonBelow(horizonAlpha, gap = 4.dp)
+            .clip(shape)
             .background(bg)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else Color.Transparent, shape)
             .clickable(interactionSource = source, indication = null, onClick = onClick)
             .focusable(interactionSource = source)
-            .padding(horizontal = 14.dp, vertical = 13.dp),
-        horizontalArrangement = if (expanded) Arrangement.Start else Arrangement.Center,
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, null, tint = fg, modifier = Modifier.size(20.dp))
-        if (expanded) {
-            Spacer(Modifier.width(12.dp))
-            Text(stringResource(page.labelRes()), color = fg, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Icon(icon, null, tint = fg, modifier = Modifier.size(21.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(
+            stringResource(page.labelRes()),
+            color = fg,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        if (!value.isNullOrBlank()) {
+            Spacer(Modifier.width(8.dp))
+            Text(
+                value,
+                color = IptvColors.TextTertiary,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(0.7f, fill = false)
+            )
         }
     }
 }
@@ -119,9 +140,11 @@ internal fun TvSettingsSourceCard(
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "sourceScale"
     )
+    val sourceHorizon by animateFloatAsState(if (focused) 1f else 0f, label = "sourceHorizon")
 
     Column(
         Modifier.width(278.dp).height(214.dp)
+            .horizonBelow(sourceHorizon, gap = 6.dp)
             .scale(scale)
             .clip(RoundedCornerShape(StreamingRadius.Panel))
             .background(
@@ -208,8 +231,10 @@ internal fun TvAddSourceCard(onClick: () -> Unit) {
         tween(motionDuration(Motion.Focus), easing = Motion.StandardEasing),
         label = "addSource"
     )
+    val addHorizon by animateFloatAsState(if (focused) 1f else 0f, label = "addSourceHorizon")
     Column(
         Modifier.width(250.dp).height(214.dp)
+            .horizonBelow(addHorizon, gap = 6.dp)
             .scale(scale)
             .clip(RoundedCornerShape(StreamingRadius.Panel))
             .background(Color.White.copy(alpha = if (focused) 0.1f else 0.035f))

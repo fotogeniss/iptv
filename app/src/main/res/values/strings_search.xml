@@ -46,4 +46,9 @@
         <item quantity="one">%1$d τίτλος</item>
         <item quantity="other">%1$d τίτλοι</item>
     </plurals>
+
+    <!-- Horizon search -->
+    <string name="search_quick_access">Γρήγορη πρόσβαση</string>
+    <string name="search_see_all">Όλα %1$d</string>
+    <string name="search_remove_recent">Αφαίρεση από τις πρόσφατες</string>
 </resources>

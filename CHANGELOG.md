@@ -22,6 +22,48 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.98.0 - versionCode 170
+
+Horizon for Settings, Search and the programme guide, approved in
+`prototypes/redesign_horizon_screens.html` (2026-10-12).
+
+- **Mobile settings.** A profile card with the active source at the top, a
+  search box that filters every setting by title or description (accent
+  insensitive), and four groups in a new order: playback & appearance, content,
+  account & security, app. Each row shows its current value on the right, so
+  you no longer need to open a setting to see it. The duplicate status cards and
+  the notification bell that only showed a toast are gone.
+- **Mobile player settings.** Buffer and subtitle size are segmented buttons
+  instead of pickers, toggles apply at once, and the subtitle size has a live
+  preview. Sub-screen headers use the display font, left aligned.
+- **TV settings.** The left column stays open with each category's current
+  value; focus uses the light line instead of a white fill, in the column, the
+  rows and the source cards.
+- **Mobile search.** Before typing: recent searches (removable one by one) or
+  popular ones, and quick-access tiles for Live, Movies, Series and My list with
+  their counts. While typing: results grouped by Live / Movies / Series with an
+  "All N" link, the matching part of the title highlighted, live channels show
+  what is on now with progress, and the filter chips carry result counts.
+- **TV search.** Same counts on the filters; keys, suggestions, filters, the
+  featured card and results use the Horizon focus line; the primary action is red.
+- **Mobile guide.** A vertical "Now / Next" list per channel instead of a grid
+  that needed sideways scrolling, with a day strip (yesterday to five days
+  ahead), Now / Later / Movies / Sports filters and a card for the selected
+  channel (Watch, Full day). Full day opens that channel's whole schedule,
+  starting at the current programme, with past programmes dimmed. Tapping a
+  programme keeps the existing behaviour: play, catch-up or reminder.
+- **TV guide.** The "NOW" line is the red light line with a glow and a
+  "NOW hh:mm" label; the focused programme gets the line along its bottom edge;
+  titles use the display font and the Watch button is red.
+- Shared: `ui/design/HorizonSearchField.kt` (search field and accent-insensitive
+  match highlighting).
+- **Fix: thumbnail of the previous channel.** On mobile, picking a channel from
+  the list while the player was collapsed, when the new channel failed to play,
+  left the last frame of the previous channel as a small picture in the top-left
+  corner (libVLC does not lay out its surface again for a stream that never
+  starts). The error state now covers the video area with black, and the error
+  text sits below the play button instead of under it.
+
 ## 1.97.0 - versionCode 169
 
 Horizon redesign, approved in `prototypes/redesign_horizon.html` (2026-10-12).

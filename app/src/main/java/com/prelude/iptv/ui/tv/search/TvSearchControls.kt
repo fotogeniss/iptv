@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.design.horizonBelow
+import androidx.compose.foundation.border
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.IptvColors
 import androidx.compose.animation.core.tween
@@ -79,25 +81,26 @@ private fun TvSearchEntrySurface(query: String, onClick: () -> Unit, modifier: M
         label = "tvSearchEntryScale"
     )
     Row(
-        modifier.height(58.dp).graphicsLayer { scaleX = scale; scaleY = scale }
-            .shadow(if (focused) 22.dp else 5.dp, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (focused) Color.White else IptvColors.Surface.copy(alpha = .88f))
+        modifier.height(58.dp)
+            .horizonBelow(if (focused) 1f else 0f, widthFraction = 0.8f, gap = 4.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (focused) IptvColors.SurfaceSelected else IptvColors.Surface)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else IptvColors.Divider, RoundedCornerShape(16.dp))
             .onFocusChanged { focused = it.isFocused || it.hasFocus }
             .clickable(onClick = onClick).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Search, null, tint = if (focused) Color.Black else IptvColors.TextSecondary, modifier = Modifier.size(22.dp))
+        Icon(Icons.Default.Search, null, tint = IptvColors.TextSecondary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(11.dp))
         Text(
             query.ifBlank { stringResource(R.string.search_field_hint) },
             color = when {
-                focused -> Color.Black
                 query.isBlank() -> IptvColors.TextTertiary
-                else -> Color.White
+                else -> IptvColors.TextPrimary
             },
             fontSize = 16.sp,
-            fontWeight = if (query.isBlank()) FontWeight.SemiBold else FontWeight.ExtraBold,
+            fontWeight = if (query.isBlank()) FontWeight.Normal else FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -114,12 +117,14 @@ private fun TvRoundAction(onClick: () -> Unit) {
     )
     Box(
         Modifier.size(58.dp).graphicsLayer { scaleX = scale; scaleY = scale }
-            .shadow(if (focused) 20.dp else 4.dp, CircleShape).clip(CircleShape)
-            .background(if (focused) Color.White else IptvColors.Surface.copy(alpha = .88f))
+            .horizonBelow(if (focused) 1f else 0f, gap = 4.dp)
+            .clip(CircleShape)
+            .background(if (focused) IptvColors.SurfaceSelected else IptvColors.Surface)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else IptvColors.Divider, CircleShape)
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = if (focused) Color.Black else Color.White)
+        Icon(Icons.Default.Mic, stringResource(R.string.search_voice), tint = IptvColors.TextPrimary)
     }
 }
 
@@ -184,19 +189,21 @@ private fun TvKeyboardKey(
         label = "tvSearchKeyScale"
     )
     Box(
-        modifier.height(39.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier.height(42.dp)
+            .horizonBelow(if (focused) 1f else 0f, widthFraction = 0.7f, gap = 3.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .then(
                 if (a11yDescription != null) Modifier.semantics {
                     contentDescription = a11yDescription
                 } else Modifier
             )
-            .shadow(if (focused) 15.dp else 0.dp, RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (focused) Color.White else IptvColors.SurfaceRaised.copy(alpha = .88f))
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (focused) IptvColors.SurfaceSelected else IptvColors.Surface)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else IptvColors.Divider, RoundedCornerShape(10.dp))
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(label, color = if (focused) Color.Black else Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+        Text(label, color = IptvColors.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -207,7 +214,7 @@ internal fun TvSearchSuggestions(
 ) {
     if (labels.isEmpty()) return
     Column(Modifier.fillMaxWidth().padding(top = 15.dp)) {
-        Text(stringResource(R.string.search_recent_recommended), color = IptvColors.TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Black)
+        Text(stringResource(R.string.search_recent_recommended), color = IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
         Spacer(Modifier.height(7.dp))
         labels.take(4).forEach { label -> TvSuggestionRow(label) { onSelect(label) } }
     }
@@ -217,14 +224,16 @@ internal fun TvSearchSuggestions(
 private fun TvSuggestionRow(label: String, onClick: () -> Unit) {
     var focused by remember { mutableStateOf(false) }
     Row(
-        Modifier.fillMaxWidth().height(34.dp).clip(RoundedCornerShape(8.dp))
-            .background(if (focused) Color.White else Color.Transparent)
+        Modifier.fillMaxWidth().height(38.dp)
+            .horizonBelow(if (focused) 1f else 0f, gap = 2.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (focused) IptvColors.SurfaceSelected else Color.Transparent)
             .onFocusChanged { focused = it.isFocused || it.hasFocus }.clickable(onClick = onClick)
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("↺", color = if (focused) Color.Black else IptvColors.TextTertiary, fontSize = 12.sp)
+        Text("↺", color = IptvColors.TextTertiary, fontSize = 13.sp)
         Spacer(Modifier.width(9.dp))
-        Text(label, color = if (focused) Color.Black else IptvColors.TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(label, color = if (focused) IptvColors.TextPrimary else IptvColors.TextSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
     }
 }

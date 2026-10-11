@@ -1,7 +1,5 @@
 package com.prelude.iptv.ui.tv.settings
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,7 +60,6 @@ import com.prelude.iptv.billing.effectivePremiumTier
 import com.prelude.iptv.billing.hasQaPremiumOverride
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -70,6 +67,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.AppFonts
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import com.prelude.iptv.ui.IptvColors
 import com.prelude.iptv.BuildConfig
 import com.prelude.iptv.R
@@ -131,58 +132,58 @@ fun TvPremiumSettingsScreen(
         SettingsPage.About to Icons.Default.Info
     )
 
-    Row(
-        modifier.fillMaxSize().background(
-            Brush.radialGradient(
-                colors = listOf(Color(0xFF161821), IptvColors.Background),
-                radius = 1200f
-            )
-        )
-    ) {
-        // Το αριστερό μενού δεν είναι μόνιμα ανοιχτό: μένει στενή μπάρα εικονιδίων
-        // και «ανοίγει» (labels + κείμενα) μόνο όταν πάρει focus, δηλαδή όταν ο
-        // χρήστης πάει τέρμα αριστερά. Κλείνει μόλις το focus γυρίσει στο περιεχόμενο.
-        var railExpanded by remember { mutableStateOf(false) }
-        val railWidth by animateDpAsState(
-            if (railExpanded) 268.dp else 84.dp,
-            tween(220),
-            label = "settingsRailWidth"
-        )
+    val sourcesValue = if (sources.isEmpty()) stringResource(R.string.settings_source_none)
+    else pluralStringResource(R.plurals.settings_source_summary, sources.size, sources.size)
+    val pageValues = mapOf(
+        SettingsPage.Sources to sourcesValue,
+        SettingsPage.Playback to playerLabel,
+        SettingsPage.Appearance to "${(fontScale * 100).toInt()}%",
+        SettingsPage.Account to profileName,
+        SettingsPage.About to version,
+    )
+
+    Row(modifier.fillMaxSize().background(IptvColors.Background)) {
+        // Horizon: δύο στήλες. Αριστερά οι κατηγορίες, πάντα ανοιχτές και με την
+        // τρέχουσα τιμή τους· δεξιά το περιεχόμενο της επιλεγμένης. Με το
+        // τηλεχειριστήριο δεν μπαινοβγαίνεις σε οθόνες.
         Column(
-            Modifier.width(railWidth).fillMaxHeight()
-                .background(Color.Black.copy(alpha = 0.34f))
-                .onFocusChanged { railExpanded = it.hasFocus }
+            Modifier.width(320.dp).fillMaxHeight()
+                .background(IptvColors.Surface)
                 // Scrollable ώστε σε μεγάλη γραμματοσειρά ή με TV overscan τα κάτω
                 // items (Account/About) να μη μένουν κρυμμένα — το D-pad focus τα
                 // φέρνει πάντα στην οθόνη.
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = if (railExpanded) 24.dp else 12.dp, vertical = 28.dp)
+                .padding(horizontal = 20.dp, vertical = 30.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.width(14.dp).height(30.dp).background(IptvColors.Primary))
-                if (railExpanded) {
-                    Spacer(Modifier.width(12.dp))
-                    Text("PRELUDE", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp, maxLines = 1)
-                }
-            }
-            Spacer(Modifier.height(28.dp))
+            Text(
+                stringResource(R.string.settings_title),
+                color = IptvColors.TextPrimary,
+                fontFamily = AppFonts.Display,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 34.sp,
+                maxLines = 1,
+                modifier = Modifier.padding(horizontal = 6.dp)
+            )
+            Spacer(Modifier.height(18.dp))
             Row(
-                Modifier.fillMaxWidth().then(
-                    if (railExpanded)
-                        Modifier.background(Color.White.copy(alpha = 0.045f), androidx.compose.foundation.shape.RoundedCornerShape(14.dp)).padding(12.dp)
-                    else Modifier
-                ),
+                Modifier.fillMaxWidth()
+                    .background(IptvColors.SurfaceRaised, RoundedCornerShape(16.dp))
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(Modifier.width(42.dp).height(42.dp).background(IptvColors.Primary, androidx.compose.foundation.shape.RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                    Text(profileName.take(1).uppercase(), color = Color.White, fontWeight = FontWeight.ExtraBold)
+                Box(
+                    Modifier.size(42.dp).background(
+                        Brush.linearGradient(listOf(Color(0xFF7A2C40), Color(0xFF2A1D3D))),
+                        RoundedCornerShape(13.dp)
+                    ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(profileName.take(1).uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
                 }
-                if (railExpanded) {
-                    Spacer(Modifier.width(10.dp))
-                    Column {
-                        Text(profileName, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, maxLines = 1)
-                        Text(stringResource(R.string.settings_primary_profile), color = IptvColors.TextTertiary, fontSize = 10.sp)
-                    }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(profileName, color = IptvColors.TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, maxLines = 1)
+                    Text(stringResource(R.string.settings_primary_profile), color = IptvColors.TextTertiary, fontSize = 11.sp, maxLines = 1)
                 }
             }
             Spacer(Modifier.height(20.dp))
@@ -191,16 +192,20 @@ fun TvPremiumSettingsScreen(
                     page = item,
                     icon = icon,
                     selected = item == page,
-                    expanded = railExpanded,
+                    value = pageValues[item],
                     focusRequester = if (index == 0) firstFocus else null,
                     onClick = { page = item }
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
             }
-            if (railExpanded) {
-                Spacer(Modifier.height(24.dp))
-                Text(stringResource(R.string.settings_version_environment, version, stringResource(R.string.settings_production)), color = IptvColors.TextTertiary, fontSize = 10.sp, maxLines = 1)
-            }
+            Spacer(Modifier.height(20.dp))
+            Text(
+                stringResource(R.string.settings_version_environment, version, stringResource(R.string.settings_production)),
+                color = IptvColors.TextTertiary,
+                fontSize = 11.sp,
+                maxLines = 1,
+                modifier = Modifier.padding(horizontal = 6.dp)
+            )
         }
 
         Box(Modifier.weight(1f).fillMaxHeight()) {
@@ -271,7 +276,7 @@ private fun TvSourcesPage(
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
                     Text(localizedUppercase(stringResource(R.string.settings_title)), color = IptvColors.TextTertiary, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                    Text(stringResource(R.string.settings_sources_title), color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(stringResource(R.string.settings_sources_title), color = IptvColors.TextPrimary, fontFamily = AppFonts.Display, fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
                     Text(stringResource(R.string.settings_sources_subtitle), color = IptvColors.TextSecondary, fontSize = 13.sp)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

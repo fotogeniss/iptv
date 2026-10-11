@@ -86,4 +86,13 @@
         <item quantity="other">✓ Saved and matched %1$d channels</item>
     </plurals>
     <string name="epg_status_saved_no_matches">⚠ Saved, but it does not match the playlist tvg-id values.</string>
+
+    <!-- Horizon EPG -->
+    <string name="epg_yesterday">Yesterday</string>
+    <string name="epg_all_channels">All channels</string>
+    <string name="epg_then">Next %1$s · %2$s</string>
+    <string name="epg_full_day">Full day</string>
+    <string name="epg_no_guide">No guide data</string>
+    <string name="epg_now_range">Now · %1$s</string>
+    <string name="epg_now_marker">NOW %1$s</string>
 </resources>

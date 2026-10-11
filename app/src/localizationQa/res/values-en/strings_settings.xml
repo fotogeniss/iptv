@@ -219,4 +219,13 @@
     <string name="settings_category_move">Move</string>
     <string name="settings_category_add_group">Add group</string>
     <string name="settings_category_load_failed">Categories could not be loaded.</string>
+    <!-- Horizon: επισκόπηση ρυθμίσεων -->
+    <string name="settings_group_playback">Playback &amp; appearance</string>
+    <string name="settings_group_content">Content</string>
+    <string name="settings_group_app">App</string>
+    <string name="settings_search_hint">Search settings…</string>
+    <string name="settings_search_clear">Clear</string>
+    <string name="settings_search_empty">No setting matches “%1$s”</string>
+    <string name="settings_profile_source">Source: %1$s</string>
+    <string name="settings_subtitle_preview">This is how subtitles will look</string>
 </resources>

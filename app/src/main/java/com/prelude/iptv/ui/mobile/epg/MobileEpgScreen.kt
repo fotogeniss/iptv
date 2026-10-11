@@ -1,29 +1,45 @@
 package com.prelude.iptv.ui.mobile.epg
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
 import com.prelude.iptv.ui.IptvColors
-import com.prelude.iptv.ui.components.epg.epgWindow
-import com.prelude.iptv.ui.components.epg.programmesFor
 import com.prelude.iptv.ui.components.epg.rememberEpgNow
 import com.prelude.iptv.ui.epg.EpgFilter
+import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Locale
 
+/**
+ * Πρόγραμμα (EPG) στο κινητό, Horizon (prototypes/redesign_horizon_screens.html, ενότητα 3).
+ *
+ * Κάθετη λίστα «Τώρα / Μετά» ανά κανάλι, χωρίς οριζόντιο σύρσιμο. Πάνω οι ημέρες
+ * και τα φίλτρα, μετά η κάρτα του επιλεγμένου καναλιού. Από κάθε κανάλι ανοίγει
+ * το πρόγραμμα όλης της ημέρας του.
+ */
 @Composable
 fun MobileEpgScreen(
     channels: List<Channel>,
@@ -33,119 +49,131 @@ fun MobileEpgScreen(
     bottomContentPadding: Dp = 0.dp
 ) {
     val nowMs = rememberEpgNow()
-    val window = remember(nowMs / 1_800_000L) { epgWindow(nowMs) }
-    val programmes = remember(channels, window) { channels.map { programmesFor(it, window) } }
-    val initialChannel = remember(channels, programmes, nowMs) {
-        programmes.indexOfFirst { row -> row.any { nowMs in it.startMs until it.stopMs } }
-            .takeIf { it >= 0 }
-            ?: programmes.indexOfFirst { it.isNotEmpty() }.coerceAtLeast(0)
+    val todayStart = remember(nowMs / HOUR_MS) { startOfDay(nowMs) }
+    var dayOffset by rememberSaveable { mutableIntStateOf(0) }
+    var filter by remember { mutableStateOf(EpgFilter.Now) }
+    var dayChannel by remember { mutableStateOf<Channel?>(null) }
+    var selectedKey by remember { mutableStateOf<String?>(null) }
+    // Σε άλλη ημέρα κοιτάμε την ίδια ώρα του ρολογιού εκείνης της ημέρας.
+    val anchorMs = todayStart + dayOffset * DAY_MS + (nowMs - todayStart)
+    val rows = remember(channels, anchorMs / 60_000L, filter) {
+        channels.mapNotNull { mobileEpgRow(it, anchorMs, filter) }
     }
-    val initialProgramme = remember(initialChannel, programmes, nowMs) {
-        programmes.getOrNull(initialChannel).orEmpty()
-            .indexOfFirst { nowMs in it.startMs until it.stopMs }
-            .coerceAtLeast(0)
-    }
-
-    var selectedChannelIndex by remember(channels, window) { mutableStateOf(initialChannel) }
-    var selectedProgrammeIndex by remember(channels, window) { mutableStateOf(initialProgramme) }
-    var selectedTab by remember { mutableStateOf(EpgFilter.Now) }
-    var selectedTimeMs by remember(window) { mutableStateOf(nowMs) }
-
-    val selectedChannel = channels.getOrNull(selectedChannelIndex) ?: channels.firstOrNull()
-    val selectedRow = programmes.getOrNull(selectedChannelIndex).orEmpty()
-    val selectedProgramme = selectedRow.getOrNull(selectedProgrammeIndex) ?: selectedRow.firstOrNull()
-    val nextProgramme = selectedProgramme?.let { selectedRow.getOrNull(selectedRow.indexOf(it) + 1) }
+    val selected = rows.firstOrNull { it.key == selectedKey }
+        ?: rows.firstOrNull { it.primary != null && anchorMs in it.primary.startMs until it.primary.stopMs }
+        ?: rows.firstOrNull()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(channels.size, selectedChannelIndex) {
-        if (channels.isNotEmpty()) {
-            selectedChannelIndex = selectedChannelIndex.coerceIn(0, channels.lastIndex)
-        }
+    dayChannel?.let { channel ->
+        BackHandler { dayChannel = null }
+        MobileEpgChannelDay(
+            channel = channel,
+            todayStart = todayStart,
+            nowMs = nowMs,
+            initialDayOffset = dayOffset,
+            onBack = { dayChannel = null },
+            onWatch = { onChannelClick(channel) },
+            onProgramClick = { programme -> onProgramClick(channel, programme) },
+            bottomContentPadding = bottomContentPadding,
+        )
+        return
     }
 
-    if (selectedChannel == null) {
+    if (channels.isEmpty()) {
         MobileEpgEmptyState(onBack)
         return
     }
 
-    Box(Modifier.fillMaxSize().background(IptvColors.Background)) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = bottomContentPadding)
-        ) {
-            item(key = "hero") {
-                MobileEpgHero(
-                    channel = selectedChannel,
-                    programme = selectedProgramme,
-                    nextProgramme = nextProgramme,
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize().background(IptvColors.Background),
+        contentPadding = PaddingValues(bottom = bottomContentPadding + 16.dp)
+    ) {
+        item(key = "epg-header") {
+            MobileEpgTopBar(title = stringResource(R.string.epg_title), onBack = onBack)
+        }
+        item(key = "epg-days") {
+            MobileEpgDayStrip(todayStart = todayStart, selectedOffset = dayOffset, onSelect = { dayOffset = it })
+        }
+        item(key = "epg-filters") {
+            MobileEpgFilterChips(selected = filter, onSelect = { filter = it })
+        }
+        selected?.let { row ->
+            item(key = "epg-card") {
+                MobileEpgNowCard(
+                    row = row,
                     nowMs = nowMs,
-                    onBack = onBack,
-                    onWatch = {
-                        selectedProgramme?.let { onProgramClick(selectedChannel, it) }
-                            ?: onChannelClick(selectedChannel)
-                    },
-                    onChannelClick = { onChannelClick(selectedChannel) }
+                    onWatch = { onChannelClick(row.channel) },
+                    onFullDay = { dayChannel = row.channel },
                 )
             }
-            item(key = "guideHeader") {
-                MobileEpgGuideHeader(
-                    window = window,
-                    nowMs = nowMs,
-                    selectedTab = selectedTab,
-                    selectedTimeMs = selectedTimeMs,
-                    onTabSelected = { selectedTab = it },
-                    onTimeSelected = { timeMs ->
-                        selectedTimeMs = timeMs
-                        selectedProgrammeIndex = nearestMobileProgramme(selectedRow, timeMs)
-                    }
+        }
+        item(key = "epg-all-label") {
+            MobileEpgSectionLabel(stringResource(R.string.epg_all_channels))
+        }
+        if (rows.isEmpty()) {
+            item(key = "epg-empty-filter") {
+                Text(
+                    stringResource(R.string.epg_no_program_filter),
+                    color = IptvColors.TextTertiary,
+                    fontSize = 14.sp,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 20.dp)
                 )
             }
-            itemsIndexed(
-                items = channels,
-                key = { _, channel -> channel.tvgId + channel.url }
-            ) { channelIndex, channel ->
-                MobileEpgChannelCard(
-                    channel = channel,
-                    channelIndex = channelIndex,
-                    programmes = filteredMobileProgrammes(
-                        channel = channel,
-                        programmes = programmes.getOrNull(channelIndex).orEmpty(),
-                        tab = selectedTab,
-                        nowMs = nowMs
-                    ),
-                    nowMs = nowMs,
-                    selectedChannelIndex = selectedChannelIndex,
-                    selectedProgrammeIndex = selectedProgrammeIndex,
-                    onChannelSelected = {
-                        selectedChannelIndex = channelIndex
-                        selectedProgrammeIndex = nearestMobileProgramme(
-                            programmes.getOrNull(channelIndex).orEmpty(),
-                            selectedTimeMs
-                        )
-                    },
-                    onOpenChannel = { onChannelClick(channel) },
-                    onProgramSelected = { programmeIndex ->
-                        selectedChannelIndex = channelIndex
-                        selectedProgrammeIndex = programmeIndex
-                    },
-                    onProgramAction = { programmeIndex ->
-                        programmes.getOrNull(channelIndex)?.getOrNull(programmeIndex)?.let { programme ->
-                            onProgramClick(channel, programme)
-                        }
-                    }
-                )
-            }
-            item(key = "guideFooter") { MobileEpgGuideFooter() }
+        }
+        items(rows, key = { "epg-row:${it.key}" }) { row ->
+            MobileEpgChannelRow(
+                row = row,
+                selected = row.key == selected?.key,
+                nowMs = nowMs,
+                onSelect = {
+                    selectedKey = row.key
+                    // Η κάρτα είναι μετά την κεφαλίδα, τις ημέρες και τα φίλτρα.
+                    scope.launch { listState.animateScrollToItem(3) }
+                },
+                onOpenDay = { dayChannel = row.channel },
+            )
         }
     }
 }
 
-private fun nearestMobileProgramme(programmes: List<EpgManager.Prog>, anchorMs: Long): Int {
-    if (programmes.isEmpty()) return 0
-    val containing = programmes.indexOfFirst { anchorMs in it.startMs until it.stopMs }
-    if (containing >= 0) return containing
-    return programmes.indices.minByOrNull { index ->
-        kotlin.math.abs(programmes[index].startMs - anchorMs)
-    } ?: 0
+/** Ένα κανάλι στη λίστα: τι παίζει στο [anchor] (ή τι έρχεται) και τι ακολουθεί. */
+internal class MobileEpgRow(
+    val channel: Channel,
+    val primary: EpgManager.Prog?,
+    val next: EpgManager.Prog?,
+) {
+    val key: String = channel.tvgId + channel.url
 }
+
+internal fun mobileEpgRow(channel: Channel, anchorMs: Long, filter: EpgFilter): MobileEpgRow? {
+    val programmes = if (channel.tvgId.isBlank()) emptyList()
+    else EpgManager.programmes(channel.tvgId, anchorMs - 4 * HOUR_MS, anchorMs + 8 * HOUR_MS)
+    val current = programmes.indexOfFirst { anchorMs in it.startMs until it.stopMs }
+    val upcoming = programmes.indexOfFirst { it.startMs > anchorMs }
+    val (primary, next) = when {
+        filter == EpgFilter.Later -> programmes.getOrNull(upcoming) to programmes.getOrNull(upcoming + 1)
+        current >= 0 -> programmes[current] to programmes.getOrNull(current + 1)
+        else -> null to programmes.getOrNull(upcoming)
+    }
+    if (filter == EpgFilter.Movies || filter == EpgFilter.Sports) {
+        val terms = if (filter == EpgFilter.Movies) movieTerms else sportsTerms
+        val haystack = "${channel.name} ${channel.group} ${channel.genre} ${primary?.title.orEmpty()}"
+            .lowercase(Locale.ROOT)
+        if (terms.none(haystack::contains)) return null
+    }
+    if (filter == EpgFilter.Later && primary == null) return null
+    return MobileEpgRow(channel, primary, next)
+}
+
+internal const val HOUR_MS = 3_600_000L
+internal const val DAY_MS = 24 * HOUR_MS
+
+internal fun startOfDay(ms: Long): Long = Calendar.getInstance().apply {
+    timeInMillis = ms
+    set(Calendar.HOUR_OF_DAY, 0)
+    set(Calendar.MINUTE, 0)
+    set(Calendar.SECOND, 0)
+    set(Calendar.MILLISECOND, 0)
+}.timeInMillis

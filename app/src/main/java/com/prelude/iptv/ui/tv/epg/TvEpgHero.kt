@@ -37,6 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.design.HorizonLine
+import com.prelude.iptv.ui.StreamingProgress
+import com.prelude.iptv.ui.AppFonts
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.EpgManager
 import com.prelude.iptv.R
@@ -65,22 +68,27 @@ internal fun TvEpgTopBar(
             Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.epg_back), tint = Color.White)
         }
         Spacer(Modifier.width(8.dp))
-        Text(
-            "PRELUDE",
-            color = IptvColors.Primary,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = (-0.8).sp
-        )
+        Column {
+            Text(
+                "PRELUDE+",
+                color = IptvColors.TextPrimary,
+                fontFamily = AppFonts.Display,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 5.sp
+            )
+            Spacer(Modifier.height(5.dp))
+            HorizonLine(Modifier.width(120.dp))
+        }
         Spacer(Modifier.width(34.dp))
         Text(stringResource(R.string.epg_home), color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(24.dp))
         Text(stringResource(R.string.epg_live_tv), color = IptvColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(24.dp))
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(stringResource(R.string.epg_title), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.epg_title), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            Box(Modifier.width(52.dp).height(2.dp).background(Color.White, RoundedCornerShape(99.dp)))
+            HorizonLine(Modifier.width(52.dp))
         }
         Spacer(Modifier.weight(1f))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -130,9 +138,9 @@ internal fun TvEpgHero(
                         } else {
                             stringResource(R.string.epg_guide_channel, heroChannel.name)
                         },
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
+                        color = IptvColors.Glow,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 1.5.sp
                     )
                 }
@@ -140,10 +148,10 @@ internal fun TvEpgHero(
                 Text(
                     heroProgramme?.title ?: heroChannel.name,
                     color = Color.White,
-                    fontSize = 46.sp,
-                    lineHeight = 48.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1.6).sp,
+                    fontFamily = AppFonts.Display,
+                    fontSize = 50.sp,
+                    lineHeight = 50.sp,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -154,7 +162,7 @@ internal fun TvEpgHero(
                 ) {
                     val isLive = heroProgramme != null && nowMs in heroProgramme.startMs until heroProgramme.stopMs
                     if (isLive) {
-                        Text(stringResource(R.string.epg_live), color = IptvColors.Success, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                        Text(stringResource(R.string.epg_live), color = IptvColors.Glow, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                     }
                     heroProgramme?.let {
                         Text(epgTimeRange(it), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -177,15 +185,15 @@ internal fun TvEpgHero(
                 }
                 if (heroProgramme != null && nowMs in heroProgramme.startMs until heroProgramme.stopMs) {
                     Spacer(Modifier.height(14.dp))
-                    EpgProgressBar(epgProgress(heroProgramme, nowMs), Modifier.width(360.dp))
+                    StreamingProgress(epgProgress(heroProgramme, nowMs), Modifier.width(360.dp))
                 }
                 Spacer(Modifier.height(20.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = onWatch,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
-                        shape = RoundedCornerShape(7.dp),
-                        modifier = Modifier.height(44.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = IptvColors.Primary, contentColor = Color.White),
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.height(46.dp)
                     ) {
                         Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(21.dp))
                         Spacer(Modifier.width(7.dp))
@@ -194,7 +202,7 @@ internal fun TvEpgHero(
                     if (heroNextProgramme != null) {
                         Column(
                             Modifier
-                                .clip(RoundedCornerShape(7.dp))
+                                .clip(RoundedCornerShape(14.dp))
                                 .background(Color.White.copy(alpha = 0.10f))
                                 .padding(horizontal = 14.dp, vertical = 7.dp)
                         ) {

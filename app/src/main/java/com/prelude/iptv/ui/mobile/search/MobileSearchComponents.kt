@@ -42,6 +42,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.AppFonts
+import com.prelude.iptv.ui.design.highlightMatch
+import com.prelude.iptv.ui.components.epg.epgProgress
+import com.prelude.iptv.data.EpgManager
+import androidx.compose.ui.res.pluralStringResource
+import com.prelude.iptv.ui.icons.filled.Search
+import com.prelude.iptv.ui.icons.filled.History
+import com.prelude.iptv.ui.icons.filled.Close
 import coil.compose.AsyncImage
 import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
@@ -94,7 +102,7 @@ internal fun MobileSearchFeatured(
                     R.string.search_featured,
                     localizedUppercase(localizedSearchCategory(SearchUiPolicy.category(channel))),
                 ),
-                color = IptvColors.Success,
+                color = IptvColors.Glow,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black
             )
@@ -102,8 +110,10 @@ internal fun MobileSearchFeatured(
             Text(
                 channel.name,
                 color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
+                fontSize = 28.sp,
+                lineHeight = 29.sp,
+                fontFamily = AppFonts.Display,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -119,13 +129,13 @@ internal fun MobileSearchFeatured(
             Spacer(Modifier.height(13.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                 Row(
-                    Modifier.height(42.dp).clip(RoundedCornerShape(9.dp)).background(Color.White)
-                        .clickable(onClick = onOpen).padding(horizontal = 15.dp),
+                    Modifier.height(42.dp).clip(RoundedCornerShape(14.dp)).background(IptvColors.Primary)
+                        .clickable(onClick = onOpen).padding(start = 12.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.PlayArrow, null, tint = Color.White, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(5.dp))
-                    Text(stringResource(R.string.search_open), color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.search_open), color = Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                 }
                 IconButton(
                     onClick = onToggleFavorite,
@@ -204,6 +214,234 @@ internal fun MobileSearchResultCard(
             fontSize = 10.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/** Επικεφαλίδα ομάδας: τίτλος, προαιρετικός μετρητής και ενέργεια δεξιά. */
+@Composable
+internal fun MobileSearchSectionHeader(
+    title: String,
+    count: Int? = null,
+    seeAll: Int? = null,
+    onSeeAll: () -> Unit = {},
+    actionLabel: String? = null,
+    onAction: () -> Unit = {},
+) {
+    Row(
+        Modifier.fillMaxWidth().padding(start = 22.dp, end = 12.dp, top = 20.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            upperNoAccents(title),
+            color = IptvColors.TextTertiary,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.4.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        when {
+            seeAll != null -> Text(
+                stringResource(R.string.search_see_all, seeAll),
+                color = IptvColors.TextSecondary,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onSeeAll).padding(10.dp)
+            )
+            actionLabel != null -> Text(
+                actionLabel,
+                color = IptvColors.TextSecondary,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onAction).padding(10.dp)
+            )
+            count != null -> Text(
+                pluralStringResource(R.plurals.search_title_count, count, count),
+                color = IptvColors.TextTertiary,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+    }
+}
+
+private fun upperNoAccents(text: String): String =
+    java.text.Normalizer.normalize(text.uppercase(), java.text.Normalizer.Form.NFD).replace("́", "")
+
+/** Γραμμή αποτελέσματος: εικόνα, τίτλος με τονισμένο τον όρο, τι παίζει τώρα ή στοιχεία. */
+@Composable
+internal fun MobileSearchResultRow(
+    channel: Channel,
+    query: String,
+    nowMs: Long,
+    favorite: Boolean,
+    progress: Float?,
+    onOpen: () -> Unit,
+    onToggleFavorite: () -> Unit,
+) {
+    val live = channel.kind == "live"
+    val now = remember(channel.tvgId, live, nowMs) {
+        if (live && channel.tvgId.isNotBlank()) EpgManager.nowNext(channel.tvgId, nowMs).first else null
+    }
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onOpen).padding(horizontal = 18.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .then(if (live) Modifier.size(52.dp) else Modifier.size(width = 56.dp, height = 80.dp))
+                .clip(RoundedCornerShape(if (live) 14.dp else 12.dp))
+                .background(IptvColors.SurfaceSelected),
+            contentAlignment = Alignment.Center
+        ) {
+            if (channel.logo.isNotBlank()) {
+                AsyncImage(
+                    channel.logo,
+                    channel.name,
+                    Modifier.fillMaxSize().then(if (live) Modifier.padding(6.dp) else Modifier),
+                    contentScale = if (live) ContentScale.Fit else ContentScale.Crop
+                )
+            } else {
+                Text(
+                    channel.name.take(3).uppercase(),
+                    color = IptvColors.TextPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                highlightMatch(channel.name, query),
+                color = IptvColors.TextPrimary,
+                fontSize = 14.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(2.dp))
+            if (now != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(6.dp).background(IptvColors.Primary, CircleShape))
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        stringResource(R.string.live_label),
+                        color = IptvColors.Glow,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.8.sp
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(now.title, color = IptvColors.TextSecondary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Spacer(Modifier.height(6.dp))
+                StreamingProgress(epgProgress(now, nowMs), Modifier.fillMaxWidth(0.9f))
+            } else {
+                val metaLine = SearchUiPolicy.metaLine(channel)
+                Text(
+                    metaLine.ifBlank { localizedSearchCategory(SearchUiPolicy.category(channel)) },
+                    color = IptvColors.TextTertiary,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                progress?.let {
+                    Spacer(Modifier.height(6.dp))
+                    StreamingProgress(it, Modifier.fillMaxWidth(0.9f))
+                }
+            }
+        }
+        IconButton(onClick = onToggleFavorite, modifier = Modifier.size(40.dp)) {
+            Icon(
+                if (favorite) Icons.Default.Check else Icons.Default.Add,
+                if (favorite) stringResource(R.string.search_remove_from_list)
+                else stringResource(R.string.search_add_to_list),
+                tint = if (favorite) IptvColors.TextPrimary else IptvColors.TextTertiary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+/** Πρόσφατη (ή δημοφιλής) αναζήτηση: πατάς και ξαναψάχνει, το Χ τη σβήνει. */
+@Composable
+internal fun MobileRecentSearchRow(
+    label: String,
+    recent: Boolean,
+    onSelect: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onSelect).padding(start = 22.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            if (recent) Icons.Default.History else Icons.Default.Search,
+            null,
+            tint = IptvColors.TextTertiary,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            label,
+            color = IptvColors.TextPrimary,
+            fontSize = 14.5.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(vertical = 8.dp)
+        )
+        if (recent) {
+            IconButton(onClick = onRemove, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.Close, stringResource(R.string.search_remove_recent), tint = IptvColors.TextTertiary, modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
+
+/** Τέσσερα πλακίδια για να πας κατευθείαν σε μια ενότητα, με το πλήθος τους. */
+@Composable
+internal fun MobileQuickAccessGrid(
+    liveCount: Int,
+    movieCount: Int,
+    seriesCount: Int,
+    myListCount: Int,
+    onLive: () -> Unit,
+    onMovies: () -> Unit,
+    onSeries: () -> Unit,
+    onMyList: () -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            QuickTile(stringResource(R.string.search_filter_live), liveCount, Color(0xFF6B1F2C), Modifier.weight(1f), onLive)
+            QuickTile(stringResource(R.string.search_filter_movies), movieCount, Color(0xFF5B3A1F), Modifier.weight(1f), onMovies)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            QuickTile(stringResource(R.string.search_filter_series), seriesCount, Color(0xFF2C1F6B), Modifier.weight(1f), onSeries)
+            QuickTile(stringResource(R.string.library_tab_my_list), myListCount, Color(0xFF1F3A6B), Modifier.weight(1f), onMyList)
+        }
+    }
+}
+
+@Composable
+private fun QuickTile(title: String, count: Int, tint: Color, modifier: Modifier, onClick: () -> Unit) {
+    Column(
+        modifier
+            .height(76.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.linearGradient(listOf(tint, IptvColors.Surface)))
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            pluralStringResource(R.plurals.search_title_count, count, count),
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 11.5.sp,
+            maxLines = 1
         )
     }
 }

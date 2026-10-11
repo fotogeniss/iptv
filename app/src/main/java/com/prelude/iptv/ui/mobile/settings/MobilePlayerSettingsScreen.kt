@@ -2,6 +2,10 @@ package com.prelude.iptv.ui.mobile.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,8 +25,6 @@ import com.prelude.iptv.ui.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,57 +70,73 @@ internal fun MobilePlayerSettingsScreen(
 
     Column(modifier.fillMaxSize().background(IptvColors.Background)) {
         MobileSettingsFlowHeader(stringResource(R.string.settings_player_title), onBack)
-        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp)) {
-            PlayerGroupTitle(stringResource(R.string.settings_player_general))
-            PlayerValueRow(
-                stringResource(R.string.settings_player_buffer),
-                stringResource(BufferPolicy.fromStorage(bufferProfile).labelRes()),
-            ) { picker = PlayerPicker.Buffer }
-            Spacer(Modifier.height(25.dp))
-            PlayerGroupTitle(stringResource(R.string.settings_player_video))
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color(0xFF171717))
-                    .clickable { onStartWithSubtitles(!startWithSubtitles) }.padding(horizontal = 17.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(stringResource(R.string.settings_start_with_subtitles), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                Switch(
-                    checked = startWithSubtitles,
-                    onCheckedChange = onStartWithSubtitles,
-                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = IptvColors.Primary)
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)
+        ) {
+            HorizonGroupLabel(stringResource(R.string.settings_player_general), Modifier.padding(top = 0.dp))
+            HorizonSettingsCard {
+                HorizonSettingsBlock(stringResource(R.string.settings_player_buffer)) {
+                    HorizonSegmented(
+                        options = BufferProfile.entries.map { it.storageValue to stringResource(it.labelRes()) },
+                        selected = BufferPolicy.fromStorage(bufferProfile).storageValue,
+                        onSelect = onBufferProfile,
+                    )
+                }
+            }
+
+            HorizonGroupLabel(stringResource(R.string.settings_player_video))
+            HorizonSettingsCard {
+                HorizonSettingsRow(
+                    title = stringResource(R.string.settings_start_with_subtitles),
+                    subtitle = stringResource(
+                        if (startWithSubtitles) R.string.settings_start_with_subtitles_on
+                        else R.string.settings_start_with_subtitles_off
+                    ),
+                    onClick = { onStartWithSubtitles(!startWithSubtitles) },
+                    trailing = { HorizonSwitch(startWithSubtitles, onStartWithSubtitles) },
+                )
+                val normalizedSize = PlaybackPreferencePolicy.normalizeSubtitleSize(subtitleSize)
+                HorizonSettingsBlock(stringResource(R.string.settings_subtitle_size)) {
+                    HorizonSegmented(
+                        options = PlaybackPreferencePolicy.subtitleSizes.map { it to stringResource(subtitleSizeLabelRes(it)) },
+                        selected = normalizedSize,
+                        onSelect = onSubtitleSize,
+                    )
+                    // Ζωντανή προεπισκόπηση: φαίνεται αμέσως τι αλλάζει.
+                    Box(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color.Black)
+                            .padding(horizontal = 12.dp, vertical = 16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_subtitle_preview),
+                            color = Color.White,
+                            fontSize = (15f * normalizedSize / 100f).sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                HorizonSettingsRow(
+                    title = stringResource(R.string.settings_subtitle_language),
+                    value = stringResource(preferenceLanguageLabelRes(subtitleLanguage)),
+                    onClick = { picker = PlayerPicker.SubtitleLanguage },
+                )
+                HorizonSettingsRow(
+                    title = stringResource(R.string.settings_opensubtitles_account),
+                    subtitle = stringResource(R.string.settings_opensubtitles_account_subtitle),
+                    onClick = onOpenSubtitlesAccount,
                 )
             }
-            Text(
-                stringResource(
-                    if (startWithSubtitles) R.string.settings_start_with_subtitles_on
-                    else R.string.settings_start_with_subtitles_off
-                ),
-                color = IptvColors.TextTertiary,
-                fontSize = 11.sp,
-                lineHeight = 16.sp,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 11.dp)
-            )
-            PlayerValueRow(
-                stringResource(R.string.settings_subtitle_size),
-                stringResource(subtitleSizeLabelRes(subtitleSize)),
-            ) { picker = PlayerPicker.SubtitleSize }
-            Spacer(Modifier.height(9.dp))
-            PlayerValueRow(
-                stringResource(R.string.settings_subtitle_language),
-                stringResource(preferenceLanguageLabelRes(subtitleLanguage)),
-            ) { picker = PlayerPicker.SubtitleLanguage }
-            Spacer(Modifier.height(9.dp))
-            PlayerValueRow(
-                stringResource(R.string.settings_opensubtitles_account),
-                stringResource(R.string.settings_opensubtitles_account_subtitle),
-                onOpenSubtitlesAccount,
-            )
-            Spacer(Modifier.height(25.dp))
-            PlayerGroupTitle(stringResource(R.string.settings_player_audio))
-            PlayerValueRow(
-                stringResource(R.string.settings_default_audio_language),
-                stringResource(preferenceLanguageLabelRes(audioLanguage)),
-            ) { picker = PlayerPicker.AudioLanguage }
+
+            HorizonGroupLabel(stringResource(R.string.settings_player_audio))
+            HorizonSettingsCard {
+                HorizonSettingsRow(
+                    title = stringResource(R.string.settings_default_audio_language),
+                    value = stringResource(preferenceLanguageLabelRes(audioLanguage)),
+                    onClick = { picker = PlayerPicker.AudioLanguage },
+                )
+            }
         }
     }
 
@@ -163,23 +181,6 @@ internal fun MobilePlayerSettingsScreen(
             }
             Spacer(Modifier.height(16.dp))
         }
-    }
-}
-
-@Composable
-private fun PlayerGroupTitle(title: String) {
-    Text(title, color = Color(0xFFD4D4D4), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(horizontal = 2.dp, vertical = 11.dp))
-}
-
-@Composable
-private fun PlayerValueRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color(0xFF171717))
-            .clickable(onClick = onClick).padding(horizontal = 17.dp, vertical = 21.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text(value, color = IptvColors.TextSecondary, fontSize = 11.sp)
     }
 }
 
