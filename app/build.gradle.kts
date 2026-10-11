@@ -22,8 +22,8 @@ android {
         applicationId = "com.prelude.iptv"
         minSdk = 26
         targetSdk = 35
-        versionCode = 167
-        versionName = "1.95.0"
+        versionCode = 168
+        versionName = "1.96.0"
         resourceConfigurations += listOf("en", "el")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // The in-app picker remains QA-only until every release surface has
@@ -43,15 +43,22 @@ android {
     // εγκαταστήσουν («Η εφαρμογή δεν εγκαταστάθηκε»). Έτσι κάθε APK κρατάει ΜΟΝΟ
     // τη δική του (~40-60MB).
     // ---------------------------------------------------------------------
+    //
+    // Για γρήγορο build, κάθε build βγάζει μόνο τις δύο ARM αρχιτεκτονικές που
+    // τρέχουν σε πραγματικές συσκευές. Το universal (~215MB) και το x86_64
+    // (emulator) πακετάρονται μόνο με prelude.allAbis=true στο gradle.properties.
+    // ---------------------------------------------------------------------
+    val allAbis = providers.gradleProperty("prelude.allAbis").orNull == "true"
     splits {
         abi {
             isEnable = true
             reset()
             // arm64-v8a  -> νεότερες τηλεοράσεις/κινητά
             // armeabi-v7a-> παλιά μποξάκια (32-bit) — τα περισσότερα φθηνά boxes
-            // x86_64     -> emulator
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = true   // + ένα «όλα σε ένα» ως εφεδρικό
+            // x86_64     -> emulator (μόνο με prelude.allAbis=true)
+            include("arm64-v8a", "armeabi-v7a")
+            if (allAbis) include("x86_64")
+            isUniversalApk = allAbis   // «όλα σε ένα» μόνο όταν το ζητήσεις
         }
     }
 
@@ -168,7 +175,9 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
+    // Μόνο τα βασικά εικονίδια. Όσα χρησιμοποιεί η εφαρμογή από το «extended»
+    // (χιλιάδες εικονίδια, βαρύ για R8/dex) ζουν πλέον στο ui/icons.
+    implementation("androidx.compose.material:material-icons-core")
 
     // Media3 / ExoPlayer
     implementation("androidx.media3:media3-exoplayer:1.7.1")

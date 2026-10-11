@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.HelpOutline
+import com.prelude.iptv.ui.icons.automirrored.filled.ArrowBack
+import com.prelude.iptv.ui.icons.filled.Check
+import com.prelude.iptv.ui.icons.filled.CheckCircle
+import com.prelude.iptv.ui.icons.filled.Dns
+import com.prelude.iptv.ui.icons.filled.HelpOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text

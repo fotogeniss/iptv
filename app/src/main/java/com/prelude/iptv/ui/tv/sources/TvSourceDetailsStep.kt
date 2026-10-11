@@ -17,11 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Security
+import com.prelude.iptv.ui.icons.filled.Dns
+import com.prelude.iptv.ui.icons.filled.FolderOpen
+import com.prelude.iptv.ui.icons.filled.Link
+import com.prelude.iptv.ui.icons.filled.Lock
+import com.prelude.iptv.ui.icons.filled.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

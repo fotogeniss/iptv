@@ -22,6 +22,21 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 1.96.0 - versionCode 168
+
+- **Faster builds, no visible change.** Every build used to package four APKs,
+  including a 215MB universal one. It now packages only `arm64-v8a` and
+  `armeabi-v7a`, the two architectures real phones, TVs and boxes use. Setting
+  `prelude.allAbis=true` in `gradle.properties` brings back `x86_64` and the
+  universal APK for distribution outside Play.
+- **`material-icons-extended` removed.** The library ships thousands of icons
+  and the app uses 96 of them. Those 96 now live in `ui/icons` with the same
+  names and API, copied from the official Material Icons SVGs (Apache 2.0); only
+  the import changed in 103 files. Every icon keeps its shape and size.
+- **Gradle settings.** 4GB heap instead of 2GB, a separate 2GB Kotlin daemon,
+  parallel execution, build cache and configuration cache (problems reported as
+  warnings, never as failures).
+
 ## 1.95.0 - versionCode 167
 
 - **The catalog is ready in about 19 seconds instead of five and a half minutes.**

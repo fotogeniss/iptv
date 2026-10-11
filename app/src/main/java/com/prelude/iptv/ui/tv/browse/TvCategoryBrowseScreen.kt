@@ -34,8 +34,8 @@ import androidx.compose.foundation.lazy.itemsIndexed as itemsIndexedColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Movie
+import com.prelude.iptv.ui.icons.filled.Check
+import com.prelude.iptv.ui.icons.outlined.Movie
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

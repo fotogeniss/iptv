@@ -3,7 +3,7 @@
 Native IPTV media player for Android phones, tablets and Android TV, built with
 Kotlin, Jetpack Compose, Media3/ExoPlayer and a libVLC fallback.
 
-> Current app version: **1.95.0** (`versionCode 167`)
+> Current app version: **1.96.0** (`versionCode 168`)
 
 Prelude+ is a player only. It does not provide channels, subscriptions or media.
 Users connect sources they are authorized to use.
@@ -128,8 +128,8 @@ incrementally; see [the architecture plan](docs/ARCHITECTURE_REFACTOR_PLAN.md).
 - Media3 1.7.1, libVLC 3.6.0, OkHttp 4.12.0 and Coil 2.7.0.
 - Google Play Billing Library 9.1.0.
 - Firebase Crashlytics (opt-in, no Analytics; publisher configuration required).
-- ABI-specific APKs for `arm64-v8a`, `armeabi-v7a` and `x86_64`, plus a universal
-  APK.
+- ABI-specific APKs for `arm64-v8a` and `armeabi-v7a`. Set `prelude.allAbis=true`
+  in `gradle.properties` to also package `x86_64` and a universal APK.
 
 ## Local configuration
 

@@ -21,11 +21,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
+import com.prelude.iptv.ui.icons.filled.Add
+import com.prelude.iptv.ui.icons.filled.Check
+import com.prelude.iptv.ui.icons.filled.Info
+import com.prelude.iptv.ui.icons.filled.PlayArrow
+import com.prelude.iptv.ui.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
