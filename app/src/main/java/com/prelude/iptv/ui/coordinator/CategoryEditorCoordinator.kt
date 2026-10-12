@@ -16,7 +16,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Owns category-editor loading, draft state and persistence normalization. */
+/**
+ * Owns category-editor loading, state and persistence normalization.
+ *
+ * Από την 2.2.0 κάθε αλλαγή αποθηκεύεται ΑΜΕΣΩΣ ([updateLayout]): το κουμπί
+ * «Αποθήκευση» έφυγε, γιατί όποιος το ξεχνούσε έχανε όλη τη δουλειά. Η αναίρεση
+ * γίνεται από το UI, ξαναστέλνοντας το προηγούμενο layout.
+ */
 class CategoryEditorCoordinator(
     private val scope: CoroutineScope,
     private val currentPlaylist: () -> Playlist?,
@@ -26,7 +32,11 @@ class CategoryEditorCoordinator(
     private val loadCategories: suspend (playlist: Playlist, type: String) -> List<Pair<String, String>>,
     private val saveLayout: (sourceId: String, type: String, layout: CategoryLayout) -> Unit,
     private val saveChoice: (key: String, ids: List<String>?) -> Unit,
-    private val reloadSelection: (ids: List<String>?) -> Unit,
+    /** Εφαρμόζει την ορατότητα στον κατάλογο που ήδη φαίνεται (ίδια διαδρομή με το παλιό φίλτρο). */
+    private val reloadSelection: (type: String, ids: List<String>?) -> Unit,
+    /** Η επιλογή που ισχύει ήδη: (υπάρχει, ids) — `ids == null` σημαίνει «όλες». */
+    private val loadChoice: (key: String) -> Pair<Boolean, List<String>?> = { false to null },
+    private val loadCounts: (playlist: Playlist, type: String) -> Map<String, Int> = { _, _ -> emptyMap() },
 ) {
     private val contentTypes = listOf("live", "vod", "series")
     private val _state = MutableStateFlow(CategoryEditorState())
@@ -46,17 +56,27 @@ class CategoryEditorCoordinator(
         _state.value = CategoryEditorState(
             sourceId = sourceId,
             sections = contentTypes.associateWith { type ->
-                CategoryEditorSection(layout = loadLayout(sourceId, type), loading = true)
+                CategoryEditorSection(
+                    layout = CategoryLayoutPolicy.normalized(loadLayout(sourceId, type)),
+                    loading = true,
+                )
             },
+            visible = _state.value.visible,
         )
         scope.launch {
             contentTypes.forEach { type ->
                 runCatching { loadCategories(playlist, type) }
                     .onSuccess { categories ->
                         if (_state.value.sourceId != sourceId) return@onSuccess
+                        val options = categories.map { CategoryOption(it.first, it.second) }
+                        val (hasChoice, ids) = loadChoice("$sourceId:$type")
+                        val counts = runCatching { loadCounts(playlist, type) }.getOrDefault(emptyMap())
                         updateSection(type) { current ->
                             current.copy(
-                                available = categories.map { CategoryOption(it.first, it.second) },
+                                available = options,
+                                layout = if (hasChoice) CategoryLayoutPolicy.withChoice(current.layout, options, ids)
+                                else current.layout,
+                                counts = counts,
                                 loading = false,
                                 error = null,
                             )
@@ -76,8 +96,24 @@ class CategoryEditorCoordinator(
         }
     }
 
+    /** Φορτώνει και ΔΕΙΧΝΕΙ τον επεξεργαστή. */
+    fun show() {
+        _state.update { it.copy(visible = true) }
+        open()
+    }
+
+    fun close() {
+        _state.update { it.copy(visible = false) }
+    }
+
+    /** Εφαρμόζει και αποθηκεύει αμέσως μία αλλαγή του χρήστη. */
     fun updateLayout(type: String, layout: CategoryLayout) {
-        updateSection(type) { it.copy(layout = layout) }
+        updateSection(type) { it.copy(layout = CategoryLayoutPolicy.normalized(layout)) }
+        val section = _state.value.section(type)
+        if (section.loading || section.error != null) return
+        if (!persist(type, section)) return
+        _revision.value += 1
+        reloadSelection(type, choiceOf(section.entries))
     }
 
     fun save() {
@@ -87,24 +123,37 @@ class CategoryEditorCoordinator(
 
         _state.value.sections.forEach { (type, section) ->
             if (section.loading || section.error != null) return@forEach
-            val entries = CategoryLayoutPolicy.resolve(section.available, section.layout)
-            saveLayout(
-                sourceId,
-                type,
-                section.layout.copy(
-                    order = entries.map { it.option.id },
-                    orderedTitles = entries.map { it.option.title },
-                ),
-            )
-            saveChoice("$sourceId:$type", CategoryLayoutPolicy.selectedIds(entries))
+            persist(type, section)
         }
 
         _revision.value += 1
-        val active = _state.value.section(currentContentType())
+        val type = currentContentType()
+        val active = _state.value.section(type)
         if (active.available.isNotEmpty()) {
-            reloadSelection(CategoryLayoutPolicy.selectedIds(active.entries))
+            reloadSelection(type, choiceOf(active.entries))
         }
     }
+
+    private fun persist(type: String, section: CategoryEditorSection): Boolean {
+        val playlist = currentPlaylist() ?: return false
+        val sourceId = PlaylistIdentity.stableId(playlist)
+        if (_state.value.sourceId != sourceId) return false
+        val entries = CategoryLayoutPolicy.resolve(section.available, section.layout)
+        saveLayout(
+            sourceId,
+            type,
+            section.layout.copy(
+                order = entries.map { it.option.id },
+                orderedTitles = entries.map { it.option.title },
+            ),
+        )
+        saveChoice("$sourceId:$type", choiceOf(entries))
+        return true
+    }
+
+    // null = «όλες»: έτσι μια κατηγορία που προσθέτει αργότερα ο πάροχος φαίνεται.
+    private fun choiceOf(entries: List<com.prelude.iptv.category.CategoryEntry>): List<String>? =
+        CategoryLayoutPolicy.selectedIds(entries).takeUnless { it.size == entries.size }
 
     private fun updateSection(
         type: String,

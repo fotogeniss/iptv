@@ -121,4 +121,6 @@
     <!-- Horizon player -->
     <string name="player_seek_back_10">10 δευτερόλεπτα πίσω</string>
     <string name="player_seek_forward_10">10 δευτερόλεπτα μπροστά</string>
+    <string name="player_channel_previous">Προηγούμενο κανάλι</string>
+    <string name="player_channel_next">Επόμενο κανάλι</string>
 </resources>

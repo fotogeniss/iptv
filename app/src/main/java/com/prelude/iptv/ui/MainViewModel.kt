@@ -402,7 +402,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 loadChoice[key] = ids
                 store.saveLoadChoice(key, ids)
             },
-            reloadSelection = ::loadSelectedCategories,
+            reloadSelection = ::setVisibleCategories,
+            loadChoice = ::rememberedChoice,
+            loadCounts = { playlist, type ->
+                catalogSession.getCatalog(cacheKey(playlist, type))?.let { snapshot ->
+                    CatalogCategoryVisibilityPolicy.counts(
+                        snapshot.categories, snapshot.channels, snapshot.categoryTotals,
+                    )
+                }.orEmpty()
+            },
         )
     }
     val categoryEditorState: StateFlow<CategoryEditorState> get() = categoryEditor.state
@@ -1009,42 +1017,19 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun currentCatalogSummary(): Pair<Int, Int> = catalogSummary(_state.value.contentType)
 
-    /** Quick action: opens category visibility for an already complete section. */
-    fun changeCategories() {
-        val pl = currentPlaylist() ?: return
-        if (_state.value.loadingAllSections) return
-        val type = _state.value.contentType
-        val sections = listOf("series", "vod", "live").mapNotNull { sectionType ->
-            val snapshot = catalogSession.getCatalog(cacheKey(pl, sectionType)) ?: return@mapNotNull null
-            val (hasChoice, rememberedIds) = categoryChoice(pl, sectionType)
-            sectionType to CategoryPickerSection(
-                categories = snapshot.categories,
-                counts = CatalogCategoryVisibilityPolicy.counts(
-                    snapshot.categories, snapshot.channels, snapshot.categoryTotals,
-                ),
-                selectedIds = CatalogCategoryVisibilityPolicy.initialSelection(
-                    snapshot.categories,
-                    hasChoice,
-                    rememberedIds,
-                ),
-            )
-        }.toMap()
-        if (sections.isEmpty()) return
-        val initialType = type.takeIf(sections::containsKey) ?: sections.keys.first()
-        val initial = sections.getValue(initialType)
-        _state.value = _state.value.copy(
-            pickCategories = true,
-            categories = initial.categories,
-            categoryCounts = initial.counts,
-            categorySelectionIds = initial.selectedIds,
-            categoryPickerSections = sections,
-            categoryPickerType = initialType,
-            status = "${initial.counts.values.sum()} στοιχεία σε ${initial.categories.size} κατηγορίες"
-        )
-    }
+    /**
+     * Quick action «Κατηγορίες» (Live, Αρχική, TV): ανοίγει τον ενιαίο
+     * επεξεργαστή. Ο παλιός διάλογος με τα κουτάκια αντικαταστάθηκε στην 2.2.0.
+     */
+    fun changeCategories() = openCategoryEditor()
 
     /** Opens the editor from cached category metadata; network is only a cache-miss fallback. */
-    fun openCategoryEditor() = categoryEditor.open()
+    fun openCategoryEditor() = categoryEditor.show()
+
+    /** Φορτώνει τις κατηγορίες χωρίς να ανοίξει οθόνη (π.χ. για την επεξεργασία Αρχικής). */
+    fun loadCategoryEditor() = categoryEditor.open()
+
+    fun closeCategoryEditor() = categoryEditor.close()
 
     fun updateCategoryEditorLayout(type: String, layout: CategoryLayout) =
         categoryEditor.updateLayout(type, layout)

@@ -118,6 +118,17 @@ internal fun BrowsePlaybackLayer(
         }
     } else null
 
+    // Τα βελάκια ‹ › του κινητού δείχνουν ΠΟΙΟ κανάλι θα ανοίξει (αριθμός · όνομα),
+    // από την ίδια ορατή λίστα που χρησιμοποιεί το channelStep.
+    val liveNeighbors: Pair<String?, String?> = if (target.kind == "live" && !isTv) {
+        remember(target) {
+            val list = vm.visibleChannels().filter { it.kind == "live" }
+            val index = list.indexOfFirst { vm.favKey(it) == vm.favKey(target) }
+            fun label(i: Int) = list.getOrNull(i)?.let { "${i + 1} · ${it.name}" }
+            if (index < 0) null to null else label(index - 1) to label(index + 1)
+        }
+    } else null to null
+
     // Επόμενο επεισόδιο: μόνο για σειρές, και μόνο όσο η οθόνη λεπτομερειών από
     // κάτω κρατά φορτωμένες τις σεζόν. Αν δεν τις έχει (π.χ. άνοιγμα απευθείας
     // από «Συνέχισε να βλέπεις»), δεν προτείνουμε τίποτα αντί να μαντέψουμε από
@@ -228,6 +239,8 @@ internal fun BrowsePlaybackLayer(
             nextImageUrl = nextImageUrl,
             onPlayNext = nextEpisode?.let { next -> { onPlayOther(next) } },
             onChannelStep = channelStep,
+            previousChannelLabel = liveNeighbors.first,
+            nextChannelLabel = liveNeighbors.second,
             infoChannel = infoChannel,
             metadata = playerMetadata,
             relatedItems = contextItems,

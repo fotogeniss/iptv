@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Arrangement
@@ -94,6 +95,10 @@ internal fun MobilePlayerControls(
     /** null = δεν υπάρχει επόμενο/προηγούμενο· το κουμπί ξεθωριάζει αντί να λείπει. */
     onPlayNext: (() -> Unit)? = null,
     onPlayPrevious: (() -> Unit)? = null,
+    /** Ζωντανά: βελάκια ‹ › με το διπλανό κανάλι. null = δεν υπάρχει κανάλι προς τα εκεί. */
+    previousChannelLabel: String? = null,
+    nextChannelLabel: String? = null,
+    onChannelStep: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -132,20 +137,22 @@ internal fun MobilePlayerControls(
             }
 
             // ---- ΚΕΝΤΡΟ ----
-            // Μόνο play/pause. Τα βελάκια προηγούμενο/επόμενο έφυγαν από εδώ σε
-            // όλους τους τύπους περιεχομένου (ταινίες, ζωντανά, σειρές)· η αλλαγή
-            // καναλιού στα ζωντανά γίνεται πλέον με σύρσιμο αριστερά/δεξιά.
-            // Horizon (prototypes/redesign_pages.html): στις ταινίες/σειρές −10″ /
-            // play / +10″ στη μέση· στα ζωντανά μόνο play, γιατί δεν υπάρχει πού
-            // να μετακινηθείς (η αλλαγή καναλιού γίνεται με σύρσιμο).
+            // 2.2.0 (prototypes/redesign_player_gestures.html): στις ταινίες/σειρές
+            // μόνο play — το ±10″ γίνεται με διπλό πάτημα και η γρήγορη κίνηση με
+            // κράτημα, πάνω στην εικόνα. Στα ζωντανά ‹ play › με το όνομα του
+            // διπλανού καναλιού, γιατί το σύρσιμο μόνο του δεν το έβρισκε κανείς.
             Row(
                 Modifier.align(Alignment.Center),
                 horizontalArrangement = Arrangement.spacedBy(28.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                val canSeek = !isLive && state.durationMs > 0
-                if (canSeek) {
-                    SeekCircle("−10", stringResource(R.string.player_seek_back_10)) { engine.seekBy(-10_000L); onInteract() }
+                val channelArrows = isLive && onChannelStep != null
+                if (channelArrows) {
+                    ChannelArrow(
+                        forward = false,
+                        label = previousChannelLabel,
+                        description = stringResource(R.string.player_channel_previous),
+                    ) { onInteract(); onChannelStep?.invoke(-1) }
                 }
                 Box(
                     Modifier
@@ -167,8 +174,12 @@ internal fun MobilePlayerControls(
                         modifier = Modifier.size(32.dp)
                     )
                 }
-                if (canSeek) {
-                    SeekCircle("+10", stringResource(R.string.player_seek_forward_10)) { engine.seekBy(10_000L); onInteract() }
+                if (channelArrows) {
+                    ChannelArrow(
+                        forward = true,
+                        label = nextChannelLabel,
+                        description = stringResource(R.string.player_channel_next),
+                    ) { onInteract(); onChannelStep?.invoke(1) }
                 }
             }
 
@@ -470,19 +481,45 @@ internal fun mobileClock(ms: Long): String {
     else String.format("%d:%02d", minutes, seconds)
 }
 
-/** Κύκλος −10″ / +10″ γύρω από το play. */
+/**
+ * Βελάκι καναλιού δίπλα στο play, με το όνομα του καναλιού που θα ανοίξει.
+ * Χωρίς κανάλι προς τα εκεί ξεθωριάζει αντί να χάνεται, ώστε το play να μη
+ * μετακινείται στην άκρη της λίστας.
+ */
 @Composable
-private fun SeekCircle(label: String, description: String, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .size(46.dp)
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = .40f))
-            .border(1.dp, Color.White.copy(alpha = .18f), CircleShape)
-            .semantics { contentDescription = description }
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+private fun ChannelArrow(forward: Boolean, label: String?, description: String, onClick: () -> Unit) {
+    val enabled = label != null
+    Column(
+        Modifier.width(92.dp).padding(top = 5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Box(
+            Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = if (enabled) .45f else .22f))
+                .border(1.dp, Color.White.copy(alpha = if (enabled) .22f else .08f), CircleShape)
+                .semantics { contentDescription = description }
+                .clickable(enabled = enabled, onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                if (forward) Icons.Default.ChevronRight else Icons.Default.ChevronLeft,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = if (enabled) 1f else .35f),
+                modifier = Modifier.size(30.dp)
+            )
+        }
+        if (label != null) {
+            Text(
+                label,
+                color = Color.White.copy(alpha = .82f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 5.dp),
+            )
+        }
     }
 }

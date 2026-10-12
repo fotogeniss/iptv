@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -43,6 +45,7 @@ import com.prelude.iptv.ui.components.details.DetailSection
 import com.prelude.iptv.ui.components.details.DetailPresentation
 import com.prelude.iptv.ui.components.details.PremiumCastCard
 import com.prelude.iptv.ui.components.details.PremiumRelatedCard
+import com.prelude.iptv.ui.components.details.localizedDuration
 import com.prelude.iptv.ui.localization.labelRes
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -208,34 +211,40 @@ private fun MobileDetailTabs(
     }
 }
 
+/**
+ * «Στοιχεία»: μόνο συντελεστές και τεχνικά. Η περίληψη ζει ΜΟΝΟ στο hero —
+ * πριν τυπωνόταν δύο φορές, πάνω και στα «Σχετικά», με το ίδιο κείμενο.
+ */
 @Composable
 private fun MobileAboutSection(presentation: DetailPresentation) {
+    val rows = listOfNotNull(
+        presentation.director.takeIf(String::isNotBlank)?.let {
+            stringResource(if (presentation.isSeries) R.string.details_creator_label else R.string.details_director_label) to it
+        },
+        presentation.cast.takeIf { it.isNotEmpty() }?.let {
+            stringResource(R.string.details_starring_label) to it.take(4).joinToString { member -> member.name }
+        },
+        presentation.genre.takeIf(String::isNotBlank)?.let { stringResource(R.string.details_genres_label) to it },
+        localizedDuration(presentation.duration).takeIf(String::isNotBlank)?.let {
+            stringResource(R.string.details_duration_label) to it
+        },
+        presentation.year.takeIf(String::isNotBlank)?.let { stringResource(R.string.details_year_label) to it },
+    )
+    if (rows.isEmpty() && !presentation.showTmdbNotice) return
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 22.dp)) {
-        Text(stringResource(R.string.details_about), color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp))
-        val description = if (presentation.plot.isBlank()) {
-            stringResource(R.string.details_no_description)
-        } else presentation.plot
-        Text(
-            description,
-            color = IptvColors.TextSecondary,
-            style = MaterialTheme.typography.bodyMedium
-        )
-        val creatorCredit = if (presentation.director.isNotBlank()) {
-            stringResource(R.string.details_creator, presentation.director)
-        } else null
-        val castCredit = if (presentation.cast.isNotEmpty()) {
-            stringResource(R.string.details_starring, presentation.cast.take(4).joinToString { it.name })
-        } else null
-        val genreCredit = if (presentation.genre.isNotBlank()) {
-            stringResource(R.string.details_genres, presentation.genre)
-        } else null
-        val credits = listOfNotNull(creatorCredit, castCredit, genreCredit)
-        if (credits.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            credits.forEach { line ->
-                Text(line, color = IptvColors.TextTertiary, style = MaterialTheme.typography.bodySmall)
-                Spacer(Modifier.height(4.dp))
+        if (rows.isNotEmpty()) {
+            Text(stringResource(R.string.details_info), color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(12.dp))
+            rows.forEach { (label, value) ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
+                    Text(
+                        label,
+                        color = IptvColors.TextTertiary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.width(118.dp),
+                    )
+                    Text(value, color = IptvColors.TextSecondary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                }
             }
         }
         if (presentation.showTmdbNotice) {

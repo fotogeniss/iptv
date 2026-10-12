@@ -149,8 +149,7 @@ internal fun SettingsTab(
         onCloseEpgSearch = vm::closeEpgSearch,
         categoryEditorState = categoryEditor,
         onEditCategories = vm::openCategoryEditor,
-        onCategoryLayoutChange = vm::updateCategoryEditorLayout,
-        onSaveCategories = vm::saveCategoryEditor,
+        onLoadCategories = vm::loadCategoryEditor,
         onClearHomeHistory = vm::clearHomeHistory,
         onToggleTvHome = {
             tvHomeEnabled = !tvHomeEnabled

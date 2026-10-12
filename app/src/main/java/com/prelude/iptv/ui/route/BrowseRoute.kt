@@ -1443,7 +1443,9 @@ internal fun BrowseScreen(
                     onSettings = {
                         leaveDetails(); onOpenSettings()
                     },
-                    showSettingsAction = true,
+                    // Στις λεπτομέρειες το αιωρούμενο γρανάζι κάθεται πάνω στα
+                    // επεισόδια/παρόμοια. Οι Ρυθμίσεις μένουν στο μενού της μπάρας.
+                    showSettingsAction = false,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }

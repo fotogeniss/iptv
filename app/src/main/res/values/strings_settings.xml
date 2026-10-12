@@ -228,4 +228,36 @@
     <string name="settings_search_empty">Καμία ρύθμιση για «%1$s»</string>
     <string name="settings_profile_source">Πηγή: %1$s</string>
     <string name="settings_subtitle_preview">Έτσι θα φαίνονται οι υπότιτλοι</string>
+    <!-- 2.2.0: επεξεργαστής κατηγοριών -->
+    <string name="cat_editor_title">Κατηγορίες</string>
+    <string name="cat_editor_visible_of">%1$d από %2$d</string>
+    <string name="cat_editor_countries">Χώρες</string>
+    <string name="cat_editor_countries_hint">Πάτα για όλες μαζί</string>
+    <string name="cat_editor_others">Άλλα</string>
+    <string name="cat_editor_show_all">Δείξε όλες</string>
+    <string name="cat_editor_hide_all">Κρύψε όλες</string>
+    <string name="cat_editor_sort_az">Α–Ω</string>
+    <string name="cat_editor_search">Βρες κατηγορία…</string>
+    <string name="cat_editor_visible_section">Ορατές · %1$d</string>
+    <string name="cat_editor_hidden_section">Κρυφές · %1$d</string>
+    <string name="cat_editor_drag_hint">Σύρε για σειρά</string>
+    <string name="cat_editor_results">Αποτελέσματα · %1$d</string>
+    <string name="cat_editor_channels">%1$d κανάλια</string>
+    <string name="cat_editor_titles">%1$d τίτλοι</string>
+    <string name="cat_editor_state_visible">Ορατή</string>
+    <string name="cat_editor_state_hidden">Κρυφή</string>
+    <string name="cat_editor_move_top">Στην κορυφή</string>
+    <string name="cat_editor_move_bottom">Στο τέλος</string>
+    <string name="cat_editor_snack_shown">«%1$s» εμφανίζεται</string>
+    <string name="cat_editor_snack_hidden">«%1$s» κρύφτηκε</string>
+    <string name="cat_editor_snack_bulk">Άλλαξαν %1$d κατηγορίες</string>
+    <string name="cat_editor_snack_sorted">Ταξινόμηση Α–Ω</string>
+    <string name="cat_editor_snack_moved">«%1$s» μετακινήθηκε</string>
+    <string name="cat_editor_undo">Αναίρεση</string>
+    <string name="cat_editor_empty">Δεν βρέθηκαν κατηγορίες σε αυτή την ενότητα.</string>
+    <string name="cat_editor_no_results">Καμία κατηγορία δεν ταιριάζει με «%1$s».</string>
+    <string name="cat_editor_tv_hint">OK: μεταφορά · Παρατεταμένο OK: σειρά · ◀ ▶ στήλη</string>
+    <string name="cat_editor_tv_lifted">▲▼ μετακίνηση · OK αφήνει</string>
+    <string name="cat_editor_tv_none_visible">Καμία ορατή κατηγορία</string>
+    <string name="cat_editor_tv_none_hidden">Καμία κρυφή κατηγορία</string>
 </resources>

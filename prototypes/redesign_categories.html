@@ -1,0 +1,316 @@
+<title>Prelude+ Επεξεργασία κατηγοριών</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Commissioner:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#0B0A0D;--s1:#141217;--s2:#1C1A20;--s3:#27242B;--line:rgba(255,236,236,.08);--line2:rgba(255,236,236,.16);--tx:#F4EFEF;--tx2:#ABA3A9;--tx3:#6F686E;--red:#E5303A;--glow:#FF5A5A;--ok:#4FD18B;--page:#070609;
+--display:"Advent Pro","Commissioner",system-ui,sans-serif;--body:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--page);color:var(--tx)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.intro{padding-block:44px 20px;display:grid;gap:14px}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.32em;font-size:15px}
+.hz{display:block;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 22%,#fff 50%,var(--red) 78%,transparent);box-shadow:0 0 12px 1px rgba(229,48,58,.65)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.04;margin:0;text-wrap:balance}
+.lede{color:var(--tx2);max-width:68ch;margin:0}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0 8px}
+.cmp div{background:var(--ink);padding:18px 20px;display:grid;gap:6px;align-content:start;min-width:0}
+.cmp h3{margin:0;font-family:var(--display);font-weight:600;font-size:20px}
+.cmp p{margin:0;color:var(--tx2);font-size:14px}
+.cmp .was{color:var(--tx3);text-decoration:line-through;text-decoration-color:rgba(229,48,58,.6)}
+.sec{margin-top:52px}
+.sec>h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 4px}
+.sec>p{color:var(--tx2);margin:0 0 22px;max-width:72ch}
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px 28px;justify-items:center;margin-bottom:32px}
+.shot{display:grid;gap:14px;width:100%;max-width:348px;min-width:0;align-content:start}
+.phone{width:100%;max-width:348px;height:740px;border-radius:44px;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 7px #111014,0 0 0 8px var(--line2),0 40px 80px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;font-size:14px}
+.sbar{height:40px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:13px;font-weight:600}
+.screen{position:absolute;inset:40px 0 0;overflow:hidden auto;scrollbar-width:none;padding-bottom:110px}
+.screen::-webkit-scrollbar{display:none}
+.note h3{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 6px}
+.note ul{margin:0;padding-left:18px;color:var(--tx2);font-size:13.5px;display:grid;gap:4px}
+.bnav{position:absolute;left:12px;right:12px;bottom:14px;height:64px;border-radius:22px;background:rgba(22,20,26,.92);backdrop-filter:blur(18px);border:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:6}
+.bnav span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:10.5px;font-weight:600;position:relative}
+.bnav span.on{color:var(--tx)}
+.bnav span.on::before{content:"";position:absolute;top:-1px;left:50%;translate:-50% 0;width:34px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.7)}
+.top{display:flex;align-items:center;gap:4px;padding:2px 10px 6px 18px}
+.top .t{font-family:var(--display);font-weight:600;font-size:32px;flex:1;line-height:1}
+.ib{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;color:var(--tx)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;color:var(--tx3);padding:16px 18px 8px;display:flex;justify-content:space-between}
+.lbl a{letter-spacing:0;font-weight:600;color:var(--tx2);text-decoration:none}
+/* Συνέχισε */
+.cont{display:flex;gap:10px;overflow-x:auto;padding:0 18px;scrollbar-width:none}
+.cont::-webkit-scrollbar{display:none}
+.cc{flex:none;width:132px;border-radius:16px;background:var(--s1);border:1px solid var(--line);padding:10px;display:grid;gap:8px;cursor:pointer}
+.cc .lg{height:58px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.04em;position:relative}
+.cc .lg .pp{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:50%;background:rgba(11,10,13,.6);display:grid;place-items:center}
+.cc .lg .pp svg{width:12px;height:12px}
+.cc b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.cc small{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:-4px}
+.prog{height:3px;border-radius:2px;background:rgba(255,255,255,.12);position:relative}
+.prog i{display:block;height:100%;border-radius:2px;background:var(--red);box-shadow:0 0 8px rgba(255,90,90,.85)}
+/* tabs κατηγοριών (sticky) */
+.tabs{position:sticky;top:0;z-index:4;background:linear-gradient(var(--ink) 80%,transparent);padding:10px 0 8px;margin-top:6px}
+.tabs .in{display:flex;gap:6px;overflow-x:auto;padding:0 18px;scrollbar-width:none;align-items:center}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{flex:none;height:34px;padding:0 13px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;background:var(--s1);border:1px solid var(--line);color:var(--tx2);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.tab em{font-style:normal;color:var(--tx3);font-size:11.5px}
+.tab.on{background:var(--tx);color:var(--ink);border-color:var(--tx)}.tab.on em{color:#666}
+.tab.all{background:transparent;border-style:dashed}
+/* λίστα καναλιών */
+.ch{display:grid;grid-template-columns:22px 46px 1fr auto;gap:11px;align-items:center;padding:10px 12px 10px 14px;position:relative;cursor:pointer}
+.ch+.ch{border-top:1px solid var(--line)}
+.ch .no{font-size:12px;color:var(--tx3);text-align:right;font-variant-numeric:tabular-nums}
+.mono{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.03em;color:#fff}
+.ch .b{min-width:0;display:grid;gap:2px}
+.ch .n{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .p{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .x{font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;color:var(--tx3);font-size:11px}
+.ch .r svg{width:18px;height:18px}
+.ch .r .fav{color:#F2C14E}
+.ch.playing{background:linear-gradient(90deg,rgba(229,48,58,.12),transparent)}
+.ch.playing::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.live{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--glow);display:inline-flex;align-items:center;gap:5px}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.eq i{width:3px;background:var(--glow);border-radius:1px;animation:eq 1s infinite ease-in-out}
+.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}
+@keyframes eq{0%,100%{height:4px}50%{height:12px}}
+@media (prefers-reduced-motion:reduce){.eq i{animation:none;height:8px}}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:7}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:78%;background:var(--s1);border-radius:26px 26px 0 0;border-top:1px solid var(--line2);z-index:8;display:flex;flex-direction:column}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--s3);margin:10px auto 6px}
+.sheet h4{font-family:var(--display);font-weight:600;font-size:24px;margin:4px 18px 10px}
+.field{margin:0 18px 8px;display:flex;align-items:center;gap:10px;height:46px;border-radius:14px;background:var(--s2);border:1px solid var(--line2);padding:0 14px;color:var(--tx3)}
+.cat{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);cursor:pointer}
+.cat .ci{width:34px;height:34px;border-radius:10px;background:var(--s3);display:grid;place-items:center;color:var(--tx2)}
+.cat .ci svg{width:17px;height:17px}
+.cat b{flex:1;font-weight:600;font-size:14.5px}
+.cat em{font-style:normal;color:var(--tx3);font-size:12.5px}
+.cat.on b{color:var(--glow)}
+.pin{color:#F2C14E}
+/* player page */
+.pl{height:196px;position:relative;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%)}
+.pl .ctr{position:absolute;inset:0;display:grid;place-items:center}
+.pl .ctr span{width:54px;height:54px;border-radius:50%;background:rgba(11,10,13,.5);border:1px solid rgba(255,255,255,.25);display:grid;place-items:center}
+.pl .tl{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.pl .sw{position:absolute;top:50%;translate:0 -50%;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.nowbox{padding:14px 18px 6px;display:grid;gap:6px}
+.nowbox h3{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1}
+.nowbox small{color:var(--tx2)}
+.nn{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 18px 0}
+.nn div{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.nn em{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--tx3)}
+.nn b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nn small{font-size:11.5px;color:var(--tx3)}
+.acts{display:flex;gap:8px;padding:12px 18px 0}
+.act{flex:1;height:40px;border-radius:13px;background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--tx2)}
+.act svg{width:16px;height:16px}
+/* TV */
+.tvwrap{container-type:inline-size;max-width:1100px;margin:0 auto 14px}
+.tvf{width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw;display:grid;grid-template-columns:4.6em 15em 26em 1fr}
+.tvf *{min-width:0}
+.tvf svg.i{width:1.6em;height:1.6em}
+.rail{background:var(--s1);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:1.2em;padding:2em 0;color:var(--tx3)}
+.rail .on{color:var(--tx);position:relative}
+.rail .on::after{content:"";position:absolute;left:10%;right:10%;bottom:-.5em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent)}
+.cats{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.3em;border-right:1px solid var(--line)}
+.cats h5{font-family:var(--display);font-weight:600;font-size:2em;margin:0 0 .6em .3em}
+.tc{display:flex;justify-content:space-between;padding:.7em .9em;border-radius:.8em;color:var(--tx2);font-weight:600;font-size:1em}
+.tc em{font-style:normal;color:var(--tx3);font-size:.85em}
+.tc.on{background:var(--s2);color:var(--tx)}
+.chl{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.45em;border-right:1px solid var(--line);overflow:hidden}
+.chl .hd{display:flex;justify-content:space-between;align-items:baseline;margin:0 .4em .6em}
+.chl .hd b{font-family:var(--display);font-weight:600;font-size:1.6em}
+.chl .hd small{color:var(--tx3)}
+.tr{display:grid;grid-template-columns:2em 3.2em 1fr;gap:.8em;align-items:center;padding:.65em .8em;border-radius:.9em;position:relative}
+.tr .no{color:var(--tx3);font-size:.9em;text-align:right}
+.tr .mono{width:3.2em;height:3.2em;border-radius:.8em;font-size:.95em}
+.tr .b{display:grid;gap:.15em}
+.tr .n{font-size:.85em;color:var(--tx3)}
+.tr .p{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr.foc{background:var(--s3);border:1px solid var(--line2)}
+.tr.foc::after{content:"";position:absolute;left:10%;right:10%;bottom:-.3em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tr.playing::before{content:"";position:absolute;left:0;top:.8em;bottom:.8em;width:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.pv{padding:2.2em 2em;display:flex;flex-direction:column;gap:1em}
+.pv .vid{aspect-ratio:16/9;border-radius:1.1em;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%);position:relative}
+.pv .vid .live{position:absolute;left:1em;top:1em;font-size:.85em}
+.pv h3{font-family:var(--display);font-weight:600;font-size:2.4em;margin:0;line-height:1}
+.pv small{color:var(--tx2)}
+.tl2{display:grid;gap:.4em}
+.tl2 div{display:grid;grid-template-columns:4em 1fr;gap:.8em;padding:.5em .7em;border-radius:.7em;background:var(--s1);font-size:.95em}
+.tl2 div span{color:var(--tx3)}
+.tl2 div.now{background:#2a1a20}.tl2 div.now span{color:var(--glow);font-weight:700}
+.hint{display:flex;gap:1.3em;color:var(--tx3);font-size:.9em;margin-top:auto}.hint b{color:var(--tx2)}
+
+.segt{display:flex;margin:4px 18px 0;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:3px}
+.segt span{flex:1;text-align:center;padding:7px 4px;border-radius:11px;font-weight:600;font-size:13px;color:var(--tx2);cursor:pointer}
+.segt span em{display:block;font-style:normal;font-size:10.5px;color:var(--tx3);font-weight:500}
+.segt span.on{background:var(--tx);color:var(--ink)}.segt span.on em{color:#666}
+.fld{margin:12px 18px 0;display:flex;align-items:center;gap:10px;height:46px;border-radius:14px;background:var(--s1);border:1px solid var(--line2);padding:0 14px;color:var(--tx3);font-size:14px}
+.qa{display:flex;gap:6px;overflow-x:auto;padding:12px 18px 0;scrollbar-width:none}.qa::-webkit-scrollbar{display:none}
+.qc{flex:none;height:32px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;background:var(--s1);border:1px solid var(--line2);font-size:12.5px;font-weight:600;color:var(--tx2);cursor:pointer}
+.qc b{color:var(--tx)}
+.ctry{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px}
+.ct{border-radius:14px;background:var(--s1);border:1px solid var(--line);padding:10px 12px;display:grid;gap:2px;cursor:pointer;position:relative}
+.ct b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.04em}
+.ct small{font-size:11px;color:var(--tx3)}
+.ct.on{border-color:transparent;background:linear-gradient(135deg,rgba(229,48,58,.22),var(--s1))}
+.ct.on::after{content:"";position:absolute;left:14%;right:14%;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 8px 1px rgba(229,48,58,.7)}
+.ct.half{background:linear-gradient(135deg,rgba(229,48,58,.1),var(--s1))}
+.cr{display:flex;align-items:center;gap:10px;padding:0 10px 0 14px;min-height:52px;border-top:1px solid var(--line);background:var(--s1)}
+.cr:first-child{border-top:0}
+.cr .dh{color:var(--tx3);width:18px;display:grid;place-items:center;cursor:grab}
+.cr .dh svg{width:16px;height:16px}
+.cr .nm{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr .nm small{display:block;font-size:11.5px;color:var(--tx3);font-weight:500}
+.cr .pin{color:#F2C14E;width:16px;height:16px}
+.tg{width:42px;height:25px;border-radius:99px;background:var(--s3);position:relative;flex:none;cursor:pointer;transition:.2s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:var(--tx2);transition:.2s}
+.tg.on{background:var(--red);box-shadow:0 0 12px -2px var(--glow)}.tg.on::after{left:20px;background:#fff}
+.card{margin:0 18px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.hidden-h{display:flex;justify-content:space-between;align-items:center;margin:14px 18px 0;padding:12px 14px;border-radius:14px;background:var(--s1);border:1px dashed var(--line2);color:var(--tx2);font-size:13.5px;font-weight:600}
+.snack{position:absolute;left:14px;right:14px;bottom:92px;z-index:7;background:#26232a;border:1px solid var(--line2);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:0 10px 30px -10px #000}
+.snack b{margin-left:auto;color:var(--glow);font-weight:700}
+.menu{position:absolute;right:22px;top:368px;z-index:8;width:220px;border-radius:16px;background:#221f26;border:1px solid var(--line2);box-shadow:0 20px 40px -10px #000;overflow:hidden}
+.menu div{padding:12px 14px;font-size:13.5px;display:flex;gap:10px;align-items:center;border-top:1px solid var(--line)}
+.menu div:first-child{border-top:0}.menu svg{width:17px;height:17px;color:var(--tx2)}
+.tvc2{display:grid;grid-template-columns:4.6em 1fr 1fr;width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw}
+.tvc2 *{min-width:0}
+.tcol{padding:2em 1.6em;display:flex;flex-direction:column;gap:.45em;border-right:1px solid var(--line)}
+.tcol h5{margin:0 0 .4em;font-family:var(--display);font-weight:600;font-size:1.8em;display:flex;justify-content:space-between;align-items:baseline}
+.tcol h5 small{font-family:var(--body);font-size:.5em;color:var(--tx3);font-weight:500}
+.tr2{display:flex;align-items:center;gap:.8em;padding:.75em .9em;border-radius:.8em;background:var(--s1);font-weight:600;position:relative}
+.tr2 span{flex:1}.tr2 em{font-style:normal;color:var(--tx3);font-size:.85em;font-weight:500}
+.tr2.f{background:var(--s3);border:1px solid var(--line2)}
+.tr2.f::after{content:"";position:absolute;left:10%;right:10%;bottom:-.3em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tr2.mv{outline:2px dashed rgba(229,48,58,.7);outline-offset:2px}
+</style>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z"/></symbol>
+<symbol id="starf" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z" fill="currentColor"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10H3z"/></symbol>
+<symbol id="tv" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 12h18"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 5h-5L8 10z"/></symbol>
+<symbol id="news" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+<symbol id="kid" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1-4 4-6 7-6s6 2 7 6"/></symbol>
+<symbol id="music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></symbol>
+<symbol id="cc" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10a2 2 0 1 0 0 4M17 10a2 2 0 1 0 0 4"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></symbol>
+<symbol id="full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="pip" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="7" rx="1"/></symbol>
+<symbol id="drag" viewBox="0 0 24 24"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3"/></symbol>
+<symbol id="pinS" viewBox="0 0 24 24"><path d="M12 17v5M5 17h14l-2-5V4H7v8z"/></symbol>
+<symbol id="up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+<symbol id="eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c5 0 9 4 10 7a11 11 0 0 1-2.7 3.9M6.6 6.6A11 11 0 0 0 2 12c1 3 5 7 10 7a10 10 0 0 0 4.4-1"/></symbol>
+<symbol id="az" viewBox="0 0 24 24"><path d="M4 18l3-12 3 12M5 14h4M14 6h6l-6 12h6"/></symbol>
+<symbol id="undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+<symbol id="pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+</defs></svg>
+<div class="wrap">
+<header class="intro">
+  <div><span class="wordmark">PRELUDE+</span><span class="hz" style="width:150px;margin-top:8px"></span></div>
+  <h1>Επεξεργασία κατηγοριών, εύκολα</h1>
+  <p class="lede">Σήμερα: μια μακριά λίστα με όλες τις ομάδες του παρόχου (συχνά 200+), με ματάκι, κάδο και λαβή σε κάθε γραμμή, και κουμπί «Αποθήκευση» στο τέλος. Για να κρατήσεις μόνο τα ελληνικά πρέπει να πατήσεις ένα-ένα δεκάδες ματάκια. Πρόταση: μαζικές επιλογές πρώτα, λεπτομέρειες μετά.</p>
+  <div class="cmp">
+    <div><h3>Χώρες με ένα πάτημα</h3><p class="was">Ένα-ένα ματάκι σε 200 γραμμές</p><p>Οι πάροχοι γράφουν «GR | Αθλητικά», «UK | News». Η εφαρμογή τα ομαδοποιεί ανά χώρα: πατάς GR και ανάβουν όλες οι ελληνικές, πατάς UK και σβήνουν όλες οι αγγλικές.</p></div>
+    <div><h3>Ορατές πάνω, κρυφές κάτω</h3><p class="was">Μία ανακατεμένη λίστα</p><p>Βλέπεις μόνο όσες κρατάς, με τη σειρά τους. Οι κρυφές είναι μαζεμένες σε ένα «Κρυφές · 164» που ανοίγει όταν το χρειαστείς.</p></div>
+    <div><h3>Ένας διακόπτης, όχι τρία εικονίδια</h3><p class="was">Ματάκι + κάδος + λαβή</p><p>Κάθε γραμμή έχει διακόπτη. Μετακίνηση με σύρσιμο ή από το μενού «Στην κορυφή». Ο κάδος φεύγει: το «κρυφό» αρκεί.</p></div>
+    <div><h3>Χωρίς «Αποθήκευση»</h3><p class="was">Αν το ξεχάσεις, χάνονται όλα</p><p>Κάθε αλλαγή κρατιέται αμέσως, με «Αναίρεση» για λίγα δευτερόλεπτα.</p></div>
+  </div>
+</header>
+
+<section class="sec">
+<h2>Κινητό</h2>
+<p>Ρυθμίσεις → Κατηγορίες, ή «Επεξεργασία κατηγοριών» από το φύλλο κατηγοριών της Live.</p>
+<div class="phones">
+  <div class="shot"><div class="phone"><div class="sbar"><span>14:10</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="ib"><svg class="i"><use href="#back"/></svg></span><span class="t" style="font-size:26px">Κατηγορίες</span></div>
+      <div class="segt"><span class="on">Live<em>48 από 212</em></span><span>Ταινίες<em>30 από 96</em></span><span>Σειρές<em>22 από 71</em></span></div>
+      <div class="lbl" style="padding-top:18px"><span>ΧΩΡΕΣ</span><span style="letter-spacing:0;font-weight:500">πάτα για όλες μαζί</span></div>
+      <div class="ctry">
+        <div class="ct on"><b>GR</b><small>42 από 42</small></div>
+        <div class="ct half"><b>CY</b><small>6 από 15</small></div>
+        <div class="ct"><b>UK</b><small>0 από 61</small></div>
+        <div class="ct"><b>US</b><small>0 από 54</small></div>
+        <div class="ct"><b>IT</b><small>0 από 22</small></div>
+        <div class="ct"><b>Άλλα</b><small>0 από 18</small></div>
+      </div>
+      <div class="qa"><span class="qc"><svg class="i" style="width:15px"><use href="#tv"/></svg>Δείξε <b>όλες</b></span><span class="qc"><svg class="i" style="width:15px"><use href="#eyeoff"/></svg>Κρύψε <b>όλες</b></span><span class="qc"><svg class="i" style="width:15px"><use href="#az"/></svg>Α–Ω</span></div>
+      <div class="fld"><svg class="i" style="width:19px"><use href="#search"/></svg>Βρες κατηγορία…</div>
+      <div class="lbl" style="padding-top:16px"><span>ΟΡΑΤΕΣ · 48</span><span style="letter-spacing:0;font-weight:500">σύρε για σειρά</span></div>
+      <div class="card">
+        <div class="cr"><span class="dh"><svg class="i"><use href="#drag"/></svg></span><span class="nm">GR | Αθλητικά<small>86 κανάλια</small></span><svg class="i pin"><use href="#pinS"/></svg><span class="tg on"></span></div>
+        <div class="cr"><span class="dh"><svg class="i"><use href="#drag"/></svg></span><span class="nm">GR | Ενημέρωση<small>31 κανάλια</small></span><span class="tg on"></span></div>
+        <div class="cr"><span class="dh"><svg class="i"><use href="#drag"/></svg></span><span class="nm">GR | Ταινίες<small>64 κανάλια</small></span><span class="tg on"></span></div>
+        <div class="cr"><span class="dh"><svg class="i"><use href="#drag"/></svg></span><span class="nm">GR | Παιδικά<small>22 κανάλια</small></span><span class="tg on"></span></div>
+      </div>
+      <div class="hidden-h"><span>Κρυφές · 164</span><svg class="i" style="width:18px"><use href="#down"/></svg></div>
+    </div>
+  </div>
+  <div class="note"><h3>Μία οθόνη, από πάνω προς τα κάτω</h3><ul><li>Πάνω οι τρεις τύποι με το πόσες φαίνονται («48 από 212»).</li><li>Χώρες: ένα πάτημα ανάβει/σβήνει όλες τις κατηγορίες της χώρας. Μισογεμάτο = κάποιες μόνο.</li><li>Γρήγορα: Δείξε όλες, Κρύψε όλες, Α–Ω.</li><li>Ορατές με τη σειρά τους, κρυφές μαζεμένες κάτω.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>14:10</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="ib"><svg class="i"><use href="#back"/></svg></span><span class="t" style="font-size:26px">Κατηγορίες</span></div>
+      <div class="segt"><span class="on">Live<em>49 από 212</em></span><span>Ταινίες<em>30 από 96</em></span><span>Σειρές<em>22 από 71</em></span></div>
+      <div class="fld" style="border-color:transparent;background:var(--s2);position:relative"><svg class="i" style="width:19px"><use href="#search"/></svg><span style="color:var(--tx)">σπορ</span><span class="hz" style="position:absolute;left:10%;right:10%;bottom:-1px;width:auto"></span></div>
+      <div class="lbl" style="padding-top:16px"><span>3 ΑΠΟΤΕΛΕΣΜΑΤΑ</span></div>
+      <div class="card">
+        <div class="cr"><span class="nm">GR | Αθλητικά<small>Ορατή · 86 κανάλια</small></span><span class="tg on"></span></div>
+        <div class="cr"><span class="nm">CY | Αθλητικά<small>Μόλις εμφανίστηκε · 12 κανάλια</small></span><span class="tg on"></span></div>
+        <div class="cr"><span class="nm">UK | Sports<small>Κρυφή · 40 κανάλια</small></span><span class="tg"></span></div>
+      </div>
+      <div class="menu"><div><svg class="i"><use href="#up"/></svg>Στην κορυφή</div><div><svg class="i"><use href="#pinS"/></svg>Καρφίτσωμα στην Αρχική</div><div><svg class="i"><use href="#pencil"/></svg>Μετονομασία</div><div><svg class="i"><use href="#eyeoff"/></svg>Απόκρυψη</div></div>
+      <div class="snack"><svg class="i" style="width:18px;color:var(--ok)"><use href="#tv"/></svg>«CY | Αθλητικά» εμφανίζεται<b>Αναίρεση</b></div>
+    </div>
+  </div>
+  <div class="note"><h3>Αναζήτηση και μενού γραμμής</h3><ul><li>Γράφεις «σπορ» και βλέπεις μόνο αυτές, από όλες τις χώρες, με την κατάστασή τους.</li><li>Κράτημα σε γραμμή: Στην κορυφή, Καρφίτσωμα στην Αρχική, Μετονομασία, Απόκρυψη.</li><li>Κάθε αλλαγή κρατιέται αμέσως· «Αναίρεση» για 5″.</li></ul></div></div>
+</div>
+</section>
+
+<section class="sec">
+<h2>Τηλεόραση</h2>
+<p>Δύο στήλες: ορατές αριστερά, κρυφές δεξιά. OK μεταφέρει από τη μία στην άλλη. Για σειρά: παρατεταμένο OK «σηκώνει» την κατηγορία, ▲▼ τη μετακινεί, OK την αφήνει.</p>
+<div class="tvwrap"><div class="tvc2">
+  <div class="rail"><svg class="i"><use href="#back"/></svg><span class="on"><svg class="i"><use href="#tv"/></svg></span><svg class="i"><use href="#film"/></svg><svg class="i"><use href="#layers"/></svg></div>
+  <div class="tcol"><h5>Ορατές <small>48 · Live</small></h5>
+    <div class="qa" style="padding:0 0 .6em;font-size:.9em"><span class="qc">GR ✓</span><span class="qc">CY ½</span><span class="qc">UK</span><span class="qc">US</span></div>
+    <div class="tr2"><span>GR | Αθλητικά</span><em>86</em></div>
+    <div class="tr2 mv"><span>GR | Ταινίες</span><em>▲▼ μετακίνηση</em></div>
+    <div class="tr2"><span>GR | Ενημέρωση</span><em>31</em></div>
+    <div class="tr2"><span>GR | Παιδικά</span><em>22</em></div>
+    <div class="tr2"><span>CY | Ειδήσεις</span><em>8</em></div>
+  </div>
+  <div class="tcol"><h5>Κρυφές <small>164</small></h5>
+    <div class="tr2 f"><span>UK | Sports</span><em>OK → ορατή</em></div>
+    <div class="tr2"><span>UK | Entertainment</span><em>34</em></div>
+    <div class="tr2"><span>US | News</span><em>27</em></div>
+    <div class="tr2"><span>IT | Sport</span><em>19</em></div>
+    <div class="tr2"><span>Adult</span><em>40</em></div>
+    <div class="hint" style="margin-top:auto"><span><b>OK</b> μεταφορά</span><span><b>Παρατ. OK</b> μετακίνηση</span><span><b>◀ ▶</b> στήλη</span></div>
+  </div>
+</div></div>
+</section>
+</div>
+<script>
+document.querySelectorAll('.tg').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('on')));
+document.querySelectorAll('.ct').forEach(c=>c.addEventListener('click',()=>{c.classList.remove('half');c.classList.toggle('on')}));
+document.querySelectorAll('.segt').forEach(s=>s.addEventListener('click',e=>{const t=e.target.closest('span');if(!t||t.tagName!=='SPAN'||!t.parentElement.classList.contains('segt'))return;s.querySelectorAll(':scope>span').forEach(x=>x.classList.remove('on'));t.classList.add('on')}));
+</script>

@@ -114,4 +114,6 @@
     <!-- Horizon player -->
     <string name="player_seek_back_10">Back 10 seconds</string>
     <string name="player_seek_forward_10">Forward 10 seconds</string>
+    <string name="player_channel_previous">Previous channel</string>
+    <string name="player_channel_next">Next channel</string>
 </resources>

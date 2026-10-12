@@ -62,4 +62,10 @@
         <item quantity="one">%1$d hr %2$d min remaining</item>
         <item quantity="other">%1$d hrs %2$d min remaining</item>
     </plurals>
+    <string name="details_info">Details</string>
+    <string name="details_director_label">Director</string>
+    <string name="details_duration_label">Runtime</string>
+    <string name="details_year_label">Year</string>
+    <string name="details_duration_hm">%1$dh %2$dm</string>
+    <string name="details_duration_m">%1$d min</string>
 </resources>

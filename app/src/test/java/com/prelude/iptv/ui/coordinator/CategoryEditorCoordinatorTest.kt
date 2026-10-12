@@ -70,7 +70,7 @@ class CategoryEditorCoordinatorTest {
             },
             saveLayout = { id, type, layout -> savedLayouts[id to type] = layout },
             saveChoice = { key, ids -> savedChoices[key] = ids },
-            reloadSelection = { reloadedIds = it },
+            reloadSelection = { _, ids -> reloadedIds = ids },
         )
         coordinator.open()
         advanceUntilIdle()
@@ -86,7 +86,58 @@ class CategoryEditorCoordinatorTest {
         assertEquals(listOf("Second", "First"), saved.orderedTitles)
         assertEquals(listOf("v2"), savedChoices["$sourceId:vod"])
         assertEquals(listOf("v2"), reloadedIds)
+        assertEquals(2, coordinator.revision.value)
+    }
+
+    @Test fun `every change is persisted immediately without a save step`() = runTest {
+        val playlist = playlist()
+        val sourceId = PlaylistIdentity.stableId(playlist)
+        val savedChoices = mutableMapOf<String, List<String>?>()
+        var reloaded: Pair<String, List<String>?>? = null
+        val coordinator = coordinator(
+            playlist = { playlist },
+            scope = this,
+            loadCategories = { _, type ->
+                if (type == "live") listOf("a" to "GR | A", "b" to "GR | B") else emptyList()
+            },
+            saveChoice = { key, ids -> savedChoices[key] = ids },
+            reloadSelection = { type, ids -> reloaded = type to ids },
+        )
+        coordinator.show()
+        advanceUntilIdle()
+
+        coordinator.updateLayout("live", CategoryLayout(hidden = setOf("b")))
+
+        assertEquals(true, coordinator.state.value.visible)
+        assertEquals(listOf("a"), savedChoices["$sourceId:live"])
+        assertEquals("live" to listOf("a"), reloaded)
         assertEquals(1, coordinator.revision.value)
+
+        coordinator.updateLayout("live", CategoryLayout())
+
+        assertNull(savedChoices["$sourceId:live"])
+    }
+
+    @Test fun `open mirrors the visibility already chosen elsewhere and revives deleted groups`() = runTest {
+        val playlist = playlist()
+        val sourceId = PlaylistIdentity.stableId(playlist)
+        val coordinator = coordinator(
+            playlist = { playlist },
+            scope = this,
+            loadLayout = { _, type -> if (type == "live") CategoryLayout(deleted = setOf("c")) else CategoryLayout() },
+            loadCategories = { _, type ->
+                if (type == "live") listOf("a" to "A", "b" to "B", "c" to "C") else emptyList()
+            },
+            loadChoice = { key -> if (key == "$sourceId:live") true to listOf("a") else false to null },
+        )
+
+        coordinator.open()
+        advanceUntilIdle()
+
+        val live = coordinator.state.value.section("live")
+        assertEquals(setOf("b", "c"), live.layout.hidden)
+        assertEquals(emptySet<String>(), live.layout.deleted)
+        assertEquals(listOf("a"), live.entries.filter { it.visible }.map { it.option.id })
     }
 
     private fun coordinator(
@@ -97,7 +148,8 @@ class CategoryEditorCoordinatorTest {
         loadCategories: suspend (Playlist, String) -> List<Pair<String, String>> = { _, _ -> emptyList() },
         saveLayout: (String, String, CategoryLayout) -> Unit = { _, _, _ -> },
         saveChoice: (String, List<String>?) -> Unit = { _, _ -> },
-        reloadSelection: (List<String>?) -> Unit = {},
+        reloadSelection: (String, List<String>?) -> Unit = { _, _ -> },
+        loadChoice: (String) -> Pair<Boolean, List<String>?> = { false to null },
     ): CategoryEditorCoordinator = CategoryEditorCoordinator(
         scope = scope,
         currentPlaylist = playlist,
@@ -108,6 +160,7 @@ class CategoryEditorCoordinatorTest {
         saveLayout = saveLayout,
         saveChoice = saveChoice,
         reloadSelection = reloadSelection,
+        loadChoice = loadChoice,
     )
 
     private fun playlist() = Playlist(

@@ -62,4 +62,10 @@
         <item quantity="one">Απομένει %1$dω %2$dλ</item>
         <item quantity="other">Απομένουν %1$dω %2$dλ</item>
     </plurals>
+    <string name="details_info">Στοιχεία</string>
+    <string name="details_director_label">Σκηνοθεσία</string>
+    <string name="details_duration_label">Διάρκεια</string>
+    <string name="details_year_label">Έτος</string>
+    <string name="details_duration_hm">%1$dώ %2$d′</string>
+    <string name="details_duration_m">%1$d′</string>
 </resources>

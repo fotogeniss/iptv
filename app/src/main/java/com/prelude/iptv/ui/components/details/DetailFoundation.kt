@@ -164,6 +164,17 @@ fun DetailCinematicBackdrop(
     }
 }
 
+/** «101» → «1ώ 41′». Ό,τι δεν αναγνωρίζεται μένει όπως το έδωσε ο πάροχος. */
+@Composable
+fun localizedDuration(raw: String): String {
+    val minutes = DetailDurationPolicy.minutes(raw) ?: return raw.trim()
+    return if (minutes >= 60) {
+        androidx.compose.ui.res.stringResource(com.prelude.iptv.R.string.details_duration_hm, minutes / 60, minutes % 60)
+    } else {
+        androidx.compose.ui.res.stringResource(com.prelude.iptv.R.string.details_duration_m, minutes)
+    }
+}
+
 @Composable
 fun DetailMetaRow(
     year: String,
@@ -193,7 +204,7 @@ fun DetailMetaRow(
                 fontWeight = FontWeight.Bold
             )
         }
-        listOf(year, ageRating, duration, seriesLabel)
+        listOf(year, ageRating, localizedDuration(duration), seriesLabel)
             .filter(String::isNotBlank)
             .forEach { value ->
                 Text(

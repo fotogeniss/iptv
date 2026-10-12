@@ -64,4 +64,39 @@ object CategoryLayoutPolicy {
 
     fun selectedIds(entries: List<CategoryEntry>): List<String> =
         entries.filter { it.visible }.map { it.option.id }
+
+    /**
+     * Το νέο UI δεν ξεχωρίζει «διαγραμμένη» από «κρυφή»: μία κατηγορία είτε
+     * φαίνεται είτε όχι. Οι παλιές διαγραμμένες γυρίζουν ως κρυφές, ώστε να
+     * μπορεί κανείς να τις ξαναβρεί από τη λίστα «Κρυφές».
+     */
+    fun normalized(layout: CategoryLayout): CategoryLayout =
+        if (layout.deleted.isEmpty()) layout
+        else layout.copy(hidden = layout.hidden + layout.deleted, deleted = emptySet())
+
+    /**
+     * Συγχρονίζει με την επιλογή που ήδη ισχύει στον κατάλογο (`ids == null`
+     * σημαίνει «όλες»). Χωρίς αυτό, ο επεξεργαστής θα έδειχνε ορατή μια
+     * κατηγορία που ο χρήστης είχε κρύψει από άλλο σημείο.
+     */
+    fun withChoice(layout: CategoryLayout, available: List<CategoryOption>, ids: List<String>?): CategoryLayout {
+        if (ids == null || available.isEmpty()) return layout
+        val visible = ids.toSet()
+        return layout.copy(hidden = available.map { it.id }.filterNot(visible::contains).toSet())
+    }
+
+    /** Ανάβει ή σβήνει μαζί πολλές κατηγορίες (χώρα, «όλες»), χωρίς να αλλάζει τη σειρά. */
+    fun setVisible(entries: List<CategoryEntry>, ids: Set<String>, visible: Boolean): List<CategoryEntry> =
+        entries.map { if (it.option.id in ids) it.copy(visible = visible) else it }
+
+    /** Α–Ω με σύγκριση που αγνοεί πεζά/κεφαλαία. */
+    fun sortedByTitle(entries: List<CategoryEntry>): List<CategoryEntry> =
+        entries.sortedBy { it.option.title.lowercase() }
+
+    /** Στην κορυφή ή στο τέλος των ορατών. */
+    fun moveToEdge(entries: List<CategoryEntry>, id: String, top: Boolean): List<CategoryEntry> {
+        val item = entries.firstOrNull { it.option.id == id } ?: return entries
+        val rest = entries.filterNot { it.option.id == id }
+        return if (top) listOf(item) + rest else rest + item
+    }
 }

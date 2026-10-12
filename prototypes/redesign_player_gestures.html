@@ -1,0 +1,255 @@
+<title>Prelude+ Χειρονομίες player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Commissioner:wght@400;500;600;700;800&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#0B0A0D;--s1:#141217;--s2:#1C1A20;--s3:#27242B;--line:rgba(255,236,236,.08);--line2:rgba(255,236,236,.16);--tx:#F4EFEF;--tx2:#ABA3A9;--tx3:#6F686E;--red:#E5303A;--glow:#FF5A5A;--page:#070609;
+--display:"Advent Pro","Commissioner",system-ui,sans-serif;--body:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--page);color:var(--tx)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.f{fill:currentColor;stroke:none}
+.intro{padding-block:44px 20px;display:grid;gap:14px}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.32em;font-size:15px}
+.hz{display:block;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 22%,#fff 50%,var(--red) 78%,transparent);box-shadow:0 0 12px 1px rgba(229,48,58,.65)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.04;margin:0;text-wrap:balance}
+.lede{color:var(--tx2);max-width:68ch;margin:0}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0 8px}
+.cmp div{background:var(--ink);padding:18px 20px;display:grid;gap:6px;align-content:start;min-width:0}
+.cmp h3{margin:0;font-family:var(--display);font-weight:600;font-size:20px}
+.cmp p{margin:0;color:var(--tx2);font-size:14px}
+.cmp .was{color:var(--tx3);text-decoration:line-through;text-decoration-color:rgba(229,48,58,.6)}
+.sec{margin-top:52px}
+.sec>h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 4px}
+.sec>p{color:var(--tx2);margin:0 0 22px;max-width:72ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:36px 28px;margin-bottom:28px}
+.shot{display:grid;gap:14px;min-width:0;align-content:start}
+.note h3{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 6px}
+.note ul{margin:0;padding-left:18px;color:var(--tx2);font-size:13.5px;display:grid;gap:4px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--glow);margin-bottom:4px}
+
+/* τηλέφωνο οριζόντια */
+.land{width:100%;aspect-ratio:19.5/9;max-width:100%;border-radius:34px;background:#000;border:1px solid var(--line2);box-shadow:0 0 0 6px #111014,0 0 0 7px var(--line2),0 30px 60px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;container-type:inline-size;font-size:clamp(9px,2.3cqw,14px)}
+.scene{position:absolute;inset:0;background:
+ radial-gradient(60% 80% at 70% 30%,rgba(255,170,90,.55),transparent 60%),
+ radial-gradient(50% 70% at 20% 80%,rgba(40,90,160,.6),transparent 65%),
+ linear-gradient(160deg,#2a1a2e,#0d1424 60%,#05070c)}
+.scene.live{background:
+ radial-gradient(40% 60% at 50% 40%,rgba(80,200,120,.45),transparent 70%),
+ linear-gradient(180deg,#0c3a1e,#145a2c 55%,#0a2a15)}
+.scene.live::after{content:"";position:absolute;left:10%;right:10%;top:52%;height:2px;background:rgba(255,255,255,.35)}
+.scene.live::before{content:"";position:absolute;left:50%;top:52%;width:16cqw;aspect-ratio:1;translate:-50% -50%;border:2px solid rgba(255,255,255,.35);border-radius:50%}
+.dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent 28%,transparent 62%,rgba(0,0,0,.75))}
+.ptop{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:1.2em;padding:1.1em 2.2em}
+.ptop .ttl{flex:1;min-width:0;line-height:1.25}
+.ptop .ttl b{display:block;font-size:1.15em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptop .ttl span{color:rgba(255,255,255,.7);font-size:.9em}
+.ptop svg{width:1.7em;height:1.7em}
+.center{position:absolute;left:50%;top:50%;translate:-50% -50%;display:flex;align-items:center;gap:3.2em}
+.play{width:4.6em;height:4.6em;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.22);display:grid;place-items:center}
+.play svg{width:2.3em;height:2.3em}
+.chbtn{display:grid;justify-items:center;gap:.35em;color:#fff}
+.chbtn .c{width:3.6em;height:3.6em;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.22);display:grid;place-items:center}
+.chbtn .c svg{width:1.9em;height:1.9em}
+.chbtn small{font-size:.78em;color:rgba(255,255,255,.78);white-space:nowrap;font-weight:600}
+.chbtn small i{font-style:normal;color:rgba(255,255,255,.5);margin-right:.35em}
+.pbot{position:absolute;left:0;right:0;bottom:0;padding:0 2.2em 1.2em}
+.prow{display:flex;align-items:center;gap:1.1em;font-weight:600}
+.prow .sp{flex:1}
+.prow svg{width:1.5em;height:1.5em}
+.livedot{display:flex;align-items:center;gap:.5em;font-weight:800;letter-spacing:.06em;font-size:.9em}
+.livedot::before{content:"";width:.6em;height:.6em;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+.chip{font-size:.82em;padding:.35em .8em;border-radius:.8em;background:rgba(255,255,255,.14)}
+.bar{margin-top:.8em;height:.3em;border-radius:1em;background:rgba(255,255,255,.22);position:relative}
+.bar .fill{position:absolute;inset:0 auto 0 0;border-radius:1em;background:var(--red)}
+.bar .knob{position:absolute;top:50%;width:1em;height:1em;border-radius:50%;background:#fff;translate:-50% -50%;box-shadow:0 0 0 .3em rgba(229,48,58,.35)}
+.bar .ghost{position:absolute;top:50%;width:.9em;height:.9em;border-radius:50%;border:2px solid #fff;translate:-50% -50%;background:var(--red)}
+.nowline{font-size:.85em;color:rgba(255,255,255,.75);margin-top:.5em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nowline b{color:#fff}
+
+/* διπλό πάτημα: μισοφέγγαρο */
+.ripple{position:absolute;top:-10%;bottom:-10%;width:42%;display:grid;place-items:center;background:rgba(255,255,255,.12)}
+.ripple.r{right:0;border-radius:100% 0 0 100%/50% 0 0 50%}
+.ripple.l{left:0;border-radius:0 100% 100% 0/0 50% 50% 0}
+.ripple .in{display:grid;justify-items:center;gap:.3em;font-weight:800}
+.ripple .arrows{display:flex}
+.ripple .arrows svg{width:1.5em;height:1.5em;margin:0 -.25em}
+.ripple .arrows svg:nth-child(1){opacity:.35}.ripple .arrows svg:nth-child(2){opacity:.65}
+.ripple.l .arrows svg:nth-child(1){opacity:1}.ripple.l .arrows svg:nth-child(3){opacity:.35}
+.ripple .big{font-size:1.25em}
+.ripple .sm{font-size:.8em;color:rgba(255,255,255,.75);font-weight:600}
+.dot{position:absolute;width:3.4em;height:3.4em;border-radius:50%;background:rgba(255,255,255,.25);translate:-50% -50%;box-shadow:0 0 0 .8em rgba(255,255,255,.08)}
+
+/* παρατεταμένο */
+.pill{position:absolute;top:1.4em;left:50%;translate:-50% 0;display:flex;align-items:center;gap:.7em;padding:.55em 1.1em;border-radius:2em;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.18);font-weight:800;white-space:nowrap}
+.pill svg{width:1.4em;height:1.4em}
+.pill .t{font-variant-numeric:tabular-nums}
+.pill .s{color:var(--glow)}
+.preview{position:absolute;bottom:3.6em;width:9.5em;aspect-ratio:16/9;border-radius:.6em;border:2px solid #fff;overflow:hidden;translate:-50% 0;background:radial-gradient(60% 80% at 40% 40%,rgba(255,170,90,.6),transparent 65%),linear-gradient(160deg,#3a2232,#101828)}
+.preview span{position:absolute;bottom:.25em;left:0;right:0;text-align:center;font-weight:800;font-size:.85em;font-variant-numeric:tabular-nums;text-shadow:0 1px 4px #000}
+.zone{position:absolute;top:0;bottom:0;width:33.3%}
+
+/* χάρτης χειρονομιών */
+.map{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--line2);border-radius:18px;overflow:hidden;background:var(--s1)}
+.map>div{padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.map>div+div{border-left:1px dashed var(--line2)}
+.map h4{margin:0;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:.04em}
+.map dl{margin:0;display:grid;gap:8px}
+.map dt{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--tx3)}
+.map dd{margin:0;font-size:14px}
+.map dd small{color:var(--tx2);display:block;font-size:12.5px}
+@media (max-width:640px){.map{grid-template-columns:1fr}.map>div+div{border-left:0;border-top:1px dashed var(--line2)}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:22px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.1em;color:var(--tx3);font-weight:700;background:var(--s1)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+td .x{color:var(--tx3)}
+</style>
+
+<div class="wrap">
+<header class="intro">
+  <div class="wordmark">PRELUDE+</div>
+  <span class="hz" style="width:120px"></span>
+  <h1>Player κινητού: κανάλια με βελάκια, κίνηση με τα δάχτυλα</h1>
+  <p class="lede">Στα ζωντανά, δίπλα στο play μπαίνουν βελάκια για προηγούμενο και επόμενο κανάλι. Στις ταινίες και τις σειρές φεύγουν τα κουμπιά −10 / +10. Στη θέση τους, διπλό πάτημα αριστερά ή δεξιά για πήδημα και κράτημα για γρήγορη κίνηση.</p>
+  <div class="cmp">
+    <div><h3>Βελάκια καναλιού</h3><p class="was">Μόνο σύρσιμο, που δεν το βρίσκει κανείς</p><p>‹ και › δίπλα στο play, με το όνομα του καναλιού που θα ανοίξει. Το σύρσιμο μένει κι αυτό.</p></div>
+    <div><h3>Χωρίς −10 / +10</h3><p class="was">Τρία κουμπιά στη μέση της εικόνας</p><p>Στη μέση μόνο το play. Η εικόνα καθαρή.</p></div>
+    <div><h3>Διπλό πάτημα</h3><p class="was">Υπήρχε, αλλά χωρίς να το ξέρει κανείς</p><p>Αριστερό ή δεξί μισό, ±10″. Κάθε επόμενο πάτημα προσθέτει 10″ (20″, 30″…). Δουλεύει και με τα χειριστήρια ανοιχτά.</p></div>
+    <div><h3>Κράτημα</h3><p class="was">Δεν υπήρχε</p><p>Κρατάς δεξιά και τρέχει μπροστά, αριστερά και τρέχει πίσω. Επιταχύνει ×2 → ×4 → ×8. Αφήνεις και παίζει από εκεί.</p></div>
+  </div>
+</header>
+
+<section class="sec">
+<h2>Ζωντανά</h2>
+<p>Τα βελάκια δείχνουν τον αριθμό και το όνομα του διπλανού καναλιού στην τρέχουσα κατηγορία, για να ξέρεις πού πας πριν πατήσεις.</p>
+<div class="grid">
+  <div class="shot">
+    <div class="land">
+      <div class="scene live"></div><div class="dim"></div>
+      <div class="ptop">
+        <svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        <div class="ttl"><b>5 · Novasports 1</b><span>Super League · Ολυμπιακός – ΠΑΟΚ</span></div>
+        <svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h3M14 12h3M7 15h10"/></svg>
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+      </div>
+      <div class="center">
+        <div class="chbtn"><div class="c"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></div><small><i>4</i>Novasports Prime</small></div>
+        <div class="play"><svg class="i f" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></div>
+        <div class="chbtn"><div class="c"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div><small><i>6</i>Novasports 2</small></div>
+      </div>
+      <div class="pbot">
+        <div class="prow"><span class="livedot">LIVE</span><span class="sp"></span><span class="chip">HD</span><span class="chip">16:9</span>
+          <svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+        <div class="nowline"><b>Τώρα</b> 21:00–23:00 · Ολυμπιακός – ΠΑΟΚ &nbsp;·&nbsp; <b>Μετά</b> 23:00 Αθλητική Κυριακή</div>
+      </div>
+    </div>
+    <div class="note"><span class="tag">ΧΕΙΡΙΣΤΗΡΙΑ ΑΝΟΙΧΤΑ</span><h3>‹ προηγούμενο · play · επόμενο ›</h3><ul><li>Πατάς › και ανοίγει το 6, με το ίδιο slide που κάνει και το σύρσιμο.</li><li>Στην άκρη της κατηγορίας το βελάκι ξεθωριάζει. Δεν κάνει κύκλο στην αρχή.</li><li>Το σύρσιμο αριστερά/δεξιά συνεχίζει να αλλάζει κανάλι.</li></ul></div>
+  </div>
+
+  <div class="shot">
+    <div class="land">
+      <div class="scene live"></div><div class="dim" style="opacity:.6"></div>
+      <div class="ripple r"><div class="in">
+        <div class="arrows"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+        <div class="big">6 · Novasports 2</div><div class="sm">Super League · ΑΕΚ – Άρης</div></div></div>
+      <div class="dot" style="left:90%;top:80%"></div>
+    </div>
+    <div class="note"><span class="tag">ΔΙΠΛΟ ΠΑΤΗΜΑ ΣΤΑ ΖΩΝΤΑΝΑ</span><h3>Ίδια κίνηση, αλλαγή καναλιού</h3><ul><li>Στα ζωντανά δεν έχει νόημα το ±10″, οπότε το διπλό πάτημα δεξιά πάει στο επόμενο κανάλι και αριστερά στο προηγούμενο.</li><li>Για τον αντίχειρα στο οριζόντιο είναι πιο γρήγορο από το να ανοίξεις χειριστήρια.</li><li>Αν δεν το θες, μένει μόνο με τα βελάκια. Πες μου.</li></ul></div>
+  </div>
+</div>
+</section>
+
+<section class="sec">
+<h2>Ταινίες και σειρές</h2>
+<p>Στη μέση μένει μόνο το play. Η κίνηση στον χρόνο γίνεται με τα δάχτυλα πάνω στην εικόνα, όπως στο YouTube.</p>
+<div class="grid">
+  <div class="shot">
+    <div class="land">
+      <div class="scene"></div><div class="dim"></div>
+      <div class="ptop">
+        <svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        <div class="ttl"><b>Dune: Part Two</b><span>2024 · 2ώ 46′</span></div>
+        <svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h3M14 12h3M7 15h10"/></svg>
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+      </div>
+      <div class="center"><div class="play"><svg class="i f" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></div></div>
+      <div class="pbot">
+        <div class="prow"><span style="font-variant-numeric:tabular-nums">1:12:40 / 2:46:10</span><span class="sp"></span><span class="chip">4K</span><span class="chip">16:9</span>
+          <svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+        <div class="bar"><div class="fill" style="width:43.6%"></div><div class="knob" style="left:43.6%"></div></div>
+      </div>
+    </div>
+    <div class="note"><span class="tag">ΧΕΙΡΙΣΤΗΡΙΑ ΑΝΟΙΧΤΑ</span><h3>Μόνο play στη μέση</h3><ul><li>Τα κυκλάκια −10 / +10 φεύγουν.</li><li>Η μπάρα από κάτω μένει για μεγάλα άλματα.</li><li>Στις σειρές μένει το «Επόμενο επεισόδιο» κάτω δεξιά.</li></ul></div>
+  </div>
+
+  <div class="shot">
+    <div class="land">
+      <div class="scene"></div><div class="dim" style="opacity:.5"></div>
+      <div class="ripple r"><div class="in">
+        <div class="arrows"><svg class="i f" viewBox="0 0 24 24"><path d="M5 6l7 6-7 6z"/></svg><svg class="i f" viewBox="0 0 24 24"><path d="M5 6l7 6-7 6z"/></svg><svg class="i f" viewBox="0 0 24 24"><path d="M5 6l7 6-7 6z"/></svg></div>
+        <div class="big">+30″</div><div class="sm">→ 1:13:10</div></div></div>
+      <div class="dot" style="left:90%;top:72%"></div>
+      <div class="pbot" style="padding-bottom:1em"><div class="bar"><div class="fill" style="width:44%"></div></div></div>
+    </div>
+    <div class="note"><span class="tag">ΔΙΠΛΟ ΠΑΤΗΜΑ</span><h3>Δεξιά +10″, αριστερά −10″</h3><ul><li>Μετά το διπλό, κάθε μονό πάτημα στο ίδιο μισό μέσα σε 0,7″ προσθέτει 10″ ακόμα. Τρία πατήματα = +30″.</li><li>Το μισοφέγγαρο δείχνει πόσο και πού θα βρεθείς.</li><li>Η μέση της εικόνας (το play) δεν πιάνει διπλό πάτημα.</li></ul></div>
+  </div>
+
+  <div class="shot">
+    <div class="land">
+      <div class="scene"></div><div class="dim" style="opacity:.7"></div>
+      <div class="pill"><svg class="i f" viewBox="0 0 24 24"><path d="M12 6l7 6-7 6zM4 6l7 6-7 6z"/></svg><span class="s">×4</span><span class="t">1:31:20</span><span style="color:rgba(255,255,255,.55);font-weight:600">+18:40</span></div>
+      <div class="dot" style="left:84%;top:50%;width:4.6em;height:4.6em;box-shadow:0 0 0 1.2em rgba(255,255,255,.08),0 0 0 2.4em rgba(255,255,255,.04)"></div>
+      <div class="pbot" style="padding-bottom:1.6em">
+        <div class="bar"><div class="fill" style="width:43.6%"></div><div class="fill" style="width:55%;background:rgba(229,48,58,.45)"></div><div class="ghost" style="left:55%"></div></div>
+      </div>
+    </div>
+    <div class="note"><span class="tag">ΚΡΑΤΗΜΑ ΔΕΞΙΑ</span><h3>Τρέχει μπροστά όσο κρατάς</h3><ul><li>Ξεκινά ×2 και ανεβαίνει σε ×4 μετά από 2″ και σε ×8 μετά από 4″.</li><li>Πάνω φαίνεται πού θα βρεθείς και πόσο έχεις προχωρήσει. Η μπάρα δείχνει τον στόχο.</li><li>Αφήνεις και παίζει από εκεί. Κράτημα αριστερά = το ίδιο προς τα πίσω.</li></ul></div>
+  </div>
+
+  <div class="shot">
+    <div class="land">
+      <div class="scene"></div><div class="dim" style="opacity:.7"></div>
+      <div class="pill"><svg class="i f" viewBox="0 0 24 24"><path d="M12 6l-7 6 7 6zM20 6l-7 6 7 6z"/></svg><span class="s">×2</span><span class="t">1:10:05</span><span style="color:rgba(255,255,255,.55);font-weight:600">−2:35</span></div>
+      <div class="dot" style="left:16%;top:50%;width:4.6em;height:4.6em;box-shadow:0 0 0 1.2em rgba(255,255,255,.08)"></div>
+      <div class="pbot" style="padding-bottom:1.6em">
+        <div class="bar"><div class="fill" style="width:42.2%"></div><div class="ghost" style="left:42.2%"></div></div>
+      </div>
+    </div>
+    <div class="note"><span class="tag">ΚΡΑΤΗΜΑ ΑΡΙΣΤΕΡΑ</span><h3>Πίσω, με τον ίδιο τρόπο</h3><ul><li>Η εικόνα δεν παίζει ανάποδα. Πηδάει πίσω ανά βήματα και μένει στο σημείο που θα αφήσεις.</li><li>Αν σύρεις το δάχτυλο πάνω-κάτω ενώ κρατάς, δεν αλλάζει φωτεινότητα ή ένταση. Το κράτημα τα κλειδώνει.</li></ul></div>
+  </div>
+</div>
+</section>
+
+<section class="sec">
+<h2>Χάρτης χειρονομιών</h2>
+<p>Η εικόνα χωρίζεται σε τρία κομμάτια. Το ένα πάτημα παντού ανοίγει και κλείνει τα χειριστήρια.</p>
+<div class="map">
+  <div><h4>ΑΡΙΣΤΕΡΑ</h4><dl>
+    <dt>Διπλό πάτημα</dt><dd>−10″ <small>Ζωντανά: προηγούμενο κανάλι</small></dd>
+    <dt>Κράτημα</dt><dd>Γρήγορα πίσω ×2 → ×8 <small>Ζωντανά: τίποτα</small></dd>
+    <dt>Σύρσιμο πάνω/κάτω</dt><dd>Φωτεινότητα <small>Όπως τώρα, σε πλήρη οθόνη</small></dd></dl></div>
+  <div><h4>ΜΕΣΗ</h4><dl>
+    <dt>Πάτημα στο κουμπί</dt><dd>Play / Pause</dd>
+    <dt>Διπλό πάτημα</dt><dd>Πλήρης οθόνη ↔ κανονική</dd>
+    <dt>Σύρσιμο κάτω</dt><dd>Μαζεύει τον player <small>Όπως τώρα</small></dd></dl></div>
+  <div><h4>ΔΕΞΙΑ</h4><dl>
+    <dt>Διπλό πάτημα</dt><dd>+10″ <small>Ζωντανά: επόμενο κανάλι</small></dd>
+    <dt>Κράτημα</dt><dd>Γρήγορα μπροστά ×2 → ×8 <small>Ζωντανά: τίποτα</small></dd>
+    <dt>Σύρσιμο πάνω/κάτω</dt><dd>Ένταση <small>Όπως τώρα, σε πλήρη οθόνη</small></dd></dl></div>
+</div>
+<div class="tw"><table>
+  <thead><tr><th></th><th>ΤΩΡΑ</th><th>ΜΕΤΑ</th></tr></thead>
+  <tbody>
+    <tr><td>Αλλαγή καναλιού</td><td class="x">Μόνο σύρσιμο αριστερά/δεξιά</td><td>Βελάκια ‹ › με όνομα, σύρσιμο, διπλό πάτημα στις άκρες</td></tr>
+    <tr><td>−10 / +10</td><td class="x">Κυκλάκια στη μέση</td><td>Φεύγουν. Διπλό πάτημα στις άκρες, που προσθέτει με κάθε πάτημα</td></tr>
+    <tr><td>Γρήγορη κίνηση</td><td class="x">Μόνο σύρσιμο στη μπάρα</td><td>Κράτημα αριστερά/δεξιά, ×2 → ×4 → ×8</td></tr>
+    <tr><td>Διπλό πάτημα</td><td class="x">±10″ σταθερά</td><td>Πιάνει και με ανοιχτά χειριστήρια, προσθέτει με κάθε πάτημα</td></tr>
+  </tbody>
+</table></div>
+</section>
+</div>

@@ -22,6 +22,36 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 2.2.0 - versionCode 174
+
+Category editing, player gestures and details, following
+`prototypes/redesign_categories.html` and `prototypes/redesign_player_gestures.html`.
+
+- **One category editor, much faster.** Settings, the Live categories sheet and
+  the TV menu now open the same editor (the old checkbox dialog is gone).
+  Categories are grouped by the provider's country prefix (`GR |`, `UK:`,
+  `[US]`); one tap shows or hides a whole country, with a half state when only
+  some are on. Show all, Hide all and A–Z sit on top, followed by search.
+  Visible categories are listed in order with a drag handle and a switch;
+  hidden ones are collapsed underneath. Long-press opens Move to top, Move to
+  bottom and Hide. Every change is saved at once and the snackbar offers Undo;
+  the Save button is gone. Groups deleted in older versions come back as hidden.
+- **TV category editor.** Two columns, visible and hidden; OK moves a category
+  across, holding OK lifts it so ▲▼ reorder it, and OK or Back drops it. The
+  order is saved once, when dropped. Country chips sit above the columns.
+- **Mobile player.** Live: ‹ › arrows next to play show the number and name of
+  the channel they open; swipe still works, and double-tapping the left or
+  right side also changes channel. Movies and series: the −10/+10 buttons are
+  gone. Double-tap left/right seeks 10 seconds and each further tap on the same
+  side adds 10 more, shown with a half-moon and the target time. Holding
+  left/right fast-rewinds or fast-forwards, accelerating ×2 → ×4 → ×8, with the
+  target time on top; playback jumps there once on release. Double-tapping the
+  middle toggles full screen.
+- **Details.** The summary appears only once, under the title. "About" became
+  "Details" with credits only (director/creator, cast, genres, runtime, year)
+  and disappears when empty. Runtime reads "1h 41m" instead of a bare "101" on
+  phone and TV. The floating settings button no longer covers the details page.
+
 ## 2.1.0 - versionCode 173
 
 TV pages following `prototypes/redesign_pages.html`.

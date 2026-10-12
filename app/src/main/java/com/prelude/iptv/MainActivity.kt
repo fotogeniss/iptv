@@ -349,6 +349,8 @@ private fun Root(vm: MainViewModel = viewModel()) {
                     }
                 }
             }
+            // Ο επεξεργαστής κατηγοριών καλύπτει και Browse και Ρυθμίσεις.
+            CategoryEditorHost(vm)
         }
     }
 

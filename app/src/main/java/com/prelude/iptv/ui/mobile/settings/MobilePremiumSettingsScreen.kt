@@ -62,7 +62,6 @@ import com.prelude.iptv.ui.design.HorizonSearchField
 import com.prelude.iptv.ui.components.settings.SettingsSourceUi
 import com.prelude.iptv.ui.home.HomeLayoutPolicy
 import com.prelude.iptv.category.CategoryEditorState
-import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.ui.mobile.home.MobileEditHomeScreen
 import com.prelude.iptv.ui.mobile.navigation.premiumMobileNavigationContentPadding
 import com.prelude.iptv.ui.localization.labelRes
@@ -97,8 +96,7 @@ fun MobilePremiumSettingsScreen(
     onCloseEpgSearch: () -> Unit,
     categoryEditorState: CategoryEditorState,
     onEditCategories: () -> Unit,
-    onCategoryLayoutChange: (String, CategoryLayout) -> Unit,
-    onSaveCategories: () -> Unit,
+    onLoadCategories: () -> Unit,
     onClearHomeHistory: (String) -> Unit,
     onClearTmdbCache: () -> Unit,
     onShare: () -> Unit,
@@ -116,7 +114,6 @@ fun MobilePremiumSettingsScreen(
     var premiumSheet by remember { mutableStateOf(false) }
     var infoSheet by remember { mutableStateOf<MobileSettingsInfo?>(null) }
     var editingHome by remember { mutableStateOf(false) }
-    var editingCategories by remember { mutableStateOf(false) }
     var accountFlow by remember { mutableStateOf(false) }
     var managerSourceIndex by remember { mutableStateOf<Int?>(null) }
     var playerSettingsOpen by remember { mutableStateOf(false) }
@@ -157,9 +154,9 @@ fun MobilePremiumSettingsScreen(
     )
     val selectedAppLanguage = AppLanguageController.selected()
 
-    LaunchedEffect(navigationCollapsed, editingHome, editingCategories, accountFlow, managerSourceIndex, playerSettingsOpen, epgSettingsOpen, legalPrivacyOpen, diagnosticsOpen, languagePickerOpen) {
+    LaunchedEffect(navigationCollapsed, editingHome, accountFlow, managerSourceIndex, playerSettingsOpen, epgSettingsOpen, legalPrivacyOpen, diagnosticsOpen, languagePickerOpen) {
         onNavigationCollapsedChange(
-            navigationCollapsed || editingHome || editingCategories || accountFlow ||
+            navigationCollapsed || editingHome || accountFlow ||
                 managerSourceIndex != null || playerSettingsOpen || epgSettingsOpen || legalPrivacyOpen ||
                 diagnosticsOpen || languagePickerOpen
         )
@@ -202,17 +199,6 @@ fun MobilePremiumSettingsScreen(
             onClear = onClearHomeHistory,
             onBack = { editingHome = false },
             modifier = modifier
-        )
-        return
-    }
-
-    if (editingCategories) {
-        MobileEditCategoriesScreen(
-            state = categoryEditorState,
-            onLayoutChange = onCategoryLayoutChange,
-            onSave = onSaveCategories,
-            onBack = { editingCategories = false },
-            modifier = modifier,
         )
         return
     }
@@ -340,9 +326,9 @@ fun MobilePremiumSettingsScreen(
             if (active != null) managerSourceIndex = active.index else addPicker = true
         })
         add(SettingsEntry(groupContent, stringResource(R.string.settings_edit_categories), Icons.Default.Category,
-            stringResource(R.string.settings_edit_categories_subtitle)) { onEditCategories(); editingCategories = true })
+            stringResource(R.string.settings_edit_categories_subtitle)) { onEditCategories() })
         add(SettingsEntry(groupContent, stringResource(R.string.settings_edit_home), Icons.Default.Tune,
-            stringResource(R.string.settings_edit_home_subtitle)) { onEditCategories(); editingHome = true })
+            stringResource(R.string.settings_edit_home_subtitle)) { onLoadCategories(); editingHome = true })
         add(SettingsEntry(groupContent, stringResource(R.string.epg_settings_programme_guide), Icons.Default.CalendarMonth,
             stringResource(R.string.settings_epg_subtitle),
             value = if (epgEnabled) enabledLabel else disabledLabel) { epgSettingsOpen = true })

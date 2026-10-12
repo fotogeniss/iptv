@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.prelude.iptv.R
 import com.prelude.iptv.category.CategoryEditorState
-import com.prelude.iptv.category.CategoryLayout
 import com.prelude.iptv.data.Playlist
 import com.prelude.iptv.data.SourceLoadProgress
 import com.prelude.iptv.player.BufferPolicy
@@ -60,8 +59,7 @@ fun AdaptiveSettingsScreen(
     onCloseEpgSearch: () -> Unit,
     categoryEditorState: CategoryEditorState,
     onEditCategories: () -> Unit,
-    onCategoryLayoutChange: (String, CategoryLayout) -> Unit,
-    onSaveCategories: () -> Unit,
+    onLoadCategories: () -> Unit,
     onClearHomeHistory: (String) -> Unit,
     onToggleTvHome: () -> Unit,
     onToggleTvHomeMyList: () -> Unit,
@@ -130,8 +128,7 @@ fun AdaptiveSettingsScreen(
             onCloseEpgSearch = onCloseEpgSearch,
             categoryEditorState = categoryEditorState,
             onEditCategories = onEditCategories,
-            onCategoryLayoutChange = onCategoryLayoutChange,
-            onSaveCategories = onSaveCategories,
+            onLoadCategories = onLoadCategories,
             onClearHomeHistory = onClearHomeHistory,
             onClearTmdbCache = onClearTmdbCache,
             onShare = onShare,

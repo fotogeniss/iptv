@@ -87,6 +87,9 @@ fun MobilePlaybackOverlay(
     onPlayPrevious: (() -> Unit)? = null,
     /** CH+/CH− με σύρσιμο αριστερά/δεξιά. Μόνο για ζωντανά — null αλλού. */
     onChannelStep: ((Int) -> Unit)? = null,
+    /** Ονόματα των διπλανών καναλιών για τα βελάκια ‹ › (μόνο ζωντανά). */
+    previousChannelLabel: String? = null,
+    nextChannelLabel: String? = null,
     infoChannel: Channel = channel,
     metadata: TmdbClient.Meta? = null,
     relatedItems: List<Channel> = emptyList(),
@@ -153,6 +156,18 @@ fun MobilePlaybackOverlay(
     // δευτερόλεπτα αντί να μετράει μόνο το τελευταίο (συμπεριφορά YouTube).
     var seekFeedbackMs by remember { mutableLongStateOf(0L) }
     var seekFeedbackForward by remember { mutableStateOf(true) }
+    // Από πού ξεκίνησε η σειρά πατημάτων, για να δείχνει «→ 1:13:10».
+    var seekBaseMs by remember { mutableLongStateOf(0L) }
+
+    // ΚΡΑΤΗΜΑ ΓΙΑ ΓΡΗΓΟΡΗ ΚΙΝΗΣΗ (ταινίες/σειρές).
+    //
+    // Όσο κρατάει το δάχτυλο ΔΕΝ γίνεται seek σε κάθε βήμα: σε ροή IPTV κάθε seek
+    // ξαναφορτώνει. Η μπάρα και το «×4 1:31:20» ακολουθούν τοπικά (μέσω του ίδιου
+    // scrubMs που χρησιμοποιεί και το σύρσιμο της μπάρας) και η μηχανή πηγαίνει
+    // εκεί ΜΙΑ φορά, όταν σηκωθεί το δάχτυλο.
+    var holdDirection by remember { mutableIntStateOf(0) }
+    var holdLevel by remember { mutableIntStateOf(2) }
+    var holdJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     var channelTransitionSequence by remember { mutableIntStateOf(0) }
     var channelTransition by remember { mutableStateOf<LiveChannelTransitionRequest?>(null) }
@@ -160,6 +175,15 @@ fun MobilePlaybackOverlay(
     var pendingChannelTransitionVersion by remember { mutableIntStateOf(0) }
     // Όνομα του νέου καναλιού σε συννεφάκι πάνω-πάνω. null = κρυμμένο.
     var channelToast by remember { mutableStateOf<String?>(null) }
+    // Βελάκια, σύρσιμο και διπλό πάτημα αλλάζουν κανάλι από ΕΝΑ σημείο, με το
+    // ίδιο slide: αλλιώς το βελάκι θα άλλαζε κανάλι χωρίς την κίνηση.
+    val stepChannel: ((Int) -> Unit)? = onChannelStep?.let { step ->
+        { delta: Int ->
+            pendingChannelTransitionDirection = LiveChannelTransitionMotion.direction(delta)
+            pendingChannelTransitionVersion++
+            step(delta)
+        }
+    }
     // Το πρώτο κανάλι δεν πρέπει να δείξει συννεφάκι «άλλαξε» — μόνο αυτά που
     // έρχονται από σύρσιμο.
     var isFirstChannel by remember { mutableStateOf(true) }
@@ -655,15 +679,9 @@ fun MobilePlaybackOverlay(
                                     // όχι σταθερά pixel.
                                     val threshold = widthPx / 5f
                                     if (dragX <= -threshold) {
-                                        pendingChannelTransitionDirection =
-                                            LiveChannelTransitionMotion.direction(1)
-                                        pendingChannelTransitionVersion++
-                                        onChannelStep(1)
+                                        stepChannel?.invoke(1)
                                     } else if (dragX >= threshold) {
-                                        pendingChannelTransitionDirection =
-                                            LiveChannelTransitionMotion.direction(-1)
-                                        pendingChannelTransitionVersion++
-                                        onChannelStep(-1)
+                                        stepChannel?.invoke(-1)
                                     }
                                     dragX = 0f
                                 },
@@ -671,41 +689,100 @@ fun MobilePlaybackOverlay(
                             ) { _, amount -> dragX += amount }
                         }
                     }
-                    .pointerInput(channel, isLive) {
-                        detectTapGestures(
-                            onTap = { controlsVisible = !controlsVisible },
-                            onDoubleTap = { offset ->
-                                if (isLive) return@detectTapGestures
-                                val forward = offset.x > widthPx / 2f
-                                if (forward != seekFeedbackForward) seekFeedbackMs = 0L
-                                seekFeedbackForward = forward
-                                seekFeedbackMs += 10_000L
-                                engine.seekBy(if (forward) 10_000L else -10_000L)
+                    .pointerInput(channel, isLive, onChannelStep) {
+                        // Τρία κομμάτια: αριστερά 40%, μέση 20%, δεξιά 40%.
+                        fun zone(x: Float): Int = when {
+                            x < widthPx * .4f -> -1
+                            x > widthPx * .6f -> 1
+                            else -> 0
+                        }
+                        fun seekStep(forward: Boolean) {
+                            if (seekFeedbackMs == 0L || forward != seekFeedbackForward) {
+                                seekFeedbackMs = 0L
+                                seekBaseMs = engine.currentPositionMs()
                             }
+                            seekFeedbackForward = forward
+                            seekFeedbackMs += 10_000L
+                            engine.seekBy(if (forward) 10_000L else -10_000L)
+                        }
+                        detectTapGestures(
+                            onTap = { offset ->
+                                // Μέσα σε σειρά διπλών πατημάτων, κάθε μονό στο ίδιο
+                                // μισό προσθέτει άλλα 10″ (όπως στο YouTube).
+                                val side = zone(offset.x)
+                                if (!isLive && seekFeedbackMs != 0L && side != 0 &&
+                                    (side > 0) == seekFeedbackForward
+                                ) {
+                                    seekStep(side > 0)
+                                } else {
+                                    controlsVisible = !controlsVisible
+                                }
+                            },
+                            onDoubleTap = { offset ->
+                                when (val side = zone(offset.x)) {
+                                    0 -> { expanded = !expanded; interact() }
+                                    else -> if (isLive) stepChannel?.invoke(side) else seekStep(side > 0)
+                                }
+                            },
+                            onLongPress = { offset ->
+                                val side = zone(offset.x)
+                                if (isLive || side == 0 || state.durationMs <= 0) return@detectTapGestures
+                                holdDirection = side
+                                holdLevel = 2
+                                scrubMs = engine.currentPositionMs()
+                                scrubbing = true
+                                controlsVisible = true
+                                holdJob?.cancel()
+                                holdJob = scope.launch {
+                                    val started = android.os.SystemClock.uptimeMillis()
+                                    while (true) {
+                                        delay(HOLD_TICK_MS)
+                                        val held = android.os.SystemClock.uptimeMillis() - started
+                                        holdLevel = HoldSeekPolicy.level(held)
+                                        scrubMs = (scrubMs + side * HoldSeekPolicy.stepMs(held, HOLD_TICK_MS))
+                                            .coerceIn(0L, state.durationMs)
+                                    }
+                                }
+                            },
+                            onPress = {
+                                tryAwaitRelease()
+                                if (holdDirection != 0) {
+                                    holdJob?.cancel()
+                                    holdJob = null
+                                    holdDirection = 0
+                                    engine.seekTo(scrubMs)
+                                    scrubbing = false
+                                    interact()
+                                }
+                            },
                         )
                     }
             )
 
             if (seekFeedbackMs != 0L) {
-                Box(
-                    Modifier
-                        .align(if (seekFeedbackForward) Alignment.CenterEnd else Alignment.CenterStart)
-                        .padding(horizontal = 36.dp)
-                        .size(76.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = .55f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        (if (seekFeedbackForward) "+" else "−") + stringResource(
-                            R.string.player_seek_seconds,
-                            seekFeedbackMs / 1_000L,
-                        ),
-                        color = Color.White,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
+                SeekRipple(
+                    forward = seekFeedbackForward,
+                    label = (if (seekFeedbackForward) "+" else "−") + stringResource(
+                        R.string.player_seek_seconds,
+                        seekFeedbackMs / 1_000L,
+                    ),
+                    target = mobileClock(
+                        (seekBaseMs + if (seekFeedbackForward) seekFeedbackMs else -seekFeedbackMs)
+                            .coerceIn(0L, state.durationMs.coerceAtLeast(0L))
+                    ),
+                    modifier = Modifier.align(if (seekFeedbackForward) Alignment.CenterEnd else Alignment.CenterStart),
+                )
+            }
+
+            if (holdDirection != 0) {
+                HoldSeekPill(
+                    forward = holdDirection > 0,
+                    level = holdLevel,
+                    target = mobileClock(scrubMs),
+                    delta = (if (scrubMs >= state.positionMs) "+" else "−") +
+                        mobileClock(kotlin.math.abs(scrubMs - state.positionMs)),
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 14.dp),
+                )
             }
 
             verticalControl?.let { control ->
@@ -822,6 +899,9 @@ fun MobilePlaybackOverlay(
                 onInteract = interact,
                 onPlayNext = onPlayNext,
                 onPlayPrevious = onPlayPrevious,
+                previousChannelLabel = previousChannelLabel,
+                nextChannelLabel = nextChannelLabel,
+                onChannelStep = stepChannel,
                 modifier = Modifier.fillMaxSize()
             )
 
