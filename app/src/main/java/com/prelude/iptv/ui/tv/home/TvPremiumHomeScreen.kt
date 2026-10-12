@@ -81,7 +81,12 @@ fun TvPremiumHomeScreen(
     modifier: Modifier = Modifier
 ) {
     if (channels.isEmpty()) return
-    val firstHero = remember(channels) { homeHeroCandidates(channels).first() }
+    // Horizon (prototypes/redesign_pages.html): το πρώτο που βλέπεις είναι ό,τι
+    // άφησες στη μέση. Μόνο αν δεν υπάρχει «Συνέχισε» πάμε στις προτάσεις.
+    val firstHero = remember(channels, sections) {
+        sections.firstOrNull { it.id == "continue" }?.items?.firstOrNull()
+            ?: homeHeroCandidates(channels).first()
+    }
     // Σταθερό κλειδί ταυτότητας: ίδιο όσο δεν αλλάζει πραγματικά ο κατάλογος.
     val homeKey = remember(channels) { PlaybackQueue.favKey(firstHero) }
 

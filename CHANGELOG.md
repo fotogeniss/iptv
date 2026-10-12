@@ -22,6 +22,16 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 2.1.0 - versionCode 173
+
+TV pages following `prototypes/redesign_pages.html`.
+
+- **TV details without tabs.** Episodes (with the season picker), about, cast
+  and similar titles follow each other on the page; the down arrow moves from
+  one to the next instead of switching tabs.
+- **TV home starts from where you left off.** The hero opens on the first item
+  of "Continue" when there is one, and on a suggestion only otherwise.
+
 ## 2.0.0 - versionCode 172
 
 Home, Movies/Series, Details and the player rebuilt on mobile, approved in

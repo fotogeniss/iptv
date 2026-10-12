@@ -99,7 +99,6 @@ fun TvPremiumDetailScreen(
             if (presentation.relatedItems.isNotEmpty()) add(DetailSection.Similar)
         }
     }
-    var activeSection by remember(tabs) { mutableStateOf(tabs.first()) }
     val episodes = presentation.seasons.getOrNull(seasonIndex)?.second.orEmpty()
     var focusedEpisodeIndex by remember(seasonIndex, episodes) { mutableIntStateOf(0) }
     val playFocus = remember(presentation.title) { FocusRequester() }
@@ -237,20 +236,23 @@ fun TvPremiumDetailScreen(
                     onClearProgress = onClearProgress
                 )
             }
-            // ΟΧΙ stickyHeader: στο Android TV σπάει το DPAD focus traversal
-            // (το focus κολλάει/πηδάει). Κανονικό item κρατά καθαρή πλοήγηση.
-            item(key = "tv-detail-tabs") {
-                TvDetailTabs(
-                    tabs = tabs,
-                    active = activeSection,
-                    seasons = presentation.seasons,
-                    seasonIndex = seasonIndex,
-                    onTab = { activeSection = it },
-                    onSeason = { seasonIndex = it; focusedEpisodeIndex = 0 }
-                )
-            }
-            when (activeSection) {
-                DetailSection.Episodes -> item(key = "tv-detail-episodes") {
+            // Horizon (prototypes/redesign_pages.html): χωρίς καρτέλες. Επεισόδια,
+            // πληροφορίες, ηθοποιοί και παρόμοια είναι όλα στη σελίδα· με κάτω
+            // βέλος περνάς από το ένα στο άλλο, χωρίς να ανοίγεις καρτέλες.
+            // Η γραμμή πάνω από τα επεισόδια κρατά μόνο την επιλογή κύκλου.
+            // ΟΧΙ stickyHeader: στο Android TV σπάει το DPAD focus traversal.
+            if (DetailSection.Episodes in tabs) {
+                item(key = "tv-detail-tabs") {
+                    TvDetailTabs(
+                        tabs = listOf(DetailSection.Episodes),
+                        active = DetailSection.Episodes,
+                        seasons = presentation.seasons,
+                        seasonIndex = seasonIndex,
+                        onTab = { },
+                        onSeason = { seasonIndex = it; focusedEpisodeIndex = 0 }
+                    )
+                }
+                item(key = "tv-detail-episodes") {
                     TvEpisodeSection(
                         episodes = episodes,
                         progress = presentation.episodeProgress,
@@ -265,9 +267,13 @@ fun TvPremiumDetailScreen(
                             ?.filter { it.isDigit() }?.toIntOrNull() ?: (seasonIndex + 1)
                     )
                 }
-                DetailSection.About -> item(key = "tv-detail-about") { TvAboutSection(presentation) }
-                DetailSection.Cast -> item(key = "tv-detail-cast") { TvCastSection(presentation) }
-                DetailSection.Similar -> item(key = "tv-detail-similar") { TvSimilarSection(presentation, onOpenRelated) }
+            }
+            item(key = "tv-detail-about") { TvAboutSection(presentation) }
+            if (DetailSection.Cast in tabs) {
+                item(key = "tv-detail-cast") { TvCastSection(presentation) }
+            }
+            if (DetailSection.Similar in tabs) {
+                item(key = "tv-detail-similar") { TvSimilarSection(presentation, onOpenRelated) }
             }
         }
     }
