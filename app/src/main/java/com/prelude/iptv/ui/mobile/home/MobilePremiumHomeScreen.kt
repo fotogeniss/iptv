@@ -9,6 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.res.stringResource
+import com.prelude.iptv.data.PlaybackQueue
+import com.prelude.iptv.ui.components.epg.rememberEpgNow
 import com.prelude.iptv.billing.PremiumFeature
 import com.prelude.iptv.R
 import com.prelude.iptv.billing.PremiumRequiredDialog
@@ -305,6 +311,72 @@ fun MobilePremiumHomeScreen(
         return
     }
 
+    // Horizon (prototypes/redesign_pages.html): οι Ταινίες και οι Σειρές είναι
+    // κατάλογος — καρτέλες κατηγοριών, ταξινόμηση, πλέγμα — όχι σειρές καρτών.
+    if (showsCatalogCategories) {
+        val catalogItems = remember(channels, selectedDestination) {
+            if (selectedDestination == "movies") HomeRailContentPolicy.moviesOf(channels)
+            else channels.filter { it.kind == "series" }.ifEmpty {
+                channels.filter { it.kind == "series_ep" }.distinctBy { it.seriesId.ifBlank { it.name } }
+            }
+        }
+        var catalogCollapsed by remember { mutableStateOf(false) }
+        Box(modifier.fillMaxSize().background(IptvColors.Background)) {
+            MobileCatalogScreen(
+                title = stringResource(
+                    if (selectedDestination == "movies") R.string.search_filter_movies else R.string.search_filter_series
+                ),
+                items = catalogItems,
+                categories = catalogGroups.map { it.key to it.value },
+                favoriteKeys = favoriteKeys,
+                progress = sections.firstOrNull { it.id == "continue" }?.progress.orEmpty(),
+                onOpen = onDetails,
+                onToggleFavorite = onToggleFavorite,
+                onOpenSearch = onOpenSearch,
+                onOpenSettings = onOpenSettings,
+                onNavigationCollapsedChange = { catalogCollapsed = it },
+            )
+            Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+                MobileHomeBottomNavigation(
+                    selected = selectedDestination,
+                    onHome = onOpenHome,
+                    onMovies = onOpenMovies,
+                    onSeries = onOpenSeries,
+                    onLive = onOpenLive,
+                    onSearch = onOpenSearch,
+                    onMyList = onOpenMyList,
+                    onSettings = onOpenSettings,
+                    collapsed = catalogCollapsed
+                )
+            }
+        }
+        return
+    }
+
+    // Η Αρχική είναι προσωπική: πρώτα ό,τι άφησες στη μέση και τι παίζει στα
+    // κανάλια σου. Ισχύει μόνο όσο ο χρήστης δεν έχει ορίσει δική του σειρά —
+    // μια επιλογή του στον επεξεργαστή κερδίζει πάντα.
+    val homeOrderUntouched = remember(layoutVersion) {
+        store.homeSectionOrder(HomeLayoutPolicy.DEST_HOME).isEmpty()
+    }
+    val personalHome = selectedDestination == HomeLayoutPolicy.DEST_HOME && homeOrderUntouched
+    val renderedEntries = remember(entries, personalHome, layoutVersion) {
+        if (!personalHome) entries else {
+            val explicitlyHidden = store.homeHiddenSections(HomeLayoutPolicy.DEST_HOME)
+            val first = listOf(HomeLayoutPolicy.CONTINUE, HomeLayoutPolicy.RECENT_LIVE)
+            val head = first.mapNotNull { id ->
+                entries.firstOrNull { it.section.id == id }?.let { entry ->
+                    if (id == HomeLayoutPolicy.RECENT_LIVE) entry.copy(visible = id !in explicitlyHidden) else entry
+                }
+            }
+            entries.filter { it.section.fixed } + head + entries.filter { !it.section.fixed && it.section.id !in first }
+        }
+    }
+    val myList = remember(allChannels, favoriteKeys) {
+        allChannels.filter { (it.kind == "vod" || it.kind == "series") && PlaybackQueue.favKey(it) in favoriteKeys }
+    }
+    val liveNowMs = rememberEpgNow()
+
     val railResolver = MobileHomeRailResolver(
         canSuggest = canSuggest,
         suggestions = suggestionItems,
@@ -376,7 +448,17 @@ fun MobilePremiumHomeScreen(
                     )
                 }
             }
-            entries.filter { it.visible }.forEach { entry ->
+            if (selectedDestination == HomeLayoutPolicy.DEST_HOME) {
+                item(key = "home-greeting") {
+                    MobileHomeGreeting(
+                        profileName = profileName,
+                        liveCount = live.size,
+                        titleCount = movies.size + series.size,
+                        onSearch = onOpenSearch,
+                    )
+                }
+            }
+            renderedEntries.filter { it.visible }.forEach { entry ->
                 when (entry.section.id) {
                     // Η κεφαλίδα δεν είναι στοιχείο της λίστας: μένει από πάνω.
                     HomeLayoutPolicy.HEADER -> Unit
@@ -413,6 +495,32 @@ fun MobilePremiumHomeScreen(
                                     selectedGroup = selectedCatalogGroup,
                                     onSelectGroup = { selectedCatalogGroup = it },
                                 )
+                            }
+                        }
+                    }
+
+                    HomeLayoutPolicy.RECENT_LIVE -> if (recentLive.isNotEmpty()) {
+                        // Ζωντανά τώρα: τα κανάλια σου με ό,τι παίζουν αυτή τη στιγμή.
+                        item(key = "home-live-now") {
+                            MobileHomeLiveNow(
+                                channels = recentLive.take(12),
+                                nowMs = liveNowMs,
+                                onPlay = onPlay,
+                                onOpenLive = onOpenLive,
+                            )
+                        }
+                        if (personalHome && myList.isNotEmpty()) {
+                            item(key = "home-my-list") {
+                                HomeRailContentPolicy.rail(
+                                    "my-list", stringResource(R.string.catalog_my_list), myList
+                                )?.let { rail ->
+                                    MobileHomeRail(
+                                        rail = rail,
+                                        favoriteKeys = favoriteKeys,
+                                        onOpen = onDetails,
+                                        onViewAll = { onOpenMyList() }
+                                    )
+                                }
                             }
                         }
                     }

@@ -68,6 +68,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.icons.filled.Star
+import com.prelude.iptv.ui.mobile.live.ChannelBadge
+import com.prelude.iptv.ui.design.horizonBelow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.prelude.iptv.R
@@ -165,10 +169,23 @@ fun TvLiveBrowseScreen(
     var multiviewPrimary by remember { mutableStateOf<Channel?>(null) }
 
     val listState = rememberLazyListState()
-    val firstItemFocus = remember(showingChannels, selectedGroup) { FocusRequester() }
-    LaunchedEffect(showingChannels, selectedGroup) {
-        listState.scrollToItem(0)
-        firstItemFocus.requestFocusWithRetry()
+    val groupListState = rememberLazyListState()
+    // Horizon: κατηγορίες και κανάλια είναι ΠΑΝΤΑ ορατά, σε δύο στήλες. Το focus
+    // μετακινείται αυτόματα μόνο με ρητή ενέργεια (OK σε κατηγορία, BACK) — όχι
+    // όταν ο χρήστης περνά με τα βέλη από στήλη σε στήλη.
+    val groupFocus = remember { FocusRequester() }
+    val firstItemFocus = remember(selectedGroup) { FocusRequester() }
+    var focusEpoch by remember { mutableStateOf(0) }
+    var focusToChannels by remember { mutableStateOf(false) }
+    LaunchedEffect(focusEpoch, selectedGroup) {
+        if (focusToChannels) {
+            listState.scrollToItem(0)
+            firstItemFocus.requestFocusWithRetry()
+        } else {
+            val index = groups.indexOf(selectedGroup).coerceAtLeast(0)
+            runCatching { groupListState.scrollToItem(index) }
+            groupFocus.requestFocusWithRetry()
+        }
     }
 
     // BACK: η σειρά προτεραιότητας ορίζεται στο TvLiveBrowsePolicy (και δοκιμάζεται
@@ -219,6 +236,8 @@ fun TvLiveBrowseScreen(
                 // (με εικόνα) όσο αλλάζεις ομάδα. Πριν, το preview = null έκρυβε
                 // το βίντεο ενώ η μηχανή έπαιζε — άρα άκουγες μόνο τον ήχο.
                 showingChannels = false
+                focusToChannels = false
+                focusEpoch++
             }
             TvLiveBrowsePolicy.BackAction.DELEGATE -> Unit
         }
@@ -301,71 +320,87 @@ fun TvLiveBrowseScreen(
                 }
             }
             Row(Modifier.fillMaxSize()) {
+                // Στήλη 1: κατηγορίες, πάντα ορατές.
                 LazyColumn(
-                    modifier = Modifier.width(320.dp).fillMaxHeight(),
-                    state = listState,
-                    contentPadding = PaddingValues(start = 10.dp, end = 14.dp, bottom = 28.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    modifier = Modifier.width(210.dp).fillMaxHeight()
+                        .onFocusChanged { if (it.hasFocus) showingChannels = false },
+                    state = groupListState,
+                    contentPadding = PaddingValues(start = 10.dp, end = 8.dp, bottom = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    if (!showingChannels) {
-                        itemsIndexed(groups, key = { i, g -> "live-group:$i:$g" }) { index, group ->
-                            TvLiveRow(
-                                label = localizedUppercase(localizedLiveGroupLabel(group)),
-                                selected = group == selectedGroup,
-                                modifier = if (index == 0) Modifier.focusRequester(firstItemFocus) else Modifier,
-                                onClick = { onSelectGroup(group); showingChannels = true }
-                            )
-                        }
-                    } else {
-                        itemsIndexed(channels, key = { i, c -> "live-ch:$i:${keyOf(c)}" }) { index, channel ->
-                            val isPreview = preview?.let { currentPreview ->
-                                keyOf(channel) == keyOf(currentPreview)
-                            } ?: false
-                            TvLiveRow(
-                                label = channel.name,
-                                // Τι παίζει τώρα, ΧΩΡΙΣ να χρειάζεται να το ανοίξεις.
-                                subtitle = nowTitleOf(channel),
-                                selected = isPreview,
-                                favorite = keyOf(channel) in favoriteKeys,
-                                // Το κανάλι που παίζει είναι το σημείο επιστροφής
-                                // από την πλήρη οθόνη.
-                                modifier = when {
-                                    isPreview -> Modifier.focusRequester(playingRowFocus)
-                                    index == 0 -> Modifier.focusRequester(firstItemFocus)
-                                    else -> Modifier
-                                },
-                                onClick = {
-                                    when (
-                                        TvLiveBrowsePolicy.onChannelConfirm(
-                                            targetKey = keyOf(channel),
-                                            multiviewPrimaryKey = multiviewPrimary?.let(keyOf)
-                                        )
-                                    ) {
-                                        TvLiveBrowsePolicy.ChannelAction.START_MULTIVIEW -> {
-                                            multiviewPrimary?.let { first ->
-                                                onMultiview(first, channel)
-                                            }
-                                            multiviewPrimary = null
-                                        }
-                                        // Ένα OK: επιλέγει και ανοίγει την ίδια
-                                        // μηχανή/επιφάνεια σε πλήρη οθόνη.
-                                        TvLiveBrowsePolicy.ChannelAction.OPEN_PLAYER -> {
-                                            preview = channel
-                                            fullscreen = true
-                                        }
-                                    }
-                                },
-                                // Παρατεταμένο OK: οπλίζει το multiview (διπλή
-                                // προβολή). Το EPG παραμένει διαθέσιμο από τη
-                                // λίστα προγράμματος δεξιά.
-                                onLongClick = {
-                                    multiviewPrimary =
-                                        if (multiviewPrimary?.let(keyOf) == keyOf(channel)) null
-                                        else channel
-                                }
-                            )
-                        }
+                    itemsIndexed(groups, key = { i, g -> "live-group:$i:$g" }) { index, group ->
+                        val anchor = group == selectedGroup || (selectedGroup !in groups && index == 0)
+                        TvLiveRow(
+                            label = localizedLiveGroupLabel(group),
+                            selected = group == selectedGroup,
+                            modifier = if (anchor) Modifier.focusRequester(groupFocus) else Modifier,
+                            onClick = {
+                                onSelectGroup(group)
+                                focusToChannels = true
+                                focusEpoch++
+                            }
+                        )
                     }
+                }
+                // Στήλη 2: τα κανάλια της κατηγορίας, με τι παίζει τώρα.
+                LazyColumn(
+                    modifier = Modifier.width(310.dp).fillMaxHeight()
+                        .onFocusChanged { if (it.hasFocus) showingChannels = true },
+                    state = listState,
+                    contentPadding = PaddingValues(start = 6.dp, end = 12.dp, bottom = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    itemsIndexed(channels, key = { i, c -> "live-ch:$i:${keyOf(c)}" }) { index, channel ->
+                        val isPreview = preview?.let { currentPreview ->
+                            keyOf(channel) == keyOf(currentPreview)
+                        } ?: false
+                        TvLiveRow(
+                            label = channel.name,
+                            channel = channel,
+                            // Τι παίζει τώρα, ΧΩΡΙΣ να χρειάζεται να το ανοίξεις.
+                            subtitle = nowTitleOf(channel),
+                            selected = isPreview,
+                            favorite = keyOf(channel) in favoriteKeys,
+                            // Το κανάλι που παίζει είναι το σημείο επιστροφής
+                            // από την πλήρη οθόνη.
+                            modifier = when {
+                                isPreview && index == 0 -> Modifier.focusRequester(playingRowFocus).focusRequester(firstItemFocus)
+                                isPreview -> Modifier.focusRequester(playingRowFocus)
+                                index == 0 -> Modifier.focusRequester(firstItemFocus)
+                                else -> Modifier
+                            },
+                            onClick = {
+                                when (
+                                    TvLiveBrowsePolicy.onChannelConfirm(
+                                        targetKey = keyOf(channel),
+                                        multiviewPrimaryKey = multiviewPrimary?.let(keyOf)
+                                    )
+                                ) {
+                                    TvLiveBrowsePolicy.ChannelAction.START_MULTIVIEW -> {
+                                        multiviewPrimary?.let { first ->
+                                            onMultiview(first, channel)
+                                        }
+                                        multiviewPrimary = null
+                                    }
+                                    // Ένα OK: επιλέγει και ανοίγει την ίδια
+                                    // μηχανή/επιφάνεια σε πλήρη οθόνη.
+                                    TvLiveBrowsePolicy.ChannelAction.OPEN_PLAYER -> {
+                                        preview = channel
+                                        fullscreen = true
+                                    }
+                                }
+                            },
+                            // Παρατεταμένο OK: οπλίζει το multiview (διπλή
+                            // προβολή). Το EPG παραμένει διαθέσιμο από τη
+                            // λίστα προγράμματος δεξιά.
+                            onLongClick = {
+                                multiviewPrimary =
+                                    if (multiviewPrimary?.let(keyOf) == keyOf(channel)) null
+                                    else channel
+                            }
+                        )
+                    }
+
                 }
 
                 // Η «φωλιά»: κρατά τον χώρο και μας δίνει τη θέση-στόχο. Το ίδιο
@@ -691,49 +726,56 @@ private fun TvLiveRow(
     modifier: Modifier = Modifier,
     subtitle: String = "",
     favorite: Boolean = false,
+    channel: Channel? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {}
 ) {
     var focused by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(8.dp)
+    val shape = RoundedCornerShape(12.dp)
+    // Horizon: focus = ανοιχτή επιφάνεια + γραμμή-ορίζοντας από κάτω. Επιλεγμένο
+    // (η κατηγορία που βλέπεις / το κανάλι που παίζει) = κόκκινη γραμμή αριστερά.
     val background = when {
-        focused -> Color.White
-        selected -> IptvColors.Primary
+        focused -> IptvColors.SurfaceSelected
+        selected -> IptvColors.SurfaceRaised
         else -> Color.Transparent
     }
-    val foreground = when {
-        focused -> Color.Black
-        selected -> Color.White
-        else -> IptvColors.TextSecondary
-    }
+    val foreground = if (focused || selected) IptvColors.TextPrimary else IptvColors.TextSecondary
     Row(
         modifier
             .fillMaxWidth()
+            .horizonBelow(if (focused) 1f else 0f, gap = 3.dp)
             .clip(shape)
             .background(background, shape)
+            .border(1.dp, if (focused) IptvColors.DividerStrong else Color.Transparent, shape)
+            .drawBehind {
+                if (selected) drawRect(IptvColors.Primary, size = androidx.compose.ui.geometry.Size(2.dp.toPx(), size.height))
+            }
             .onFocusChanged { focused = it.isFocused }
             // tvConfirm: το παρατεταμένο OK του τηλεχειριστηρίου. Το
             // combinedClickable μένει για αφή/ποντίκι και για να είναι focusable.
             .tvConfirm(onClick = onClick, onLongClick = onLongClick)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = if (channel != null) 8.dp else 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (channel != null) {
+            ChannelBadge(channel, 40.dp, corner = 10.dp)
+            Spacer(Modifier.width(11.dp))
+        }
         Column(Modifier.weight(1f)) {
             Text(
                 label,
                 color = foreground,
-                fontSize = 11.sp,
-                letterSpacing = 0.5.sp,
-                fontWeight = if (selected || focused) FontWeight.Black else FontWeight.SemiBold,
+                fontSize = 14.sp,
+                fontWeight = if (selected || focused) FontWeight.Bold else FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             if (subtitle.isNotBlank()) {
                 Text(
                     subtitle,
-                    color = if (focused) Color(0xFF55555D) else IptvColors.TextTertiary,
-                    fontSize = 10.sp,
+                    color = if (focused) IptvColors.TextSecondary else IptvColors.TextTertiary,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -741,9 +783,9 @@ private fun TvLiveRow(
         }
         if (favorite) {
             Icon(
-                Icons.Default.Favorite, null,
-                tint = IptvColors.Primary,
-                modifier = Modifier.size(13.dp)
+                Icons.Default.Star, null,
+                tint = IptvColors.Warning,
+                modifier = Modifier.size(14.dp)
             )
         }
     }

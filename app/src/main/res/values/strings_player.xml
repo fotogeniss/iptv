@@ -117,4 +117,8 @@
     <string name="player_hint_channel">CH+/CH− Κανάλι   ·   </string>
     <string name="player_hint_select">OK Επιλογή   ·   BACK Απόκρυψη</string>
     <string name="player_searching_subtitles_suffix">   ·   Αναζήτηση υποτίτλων…</string>
+
+    <!-- Horizon player -->
+    <string name="player_seek_back_10">10 δευτερόλεπτα πίσω</string>
+    <string name="player_seek_forward_10">10 δευτερόλεπτα μπροστά</string>
 </resources>

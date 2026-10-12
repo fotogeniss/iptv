@@ -1,0 +1,308 @@
+<title>Prelude+ Live: Ανακατασκευή</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Commissioner:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#0B0A0D;--s1:#141217;--s2:#1C1A20;--s3:#27242B;--line:rgba(255,236,236,.08);--line2:rgba(255,236,236,.16);--tx:#F4EFEF;--tx2:#ABA3A9;--tx3:#6F686E;--red:#E5303A;--glow:#FF5A5A;--ok:#4FD18B;--page:#070609;
+--display:"Advent Pro","Commissioner",system-ui,sans-serif;--body:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--page);color:var(--tx)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.intro{padding-block:44px 20px;display:grid;gap:14px}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.32em;font-size:15px}
+.hz{display:block;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 22%,#fff 50%,var(--red) 78%,transparent);box-shadow:0 0 12px 1px rgba(229,48,58,.65)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.04;margin:0;text-wrap:balance}
+.lede{color:var(--tx2);max-width:68ch;margin:0}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0 8px}
+.cmp div{background:var(--ink);padding:18px 20px;display:grid;gap:6px;align-content:start;min-width:0}
+.cmp h3{margin:0;font-family:var(--display);font-weight:600;font-size:20px}
+.cmp p{margin:0;color:var(--tx2);font-size:14px}
+.cmp .was{color:var(--tx3);text-decoration:line-through;text-decoration-color:rgba(229,48,58,.6)}
+.sec{margin-top:52px}
+.sec>h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 4px}
+.sec>p{color:var(--tx2);margin:0 0 22px;max-width:72ch}
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px 28px;justify-items:center;margin-bottom:32px}
+.shot{display:grid;gap:14px;width:100%;max-width:348px;min-width:0;align-content:start}
+.phone{width:100%;max-width:348px;height:740px;border-radius:44px;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 7px #111014,0 0 0 8px var(--line2),0 40px 80px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;font-size:14px}
+.sbar{height:40px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:13px;font-weight:600}
+.screen{position:absolute;inset:40px 0 0;overflow:hidden auto;scrollbar-width:none;padding-bottom:110px}
+.screen::-webkit-scrollbar{display:none}
+.note h3{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 6px}
+.note ul{margin:0;padding-left:18px;color:var(--tx2);font-size:13.5px;display:grid;gap:4px}
+.bnav{position:absolute;left:12px;right:12px;bottom:14px;height:64px;border-radius:22px;background:rgba(22,20,26,.92);backdrop-filter:blur(18px);border:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:6}
+.bnav span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:10.5px;font-weight:600;position:relative}
+.bnav span.on{color:var(--tx)}
+.bnav span.on::before{content:"";position:absolute;top:-1px;left:50%;translate:-50% 0;width:34px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.7)}
+.top{display:flex;align-items:center;gap:4px;padding:2px 10px 6px 18px}
+.top .t{font-family:var(--display);font-weight:600;font-size:32px;flex:1;line-height:1}
+.ib{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;color:var(--tx)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;color:var(--tx3);padding:16px 18px 8px;display:flex;justify-content:space-between}
+.lbl a{letter-spacing:0;font-weight:600;color:var(--tx2);text-decoration:none}
+/* Συνέχισε */
+.cont{display:flex;gap:10px;overflow-x:auto;padding:0 18px;scrollbar-width:none}
+.cont::-webkit-scrollbar{display:none}
+.cc{flex:none;width:132px;border-radius:16px;background:var(--s1);border:1px solid var(--line);padding:10px;display:grid;gap:8px;cursor:pointer}
+.cc .lg{height:58px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.04em;position:relative}
+.cc .lg .pp{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:50%;background:rgba(11,10,13,.6);display:grid;place-items:center}
+.cc .lg .pp svg{width:12px;height:12px}
+.cc b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.cc small{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:-4px}
+.prog{height:3px;border-radius:2px;background:rgba(255,255,255,.12);position:relative}
+.prog i{display:block;height:100%;border-radius:2px;background:var(--red);box-shadow:0 0 8px rgba(255,90,90,.85)}
+/* tabs κατηγοριών (sticky) */
+.tabs{position:sticky;top:0;z-index:4;background:linear-gradient(var(--ink) 80%,transparent);padding:10px 0 8px;margin-top:6px}
+.tabs .in{display:flex;gap:6px;overflow-x:auto;padding:0 18px;scrollbar-width:none;align-items:center}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{flex:none;height:34px;padding:0 13px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;background:var(--s1);border:1px solid var(--line);color:var(--tx2);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.tab em{font-style:normal;color:var(--tx3);font-size:11.5px}
+.tab.on{background:var(--tx);color:var(--ink);border-color:var(--tx)}.tab.on em{color:#666}
+.tab.all{background:transparent;border-style:dashed}
+/* λίστα καναλιών */
+.ch{display:grid;grid-template-columns:22px 46px 1fr auto;gap:11px;align-items:center;padding:10px 12px 10px 14px;position:relative;cursor:pointer}
+.ch+.ch{border-top:1px solid var(--line)}
+.ch .no{font-size:12px;color:var(--tx3);text-align:right;font-variant-numeric:tabular-nums}
+.mono{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.03em;color:#fff}
+.ch .b{min-width:0;display:grid;gap:2px}
+.ch .n{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .p{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .x{font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;color:var(--tx3);font-size:11px}
+.ch .r svg{width:18px;height:18px}
+.ch .r .fav{color:#F2C14E}
+.ch.playing{background:linear-gradient(90deg,rgba(229,48,58,.12),transparent)}
+.ch.playing::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.live{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--glow);display:inline-flex;align-items:center;gap:5px}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.eq i{width:3px;background:var(--glow);border-radius:1px;animation:eq 1s infinite ease-in-out}
+.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}
+@keyframes eq{0%,100%{height:4px}50%{height:12px}}
+@media (prefers-reduced-motion:reduce){.eq i{animation:none;height:8px}}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:7}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:78%;background:var(--s1);border-radius:26px 26px 0 0;border-top:1px solid var(--line2);z-index:8;display:flex;flex-direction:column}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--s3);margin:10px auto 6px}
+.sheet h4{font-family:var(--display);font-weight:600;font-size:24px;margin:4px 18px 10px}
+.field{margin:0 18px 8px;display:flex;align-items:center;gap:10px;height:46px;border-radius:14px;background:var(--s2);border:1px solid var(--line2);padding:0 14px;color:var(--tx3)}
+.cat{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);cursor:pointer}
+.cat .ci{width:34px;height:34px;border-radius:10px;background:var(--s3);display:grid;place-items:center;color:var(--tx2)}
+.cat .ci svg{width:17px;height:17px}
+.cat b{flex:1;font-weight:600;font-size:14.5px}
+.cat em{font-style:normal;color:var(--tx3);font-size:12.5px}
+.cat.on b{color:var(--glow)}
+.pin{color:#F2C14E}
+/* player page */
+.pl{height:196px;position:relative;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%)}
+.pl .ctr{position:absolute;inset:0;display:grid;place-items:center}
+.pl .ctr span{width:54px;height:54px;border-radius:50%;background:rgba(11,10,13,.5);border:1px solid rgba(255,255,255,.25);display:grid;place-items:center}
+.pl .tl{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.pl .sw{position:absolute;top:50%;translate:0 -50%;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.nowbox{padding:14px 18px 6px;display:grid;gap:6px}
+.nowbox h3{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1}
+.nowbox small{color:var(--tx2)}
+.nn{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 18px 0}
+.nn div{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.nn em{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--tx3)}
+.nn b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nn small{font-size:11.5px;color:var(--tx3)}
+.acts{display:flex;gap:8px;padding:12px 18px 0}
+.act{flex:1;height:40px;border-radius:13px;background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--tx2)}
+.act svg{width:16px;height:16px}
+/* TV */
+.tvwrap{container-type:inline-size;max-width:1100px;margin:0 auto 14px}
+.tvf{width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw;display:grid;grid-template-columns:4.6em 15em 26em 1fr}
+.tvf *{min-width:0}
+.tvf svg.i{width:1.6em;height:1.6em}
+.rail{background:var(--s1);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:1.2em;padding:2em 0;color:var(--tx3)}
+.rail .on{color:var(--tx);position:relative}
+.rail .on::after{content:"";position:absolute;left:10%;right:10%;bottom:-.5em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent)}
+.cats{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.3em;border-right:1px solid var(--line)}
+.cats h5{font-family:var(--display);font-weight:600;font-size:2em;margin:0 0 .6em .3em}
+.tc{display:flex;justify-content:space-between;padding:.7em .9em;border-radius:.8em;color:var(--tx2);font-weight:600;font-size:1em}
+.tc em{font-style:normal;color:var(--tx3);font-size:.85em}
+.tc.on{background:var(--s2);color:var(--tx)}
+.chl{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.45em;border-right:1px solid var(--line);overflow:hidden}
+.chl .hd{display:flex;justify-content:space-between;align-items:baseline;margin:0 .4em .6em}
+.chl .hd b{font-family:var(--display);font-weight:600;font-size:1.6em}
+.chl .hd small{color:var(--tx3)}
+.tr{display:grid;grid-template-columns:2em 3.2em 1fr;gap:.8em;align-items:center;padding:.65em .8em;border-radius:.9em;position:relative}
+.tr .no{color:var(--tx3);font-size:.9em;text-align:right}
+.tr .mono{width:3.2em;height:3.2em;border-radius:.8em;font-size:.95em}
+.tr .b{display:grid;gap:.15em}
+.tr .n{font-size:.85em;color:var(--tx3)}
+.tr .p{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr.foc{background:var(--s3);border:1px solid var(--line2)}
+.tr.foc::after{content:"";position:absolute;left:10%;right:10%;bottom:-.3em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tr.playing::before{content:"";position:absolute;left:0;top:.8em;bottom:.8em;width:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.pv{padding:2.2em 2em;display:flex;flex-direction:column;gap:1em}
+.pv .vid{aspect-ratio:16/9;border-radius:1.1em;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%);position:relative}
+.pv .vid .live{position:absolute;left:1em;top:1em;font-size:.85em}
+.pv h3{font-family:var(--display);font-weight:600;font-size:2.4em;margin:0;line-height:1}
+.pv small{color:var(--tx2)}
+.tl2{display:grid;gap:.4em}
+.tl2 div{display:grid;grid-template-columns:4em 1fr;gap:.8em;padding:.5em .7em;border-radius:.7em;background:var(--s1);font-size:.95em}
+.tl2 div span{color:var(--tx3)}
+.tl2 div.now{background:#2a1a20}.tl2 div.now span{color:var(--glow);font-weight:700}
+.hint{display:flex;gap:1.3em;color:var(--tx3);font-size:.9em;margin-top:auto}.hint b{color:var(--tx2)}
+</style>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z"/></symbol>
+<symbol id="starf" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z" fill="currentColor"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10H3z"/></symbol>
+<symbol id="tv" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 12h18"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 5h-5L8 10z"/></symbol>
+<symbol id="news" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+<symbol id="kid" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1-4 4-6 7-6s6 2 7 6"/></symbol>
+<symbol id="music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></symbol>
+<symbol id="cc" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10a2 2 0 1 0 0 4M17 10a2 2 0 1 0 0 4"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></symbol>
+<symbol id="full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="pip" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="7" rx="1"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+<header class="intro">
+  <div><span class="wordmark">PRELUDE+</span><span class="hz" style="width:150px;margin-top:8px"></span></div>
+  <h1>Live: ανακατασκευή, όχι βάψιμο</h1>
+  <p class="lede">Η Live σήμερα είναι σειρές από κάρτες ανά κατηγορία. Τα περισσότερα κανάλια δεν έχουν λογότυπο, οπότε βλέπεις δεκάδες ίδια γκρι κουτιά με το ίδιο εικονίδιο τηλεόρασης και ένα κομμένο όνομα. Δεν φαίνεται τι παίζει, κάθε κατηγορία είναι μια σειρά που τη σέρνεις στο πλάι, και για να βρεις κάτι πρέπει να «μπεις» σε κατηγορία. Η πρόταση αλλάζει τη δομή: ένας οδηγός καναλιών, όχι βιτρίνα.</p>
+  <div class="cmp">
+    <div><h3>Λίστα, όχι βιτρίνα</h3><p class="was">Σειρές από κάρτες ανά κατηγορία</p><p>Μία κάθετη λίστα: αριθμός, λογότυπο, κανάλι, τι παίζει τώρα, πρόοδος, τι ακολουθεί. Με ένα βλέμμα, χωρίς πλάγιο σύρσιμο.</p></div>
+    <div><h3>Κατηγορίες πάντα πάνω</h3><p class="was">«Δες όλα» και μπαινόβγαινες</p><p>Καρτέλες κατηγοριών που μένουν κολλημένες στην κορυφή. Αλλάζεις κατηγορία με ένα πάτημα χωρίς να φύγεις από τη λίστα· όλες οι κατηγορίες σε φύλλο με αναζήτηση.</p></div>
+    <div><h3>Ποτέ ίδια κουτιά</h3><p class="was">Γκρι κουτί με εικονίδιο TV</p><p>Όπου λείπει λογότυπο, μονόγραμμα του καναλιού σε δικό του χρώμα (π.χ. «ΕΡΤ», «C+»). Κάθε κανάλι αναγνωρίζεται.</p></div>
+    <div><h3>Συνέχισε από εκεί που ήσουν</h3><p class="was">Τίποτα για τα πρόσφατα</p><p>Τα τελευταία κανάλια που είδες και τα αγαπημένα σου πρώτα, με ό,τι παίζουν αυτή τη στιγμή.</p></div>
+  </div>
+</header>
+
+<section class="sec">
+<h2>1 · Κινητό</h2>
+<p>Τρεις οθόνες: η κεντρική Live, το φύλλο με όλες τις κατηγορίες, και η σελίδα του καναλιού που παίζει (αυτή της φωτογραφίας σου).</p>
+<div class="phones">
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen" id="m1">
+      <div class="top"><span class="t">Live</span><span class="ib"><svg class="i"><use href="#search"/></svg></span><span class="ib"><svg class="i"><use href="#cal"/></svg></span></div>
+      <div class="lbl"><span>ΣΥΝΕΧΙΣΕ</span></div>
+      <div class="cont">
+        <div class="cc"><div class="lg" style="background:linear-gradient(135deg,#8a1f2c,#3a1018)">ΕΡΤ<span class="pp"><svg class="i"><use href="#play"/></svg></span></div><b>ΕΡΤ Σπορ 1</b><small>Super League</small><div class="prog"><i style="width:34%"></i></div></div>
+        <div class="cc"><div class="lg" style="background:linear-gradient(135deg,#1f4a8a,#10203a)">C+<span class="pp"><svg class="i"><use href="#play"/></svg></span></div><b>Cine+ Bud Spencer</b><small>Τα Δύο Μπλόκα</small><div class="prog"><i style="width:71%"></i></div></div>
+        <div class="cc"><div class="lg" style="background:linear-gradient(135deg,#6a3b8a,#25103a)">ΣΚ<span class="pp"><svg class="i"><use href="#play"/></svg></span></div><b>ΣΚΑΪ</b><small>Ειδήσεις</small><div class="prog"><i style="width:12%"></i></div></div>
+      </div>
+      <div class="tabs"><div class="in">
+        <span class="tab on">Όλα <em>1.248</em></span>
+        <span class="tab"><svg class="i" style="width:14px;height:14px;color:#F2C14E"><use href="#starf"/></svg>Αγαπημένα <em>12</em></span>
+        <span class="tab">Αθλητικά <em>86</em></span>
+        <span class="tab">Ταινίες <em>64</em></span>
+        <span class="tab">Ειδήσεις <em>31</em></span>
+        <span class="tab all"><svg class="i" style="width:15px;height:15px"><use href="#list"/></svg>Όλες</span>
+      </div></div>
+      <div class="ch playing"><span class="no">1</span><span class="mono" style="background:linear-gradient(135deg,#8a1f2c,#3a1018)">ΕΡΤ</span><span class="b"><span class="n">ΕΡΤ Σπορ 1 HD</span><span class="p">Super League: ΠΑΟΚ – Ολυμπιακός</span><span class="prog"><i style="width:34%"></i></span><span class="x">22:30 · Αθλητική Επικαιρότητα</span></span><span class="r"><span class="eq"><i></i><i></i><i></i></span><svg class="i fav"><use href="#starf"/></svg></span></div>
+      <div class="ch"><span class="no">2</span><span class="mono" style="background:linear-gradient(135deg,#1f6a5a,#0f2a24)">NS</span><span class="b"><span class="n">Nova Sports Prime</span><span class="p">Euroleague: Παναθηναϊκός – Ρεάλ</span><span class="prog"><i style="width:58%"></i></span><span class="x">22:15 · Highlights</span></span><span class="r">21:00<svg class="i"><use href="#star"/></svg></span></div>
+      <div class="ch"><span class="no">3</span><span class="mono" style="background:linear-gradient(135deg,#1f4a8a,#10203a)">C+</span><span class="b"><span class="n">Cine+ Cinema Bud Spencer</span><span class="p">Τα Δύο Μπλόκα</span><span class="prog"><i style="width:71%"></i></span><span class="x">22:40 · Και Τότε Τον Έλεγαν Τρινιτά</span></span><span class="r">20:55<svg class="i fav"><use href="#starf"/></svg></span></div>
+      <div class="ch"><span class="no">4</span><span class="mono" style="background:linear-gradient(135deg,#8a6a1f,#3a2a10)">ΑΝ</span><span class="b"><span class="n">ΑΝΤ1</span><span class="p">Τα Νέα του Βράδυ</span><span class="prog"><i style="width:22%"></i></span><span class="x">22:10 · Σειρά: Αγάπη</span></span><span class="r">20:50<svg class="i"><use href="#star"/></svg></span></div>
+      <div class="ch"><span class="no">5</span><span class="mono" style="background:linear-gradient(135deg,#6a3b8a,#25103a)">ΣΚ</span><span class="b"><span class="n">ΣΚΑΪ</span><span class="p">Ταινία: Η Μεγάλη Απόδραση</span><span class="prog"><i style="width:9%"></i></span><span class="x">23:15 · Ειδήσεις</span></span><span class="r">21:00<svg class="i"><use href="#star"/></svg></span></div>
+      <div class="ch"><span class="no">6</span><span class="mono" style="background:linear-gradient(135deg,#2a5a8a,#102438)">ALP</span><span class="b"><span class="n">Alpha</span><span class="p">Σειρά: Ο Γιατρός</span><span class="prog"><i style="width:40%"></i></span><span class="x">22:00 · Talk show</span></span><span class="r">20:55<svg class="i"><use href="#star"/></svg></span></div>
+    </div>
+    <div class="bnav"><span><svg class="i"><use href="#home"/></svg>Αρχική</span><span class="on"><svg class="i"><use href="#tv"/></svg>Live</span><span><svg class="i"><use href="#film"/></svg>Ταινίες</span><span><svg class="i"><use href="#layers"/></svg>Σειρές</span><span><svg class="i"><use href="#user"/></svg>Εγώ</span></div>
+  </div>
+  <div class="note"><h3>Κεντρική Live</h3><ul><li>Πάνω «Συνέχισε»: τα 3–6 τελευταία κανάλια, ένα πάτημα και παίζει.</li><li>Καρτέλες κατηγοριών κολλημένες πάνω, με πλήθος· πρώτα Όλα και Αγαπημένα.</li><li>Η λίστα δείχνει τι παίζει, πρόοδο και τι ακολουθεί. Χωρίς EPG δείχνει την κατηγορία.</li><li>Το κανάλι που παίζει έχει την κόκκινη γραμμή και ισοσταθμιστή. ★ με ένα πάτημα.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="t">Live</span><span class="ib"><svg class="i"><use href="#search"/></svg></span><span class="ib"><svg class="i"><use href="#cal"/></svg></span></div>
+      <div class="ch"><span class="no">1</span><span class="mono" style="background:linear-gradient(135deg,#8a1f2c,#3a1018)">ΕΡΤ</span><span class="b"><span class="n">ΕΡΤ Σπορ 1 HD</span><span class="p">Super League</span></span><span class="r"></span></div>
+      <div class="ch"><span class="no">2</span><span class="mono" style="background:linear-gradient(135deg,#1f6a5a,#0f2a24)">NS</span><span class="b"><span class="n">Nova Sports Prime</span><span class="p">Euroleague</span></span><span class="r"></span></div>
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h4>Κατηγορίες</h4>
+        <div class="field"><svg class="i" style="width:19px"><use href="#search"/></svg>Βρες κατηγορία…</div>
+        <div style="overflow:auto;scrollbar-width:none">
+          <div class="cat on"><span class="ci"><svg class="i"><use href="#tv"/></svg></span><b>Όλα τα κανάλια</b><em>1.248</em></div>
+          <div class="cat"><span class="ci pin"><svg class="i"><use href="#starf"/></svg></span><b>Αγαπημένα</b><em>12</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#ball"/></svg></span><b>Αθλητικά</b><em>86</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#film"/></svg></span><b>Ταινίες</b><em>64</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#news"/></svg></span><b>Ειδήσεις</b><em>31</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#kid"/></svg></span><b>Παιδικά</b><em>22</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#music"/></svg></span><b>Μουσική</b><em>18</em></div>
+          <div class="cat"><span class="ci"><svg class="i"><use href="#globe"/></svg></span><b>Κύπρος</b><em>15</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><h3>Όλες οι κατηγορίες</h3><ul><li>Από το «Όλες» στις καρτέλες ανοίγει φύλλο από κάτω, όχι νέα οθόνη.</li><li>Αναζήτηση κατηγορίας: σε παρόχους με 200+ ομάδες βρίσκεις τη σωστή αμέσως.</li><li>Εικονίδιο ανά είδος (αθλητικά, ειδήσεις…) όπου αναγνωρίζεται από το όνομα.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen" style="inset:40px 0 0;padding-bottom:20px">
+      <div class="pl"><div class="ctr"><span><svg class="i"><use href="#play"/></svg></span></div>
+        <span class="sw" style="left:10px"><svg class="i" style="width:14px"><use href="#back"/></svg>ΑΝΤ1</span>
+        <span class="sw" style="right:10px">ΣΚΑΪ<svg class="i" style="width:14px"><use href="#chev"/></svg></span>
+        <div class="tl"><span class="live">ΖΩΝΤΑΝΑ</span><span style="display:flex;gap:14px"><svg class="i" style="width:20px"><use href="#cc"/></svg><svg class="i" style="width:20px"><use href="#full"/></svg></span></div>
+      </div>
+      <div class="nowbox"><span class="live">ΤΩΡΑ · 20:55 – 22:40</span><h3>Τα Δύο Μπλόκα</h3><small>Cine+ Cinema Bud Spencer · Ταινία</small><div class="prog" style="margin-top:4px"><i style="width:71%"></i></div></div>
+      <div class="nn"><div><em>ΜΕΤΑ · 22:40</em><b>Και Τότε Τον Έλεγαν Τρινιτά</b><small>1ώ 50λ</small></div><div><em>ΜΕΤΑ · 00:30</em><b>Μπάμπο</b><small>1ώ 35λ</small></div></div>
+      <div class="acts"><span class="act"><svg class="i"><use href="#starf"/></svg>Αγαπημένο</span><span class="act"><svg class="i"><use href="#cal"/></svg>Πρόγραμμα</span><span class="act"><svg class="i"><use href="#moon"/></svg>Ύπνος</span><span class="act"><svg class="i"><use href="#pip"/></svg>PiP</span></div>
+      <div class="lbl" style="padding-top:18px"><span>ΑΛΛΑ ΣΤΟ CINEMA · 24</span><a href="#">Όλα</a></div>
+      <div class="ch"><span class="no">2</span><span class="mono" style="background:linear-gradient(135deg,#1f4a8a,#10203a)">C+</span><span class="b"><span class="n">Cine+ Movie Action</span><span class="p">Ο Εξολοθρευτής 2</span><span class="prog"><i style="width:45%"></i></span></span><span class="r">20:30</span></div>
+      <div class="ch"><span class="no">3</span><span class="mono" style="background:linear-gradient(135deg,#8a3b1f,#3a1a10)">C+</span><span class="b"><span class="n">Cine+ Movie Comedy</span><span class="p">Ο Ροζ Πάνθηρας</span><span class="prog"><i style="width:15%"></i></span></span><span class="r">21:05</span></div>
+    </div>
+  </div>
+  <div class="note"><h3>Το κανάλι που παίζει</h3><ul><li>Κάτω από την εικόνα: τι παίζει τώρα με πρόοδο και τα δύο επόμενα. Όχι μόνο ο τίτλος του καναλιού.</li><li>Γρήγορες ενέργειες σε μία γραμμή: Αγαπημένο, Πρόγραμμα, Ύπνος, PiP.</li><li>«Άλλα στην κατηγορία» ως λίστα με τι παίζει, όχι κενά κουτιά. Σύρσιμο αριστερά/δεξιά στην εικόνα αλλάζει κανάλι (φαίνονται τα ονόματα).</li><li>Αν το κανάλι αποτύχει: μαύρο, μήνυμα κάτω από το ▶ (διορθώθηκε στην 1.98.0).</li></ul></div></div>
+</div>
+</section>
+
+<section class="sec">
+<h2>2 · Τηλεόραση</h2>
+<p>Σήμερα: λίστα καναλιών αριστερά και προεπισκόπηση δεξιά, αλλά η κατηγορία αλλάζει σε άλλη οθόνη. Πρόταση: τρεις στήλες. Κατηγορίες, κανάλια με τι παίζει, προεπισκόπηση με το πρόγραμμα. Αριστερά/δεξιά περνάς από στήλη σε στήλη, χωρίς να φύγεις ποτέ από την οθόνη.</p>
+<div class="tvwrap"><div class="tvf">
+  <div class="rail"><svg class="i"><use href="#search"/></svg><svg class="i"><use href="#home"/></svg><span class="on"><svg class="i"><use href="#tv"/></svg></span><svg class="i"><use href="#film"/></svg><svg class="i"><use href="#layers"/></svg><svg class="i"><use href="#cal"/></svg></div>
+  <div class="cats"><h5>Live</h5>
+    <div class="tc"><span>★ Αγαπημένα</span><em>12</em></div>
+    <div class="tc"><span>Πρόσφατα</span><em>8</em></div>
+    <div class="tc on"><span>Αθλητικά</span><em>86</em></div>
+    <div class="tc"><span>Ταινίες</span><em>64</em></div>
+    <div class="tc"><span>Ειδήσεις</span><em>31</em></div>
+    <div class="tc"><span>Παιδικά</span><em>22</em></div>
+    <div class="tc"><span>Μουσική</span><em>18</em></div>
+    <div class="tc"><span>Όλα</span><em>1.248</em></div>
+  </div>
+  <div class="chl"><div class="hd"><b>Αθλητικά</b><small>86 κανάλια</small></div>
+    <div class="tr playing"><span class="no">1</span><span class="mono" style="background:linear-gradient(135deg,#8a1f2c,#3a1018)">ΕΡΤ</span><span class="b"><span class="n">ΕΡΤ Σπορ 1 HD</span><span class="p">Super League</span><span class="prog"><i style="width:34%"></i></span></span></div>
+    <div class="tr foc"><span class="no">2</span><span class="mono" style="background:linear-gradient(135deg,#1f6a5a,#0f2a24)">NS</span><span class="b"><span class="n">Nova Sports Prime</span><span class="p">Euroleague: ΠΑΟ – Ρεάλ</span><span class="prog"><i style="width:58%"></i></span></span></div>
+    <div class="tr"><span class="no">3</span><span class="mono" style="background:linear-gradient(135deg,#2a5a8a,#102438)">CS3</span><span class="b"><span class="n">Cosmote Sport 3</span><span class="p">Τένις: ATP Βιέννη</span><span class="prog"><i style="width:80%"></i></span></span></div>
+    <div class="tr"><span class="no">4</span><span class="mono" style="background:linear-gradient(135deg,#8a6a1f,#3a2a10)">EUR</span><span class="b"><span class="n">Eurosport 1</span><span class="p">Ποδηλασία</span><span class="prog"><i style="width:20%"></i></span></span></div>
+    <div class="tr"><span class="no">5</span><span class="mono" style="background:linear-gradient(135deg,#6a3b8a,#25103a)">NS2</span><span class="b"><span class="n">Nova Sports 2</span><span class="p">Premier League</span><span class="prog"><i style="width:66%"></i></span></span></div>
+  </div>
+  <div class="pv">
+    <div class="vid"><span class="live">ΠΡΟΕΠΙΣΚΟΠΗΣΗ</span></div>
+    <div><span class="live">ΤΩΡΑ · 21:00 – 22:45</span><h3>Euroleague: Παναθηναϊκός – Ρεάλ</h3><small>Nova Sports Prime · Μπάσκετ</small></div>
+    <div class="tl2"><div class="now"><span>21:00</span>Euroleague: Παναθηναϊκός – Ρεάλ</div><div><span>22:45</span>Highlights</div><div><span>23:30</span>Basket Talk</div></div>
+    <div class="hint"><span><b>OK</b> πλήρης οθόνη</span><span><b>▲▼</b> κανάλι</span><span><b>◀</b> κατηγορίες</span><span><b>Παρατ. OK</b> διπλή προβολή</span></div>
+  </div>
+</div></div>
+<div class="note" style="max-width:1100px;margin:0 auto"><h3>TV · τρεις στήλες</h3><ul><li>Κατηγορίες πάντα ορατές αριστερά, με Αγαπημένα και Πρόσφατα πρώτα.</li><li>Η προεπισκόπηση αλλάζει μόλις σταθείς σε κανάλι (όπως σήμερα), με το πρόγραμμα από κάτω.</li><li>Το κανάλι που παίζει: κόκκινη γραμμή αριστερά· αυτό με focus: γραμμή-ορίζοντας από κάτω.</li></ul></div>
+</section>
+
+<section class="sec">
+<h2>Μετά τη Live</h2>
+<p>Με την ίδια λογική (αλλαγή δομής, όχι χρώματος) ακολουθούν με τη σειρά: Αρχική, Ταινίες/Σειρές, σελίδα λεπτομερειών, player. Μία οθόνη τη φορά: mockup, OK, υλοποίηση.</p>
+</section>
+</div>
+<script>
+document.querySelectorAll('.tabs .in').forEach(c=>c.addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t||t.classList.contains('all'))return;c.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on')}));
+document.querySelectorAll('.ch .r svg').forEach(s=>s.addEventListener('click',e=>{e.stopPropagation();const u=s.querySelector('use');const f=u.getAttribute('href')==='#starf';u.setAttribute('href',f?'#star':'#starf');s.classList.toggle('fav',!f)}));
+document.querySelectorAll('.cat').forEach(c=>c.addEventListener('click',()=>{c.parentElement.querySelectorAll('.cat').forEach(x=>x.classList.remove('on'));c.classList.add('on')}));
+</script>

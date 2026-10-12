@@ -34,6 +34,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.prelude.iptv.player.PlaybackEngine
 import com.prelude.iptv.R
 import com.prelude.iptv.ui.localization.badgeLabelRes
@@ -132,19 +135,42 @@ internal fun MobilePlayerControls(
             // Μόνο play/pause. Τα βελάκια προηγούμενο/επόμενο έφυγαν από εδώ σε
             // όλους τους τύπους περιεχομένου (ταινίες, ζωντανά, σειρές)· η αλλαγή
             // καναλιού στα ζωντανά γίνεται πλέον με σύρσιμο αριστερά/δεξιά.
-            Icon(
-                if (state.playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = stringResource(
-                    if (state.playing) R.string.player_pause else R.string.player_play
-                ),
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(44.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures { engine.togglePlay(); onInteract() }
-                    }
-            )
+            // Horizon (prototypes/redesign_pages.html): στις ταινίες/σειρές −10″ /
+            // play / +10″ στη μέση· στα ζωντανά μόνο play, γιατί δεν υπάρχει πού
+            // να μετακινηθείς (η αλλαγή καναλιού γίνεται με σύρσιμο).
+            Row(
+                Modifier.align(Alignment.Center),
+                horizontalArrangement = Arrangement.spacedBy(28.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val canSeek = !isLive && state.durationMs > 0
+                if (canSeek) {
+                    SeekCircle("−10", stringResource(R.string.player_seek_back_10)) { engine.seekBy(-10_000L); onInteract() }
+                }
+                Box(
+                    Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = .45f))
+                        .border(1.dp, Color.White.copy(alpha = .22f), CircleShape)
+                        .pointerInput(Unit) {
+                            detectTapGestures { engine.togglePlay(); onInteract() }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        if (state.playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = stringResource(
+                            if (state.playing) R.string.player_pause else R.string.player_play
+                        ),
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                if (canSeek) {
+                    SeekCircle("+10", stringResource(R.string.player_seek_forward_10)) { engine.seekBy(10_000L); onInteract() }
+                }
+            }
 
             // ---- ΚΑΤΩ ----
             Column(
@@ -189,6 +215,21 @@ internal fun MobilePlayerControls(
                         )
                     }
                     Spacer(Modifier.weight(1f))
+                    if (!isLive && onPlayNext != null) {
+                        Text(
+                            stringResource(R.string.player_next_episode),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .padding(end = 6.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.White.copy(alpha = .14f))
+                                .clickable { onInteract(); onPlayNext() }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
                     QualityBadge(state.quality)
                     AspectRatioBadge(aspectMode) {
                         onInteract()
@@ -427,4 +468,21 @@ internal fun mobileClock(ms: Long): String {
     val seconds = total % 60
     return if (hours > 0) String.format("%d:%02d:%02d", hours, minutes, seconds)
     else String.format("%d:%02d", minutes, seconds)
+}
+
+/** Κύκλος −10″ / +10″ γύρω από το play. */
+@Composable
+private fun SeekCircle(label: String, description: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(46.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = .40f))
+            .border(1.dp, Color.White.copy(alpha = .18f), CircleShape)
+            .semantics { contentDescription = description }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+    }
 }

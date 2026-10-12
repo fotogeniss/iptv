@@ -82,4 +82,9 @@
         <item quantity="one">%1$d hr %2$d min remaining</item>
         <item quantity="other">%1$d hrs %2$d min remaining</item>
     </plurals>
+
+    <!-- Horizon Live -->
+    <string name="live_continue">Continue</string>
+    <string name="live_categories_more">All</string>
+    <string name="live_find_category">Find a category…</string>
 </resources>

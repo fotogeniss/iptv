@@ -22,6 +22,49 @@ implementation notes are preserved in `docs/archive/changelog`.
   wrapper with `gradle wrapper --gradle-version 8.9` is the proper fix and lets
   the validation be turned back on. No application code is affected.
 
+## 2.0.0 - versionCode 172
+
+Home, Movies/Series, Details and the player rebuilt on mobile, approved in
+`prototypes/redesign_pages.html` (2026-10-12).
+
+- **Personal Home.** A greeting with the profile name and what the source
+  holds, then "Continue" first, "Live now" with the channels you watched and
+  what they are showing, and "My list" — before the hero and the rest. This is
+  the default order only while the home layout has never been edited; a layout
+  chosen in the editor still wins.
+- **Movies and Series are a catalogue.** Category tabs (the same as Live, with
+  "All" opening a searchable sheet), a sort button (Newest, Rating, Year, A–Z)
+  and a three-column grid that loads as you scroll, instead of one horizontal
+  rail per category and "See all".
+- **Details without tabs.** About, episodes, cast and similar titles are all on
+  the page; nothing is hidden behind a tab.
+- **Player.** −10″ / play / +10″ in the middle for movies and episodes (live
+  keeps play only), and a named "Next episode" button when there is one.
+
+## 1.99.0 - versionCode 171
+
+Live rebuilt around a channel guide instead of a shelf of cards, approved in
+`prototypes/redesign_live.html` (2026-10-12).
+
+- **Mobile Live.** "Continue" with the last channels you watched at the top,
+  then category tabs that stay pinned while you scroll (All, Favourites with a
+  star, the provider's categories, and "All" for the rest), then one vertical
+  list: number, logo, channel, what is on now with progress, and what comes
+  next. The channel that is playing has the red line and a level meter; the
+  star toggles a favourite in one tap. Search filters the current category.
+- **All categories** open in a bottom sheet with a search box and counts,
+  instead of a separate screen; "Edit categories" is at the bottom.
+- **No more identical grey boxes.** Channels without a logo get a coloured
+  monogram from their name (for example "ΕΡΤ", "C+"), on mobile and TV.
+- **Now playing page (mobile).** Under the picture: what is on now with
+  progress and the next two programmes, then the other channels of the
+  category as a list with what they are showing (up to 60), instead of empty
+  cards. The duplicate channel title above it is gone.
+- **TV Live.** Categories and channels are both always visible, in two columns
+  next to the preview; OK on a category moves to its channels, BACK returns to
+  the categories. Rows use the Horizon focus line, the playing channel has the
+  red line on its left, and channels show their logo or monogram.
+
 ## 1.98.0 - versionCode 170
 
 Horizon for Settings, Search and the programme guide, approved in

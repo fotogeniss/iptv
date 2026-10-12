@@ -110,4 +110,8 @@
     <string name="player_hint_channel">CH+/CH− Channel   ·   </string>
     <string name="player_hint_select">OK Select   ·   BACK Hide</string>
     <string name="player_searching_subtitles_suffix">   ·   Searching for subtitles…</string>
+
+    <!-- Horizon player -->
+    <string name="player_seek_back_10">Back 10 seconds</string>
+    <string name="player_seek_forward_10">Forward 10 seconds</string>
 </resources>

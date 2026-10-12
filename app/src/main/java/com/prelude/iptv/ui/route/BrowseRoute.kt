@@ -922,6 +922,9 @@ internal fun BrowseScreen(
                     onOpenSettings = onOpenSettings,
                     onOpenCategories = { vm.changeCategories() },
                     onNavigationCollapsedChange = { mobileNavCollapsed = it },
+                    recentChannels = remember(recentsTick, state.recentsVersion) { vm.recentLive() },
+                    playingKey = inlinePlayback?.let(vm::favKey),
+                    onToggleFavorite = { channel -> vm.toggleFavorite(channel) },
                     modifier = Modifier.fillMaxSize()
                 )
             } else if (isTv) {

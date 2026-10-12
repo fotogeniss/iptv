@@ -77,4 +77,8 @@
         <item quantity="one">%1$d στοιχείο</item>
         <item quantity="other">%1$d στοιχεία</item>
     </plurals>
+
+    <!-- Horizon -->
+    <string name="catalog_sort_newest">Νεότερα</string>
+    <string name="catalog_sort_rating">Βαθμολογία</string>
 </resources>

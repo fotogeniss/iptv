@@ -75,4 +75,10 @@
         <item quantity="one">%1$d title</item>
         <item quantity="other">%1$d titles</item>
     </plurals>
+
+    <!-- Horizon -->
+    <string name="home_greeting_morning">Good morning, %1$s</string>
+    <string name="home_greeting_afternoon">Good afternoon, %1$s</string>
+    <string name="home_greeting_night">Good evening, %1$s</string>
+    <string name="home_library_summary">%1$s · %2$s</string>
 </resources>

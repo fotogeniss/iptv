@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prelude.iptv.ui.mobile.live.LiveSectionLabel
 import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
 import com.prelude.iptv.data.PlaybackQueue
@@ -66,7 +67,6 @@ fun MobilePremiumDetailScreen(
             if (presentation.relatedItems.isNotEmpty()) add(DetailSection.Similar)
         }
     }
-    var activeSection by remember(tabs) { mutableStateOf(tabs.first()) }
     val episodes = presentation.seasons.getOrNull(seasonIndex)?.second.orEmpty()
     var episodesDescending by remember(presentation.title) { mutableStateOf(false) }
     val displayedEpisodes = remember(episodes, episodesDescending) {
@@ -114,58 +114,62 @@ fun MobilePremiumDetailScreen(
                 onRestart = onRestartMovie
             )
         }
-        stickyHeader(key = "mobile-detail-tabs") {
-            MobileDetailTabs(tabs, activeSection) { activeSection = it }
+        // Horizon (prototypes/redesign_pages.html): χωρίς καρτέλες. Περίληψη,
+        // επεισόδια, ηθοποιοί και παρόμοια είναι όλα στη σελίδα, με σκρολάρισμα —
+        // οι καρτέλες έκρυβαν περιεχόμενο πίσω από ένα πάτημα.
+        item(key = "mobile-detail-about") {
+            MobileAboutSection(presentation)
         }
-
-        when (activeSection) {
-            DetailSection.Episodes -> {
-                item(key = "mobile-season-header") {
-                    MobileSeasonHeader(
-                        seasons = presentation.seasons,
-                        selected = seasonIndex,
-                        descending = episodesDescending,
-                        onSelected = { seasonIndex = it },
-                        onToggleOrder = { episodesDescending = !episodesDescending }
+        if (DetailSection.Episodes in tabs) {
+            item(key = "mobile-detail-episodes-label") {
+                LiveSectionLabel(stringResource(DetailSection.Episodes.labelRes()), Modifier.padding(top = 10.dp))
+            }
+            item(key = "mobile-season-header") {
+                MobileSeasonHeader(
+                    seasons = presentation.seasons,
+                    selected = seasonIndex,
+                    descending = episodesDescending,
+                    onSelected = { seasonIndex = it },
+                    onToggleOrder = { episodesDescending = !episodesDescending }
+                )
+            }
+            if (presentation.loading && episodes.isEmpty()) {
+                item { MobileDetailSkeleton() }
+            } else {
+                itemsIndexed(
+                    displayedEpisodes,
+                    key = { _, item ->
+                        val (sourceIndex, episode) = item
+                        "mobile-detail-episode:$seasonIndex:$sourceIndex:${PlaybackQueue.favKey(episode)}"
+                    }
+                ) { _, item ->
+                    val (sourceIndex, episode) = item
+                    val seasonNumber = SubtitleSearchPolicy.seasonNumber(
+                        presentation.seasons.getOrNull(seasonIndex)?.first.orEmpty(),
+                        seasonIndex + 1,
+                    ) ?: seasonIndex + 1
+                    val episodeNumber = SubtitleSearchPolicy.episodeNumber(episode.name, sourceIndex + 1)
+                        ?: sourceIndex + 1
+                    MobileEpisodeCard(
+                        episode = episode,
+                        number = episodeNumber,
+                        progress = presentation.episodeProgress[PlaybackQueue.favKey(episode)],
+                        onClick = { onPlayEpisode(episode) },
+                        seriesTitle = presentation.title,
+                        seriesYear = presentation.year,
+                        season = seasonNumber,
+                        seriesTmdbId = presentation.tmdbId,
                     )
                 }
-                if (presentation.loading && episodes.isEmpty()) {
-                    item { MobileDetailSkeleton() }
-                } else {
-                    itemsIndexed(
-                        displayedEpisodes,
-                        key = { _, item ->
-                            val (sourceIndex, episode) = item
-                            "mobile-detail-episode:$seasonIndex:$sourceIndex:${PlaybackQueue.favKey(episode)}"
-                        }
-                    ) { _, item ->
-                        val (sourceIndex, episode) = item
-                        val seasonNumber = SubtitleSearchPolicy.seasonNumber(
-                            presentation.seasons.getOrNull(seasonIndex)?.first.orEmpty(),
-                            seasonIndex + 1,
-                        ) ?: seasonIndex + 1
-                        val episodeNumber = SubtitleSearchPolicy.episodeNumber(episode.name, sourceIndex + 1)
-                            ?: sourceIndex + 1
-                        MobileEpisodeCard(
-                            episode = episode,
-                            number = episodeNumber,
-                            progress = presentation.episodeProgress[PlaybackQueue.favKey(episode)],
-                            onClick = { onPlayEpisode(episode) },
-                            seriesTitle = presentation.title,
-                            seriesYear = presentation.year,
-                            season = seasonNumber,
-                            seriesTmdbId = presentation.tmdbId,
-                        )
-                    }
-                }
             }
-            DetailSection.About -> item(key = "mobile-detail-about") {
-                MobileAboutSection(presentation)
-            }
-            DetailSection.Cast -> item(key = "mobile-detail-cast") {
+        }
+        if (DetailSection.Cast in tabs) {
+            item(key = "mobile-detail-cast") {
                 MobileCastSection(presentation)
             }
-            DetailSection.Similar -> item(key = "mobile-detail-similar") {
+        }
+        if (DetailSection.Similar in tabs) {
+            item(key = "mobile-detail-similar") {
                 MobileSimilarSection(presentation, onOpenRelated)
             }
         }

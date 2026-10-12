@@ -83,4 +83,9 @@
         <item quantity="one">%1$dω %2$dλ απομένει</item>
         <item quantity="other">%1$dω %2$dλ απομένουν</item>
     </plurals>
+
+    <!-- Horizon Live -->
+    <string name="live_continue">Συνέχισε</string>
+    <string name="live_categories_more">Όλες</string>
+    <string name="live_find_category">Βρες κατηγορία…</string>
 </resources>

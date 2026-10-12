@@ -850,30 +850,7 @@ fun MobilePlaybackOverlay(
                     .verticalScroll(contentScrollState)
                     .padding(top = stickyPlayerHeight)
             ) {
-                if (isLive) {
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
-                        Text(
-                            title,
-                            color = Color.White,
-                            fontSize = 19.sp,
-                            fontWeight = FontWeight.Black,
-                            lineHeight = 25.sp,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        if (subtitle.isNotBlank()) {
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                subtitle,
-                                color = IptvColors.TextSecondary,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
+                // Στα ζωντανά τίτλο και «τι παίζει» τα δείχνει το MobilePlayerContextContent.
                 MobilePlayerContextContent(
                     playing = channel,
                     infoChannel = infoChannel,

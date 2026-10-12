@@ -27,6 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prelude.iptv.ui.AppFonts
+import com.prelude.iptv.ui.StreamingProgress
+import com.prelude.iptv.ui.components.epg.epgTimeRange
+import com.prelude.iptv.ui.components.epg.epgTime
+import com.prelude.iptv.ui.components.epg.epgProgress
+import com.prelude.iptv.ui.components.epg.rememberEpgNow
+import com.prelude.iptv.ui.mobile.live.liveUpcoming
+import com.prelude.iptv.ui.mobile.live.liveNowNext
+import com.prelude.iptv.ui.mobile.live.LiveGuideRow
 import coil.compose.AsyncImage
 import com.prelude.iptv.R
 import com.prelude.iptv.data.Channel
@@ -61,6 +70,10 @@ internal fun MobilePlayerContextContent(
             } else {
                 playing.group
             }
+            // Horizon (prototypes/redesign_live.html): κάτω από την εικόνα τι παίζει
+            // τώρα και τι ακολουθεί, και τα άλλα κανάλια της κατηγορίας ως λίστα
+            // με τι παίζουν — όχι κουτιά που χωρίς λογότυπο ήταν όλα ίδια.
+            PlayerLiveNow(playing)
             PlayerSectionTitle(
                 title = stringResource(R.string.player_more_from_group, groupName),
                 trailing = pluralStringResource(
@@ -69,7 +82,18 @@ internal fun MobilePlayerContextContent(
                     related.size,
                 ),
             )
-            PlayerChannelRail(playing, related, onPlay)
+            val nowMs = rememberEpgNow()
+            related.take(MAX_RELATED_LIVE).forEachIndexed { index, channel ->
+                LiveGuideRow(
+                    number = index + 1,
+                    channel = channel,
+                    nowMs = nowMs,
+                    playing = channel == playing,
+                    favorite = false,
+                    onPlay = { onPlay(channel) },
+                    onToggleFavorite = null,
+                )
+            }
             return@Column
         }
 
@@ -440,4 +464,81 @@ private fun PlayerEpisodes(
         modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
     )
+}
+
+/** Πόσα κανάλια της κατηγορίας δείχνει η σελίδα του player (οι πάροχοι έχουν και χιλιάδες). */
+private const val MAX_RELATED_LIVE = 60
+
+/** Τι παίζει τώρα στο κανάλι, πόσο έχει προχωρήσει, και τα δύο επόμενα. */
+@Composable
+private fun PlayerLiveNow(channel: Channel) {
+    val nowMs = rememberEpgNow()
+    val (now, _) = remember(channel, nowMs / 60_000L) { liveNowNext(channel, nowMs) }
+    val upcoming = remember(channel, nowMs / 60_000L) { liveUpcoming(channel, 2, nowMs) }
+    Column(Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 14.dp)) {
+        if (now != null) {
+            Text(
+                stringResource(R.string.live_time_and_remaining, stringResource(R.string.live_now_label), epgTimeRange(now)),
+                color = IptvColors.Glow,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.8.sp,
+            )
+            Spacer(Modifier.height(4.dp))
+        }
+        Text(
+            now?.title ?: channel.name,
+            color = IptvColors.TextPrimary,
+            fontFamily = AppFonts.Display,
+            fontSize = 26.sp,
+            lineHeight = 27.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            if (now != null) channel.name else channel.group.ifBlank { channel.name },
+            color = IptvColors.TextSecondary,
+            fontSize = 12.5.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (now != null) {
+            Spacer(Modifier.height(8.dp))
+            StreamingProgress(epgProgress(now, nowMs), Modifier.fillMaxWidth())
+        }
+        if (upcoming.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                upcoming.forEach { programme ->
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(IptvColors.Surface)
+                            .border(1.dp, IptvColors.Divider, RoundedCornerShape(14.dp))
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.live_time_and_remaining, stringResource(R.string.live_next_label), epgTime(programme.startMs)),
+                            color = IptvColors.TextTertiary,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp,
+                            maxLines = 1,
+                        )
+                        Text(
+                            programme.title,
+                            color = IptvColors.TextPrimary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

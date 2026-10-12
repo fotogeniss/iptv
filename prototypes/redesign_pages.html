@@ -1,0 +1,452 @@
+<title>Prelude+ Ανακατασκευή σελίδων</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Commissioner:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#0B0A0D;--s1:#141217;--s2:#1C1A20;--s3:#27242B;--line:rgba(255,236,236,.08);--line2:rgba(255,236,236,.16);--tx:#F4EFEF;--tx2:#ABA3A9;--tx3:#6F686E;--red:#E5303A;--glow:#FF5A5A;--ok:#4FD18B;--page:#070609;
+--display:"Advent Pro","Commissioner",system-ui,sans-serif;--body:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--page);color:var(--tx)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.intro{padding-block:44px 20px;display:grid;gap:14px}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.32em;font-size:15px}
+.hz{display:block;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 22%,#fff 50%,var(--red) 78%,transparent);box-shadow:0 0 12px 1px rgba(229,48,58,.65)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.04;margin:0;text-wrap:balance}
+.lede{color:var(--tx2);max-width:68ch;margin:0}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0 8px}
+.cmp div{background:var(--ink);padding:18px 20px;display:grid;gap:6px;align-content:start;min-width:0}
+.cmp h3{margin:0;font-family:var(--display);font-weight:600;font-size:20px}
+.cmp p{margin:0;color:var(--tx2);font-size:14px}
+.cmp .was{color:var(--tx3);text-decoration:line-through;text-decoration-color:rgba(229,48,58,.6)}
+.sec{margin-top:52px}
+.sec>h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 4px}
+.sec>p{color:var(--tx2);margin:0 0 22px;max-width:72ch}
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px 28px;justify-items:center;margin-bottom:32px}
+.shot{display:grid;gap:14px;width:100%;max-width:348px;min-width:0;align-content:start}
+.phone{width:100%;max-width:348px;height:740px;border-radius:44px;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 7px #111014,0 0 0 8px var(--line2),0 40px 80px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;font-size:14px}
+.sbar{height:40px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:13px;font-weight:600}
+.screen{position:absolute;inset:40px 0 0;overflow:hidden auto;scrollbar-width:none;padding-bottom:110px}
+.screen::-webkit-scrollbar{display:none}
+.note h3{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 6px}
+.note ul{margin:0;padding-left:18px;color:var(--tx2);font-size:13.5px;display:grid;gap:4px}
+.bnav{position:absolute;left:12px;right:12px;bottom:14px;height:64px;border-radius:22px;background:rgba(22,20,26,.92);backdrop-filter:blur(18px);border:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:6}
+.bnav span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:10.5px;font-weight:600;position:relative}
+.bnav span.on{color:var(--tx)}
+.bnav span.on::before{content:"";position:absolute;top:-1px;left:50%;translate:-50% 0;width:34px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.7)}
+.top{display:flex;align-items:center;gap:4px;padding:2px 10px 6px 18px}
+.top .t{font-family:var(--display);font-weight:600;font-size:32px;flex:1;line-height:1}
+.ib{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;color:var(--tx)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;color:var(--tx3);padding:16px 18px 8px;display:flex;justify-content:space-between}
+.lbl a{letter-spacing:0;font-weight:600;color:var(--tx2);text-decoration:none}
+/* Συνέχισε */
+.cont{display:flex;gap:10px;overflow-x:auto;padding:0 18px;scrollbar-width:none}
+.cont::-webkit-scrollbar{display:none}
+.cc{flex:none;width:132px;border-radius:16px;background:var(--s1);border:1px solid var(--line);padding:10px;display:grid;gap:8px;cursor:pointer}
+.cc .lg{height:58px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.04em;position:relative}
+.cc .lg .pp{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:50%;background:rgba(11,10,13,.6);display:grid;place-items:center}
+.cc .lg .pp svg{width:12px;height:12px}
+.cc b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.cc small{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:-4px}
+.prog{height:3px;border-radius:2px;background:rgba(255,255,255,.12);position:relative}
+.prog i{display:block;height:100%;border-radius:2px;background:var(--red);box-shadow:0 0 8px rgba(255,90,90,.85)}
+/* tabs κατηγοριών (sticky) */
+.tabs{position:sticky;top:0;z-index:4;background:linear-gradient(var(--ink) 80%,transparent);padding:10px 0 8px;margin-top:6px}
+.tabs .in{display:flex;gap:6px;overflow-x:auto;padding:0 18px;scrollbar-width:none;align-items:center}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{flex:none;height:34px;padding:0 13px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;background:var(--s1);border:1px solid var(--line);color:var(--tx2);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.tab em{font-style:normal;color:var(--tx3);font-size:11.5px}
+.tab.on{background:var(--tx);color:var(--ink);border-color:var(--tx)}.tab.on em{color:#666}
+.tab.all{background:transparent;border-style:dashed}
+/* λίστα καναλιών */
+.ch{display:grid;grid-template-columns:22px 46px 1fr auto;gap:11px;align-items:center;padding:10px 12px 10px 14px;position:relative;cursor:pointer}
+.ch+.ch{border-top:1px solid var(--line)}
+.ch .no{font-size:12px;color:var(--tx3);text-align:right;font-variant-numeric:tabular-nums}
+.mono{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.03em;color:#fff}
+.ch .b{min-width:0;display:grid;gap:2px}
+.ch .n{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .p{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .x{font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;color:var(--tx3);font-size:11px}
+.ch .r svg{width:18px;height:18px}
+.ch .r .fav{color:#F2C14E}
+.ch.playing{background:linear-gradient(90deg,rgba(229,48,58,.12),transparent)}
+.ch.playing::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.live{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--glow);display:inline-flex;align-items:center;gap:5px}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.eq i{width:3px;background:var(--glow);border-radius:1px;animation:eq 1s infinite ease-in-out}
+.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}
+@keyframes eq{0%,100%{height:4px}50%{height:12px}}
+@media (prefers-reduced-motion:reduce){.eq i{animation:none;height:8px}}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:7}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:78%;background:var(--s1);border-radius:26px 26px 0 0;border-top:1px solid var(--line2);z-index:8;display:flex;flex-direction:column}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--s3);margin:10px auto 6px}
+.sheet h4{font-family:var(--display);font-weight:600;font-size:24px;margin:4px 18px 10px}
+.field{margin:0 18px 8px;display:flex;align-items:center;gap:10px;height:46px;border-radius:14px;background:var(--s2);border:1px solid var(--line2);padding:0 14px;color:var(--tx3)}
+.cat{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);cursor:pointer}
+.cat .ci{width:34px;height:34px;border-radius:10px;background:var(--s3);display:grid;place-items:center;color:var(--tx2)}
+.cat .ci svg{width:17px;height:17px}
+.cat b{flex:1;font-weight:600;font-size:14.5px}
+.cat em{font-style:normal;color:var(--tx3);font-size:12.5px}
+.cat.on b{color:var(--glow)}
+.pin{color:#F2C14E}
+/* player page */
+.pl{height:196px;position:relative;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%)}
+.pl .ctr{position:absolute;inset:0;display:grid;place-items:center}
+.pl .ctr span{width:54px;height:54px;border-radius:50%;background:rgba(11,10,13,.5);border:1px solid rgba(255,255,255,.25);display:grid;place-items:center}
+.pl .tl{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.pl .sw{position:absolute;top:50%;translate:0 -50%;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.nowbox{padding:14px 18px 6px;display:grid;gap:6px}
+.nowbox h3{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1}
+.nowbox small{color:var(--tx2)}
+.nn{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 18px 0}
+.nn div{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.nn em{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--tx3)}
+.nn b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nn small{font-size:11.5px;color:var(--tx3)}
+.acts{display:flex;gap:8px;padding:12px 18px 0}
+.act{flex:1;height:40px;border-radius:13px;background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--tx2)}
+.act svg{width:16px;height:16px}
+/* TV */
+.tvwrap{container-type:inline-size;max-width:1100px;margin:0 auto 14px}
+.tvf{width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw;display:grid;grid-template-columns:4.6em 15em 26em 1fr}
+.tvf *{min-width:0}
+.tvf svg.i{width:1.6em;height:1.6em}
+.rail{background:var(--s1);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:1.2em;padding:2em 0;color:var(--tx3)}
+.rail .on{color:var(--tx);position:relative}
+.rail .on::after{content:"";position:absolute;left:10%;right:10%;bottom:-.5em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent)}
+.cats{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.3em;border-right:1px solid var(--line)}
+.cats h5{font-family:var(--display);font-weight:600;font-size:2em;margin:0 0 .6em .3em}
+.tc{display:flex;justify-content:space-between;padding:.7em .9em;border-radius:.8em;color:var(--tx2);font-weight:600;font-size:1em}
+.tc em{font-style:normal;color:var(--tx3);font-size:.85em}
+.tc.on{background:var(--s2);color:var(--tx)}
+.chl{padding:2.2em 1.2em;display:flex;flex-direction:column;gap:.45em;border-right:1px solid var(--line);overflow:hidden}
+.chl .hd{display:flex;justify-content:space-between;align-items:baseline;margin:0 .4em .6em}
+.chl .hd b{font-family:var(--display);font-weight:600;font-size:1.6em}
+.chl .hd small{color:var(--tx3)}
+.tr{display:grid;grid-template-columns:2em 3.2em 1fr;gap:.8em;align-items:center;padding:.65em .8em;border-radius:.9em;position:relative}
+.tr .no{color:var(--tx3);font-size:.9em;text-align:right}
+.tr .mono{width:3.2em;height:3.2em;border-radius:.8em;font-size:.95em}
+.tr .b{display:grid;gap:.15em}
+.tr .n{font-size:.85em;color:var(--tx3)}
+.tr .p{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr.foc{background:var(--s3);border:1px solid var(--line2)}
+.tr.foc::after{content:"";position:absolute;left:10%;right:10%;bottom:-.3em;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#fff 50%,var(--red) 80%,transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tr.playing::before{content:"";position:absolute;left:0;top:.8em;bottom:.8em;width:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.pv{padding:2.2em 2em;display:flex;flex-direction:column;gap:1em}
+.pv .vid{aspect-ratio:16/9;border-radius:1.1em;background:radial-gradient(80% 90% at 70% 30%,#7a2030,transparent 60%),linear-gradient(160deg,#2a1838,#0b0a0d 85%);position:relative}
+.pv .vid .live{position:absolute;left:1em;top:1em;font-size:.85em}
+.pv h3{font-family:var(--display);font-weight:600;font-size:2.4em;margin:0;line-height:1}
+.pv small{color:var(--tx2)}
+.tl2{display:grid;gap:.4em}
+.tl2 div{display:grid;grid-template-columns:4em 1fr;gap:.8em;padding:.5em .7em;border-radius:.7em;background:var(--s1);font-size:.95em}
+.tl2 div span{color:var(--tx3)}
+.tl2 div.now{background:#2a1a20}.tl2 div.now span{color:var(--glow);font-weight:700}
+.hint{display:flex;gap:1.3em;color:var(--tx3);font-size:.9em;margin-top:auto}.hint b{color:var(--tx2)}
+
+.art{position:relative;overflow:hidden;background:radial-gradient(90% 70% at 72% 18%,var(--b,#d1495b),transparent 62%),radial-gradient(70% 60% at 10% 100%,var(--c,#1f1630),transparent 70%),linear-gradient(165deg,var(--a,#2a1838),#0b0a0d 85%)}
+.art::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.03) 0 2px,transparent 2px 9px)}
+.hello{padding:4px 18px 0;display:flex;align-items:center;gap:12px}
+.hello .av{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#7a2c40,#2a1d3d);display:grid;place-items:center;font-weight:700}
+.hello b{font-family:var(--display);font-weight:600;font-size:24px;line-height:1;flex:1}
+.hello small{display:block;font-family:var(--body);font-size:12.5px;color:var(--tx3);font-weight:500;margin-top:4px}
+.hrail{display:flex;gap:10px;overflow-x:auto;padding:0 18px;scrollbar-width:none}
+.hrail::-webkit-scrollbar{display:none}
+.resume{flex:none;width:236px;display:grid;gap:8px}
+.resume .th{height:132px;border-radius:16px;display:flex;align-items:flex-end;padding:10px}
+.resume .th .pp{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;background:rgba(11,10,13,.55);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;z-index:1}
+.resume .th .pp svg{width:14px;height:14px}
+.resume .th .ep{position:relative;z-index:1;font-size:11px;font-weight:700;background:rgba(11,10,13,.6);padding:2px 7px;border-radius:6px}
+.resume b{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resume small{font-size:12px;color:var(--tx3)}
+.livenow{flex:none;width:200px;display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:10px}
+.livenow b{font-size:13px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livenow small{font-size:11.5px;color:var(--tx3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livenow .mono{width:44px;height:44px;font-size:13px}
+.poster{flex:none;width:112px;display:grid;gap:6px}
+.poster .pp2{aspect-ratio:2/3;border-radius:12px}
+.poster .pp2 .bd{position:absolute;left:6px;top:6px;z-index:1;font-size:9.5px;font-weight:800;letter-spacing:.06em;background:var(--red);color:#fff;padding:2px 6px;border-radius:5px}
+.poster b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.poster small{font-size:11px;color:var(--tx3);margin-top:-4px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;padding:4px 18px}
+.grid3 .poster{width:auto}
+.sortbar{display:flex;gap:8px;align-items:center;padding:4px 18px 10px;color:var(--tx3);font-size:12.5px}
+.sortbar .s{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:10px;background:var(--s1);border:1px solid var(--line);color:var(--tx2);font-weight:600}
+.sortbar .s svg{width:14px;height:14px}
+.seg2{display:flex;margin:4px 18px 4px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:3px}
+.seg2 span{flex:1;text-align:center;padding:7px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--tx2)}
+.seg2 span.on{background:var(--tx);color:var(--ink)}
+.bdrop{height:250px;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px;gap:8px}
+.bdrop::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,10,13,.3),transparent 30%,rgba(11,10,13,.95));z-index:1}
+.bdrop>*{position:relative;z-index:2}
+.bdrop h2{font-family:var(--display);font-weight:600;font-size:34px;line-height:1;margin:0}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--tx2);font-size:12.5px}
+.meta .tag{font-size:10.5px;font-weight:700;border:1px solid var(--line2);border-radius:6px;padding:1px 6px;color:var(--tx)}
+.meta .st{color:#F2C14E;font-weight:700}
+.bigplay{margin:12px 18px 0;height:50px;border-radius:15px;background:var(--red);display:flex;align-items:center;justify-content:center;gap:9px;font-weight:700;font-size:15px;box-shadow:0 10px 26px -10px rgba(229,48,58,.9)}
+.bigplay small{font-weight:500;opacity:.85;font-size:12.5px}
+.bigplay svg{width:18px;height:18px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 18px 0}
+.row3 span{height:52px;border-radius:13px;background:var(--s1);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;color:var(--tx2);font-weight:600}
+.row3 svg{width:18px;height:18px}
+.syn{padding:14px 18px 0;color:var(--tx2);font-size:13.5px;line-height:1.55}
+.syn b{color:var(--tx);font-weight:600}
+.seasons{display:flex;gap:6px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.seasons span{flex:none;padding:7px 14px;border-radius:999px;background:var(--s1);border:1px solid var(--line);font-weight:600;font-size:13px;color:var(--tx2)}
+.seasons span.on{background:var(--tx);color:var(--ink);border-color:var(--tx)}
+.ep{display:grid;grid-template-columns:118px 1fr;gap:12px;padding:10px 18px;align-items:center}
+.ep .th{height:66px;border-radius:11px;display:grid;place-items:center}
+.ep .th .prog{position:absolute;left:6px;right:6px;bottom:5px;z-index:1}
+.ep .th .ck{position:absolute;right:5px;top:5px;z-index:1;width:20px;height:20px;border-radius:50%;background:rgba(79,209,139,.9);display:grid;place-items:center;color:#0b0a0d;font-size:11px;font-weight:900}
+.ep b{font-size:13.5px;font-weight:600;display:block}
+.ep small{font-size:11.5px;color:var(--tx3);display:block}
+.ep p{margin:3px 0 0;font-size:11.5px;color:var(--tx3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ep.cur{background:linear-gradient(90deg,rgba(229,48,58,.1),transparent);position:relative}
+.ep.cur::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;background:var(--red);box-shadow:0 0 8px var(--glow)}
+.land{width:100%;max-width:740px;aspect-ratio:740/348;border-radius:36px;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 7px #111014,0 0 0 8px var(--line2),0 40px 80px -20px rgba(0,0,0,.8);position:relative;overflow:hidden;container-type:inline-size;font-size:1.45cqw}
+.land .vid{position:absolute;inset:0}
+.land .vid::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.65),transparent 30%,transparent 55%,rgba(0,0,0,.85))}
+.land .tp{position:absolute;left:4%;right:4%;top:6%;display:flex;align-items:center;gap:1.2em;z-index:2}
+.land .tp b{font-weight:600;font-size:1.15em;flex:1}
+.land .tp b small{display:block;font-weight:500;font-size:.8em;color:var(--tx2)}
+.land .tp svg{width:1.6em;height:1.6em}
+.land .cn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:3.5em;z-index:2}
+.land .cn span{display:grid;place-items:center;width:3.2em;height:3.2em;border-radius:50%;background:rgba(11,10,13,.45);border:1px solid rgba(255,255,255,.2);font-weight:700;font-size:.9em}
+.land .cn span.big{width:4.6em;height:4.6em}
+.land .cn svg{width:1.7em;height:1.7em}
+.land .bt{position:absolute;left:4%;right:4%;bottom:6%;z-index:2;display:grid;gap:.7em}
+.scrub{height:4px;border-radius:2px;background:rgba(255,255,255,.2);position:relative}
+.scrub i{position:absolute;inset:0 auto 0 0;background:var(--red);border-radius:2px;box-shadow:0 0 8px var(--glow)}
+.scrub i::after{content:"";position:absolute;right:-6px;top:-5px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px 1px var(--glow)}
+.scrub b{position:absolute;inset:0 auto 0 0;background:rgba(255,255,255,.35);border-radius:2px}
+.land .bt .rw{display:flex;align-items:center;gap:1.4em;font-size:.85em;color:var(--tx2)}
+.land .bt .rw .chip{display:inline-flex;align-items:center;gap:.4em;padding:.35em .8em;border-radius:.8em;background:rgba(255,255,255,.1);color:var(--tx);font-weight:600}
+.land .bt .rw svg{width:1.3em;height:1.3em}
+.nextc{position:absolute;right:4%;bottom:30%;z-index:3;width:24%;border-radius:1em;background:rgba(20,18,23,.92);border:1px solid var(--line2);padding:.8em;display:grid;gap:.5em}
+.nextc .th{height:4.5em;border-radius:.6em}
+.nextc b{font-size:.9em}
+.nextc .go{height:2.2em;border-radius:.7em;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85em;position:relative;overflow:hidden}
+.nextc .go::before{content:"";position:absolute;inset:0 30% 0 0;background:rgba(255,255,255,.18)}
+.tvx{width:100%;aspect-ratio:16/9;border-radius:1.4cqw;background:var(--ink);border:1px solid var(--line2);box-shadow:0 0 0 .5cqw #111014,0 30px 80px -20px rgba(0,0,0,.8);overflow:hidden;font-size:1.25cqw;position:relative}
+.tvx *{min-width:0}
+.tvx svg.i{width:1.6em;height:1.6em}
+.tvx .side{position:absolute;left:0;top:0;bottom:0;width:4.6em;background:rgba(20,18,23,.85);display:flex;flex-direction:column;align-items:center;gap:1.2em;padding:2em 0;color:var(--tx3);z-index:3}
+.tvx .side .on{color:var(--tx)}
+.tvhero{position:absolute;inset:0 0 40% 4.6em;padding:3em 3em 2em;display:flex;flex-direction:column;justify-content:flex-end;gap:.8em}
+.tvhero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,13,.95),rgba(11,10,13,.3) 60%,transparent),linear-gradient(180deg,transparent 60%,var(--ink));z-index:1}
+.tvhero>*{position:relative;z-index:2;max-width:48%}
+.tvhero h2{font-family:var(--display);font-weight:600;font-size:3.6em;line-height:.95;margin:0}
+.tvhero p{margin:0;color:var(--tx2);font-size:1.05em}
+.tvbtn{display:inline-flex;align-items:center;gap:.5em;height:2.8em;padding:0 1.3em;border-radius:.9em;font-weight:700;background:var(--red);font-size:1em;position:relative}
+.tvbtn.g{background:rgba(255,255,255,.1);font-weight:600}
+.tvbtn.f::after{content:"";position:absolute;left:12%;right:12%;bottom:-.4em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tvrows{position:absolute;left:4.6em;right:0;bottom:0;height:38%;padding:0 3em;display:grid;gap:1em;align-content:start}
+.tvrows h4{margin:0;font-size:1.1em;font-weight:700;color:var(--tx2)}
+.tvr{display:flex;gap:1em}
+.tvc{flex:none;width:15em;display:grid;gap:.4em}
+.tvc .th{height:8.4em;border-radius:.9em}
+.tvc b{font-size:.95em;font-weight:600}
+.tvc .prog{margin-top:-.2em}
+.tvc.f .th{outline:2px solid rgba(255,255,255,.85);outline-offset:2px}
+.tvc.f{position:relative}
+.tvc.f::after{content:"";position:absolute;left:10%;right:10%;top:9em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+.tvp{flex:none;width:7.6em}.tvp .th{height:11.4em;border-radius:.8em}
+.tvd{position:absolute;inset:0 0 0 4.6em;display:grid;grid-template-columns:44% 1fr}
+.tvd .info{padding:3.4em 2.4em 2em 3em;display:flex;flex-direction:column;gap:.9em;position:relative}
+.tvd .info::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,13,.96) 70%,rgba(11,10,13,.6));z-index:0}
+.tvd .info>*{position:relative;z-index:1}
+.tvd .info h2{font-family:var(--display);font-weight:600;font-size:3.4em;line-height:.95;margin:0}
+.tvd .eps{padding:3.4em 2.4em 2em 1.6em;display:flex;flex-direction:column;gap:.6em;background:rgba(11,10,13,.72)}
+.tvd .eps .tep{display:grid;grid-template-columns:9em 1fr;gap:1em;padding:.6em;border-radius:.9em;align-items:center;position:relative}
+.tvd .eps .tep .th{height:5em;border-radius:.6em}
+.tvd .eps .tep b{display:block;font-weight:600}
+.tvd .eps .tep small{color:var(--tx3);font-size:.85em}
+.tvd .eps .tep.f{background:var(--s3);border:1px solid var(--line2)}
+.tvd .eps .tep.f::after{content:"";position:absolute;left:10%;right:10%;bottom:-.3em;height:2px;background:linear-gradient(90deg,transparent,var(--red),#fff,var(--red),transparent);box-shadow:0 0 10px 1px rgba(229,48,58,.8)}
+</style>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z"/></symbol>
+<symbol id="starf" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .3-5.5 4.7L18 21l-6-4-6 4 1.5-7L2 9.3 9 9z" fill="currentColor"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10H3z"/></symbol>
+<symbol id="tv" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 12h18"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 5h-5L8 10z"/></symbol>
+<symbol id="news" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+<symbol id="kid" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1-4 4-6 7-6s6 2 7 6"/></symbol>
+<symbol id="music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></symbol>
+<symbol id="cc" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10a2 2 0 1 0 0 4M17 10a2 2 0 1 0 0 4"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></symbol>
+<symbol id="full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="pip" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="7" rx="1"/></symbol>
+
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="dl" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+<symbol id="sort" viewBox="0 0 24 24"><path d="M3 6h18M6 12h12M10 18h4"/></symbol>
+<symbol id="aud" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></symbol>
+<symbol id="speed" viewBox="0 0 24 24"><path d="M12 14l4-4M3.3 17a10 10 0 1 1 17.4 0"/></symbol>
+<symbol id="eps" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10"/></symbol>
+<symbol id="skip" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 5v14"/></symbol>
+</defs></svg>
+<div class="wrap">
+<header class="intro">
+  <div><span class="wordmark">PRELUDE+</span><span class="hz" style="width:150px;margin-top:8px"></span></div>
+  <h1>Αρχική, Ταινίες/Σειρές, Λεπτομέρειες, Player</h1>
+  <p class="lede">Ίδια λογική με τη Live: αλλάζει η δομή, όχι μόνο το χρώμα. Κάθε σελίδα έχει μία δουλειά. Η Αρχική είναι δική σου (τι έβλεπες, τι παίζει στα αγαπημένα σου). Οι Ταινίες/Σειρές είναι κατάλογος που ψάχνεις. Οι Λεπτομέρειες σε βάζουν να παίξεις με ένα πάτημα. Ο Player κρύβεται και δείχνει μόνο ό,τι χρειάζεσαι.</p>
+  <div class="cmp">
+    <div><h3>Αρχική</h3><p class="was">Μεγάλο hero + κατηγορίες + σειρές από κάρτες</p><p>Προσωπική: «Συνέχισε» πρώτο, Ζωντανά τώρα στα αγαπημένα, Η λίστα μου, Νέα. Οι κατηγορίες φεύγουν από εδώ.</p></div>
+    <div><h3>Ταινίες / Σειρές</h3><p class="was">Σειρές ανά κατηγορία, «Δες όλα» για να δεις περισσότερα</p><p>Κατάλογος: καρτέλες κατηγοριών πάνω, ταξινόμηση (Νέα, Βαθμολογία, Έτος, Α–Ω) και πλέγμα 3 στηλών.</p></div>
+    <div><h3>Λεπτομέρειες</h3><p class="was">Καρτέλες Πληροφορίες / Ηθοποιοί / Παρόμοια</p><p>Όλα σε μία σελίδα. Ένα μεγάλο κουμπί που ξέρει πού έμεινες («Συνέχισε Ε2·Ε5 · 23′»). Επεισόδια με πρόοδο και ✓.</p></div>
+    <div><h3>Player</h3><p class="was">Πολλά κουμπιά πάνω στην εικόνα</p><p>Τρία σημεία: πάνω τίτλος, μέση ±10″/play, κάτω μπάρα και 4 ενέργειες. «Επόμενο επεισόδιο» με αντίστροφη μέτρηση.</p></div>
+  </div>
+</header>
+
+<section class="sec">
+<h2>1 · Αρχική</h2>
+<p>Ανοίγοντας την εφαρμογή, το πρώτο που βλέπεις είναι ό,τι άφησες στη μέση και τι παίζει τώρα στα κανάλια σου. Το μεγάλο hero γίνεται μία μικρότερη πρόταση πιο κάτω, όχι η πρώτη οθόνη.</p>
+<div class="phones">
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="hello"><span class="av">K</span><b>Καλησπέρα, Konstantinos<small>Prelude Main · 1.248 κανάλια · 3.214 ταινίες</small></b><span class="ib"><svg class="i"><use href="#search"/></svg></span></div>
+      <div class="lbl"><span>ΣΥΝΕΧΙΣΕ</span><a href="#">Ιστορικό</a></div>
+      <div class="hrail">
+        <div class="resume"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"><span class="pp"><svg class="i"><use href="#play"/></svg></span><span class="ep">Ε2 · Ε5</span><div class="prog" style="position:absolute;left:10px;right:10px;bottom:8px"><i style="width:62%"></i></div></div><b>Breaking Bad</b><small>Απομένουν 23′</small></div>
+        <div class="resume"><div class="th art" style="--a:#3a2b12;--b:#e0a030"><span class="pp"><svg class="i"><use href="#play"/></svg></span><div class="prog" style="position:absolute;left:10px;right:10px;bottom:8px"><i style="width:38%"></i></div></div><b>Dune: Μέρος Δεύτερο</b><small>Απομένουν 1ώ 42′</small></div>
+      </div>
+      <div class="lbl"><span>ΖΩΝΤΑΝΑ ΤΩΡΑ ΣΤΑ ΑΓΑΠΗΜΕΝΑ</span><a href="#">Live</a></div>
+      <div class="hrail">
+        <div class="livenow"><span class="mono" style="background:linear-gradient(135deg,#8a1f2c,#3a1018)">ΕΡΤ</span><span><b>Super League</b><small>ΕΡΤ Σπορ 1 · 34%</small><div class="prog" style="margin-top:5px"><i style="width:34%"></i></div></span></div>
+        <div class="livenow"><span class="mono" style="background:linear-gradient(135deg,#1f4a8a,#10203a)">C+</span><span><b>Τα Δύο Μπλόκα</b><small>Cine+ Bud Spencer</small><div class="prog" style="margin-top:5px"><i style="width:71%"></i></div></span></div>
+      </div>
+      <div class="lbl"><span>Η ΛΙΣΤΑ ΜΟΥ</span><a href="#">Όλα 14</a></div>
+      <div class="hrail">
+        <div class="poster"><div class="pp2 art" style="--a:#12303a;--b:#3fb0c0"></div><b>Oppenheimer</b><small>2023 · Ταινία</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#3a1236;--b:#c03f9a"><span class="bd">ΝΕΟ Ε.</span></div><b>The Bear</b><small>Σειρά · Κ3</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#1b3a12;--b:#6bc03f"></div><b>Fargo</b><small>Σειρά · Κ5</small></div>
+      </div>
+      <div class="lbl"><span>ΠΡΟΣΤΕΘΗΚΑΝ ΠΡΟΣΦΑΤΑ</span><a href="#">Όλα</a></div>
+      <div class="hrail">
+        <div class="poster"><div class="pp2 art" style="--a:#3a2a12;--b:#c08a3f"></div><b>Gladiator II</b><small>2024</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#12203a;--b:#3f6ac0"></div><b>Shōgun</b><small>Σειρά</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#2a123a;--b:#8a3fc0"></div><b>Anora</b><small>2024</small></div>
+      </div>
+    </div>
+    <div class="bnav"><span class="on"><svg class="i"><use href="#home"/></svg>Αρχική</span><span><svg class="i"><use href="#tv"/></svg>Live</span><span><svg class="i"><use href="#film"/></svg>Ταινίες</span><span><svg class="i"><use href="#layers"/></svg>Σειρές</span><span><svg class="i"><use href="#user"/></svg>Εγώ</span></div>
+  </div>
+  <div class="note"><h3>Προσωπική Αρχική</h3><ul><li>«Συνέχισε» πρώτο, με επεισόδιο και πόσο απομένει. Ένα πάτημα και παίζει από εκεί που έμεινες.</li><li>Τι παίζει τώρα στα αγαπημένα σου κανάλια, χωρίς να ανοίξεις τη Live.</li><li>Η λίστα μου και Νέα προσθήκες. Ό,τι άλλο είναι στις Ταινίες/Σειρές.</li><li>Οι σειρές της Αρχικής ρυθμίζονται από τις Ρυθμίσεις (υπάρχει ήδη).</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar"><span>21:14</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="top"><span class="t">Ταινίες</span><span class="ib"><svg class="i"><use href="#search"/></svg></span></div>
+      <div class="tabs"><div class="in">
+        <span class="tab on">Όλες <em>3.214</em></span><span class="tab">Νέες <em>48</em></span><span class="tab">Δράση <em>412</em></span><span class="tab">Κωμωδία <em>380</em></span><span class="tab">Ελληνικές <em>96</em></span><span class="tab all"><svg class="i" style="width:15px;height:15px"><use href="#list"/></svg>Όλες</span>
+      </div></div>
+      <div class="sortbar"><span class="s"><svg class="i"><use href="#sort"/></svg>Νεότερες</span><span class="s">Έτος: Όλα</span><span style="margin-left:auto">3.214 τίτλοι</span></div>
+      <div class="grid3">
+        <div class="poster"><div class="pp2 art" style="--a:#3a2b12;--b:#e0a030"><span class="bd">4K</span></div><b>Dune: Μέρος 2</b><small>2024 · ★ 8.5</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#12303a;--b:#3fb0c0"></div><b>Oppenheimer</b><small>2023 · ★ 8.3</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#3a2a12;--b:#c08a3f"><span class="bd">ΝΕΟ</span></div><b>Gladiator II</b><small>2024 · ★ 6.6</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#2a123a;--b:#8a3fc0"></div><b>Anora</b><small>2024 · ★ 7.6</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#1b3a12;--b:#6bc03f"></div><b>Conclave</b><small>2024 · ★ 7.3</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#3a1220;--b:#e5303a"></div><b>Civil War</b><small>2024 · ★ 7.0</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#12203a;--b:#3f6ac0"></div><b>The Substance</b><small>2024 · ★ 7.3</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#3a3212;--b:#c0b03f"></div><b>Wicked</b><small>2024 · ★ 7.5</small></div>
+        <div class="poster"><div class="pp2 art" style="--a:#123a36;--b:#3fc0b0"></div><b>Flow</b><small>2024 · ★ 7.9</small></div>
+      </div>
+    </div>
+    <div class="bnav"><span><svg class="i"><use href="#home"/></svg>Αρχική</span><span><svg class="i"><use href="#tv"/></svg>Live</span><span class="on"><svg class="i"><use href="#film"/></svg>Ταινίες</span><span><svg class="i"><use href="#layers"/></svg>Σειρές</span><span><svg class="i"><use href="#user"/></svg>Εγώ</span></div>
+  </div>
+  <div class="note"><h3>Ταινίες (και Σειρές, ίδια δομή)</h3><ul><li>Καρτέλες κατηγοριών κολλημένες πάνω, ίδιες με τη Live· «Όλες» ανοίγει φύλλο με αναζήτηση.</li><li>Ταξινόμηση: Νεότερες, Βαθμολογία, Έτος, Α–Ω. Φίλτρο έτους.</li><li>Πλέγμα 3 στηλών που φορτώνει όσο κατεβαίνεις, όχι σειρές που σέρνεις στο πλάι.</li><li>Στις Σειρές: σήμα «ΝΕΟ Ε.» όταν βγήκε επεισόδιο σε σειρά που βλέπεις.</li></ul></div></div>
+
+  <div class="shot"><div class="phone"><div class="sbar" style="position:relative;z-index:3"><span>21:14</span><span>●●●</span></div>
+    <div class="screen" style="inset:0">
+      <div class="bdrop art" style="--a:#1f3a2a;--b:#3fc08a;height:300px;padding-top:60px">
+        <h2>Breaking Bad</h2>
+        <div class="meta"><span class="st">★ 9.5</span><span>2008–2013</span><span class="tag">16</span><span>5 κύκλοι</span><span>Δράμα · Έγκλημα</span></div>
+      </div>
+      <div class="bigplay"><svg class="i"><use href="#play"/></svg>Συνέχισε Κ2 · Ε5 <small>· απομένουν 23′</small></div>
+      <div class="row3"><span><svg class="i"><use href="#plus"/></svg>Η λίστα μου</span><span><svg class="i"><use href="#eps"/></svg>Trailer</span><span><svg class="i"><use href="#share"/></svg>Κοινοποίηση</span></div>
+      <div class="syn">Ένας καθηγητής χημείας με διάγνωση καρκίνου στρέφεται στην παρασκευή μεθαμφεταμίνης για να εξασφαλίσει το μέλλον της οικογένειάς του. <b>Περισσότερα</b></div>
+      <div class="lbl" style="padding-top:18px"><span>ΕΠΕΙΣΟΔΙΑ</span><a href="#">13</a></div>
+      <div class="seasons"><span>Κύκλος 1</span><span class="on">Κύκλος 2</span><span>Κύκλος 3</span><span>Κύκλος 4</span><span>Κύκλος 5</span></div>
+      <div class="ep"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"><span class="ck">✓</span></div><div><b>4 · Down</b><small>47′</small><p>Ο Walt προσπαθεί να επανασυνδεθεί με τη Skyler.</p></div></div>
+      <div class="ep cur"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"><div class="prog"><i style="width:62%"></i></div></div><div><b>5 · Breakage</b><small>47′ · απομένουν 23′</small><p>Ο Walt και ο Jesse επεκτείνουν την επιχείρηση.</p></div></div>
+      <div class="ep"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div><b>6 · Peekaboo</b><small>47′</small><p>Ο Jesse αναλαμβάνει να πάρει πίσω τα χρήματα.</p></div></div>
+    </div>
+  </div>
+  <div class="note"><h3>Λεπτομέρειες</h3><ul><li>Ένα μεγάλο κουμπί που ξέρει πού έμεινες: «Συνέχισε Κ2·Ε5» ή «Παίξε» αν δεν το έχεις δει.</li><li>Χωρίς καρτέλες: περίληψη, επεισόδια, ηθοποιοί, παρόμοια, όλα με σκρολάρισμα.</li><li>Επεισόδια με εικόνα, διάρκεια, ✓ όσα είδες και πρόοδο στο τρέχον.</li><li>Για ταινία: ίδια σελίδα, αντί για επεισόδια «Ηθοποιοί» και «Παρόμοια».</li></ul></div></div>
+</div>
+
+<div class="phones" style="grid-template-columns:1fr">
+  <div class="shot" style="max-width:740px">
+    <div class="land"><div class="vid art" style="--a:#1f3a2a;--b:#3fc08a"></div>
+      <div class="tp"><svg class="i"><use href="#back"/></svg><b>Breaking Bad<small>Κ2 · Ε5 · Breakage</small></b><svg class="i"><use href="#cc"/></svg><svg class="i"><use href="#pip"/></svg></div>
+      <div class="cn"><span>−10</span><span class="big"><svg class="i"><use href="#play"/></svg></span><span>+10</span></div>
+      <div class="nextc"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><b>Επόμενο: Ε6 · Peekaboo</b><span class="go">Παίζει σε 8″</span></div>
+      <div class="bt"><div class="scrub"><b style="width:78%"></b><i style="width:62%"></i></div>
+        <div class="rw"><span style="white-space:nowrap">29:10 / 47:00</span><span style="margin-left:auto" class="chip"><svg class="i"><use href="#aud"/></svg>Ήχος &amp; υπότιτλοι</span><span class="chip"><svg class="i"><use href="#speed"/></svg>1×</span><span class="chip"><svg class="i"><use href="#eps"/></svg>Επεισόδια</span><span class="chip"><svg class="i"><use href="#skip"/></svg>Επόμενο</span></div></div>
+    </div>
+    <div class="note"><h3>Player (ταινίες/σειρές)</h3><ul><li>Τρεις ζώνες: πάνω τίτλος και επεισόδιο, μέση −10″ / ▶ / +10″ (και διπλό πάτημα αριστερά/δεξιά), κάτω μπάρα με buffer και χρόνο.</li><li>Τέσσερις ενέργειες κάτω, με όνομα: «Ήχος &amp; υπότιτλοι» σε ένα φύλλο, Ταχύτητα, Επεισόδια, Επόμενο.</li><li>Στο τέλος επεισοδίου: κάρτα «Επόμενο» με αντίστροφη μέτρηση, ακύρωση με ένα πάτημα.</li><li>Ο Live player είναι στο mockup της Live.</li></ul></div>
+  </div>
+</div>
+</section>
+
+<section class="sec">
+<h2>2 · Τηλεόραση</h2>
+<p>Στην TV ισχύει το ίδιο: πρώτα ό,τι άφησες στη μέση, λεπτομέρειες με τα επεισόδια δίπλα (όχι από κάτω), και player με μία μπάρα.</p>
+<div class="tvwrap"><div class="tvx">
+  <div class="side"><svg class="i"><use href="#search"/></svg><span class="on"><svg class="i"><use href="#home"/></svg></span><svg class="i"><use href="#tv"/></svg><svg class="i"><use href="#film"/></svg><svg class="i"><use href="#layers"/></svg><svg class="i"><use href="#cal"/></svg></div>
+  <div class="tvhero art" style="--a:#3a2b12;--b:#e0a030;position:absolute"><span class="live" style="color:var(--tx2)">ΣΥΝΕΧΙΣΕ ΑΠΟ ΤΟ 1:12:40</span><h2>Dune: Μέρος Δεύτερο</h2><p>2024 · 2ώ 46′ · Επιστημονική φαντασία · ★ 8.5</p><div style="display:flex;gap:.8em;margin-top:.4em"><span class="tvbtn f"><svg class="i" style="width:1.2em"><use href="#play"/></svg>Συνέχισε</span><span class="tvbtn g">Λεπτομέρειες</span></div></div>
+  <div class="tvrows">
+    <h4>Συνέχισε</h4>
+    <div class="tvr"><div class="tvc f"><div class="th art" style="--a:#3a2b12;--b:#e0a030"></div><div class="prog"><i style="width:38%"></i></div><b>Dune: Μέρος 2</b></div><div class="tvc"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div class="prog"><i style="width:62%"></i></div><b>Breaking Bad · Κ2 Ε5</b></div><div class="tvc"><div class="th art" style="--a:#3a1236;--b:#c03f9a"></div><div class="prog"><i style="width:15%"></i></div><b>The Bear · Κ3 Ε1</b></div><div class="tvc"><div class="th art" style="--a:#12203a;--b:#3f6ac0"></div><div class="prog"><i style="width:80%"></i></div><b>Shōgun · Ε9</b></div></div>
+    <h4>Ζωντανά τώρα στα αγαπημένα</h4>
+  </div>
+</div></div>
+<div class="note" style="max-width:1100px;margin:0 auto 34px"><h3>TV · Αρχική</h3><ul><li>Το μεγάλο hero δείχνει αυτό που έχει focus στη «Συνέχισε», με κουμπί Συνέχισε από τη σωστή στιγμή.</li><li>Σειρές από κάτω: Συνέχισε, Ζωντανά τώρα στα αγαπημένα, Η λίστα μου, Νέα.</li></ul></div>
+
+<div class="tvwrap"><div class="tvx">
+  <div class="side"><svg class="i"><use href="#search"/></svg><svg class="i"><use href="#home"/></svg><svg class="i"><use href="#tv"/></svg><svg class="i"><use href="#film"/></svg><span class="on"><svg class="i"><use href="#layers"/></svg></span><svg class="i"><use href="#cal"/></svg></div>
+  <div class="art" style="--a:#1f3a2a;--b:#3fc08a;position:absolute;inset:0 0 0 4.6em"></div>
+  <div class="tvd">
+    <div class="info"><span class="live" style="color:var(--tx2)">ΣΕΙΡΑ · 5 ΚΥΚΛΟΙ</span><h2>Breaking Bad</h2><div class="meta" style="font-size:1em"><span class="st">★ 9.5</span><span>2008–2013</span><span class="tag">16</span><span>Δράμα · Έγκλημα</span></div><p style="margin:0;color:var(--tx2)">Ένας καθηγητής χημείας με διάγνωση καρκίνου στρέφεται στην παρασκευή μεθαμφεταμίνης.</p><div style="display:flex;gap:.8em"><span class="tvbtn f"><svg class="i" style="width:1.2em"><use href="#play"/></svg>Συνέχισε Κ2 · Ε5</span><span class="tvbtn g"><svg class="i" style="width:1.2em"><use href="#plus"/></svg>Λίστα</span></div></div>
+    <div class="eps"><div class="seasons" style="padding:0;font-size:.85em"><span>Κύκλος 1</span><span class="on">Κύκλος 2</span><span>Κύκλος 3</span><span>Κύκλος 4</span></div>
+      <div class="tep"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div><b>4 · Down</b><small>47′ · ✓ Το είδες</small></div></div>
+      <div class="tep f"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div><b>5 · Breakage</b><small>47′ · απομένουν 23′</small><div class="prog" style="margin-top:.4em"><i style="width:62%"></i></div></div></div>
+      <div class="tep"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div><b>6 · Peekaboo</b><small>47′</small></div></div>
+      <div class="tep"><div class="th art" style="--a:#1f3a2a;--b:#3fc08a"></div><div><b>7 · Negro y Azul</b><small>47′</small></div></div>
+    </div>
+  </div>
+</div></div>
+<div class="note" style="max-width:1100px;margin:0 auto 34px"><h3>TV · Λεπτομέρειες</h3><ul><li>Αριστερά τα στοιχεία και το κουμπί που ξέρει πού έμεινες, δεξιά τα επεισόδια με κύκλους πάνω.</li><li>Δεξί βέλος: πας στα επεισόδια· πάνω/κάτω αλλάζεις επεισόδιο, χωρίς να φύγεις από τη σελίδα.</li></ul></div>
+
+<div class="tvwrap"><div class="tvx">
+  <div class="art" style="--a:#3a2b12;--b:#e0a030;position:absolute;inset:0"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent 25%,transparent 60%,rgba(0,0,0,.9))"></div>
+  <div style="position:absolute;left:4%;top:6%;right:4%;display:flex;justify-content:space-between"><div><div style="font-family:var(--display);font-weight:600;font-size:2.4em;line-height:1">Dune: Μέρος Δεύτερο</div><div style="color:var(--tx2)">2024 · Επιστημονική φαντασία</div></div><div style="color:var(--tx2)">21:14 · τελειώνει 23:05</div></div>
+  <div style="position:absolute;left:4%;right:4%;bottom:7%;display:grid;gap:1em">
+    <div class="scrub" style="height:5px"><b style="width:50%"></b><i style="width:43%"></i></div>
+    <div style="display:flex;align-items:center;gap:1em;color:var(--tx2)"><span>1:12:40 / 2:46:00</span><span style="margin-left:auto" class="tvbtn g">Ήχος &amp; υπότιτλοι</span><span class="tvbtn g">Ποιότητα</span><span class="tvbtn g f" style="position:relative">Από την αρχή</span></div>
+  </div>
+</div></div>
+<div class="note" style="max-width:1100px;margin:0 auto"><h3>TV · Player</h3><ul><li>Μία μπάρα κάτω, μόνο όταν πατήσεις κάτι. Πάνω τίτλος και ώρα που τελειώνει.</li><li>◀ ▶ μετακινούν ±10″, κράτημα για γρήγορη μετακίνηση με προεπισκόπηση χρόνου.</li><li>Τρία κουμπιά με όνομα, όχι σειρά από εικονίδια.</li></ul></div>
+</section>
+
+<section class="sec">
+<h2>Σειρά υλοποίησης</h2>
+<p>Live → Αρχική → Ταινίες/Σειρές → Λεπτομέρειες → Player. Κάθε μία σε δική της έκδοση, ώστε να τη δοκιμάζεις στο κινητό πριν πάμε στην επόμενη. Αν θες άλλη σειρά, πες μου.</p>
+</section>
+</div>
